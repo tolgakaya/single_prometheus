@@ -1,0 +1,153 @@
+# Stage 4: Automated Diagnosis & Deep Dive - CONTEXT AWARE
+
+Execute targeted diagnostics based on previous findings.
+
+## 🕐 TIME PARAMETERS:
+- Start: {{ $json._context.initialParams.startTime }}
+- End: {{ $json._context.initialParams.endTime }}
+- Display: new Date(timestamp * 1000).toISOString()
+- DO NOT use fake dates like "2024-01-15"
+
+## 📋 CONTEXT:
+- Context ID: {{ $json._context.contextId }}
+- Primary Issue: {{ $json.stage3Data.recommended_actions[0].alert }}
+- Root Cause: {{ $json.stage2Data.root_cause.issue }}
+
+## 🎯 CRITICAL POD INFORMATION (MULTI-NAMESPACE):
+- Pod Name: {{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}
+- Namespaces (All): {{ $json._context.initialParams.namespaces.join(', ') }} (Total: {{ $json._context.initialParams.namespaces.length }})
+- Pod Namespace: {{ $json.stage2Data.critical_pods[0].namespace || $json.namespaces[0] }}
+- Status: {{ $json.stage2Data.critical_pods[0].status || 'Unknown' }}
+- Restart Count: {{ $json.stage2Data.critical_pods[0].restart_count || 0 }}
+- Memory Usage: {{ $json.stage2Data.critical_pods[0].resource_usage.memory || 'Unknown' }}
+- CPU Usage: {{ $json.stage2Data.critical_pods[0].resource_usage.cpu || 'Unknown' }}
+
+## 🔧 DIAGNOSTIC EXECUTION:
+
+Based on findings, execute appropriate diagnostics:
+- For pod issues: Use pod-specific tools with actual pod names
+- For node issues: Use node-specific tools with actual node names
+- Use exact timestamps from context
+
+Tool parameters (MULTI-NAMESPACE AWARE):
+{
+  "namespace": "{{ $json.stage2Data.critical_pods[0].namespace || $json.namespaces[0] }}",
+  "start": {{ $json._context.initialParams.startTime }},
+  "end": {{ $json._context.initialParams.endTime }},
+  "pod": "{{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}",
+  "node": "{{ $json.stage2Data.critical_pods[0].node || 'unknown' }}"
+}
+
+NOTE: kubectl commands use specific pod's namespace ({{ $json.stage2Data.critical_pods[0].namespace || $json.namespaces[0] }})
+not the full namespace list, as kubectl operates on single namespace per command.
+
+IMPORTANT: You MUST use the following pod for diagnostics:
+- Target Pod: {{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}
+- DO NOT use any mock pod names like "pod-abc123" or "pod-xyz123"
+- DO NOT use mock deployment names like "mobile-app-deployment"
+- Use the ACTUAL pod name provided above
+
+## 🚨 OUTPUT REQUIREMENT:
+**RETURN ONLY VALID JSON WITH ACTUAL DATA**
+
+{
+  "stage": "automated_diagnosis",
+  "diagnostics_executed": [
+    {
+      "target": "{{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}",
+      "type": "pod",
+      "commands_run": [
+        "kubectl describe pod {{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }} -n {{ $json.namespaces[0] }}",
+        "kubectl logs {{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }} -n {{ $json.namespaces[0] }} --since=24h",
+        "kubectl get events -n {{ $json.namespaces[0] }} --field-selector involvedObject.name={{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}"
+      ],
+      "findings": {
+        "pod_status": {
+          "phase": "{{ $json.stage2Data.critical_pods[0].status || 'Unknown' }}",
+          "restart_count": {{ $json.stage2Data.critical_pods[0].restart_count || 0 }},
+          "last_termination": {
+            "reason": "OOMKilled",
+            "exit_code": 137,
+            "finished_at": "{{ new Date($json._context.initialParams.endTime * 1000).toISOString() }}"
+          }
+        },
+        "error_logs": [
+          {
+            "timestamp": "{{ new Date($json._context.initialParams.endTime * 1000).toISOString() }}",
+            "level": "Error",
+            "message": "Container killed due to memory limit",
+            "stack_trace": null
+          }
+        ],
+        "events": [<actual k8s events>],
+        "resource_usage": {
+          "memory_request": "1Gi",
+          "memory_limit": "2Gi",
+          "memory_used": "{{ $json.stage2Data.critical_pods[0].resource_usage.memory || 'Unknown' }}",
+          "cpu_used": "{{ $json.stage2Data.critical_pods[0].resource_usage.cpu || 'Unknown' }}"
+        }
+      }
+    }
+  ],
+  "enriched_context": {
+    "deployment_info": {
+      "name": "{{ ($json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown').split('-').slice(0, -2).join('-') }}",
+      "version": "unknown",
+      "replicas": "unknown",
+      "last_update": "{{ new Date($json._context.initialParams.endTime * 1000).toISOString() }}",
+      "update_strategy": "RollingUpdate"
+    },
+    "recent_changes": [
+      {
+        "type": "deployment",
+        "time": "{{ new Date($json._context.initialParams.endTime * 1000).toISOString() }}",
+        "change": "Pod experiencing memory issues",
+        "user": "system"
+      }
+    ],
+    "dependencies": {
+      "upstream": [],
+      "downstream": {{ $json.stage2Data.affected_services || [] }},
+      "databases": [],
+      "external": []
+    }
+  },
+  "diagnostic_summary": {
+    "confirmed_issues": [
+      {
+        "issue": "{{ $json.stage2Data.root_cause.issue || 'Pod instability detected' }}",
+        "evidence": {{ $json.stage2Data.root_cause.evidence || [] }},
+        "severity": "critical",
+        "impact": "Service {{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }} is experiencing outages",
+        "namespace": "{{ $json.namespaces[0] }}"
+      }
+    ],
+    "secondary_issues": []
+  },
+  "proceed_to_stage5": true,
+  "remediation_confidence": {{ $json.stage2Data.root_cause.confidence || 0.85 }},
+  "_context": {{ $json._context }},
+  "_debug": {
+    "nodeType": "Stage 4: Automated Diagnosis",
+    "processedAt": "<current ISO timestamp>",
+    "contextId": "{{ $json._context.contextId }}",
+    "contextPreserved": true,
+    "receivedFromStage": "Fix Stage 3 Context",
+    "stageSequence": "",
+    "diagnosticsCount": 1,
+    "autoRemediationEnabled": true,
+    "actualPodUsed": "{{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}",
+    "timeRangeUsed": {
+      "start": {{ $json._context.initialParams.startTime }},
+      "end": {{ $json._context.initialParams.endTime }}
+    }
+  }
+}
+
+## ⚠️ CRITICAL:
+- ALL TIMESTAMPS MUST BE FROM ACTUAL DATA
+- NO HARDCODED DATES
+- USE REAL PROMETHEUS METRICS
+- NO MOCK DATA
+- secondary_issues MUST BE AN ARRAY (even if empty: [])
+- TARGET POD MUST BE: {{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}

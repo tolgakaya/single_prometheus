@@ -1,0 +1,56 @@
+{
+  "version": "4",
+  "status": "firing",
+  "receiver": "{{receiver_name}}",
+  "groupLabels": {
+    "alertname": "KubePodNotReady"
+  },
+  "commonLabels": {
+    "alertname": "KubePodNotReady",
+    "severity": "critical",
+    "container": "elasticsearch-em-glb-prod-kibana",
+    "endpoint": "http",
+    "instance": "10.91.136.215:8080",
+    "job": "kube-state-metrics",
+    "namespace": "em-global-prod",
+    "pod": "elasticsearch-em-prod-kibana-667ddd746b-gd9p9",
+    "prometheus": "saas-bss-monitoring/prometheus-kube-prometheus-prometheus",
+    "reason": "KubePodNotReady",
+    "service": "prometheus-kube-state-metrics",
+    "uid": "2019abc7-7e5f-47ed-a5e7-079d8b3107de"
+  },
+  "commonAnnotations": {
+    "description": "Pod em-prod-3pp/elasticsearch-em-prod-kibana-667ddd746b-gd9p9 has been in a non-ready state for longer than 15 minutes on cluster .",
+    "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/KubePodNotReady",
+    "summary": " Pod has been in a non-ready state for more than 15 minutes."
+  },
+  "externalURL": "{{external_url}}",
+  "alerts": [
+    {
+      "status": "firing",
+      "labels": {
+        "alertname": "KubePodNotReady",
+        "severity": "critical",
+        "container": "elasticsearch-em-glb-prod-kibana",
+        "endpoint": "http",
+        "instance": "10.91.136.215:8080",
+        "job": "kube-state-metrics",
+        "namespace": "em-prod-3pp",
+        "pod": "elasticsearch-em-prod-kibana-667ddd746b-gd9p9",
+        "prometheus": "saas-bss-monitoring/prometheus-kube-prometheus-prometheus",
+        "reason": "KubePodNotReady",
+        "service": "prometheus-kube-state-metrics",
+        "uid": "2019abc7-7e5f-47ed-a5e7-079d8b3107de"
+      },
+      "annotations": {
+        "description": "Pod etiyamobile-production/elasticsearch-em-prod-kibana-667ddd746b-gd9p9 (elasticsearch-em-glb-prod-kibana) is in waiting state (reason: \"KubePodNotReady\").",
+        "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/KubePodNotReady",
+        "summary": "Pod is crash looping."
+      },
+      "startsAt": "2025-08-20T13:02:51Z",
+      "endsAt": "0001-01-01T00:00:00Z",
+      "generatorURL": "http://prometheus.example/query?g0.expr=",
+      "fingerprint": "fp-0001"
+    }
+  ]
+}

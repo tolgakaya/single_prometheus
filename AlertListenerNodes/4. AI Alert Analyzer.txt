@@ -1,0 +1,25 @@
+Analyze this alert and provide a structured analysis.
+
+Alert Details:
+- Source: {{ $('Normalize Alerts').item.json.source }}
+- Timestamp: {{ $('Normalize Alerts').item.json.timestamp }}
+- Title: {{ $('Normalize Alerts').item.json.title }}
+- Body: {{ $('Normalize Alerts').item.json.body }}
+- Sender: {{ $('Normalize Alerts').item.json.sender }}
+- Priority: {{ $('Normalize Alerts').item.json.priority }}
+
+You MUST provide your response as a valid JSON object that matches the schema exactly. Do not include any text before or after the JSON.
+
+Extract:
+1. Time range when incident occurred
+2. Affected services and components
+3. Severity and business impact
+4. Technical indicators and patterns
+
+Provide analysis in a structured format with these sections:
+- Alert identification
+- Time analysis
+- Affected components
+- Severity assessment
+- Technical details
+- Recommendations
