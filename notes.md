@@ -17,3 +17,10 @@ prometheus : prometheus.saas.etycloudbss.com
 
 em-global-prod
 em-prod
+
+
+redisPass: IZdi2ngecpK70bP
+ 
+redisHost: 172.22.199.71
+ 
+redisPort: 6379 

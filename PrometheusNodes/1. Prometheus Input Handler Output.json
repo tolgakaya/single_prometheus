@@ -1,0 +1,72 @@
+[
+  {
+    "workflowId": "alert-1765629808517",
+    "source": "alert-listener",
+    "orchestratorId": "direct-1765629808517",
+    "requestId": "alert-alert-1765629808503-1765629808517",
+    "startTime": 1765626208,
+    "endTime": 1765629808,
+    "priority": "critical",
+    "analysisType": "alert-driven",
+    "context": {
+      "alertName": "KubeAPIDown",
+      "alertId": "alert-1765629808503",
+      "alertPriority": "critical",
+      "source": "alertmanager",
+      "kubernetes": {
+        "container": null,
+        "pod": null,
+        "namespace": "default",
+        "service": null,
+        "deployment": null,
+        "node": null,
+        "persistentvolumeclaim": null,
+        "volumename": null,
+        "useSpecificFilters": false
+      },
+      "affectedServices": [
+        "default"
+      ],
+      "errorPatterns": [
+        "Chaos engineering test pattern"
+      ],
+      "alerts": [
+        {
+          "alertname": "KubeAPIDown",
+          "severity": "critical"
+        }
+      ]
+    },
+    "metadata": {
+      "alertSource": "alertmanager",
+      "alertDetails": {
+        "id": "alert-1765629808503",
+        "title": "KubeAPIDown",
+        "alertname": "KubeAPIDown",
+        "detectedAt": "2025-12-13T08:49:41.236Z",
+        "isOngoing": true
+      },
+      "analysisMode": "GENERAL"
+    },
+    "kubernetesFilters": {
+      "container": null,
+      "pod": null,
+      "namespace": "default",
+      "service": null,
+      "deployment": null,
+      "node": null,
+      "persistentvolumeclaim": null,
+      "volumename": null,
+      "useSpecificFilters": false
+    },
+    "namespaces": [
+      "default"
+    ],
+    "prometheusContext": {
+      "nodeFilter": null,
+      "containerFilter": null,
+      "podFilter": null,
+      "useSpecificFilters": false
+    }
+  }
+]

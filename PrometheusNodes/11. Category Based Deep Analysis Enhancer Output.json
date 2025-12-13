@@ -1,0 +1,1054 @@
+[
+  {
+    "output": {
+      "stage": "analysis",
+      "timestamp": "2025-12-13T12:43:28.596Z",
+      "cluster": "default",
+      "overall_status": "critical",
+      "proceed_to_stage2": true,
+      "urgency": "critical",
+      "reason": "KubeAPIDown alert is active with critical severity. No additional alerts or cascading effects detected in the same namespace.",
+      "alerts": {
+        "total": 1,
+        "critical": 1,
+        "warning": 0,
+        "top_alerts": [
+          "KubeAPIDown"
+        ]
+      },
+      "scores": {
+        "cluster_health": 20,
+        "node_availability": 50,
+        "pod_stability": 50,
+        "api_reliability": 10
+      },
+      "quick_findings": [
+        "API server is down, impacting cluster operations and kubectl access."
+      ],
+      "forceDeepAnalysis": true,
+      "overridden": false,
+      "_context": {
+        "contextId": "ctx-1765629808596-j4tf5t",
+        "createdAt": "2025-12-13T12:43:28.596Z",
+        "source": {
+          "type": "alert-listener",
+          "priority": "critical"
+        },
+        "initialParams": {
+          "startTime": 1765626208,
+          "endTime": 1765629808,
+          "namespaces": [
+            "default"
+          ],
+          "services": [
+            "default"
+          ],
+          "focusAreas": [
+            "Chaos engineering test pattern"
+          ],
+          "analysisType": "alert-driven",
+          "context": {
+            "alertName": "KubeAPIDown",
+            "alertId": "alert-1765629808503",
+            "alertPriority": "critical",
+            "source": "alertmanager",
+            "kubernetes": {
+              "container": null,
+              "pod": null,
+              "namespace": "default",
+              "service": null,
+              "deployment": null,
+              "node": null,
+              "persistentvolumeclaim": null,
+              "volumename": null,
+              "useSpecificFilters": false
+            },
+            "affectedServices": [
+              "default"
+            ],
+            "errorPatterns": [
+              "Chaos engineering test pattern"
+            ],
+            "alerts": [
+              {
+                "alertname": "KubeAPIDown",
+                "severity": "critical"
+              }
+            ]
+          }
+        },
+        "kubernetesFilters": {
+          "container": null,
+          "pod": null,
+          "namespace": "default",
+          "service": null,
+          "deployment": null,
+          "node": null,
+          "persistentvolumeclaim": null,
+          "volumename": null,
+          "useSpecificFilters": false
+        },
+        "alertContext": {
+          "alertName": "KubeAPIDown",
+          "alertId": "alert-1765629808503",
+          "alertPriority": "critical",
+          "source": "alertmanager",
+          "kubernetes": {
+            "container": null,
+            "pod": null,
+            "namespace": "default",
+            "service": null,
+            "deployment": null,
+            "node": null,
+            "persistentvolumeclaim": null,
+            "volumename": null,
+            "useSpecificFilters": false
+          },
+          "affectedServices": [
+            "default"
+          ],
+          "errorPatterns": [
+            "Chaos engineering test pattern"
+          ],
+          "alerts": [
+            {
+              "alertname": "KubeAPIDown",
+              "severity": "critical"
+            }
+          ]
+        },
+        "stageConfig": {
+          "maxStages": 6,
+          "enablePatternAnalysis": true,
+          "enableAnomalyDetection": true,
+          "enablePredictiveAnalysis": true,
+          "forceDeepAnalysis": true
+        },
+        "priority": "critical",
+        "forceDeepAnalysis": true,
+        "workflowMetadata": {
+          "workflowId": "LBDqj72azAqepcuC",
+          "executionId": "5140",
+          "requestId": "alert-alert-1765629808503-1765629808517",
+          "orchestratorId": "direct-1765629808517"
+        },
+        "stageResults": {
+          "stage1": {
+            "output": {
+              "overall_status": "critical",
+              "alerts": {
+                "total": 1,
+                "critical": 1,
+                "warning": 0,
+                "top_alerts": [
+                  "KubeAPIDown"
+                ]
+              },
+              "scores": {
+                "cluster_health": 20,
+                "node_availability": 50,
+                "pod_stability": 50,
+                "api_reliability": 10
+              },
+              "quick_findings": [
+                "API server is down, impacting cluster operations and kubectl access."
+              ],
+              "proceed_to_stage2": true,
+              "urgency": "critical",
+              "reason": "KubeAPIDown alert is active with critical severity. No additional alerts or cascading effects detected in the same namespace.",
+              "forceDeepAnalysis": true,
+              "overridden": false
+            },
+            "completedAt": "2025-12-13T12:43:37.719Z",
+            "decision": true,
+            "status": "critical",
+            "alerts": 1
+          }
+        },
+        "decisions": {},
+        "debug": {
+          "contextVersion": "1.0",
+          "createdBy": "Unified Entry Point",
+          "sourceType": "alert-listener",
+          "alertName": "KubeAPIDown",
+          "priority": "critical"
+        }
+      }
+    },
+    "_context": {
+      "contextId": "ctx-1765629808596-j4tf5t",
+      "createdAt": "2025-12-13T12:43:28.596Z",
+      "source": {
+        "type": "alert-listener",
+        "priority": "critical"
+      },
+      "initialParams": {
+        "startTime": 1765626208,
+        "endTime": 1765629808,
+        "namespaces": [
+          "default"
+        ],
+        "services": [
+          "default"
+        ],
+        "focusAreas": [
+          "Chaos engineering test pattern"
+        ],
+        "analysisType": "alert-driven",
+        "context": {
+          "alertName": "KubeAPIDown",
+          "alertId": "alert-1765629808503",
+          "alertPriority": "critical",
+          "source": "alertmanager",
+          "kubernetes": {
+            "container": null,
+            "pod": null,
+            "namespace": "default",
+            "service": null,
+            "deployment": null,
+            "node": null,
+            "persistentvolumeclaim": null,
+            "volumename": null,
+            "useSpecificFilters": false
+          },
+          "affectedServices": [
+            "default"
+          ],
+          "errorPatterns": [
+            "Chaos engineering test pattern"
+          ],
+          "alerts": [
+            {
+              "alertname": "KubeAPIDown",
+              "severity": "critical"
+            }
+          ]
+        }
+      },
+      "kubernetesFilters": {
+        "container": null,
+        "pod": null,
+        "namespace": "default",
+        "service": null,
+        "deployment": null,
+        "node": null,
+        "persistentvolumeclaim": null,
+        "volumename": null,
+        "useSpecificFilters": false
+      },
+      "alertContext": {
+        "alertName": "KubeAPIDown",
+        "alertId": "alert-1765629808503",
+        "alertPriority": "critical",
+        "source": "alertmanager",
+        "kubernetes": {
+          "container": null,
+          "pod": null,
+          "namespace": "default",
+          "service": null,
+          "deployment": null,
+          "node": null,
+          "persistentvolumeclaim": null,
+          "volumename": null,
+          "useSpecificFilters": false
+        },
+        "affectedServices": [
+          "default"
+        ],
+        "errorPatterns": [
+          "Chaos engineering test pattern"
+        ],
+        "alerts": [
+          {
+            "alertname": "KubeAPIDown",
+            "severity": "critical"
+          }
+        ]
+      },
+      "stageConfig": {
+        "maxStages": 6,
+        "enablePatternAnalysis": true,
+        "enableAnomalyDetection": true,
+        "enablePredictiveAnalysis": true,
+        "forceDeepAnalysis": true
+      },
+      "priority": "critical",
+      "forceDeepAnalysis": true,
+      "workflowMetadata": {
+        "workflowId": "LBDqj72azAqepcuC",
+        "executionId": "5140",
+        "requestId": "alert-alert-1765629808503-1765629808517",
+        "orchestratorId": "direct-1765629808517"
+      },
+      "stageResults": {
+        "stage1": {
+          "stage": "analysis",
+          "timestamp": "2025-12-13T12:43:28.596Z",
+          "cluster": "default",
+          "overall_status": "critical",
+          "proceed_to_stage2": true,
+          "urgency": "critical",
+          "reason": "KubeAPIDown alert is active with critical severity. No additional alerts or cascading effects detected in the same namespace.",
+          "alerts": {
+            "total": 1,
+            "critical": 1,
+            "warning": 0,
+            "top_alerts": [
+              "KubeAPIDown"
+            ]
+          },
+          "scores": {
+            "cluster_health": 20,
+            "node_availability": 50,
+            "pod_stability": 50,
+            "api_reliability": 10
+          },
+          "quick_findings": [
+            "API server is down, impacting cluster operations and kubectl access."
+          ],
+          "forceDeepAnalysis": true,
+          "overridden": false,
+          "_context": {
+            "contextId": "ctx-1765629808596-j4tf5t",
+            "createdAt": "2025-12-13T12:43:28.596Z",
+            "source": {
+              "type": "alert-listener",
+              "priority": "critical"
+            },
+            "initialParams": {
+              "startTime": 1765626208,
+              "endTime": 1765629808,
+              "namespaces": [
+                "default"
+              ],
+              "services": [
+                "default"
+              ],
+              "focusAreas": [
+                "Chaos engineering test pattern"
+              ],
+              "analysisType": "alert-driven",
+              "context": {
+                "alertName": "KubeAPIDown",
+                "alertId": "alert-1765629808503",
+                "alertPriority": "critical",
+                "source": "alertmanager",
+                "kubernetes": {
+                  "container": null,
+                  "pod": null,
+                  "namespace": "default",
+                  "service": null,
+                  "deployment": null,
+                  "node": null,
+                  "persistentvolumeclaim": null,
+                  "volumename": null,
+                  "useSpecificFilters": false
+                },
+                "affectedServices": [
+                  "default"
+                ],
+                "errorPatterns": [
+                  "Chaos engineering test pattern"
+                ],
+                "alerts": [
+                  {
+                    "alertname": "KubeAPIDown",
+                    "severity": "critical"
+                  }
+                ]
+              }
+            },
+            "kubernetesFilters": {
+              "container": null,
+              "pod": null,
+              "namespace": "default",
+              "service": null,
+              "deployment": null,
+              "node": null,
+              "persistentvolumeclaim": null,
+              "volumename": null,
+              "useSpecificFilters": false
+            },
+            "alertContext": {
+              "alertName": "KubeAPIDown",
+              "alertId": "alert-1765629808503",
+              "alertPriority": "critical",
+              "source": "alertmanager",
+              "kubernetes": {
+                "container": null,
+                "pod": null,
+                "namespace": "default",
+                "service": null,
+                "deployment": null,
+                "node": null,
+                "persistentvolumeclaim": null,
+                "volumename": null,
+                "useSpecificFilters": false
+              },
+              "affectedServices": [
+                "default"
+              ],
+              "errorPatterns": [
+                "Chaos engineering test pattern"
+              ],
+              "alerts": [
+                {
+                  "alertname": "KubeAPIDown",
+                  "severity": "critical"
+                }
+              ]
+            },
+            "stageConfig": {
+              "maxStages": 6,
+              "enablePatternAnalysis": true,
+              "enableAnomalyDetection": true,
+              "enablePredictiveAnalysis": true,
+              "forceDeepAnalysis": true
+            },
+            "priority": "critical",
+            "forceDeepAnalysis": true,
+            "workflowMetadata": {
+              "workflowId": "LBDqj72azAqepcuC",
+              "executionId": "5140",
+              "requestId": "alert-alert-1765629808503-1765629808517",
+              "orchestratorId": "direct-1765629808517"
+            },
+            "stageResults": {
+              "stage1": {
+                "output": {
+                  "overall_status": "critical",
+                  "alerts": {
+                    "total": 1,
+                    "critical": 1,
+                    "warning": 0,
+                    "top_alerts": [
+                      "KubeAPIDown"
+                    ]
+                  },
+                  "scores": {
+                    "cluster_health": 20,
+                    "node_availability": 50,
+                    "pod_stability": 50,
+                    "api_reliability": 10
+                  },
+                  "quick_findings": [
+                    "API server is down, impacting cluster operations and kubectl access."
+                  ],
+                  "proceed_to_stage2": true,
+                  "urgency": "critical",
+                  "reason": "KubeAPIDown alert is active with critical severity. No additional alerts or cascading effects detected in the same namespace.",
+                  "forceDeepAnalysis": true,
+                  "overridden": false
+                },
+                "completedAt": "2025-12-13T12:43:37.719Z",
+                "decision": true,
+                "status": "critical",
+                "alerts": 1
+              }
+            },
+            "decisions": {},
+            "debug": {
+              "contextVersion": "1.0",
+              "createdBy": "Unified Entry Point",
+              "sourceType": "alert-listener",
+              "alertName": "KubeAPIDown",
+              "priority": "critical"
+            }
+          }
+        },
+        "forceDeepAnalysisOverride": {
+          "output": {
+            "overrideApplied": true,
+            "reason": "Deep analysis forced due to critical priority from alert-listener",
+            "originalPriority": "critical",
+            "originalSource": {
+              "type": "alert-listener",
+              "priority": "critical"
+            }
+          },
+          "completedAt": "2025-12-13T12:43:37.741Z"
+        }
+      },
+      "decisions": {
+        "forceDeepAnalysisOverride": {
+          "timestamp": "2025-12-13T12:43:37.740Z",
+          "forceDeepAnalysis": true,
+          "overrideApplied": true,
+          "reason": "Deep analysis forced due to critical priority from alert-listener"
+        }
+      },
+      "debug": {
+        "contextVersion": "1.0",
+        "createdBy": "Unified Entry Point",
+        "sourceType": "alert-listener",
+        "alertName": "KubeAPIDown",
+        "priority": "critical"
+      },
+      "stage1Complete": true,
+      "stage2Decision": {
+        "requiresDeepAnalysis": true,
+        "timestamp": "2025-12-13T12:43:37.728Z",
+        "reasons": [
+          "Critical alert requires full analysis pipeline",
+          "Force deep analysis flag is set"
+        ],
+        "suggestedStages": [
+          2,
+          3,
+          4,
+          5,
+          6
+        ],
+        "alertInfo": {
+          "name": "KubeAPIDown",
+          "priority": "critical",
+          "hasCascading": false
+        },
+        "estimatedTime": "25-50 seconds"
+      },
+      "deepAnalysisEnhanced": true,
+      "analysisCategory": "UNKNOWN",
+      "analysisUrgency": "MEDIUM",
+      "analysisPriority": "MEDIUM",
+      "rootCausePatterns": [
+        {
+          "pattern": "generic_issue",
+          "indicators": [
+            "error",
+            "failed"
+          ],
+          "confidence": 0.5
+        }
+      ],
+      "totalCategories": 13,
+      "csvIntegrated": true
+    },
+    "contextId": "ctx-1765629808596-j4tf5t",
+    "_contextFixed": true,
+    "_fixedAt": "2025-12-13T12:43:37.719Z",
+    "knowledgeBase": {
+      "alertCategory": "API",
+      "urgencyLevel": "BLOCKER",
+      "cascadeRisk": "CRITICAL",
+      "kbEntriesAvailable": 9,
+      "categoriesSupported": 151,
+      "alertMappings": 12,
+      "enhancementVersion": "KB-Enhanced-Full-v1.0"
+    },
+    "stage1Data": {
+      "overall_status": "critical",
+      "alerts": {
+        "total": 1,
+        "critical": 1,
+        "warning": 0,
+        "top_alerts": [
+          "KubeAPIDown"
+        ]
+      },
+      "scores": {
+        "cluster_health": 20,
+        "node_availability": 50,
+        "pod_stability": 50,
+        "api_reliability": 10
+      },
+      "quick_findings": [
+        "API server is down, impacting cluster operations and kubectl access."
+      ]
+    },
+    "_debugInfo": {
+      "fromNode": "Fix Stage 1 Context",
+      "contextFixed": true,
+      "originalHadTemplates": false,
+      "stage1Decision": true,
+      "stage1Status": "critical",
+      "stage1Alerts": 1,
+      "timestamp": "2025-12-13T12:43:37.720Z"
+    },
+    "stage1Results": {
+      "stage": "analysis",
+      "timestamp": "2025-12-13T12:43:28.596Z",
+      "cluster": "default",
+      "overall_status": "critical",
+      "proceed_to_stage2": true,
+      "urgency": "critical",
+      "reason": "KubeAPIDown alert is active with critical severity. No additional alerts or cascading effects detected in the same namespace.",
+      "alerts": {
+        "total": 1,
+        "critical": 1,
+        "warning": 0,
+        "top_alerts": [
+          "KubeAPIDown"
+        ]
+      },
+      "scores": {
+        "cluster_health": 20,
+        "node_availability": 50,
+        "pod_stability": 50,
+        "api_reliability": 10
+      },
+      "quick_findings": [
+        "API server is down, impacting cluster operations and kubectl access."
+      ],
+      "forceDeepAnalysis": true,
+      "overridden": false,
+      "_context": {
+        "contextId": "ctx-1765629808596-j4tf5t",
+        "createdAt": "2025-12-13T12:43:28.596Z",
+        "source": {
+          "type": "alert-listener",
+          "priority": "critical"
+        },
+        "initialParams": {
+          "startTime": 1765626208,
+          "endTime": 1765629808,
+          "namespaces": [
+            "default"
+          ],
+          "services": [
+            "default"
+          ],
+          "focusAreas": [
+            "Chaos engineering test pattern"
+          ],
+          "analysisType": "alert-driven",
+          "context": {
+            "alertName": "KubeAPIDown",
+            "alertId": "alert-1765629808503",
+            "alertPriority": "critical",
+            "source": "alertmanager",
+            "kubernetes": {
+              "container": null,
+              "pod": null,
+              "namespace": "default",
+              "service": null,
+              "deployment": null,
+              "node": null,
+              "persistentvolumeclaim": null,
+              "volumename": null,
+              "useSpecificFilters": false
+            },
+            "affectedServices": [
+              "default"
+            ],
+            "errorPatterns": [
+              "Chaos engineering test pattern"
+            ],
+            "alerts": [
+              {
+                "alertname": "KubeAPIDown",
+                "severity": "critical"
+              }
+            ]
+          }
+        },
+        "kubernetesFilters": {
+          "container": null,
+          "pod": null,
+          "namespace": "default",
+          "service": null,
+          "deployment": null,
+          "node": null,
+          "persistentvolumeclaim": null,
+          "volumename": null,
+          "useSpecificFilters": false
+        },
+        "alertContext": {
+          "alertName": "KubeAPIDown",
+          "alertId": "alert-1765629808503",
+          "alertPriority": "critical",
+          "source": "alertmanager",
+          "kubernetes": {
+            "container": null,
+            "pod": null,
+            "namespace": "default",
+            "service": null,
+            "deployment": null,
+            "node": null,
+            "persistentvolumeclaim": null,
+            "volumename": null,
+            "useSpecificFilters": false
+          },
+          "affectedServices": [
+            "default"
+          ],
+          "errorPatterns": [
+            "Chaos engineering test pattern"
+          ],
+          "alerts": [
+            {
+              "alertname": "KubeAPIDown",
+              "severity": "critical"
+            }
+          ]
+        },
+        "stageConfig": {
+          "maxStages": 6,
+          "enablePatternAnalysis": true,
+          "enableAnomalyDetection": true,
+          "enablePredictiveAnalysis": true,
+          "forceDeepAnalysis": true
+        },
+        "priority": "critical",
+        "forceDeepAnalysis": true,
+        "workflowMetadata": {
+          "workflowId": "LBDqj72azAqepcuC",
+          "executionId": "5140",
+          "requestId": "alert-alert-1765629808503-1765629808517",
+          "orchestratorId": "direct-1765629808517"
+        },
+        "stageResults": {
+          "stage1": {
+            "output": {
+              "overall_status": "critical",
+              "alerts": {
+                "total": 1,
+                "critical": 1,
+                "warning": 0,
+                "top_alerts": [
+                  "KubeAPIDown"
+                ]
+              },
+              "scores": {
+                "cluster_health": 20,
+                "node_availability": 50,
+                "pod_stability": 50,
+                "api_reliability": 10
+              },
+              "quick_findings": [
+                "API server is down, impacting cluster operations and kubectl access."
+              ],
+              "proceed_to_stage2": true,
+              "urgency": "critical",
+              "reason": "KubeAPIDown alert is active with critical severity. No additional alerts or cascading effects detected in the same namespace.",
+              "forceDeepAnalysis": true,
+              "overridden": false
+            },
+            "completedAt": "2025-12-13T12:43:37.719Z",
+            "decision": true,
+            "status": "critical",
+            "alerts": 1
+          }
+        },
+        "decisions": {},
+        "debug": {
+          "contextVersion": "1.0",
+          "createdBy": "Unified Entry Point",
+          "sourceType": "alert-listener",
+          "alertName": "KubeAPIDown",
+          "priority": "critical"
+        }
+      }
+    },
+    "decision": {
+      "requiresDeepAnalysis": true,
+      "timestamp": "2025-12-13T12:43:37.728Z",
+      "reasons": [
+        "Critical alert requires full analysis pipeline",
+        "Force deep analysis flag is set"
+      ],
+      "suggestedStages": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "alertInfo": {
+        "name": "KubeAPIDown",
+        "priority": "critical",
+        "hasCascading": false
+      },
+      "estimatedTime": "25-50 seconds"
+    },
+    "proceedToDeepAnalysis": true,
+    "proceed_to_stage2": true,
+    "overridden": true,
+    "forceDeepAnalysisApplied": true,
+    "overrideReason": "Deep analysis forced due to critical priority from alert-listener",
+    "originalContext": {
+      "source": {
+        "type": "alert-listener",
+        "priority": "critical"
+      },
+      "priority": "critical",
+      "stageConfig": {
+        "maxStages": 6,
+        "enablePatternAnalysis": true,
+        "enableAnomalyDetection": true,
+        "enablePredictiveAnalysis": true,
+        "forceDeepAnalysis": true
+      },
+      "analysisParams": {
+        "startTime": 1765626208,
+        "endTime": 1765629808,
+        "namespaces": [
+          "default"
+        ],
+        "services": [
+          "default"
+        ],
+        "focusAreas": [
+          "Chaos engineering test pattern"
+        ],
+        "analysisType": "alert-driven",
+        "context": {
+          "alertName": "KubeAPIDown",
+          "alertId": "alert-1765629808503",
+          "alertPriority": "critical",
+          "source": "alertmanager",
+          "kubernetes": {
+            "container": null,
+            "pod": null,
+            "namespace": "default",
+            "service": null,
+            "deployment": null,
+            "node": null,
+            "persistentvolumeclaim": null,
+            "volumename": null,
+            "useSpecificFilters": false
+          },
+          "affectedServices": [
+            "default"
+          ],
+          "errorPatterns": [
+            "Chaos engineering test pattern"
+          ],
+          "alerts": [
+            {
+              "alertname": "KubeAPIDown",
+              "severity": "critical"
+            }
+          ]
+        }
+      }
+    },
+    "stage2Input": {
+      "proceed": true,
+      "priority": "critical",
+      "analysisParams": {
+        "startTime": 1765626208,
+        "endTime": 1765629808,
+        "namespaces": [
+          "default"
+        ],
+        "services": [
+          "default"
+        ],
+        "focusAreas": [
+          "Chaos engineering test pattern"
+        ],
+        "analysisType": "alert-driven",
+        "context": {
+          "alertName": "KubeAPIDown",
+          "alertId": "alert-1765629808503",
+          "alertPriority": "critical",
+          "source": "alertmanager",
+          "kubernetes": {
+            "container": null,
+            "pod": null,
+            "namespace": "default",
+            "service": null,
+            "deployment": null,
+            "node": null,
+            "persistentvolumeclaim": null,
+            "volumename": null,
+            "useSpecificFilters": false
+          },
+          "affectedServices": [
+            "default"
+          ],
+          "errorPatterns": [
+            "Chaos engineering test pattern"
+          ],
+          "alerts": [
+            {
+              "alertname": "KubeAPIDown",
+              "severity": "critical"
+            }
+          ]
+        }
+      },
+      "timeRange": {
+        "start": 1765626208,
+        "end": 1765629808
+      },
+      "namespaces": [
+        "default"
+      ],
+      "focusAreas": [
+        "Chaos engineering test pattern"
+      ]
+    },
+    "_debug": {
+      "nodeType": "Force Deep Analysis Override",
+      "processedAt": "2025-12-13T12:43:37.741Z",
+      "contextId": "ctx-1765629808596-j4tf5t",
+      "contextPreserved": true,
+      "overrideApplied": true,
+      "stageSequence": [
+        "Unified Entry Point",
+        "Stage 1",
+        "Stage 2 Decision",
+        "Force Deep Analysis Override"
+      ]
+    },
+    "namespace": "default",
+    "service": "default",
+    "startTime": 1765626208,
+    "endTime": 1765629808,
+    "stage2Instructions": {
+      "service": "default",
+      "namespace": "default",
+      "message": "Focus on service: default"
+    },
+    "deepAnalysisHints": {
+      "category": "UNKNOWN",
+      "urgency": "MEDIUM",
+      "phases": {
+        "instant": {
+          "tools": [
+            "Quick Cluster Health",
+            "Pod Status Check",
+            "Active Alerts Details"
+          ],
+          "focus": "General health assessment",
+          "queries": [
+            "up",
+            "kube_pod_status_phase",
+            "kube_node_status_condition"
+          ]
+        },
+        "trend": {
+          "tools": [
+            "Historical Comparison 24h"
+          ],
+          "focus": "General trend analysis",
+          "queries": [
+            "up[24h]"
+          ]
+        },
+        "anomaly": {
+          "tools": [
+            "Anomaly Patterns"
+          ],
+          "focus": "Detect any anomalies",
+          "queries": []
+        }
+      },
+      "correlationFocus": "general",
+      "expectedFindings": [
+        "various_issues"
+      ],
+      "criticalQueries": [
+        "up",
+        "kube_pod_status_phase",
+        "kube_node_status_condition",
+        "up[24h]"
+      ],
+      "priority": "MEDIUM",
+      "totalSupportedCategories": 13
+    },
+    "categoryRootCausePatterns": [
+      {
+        "pattern": "generic_issue",
+        "indicators": [
+          "error",
+          "failed"
+        ],
+        "confidence": 0.5
+      }
+    ],
+    "_enhancedDeepAnalysisStats": {
+      "totalCategories": 13,
+      "categoryBreakdown": {
+        "INFRASTRUCTURE": {
+          "urgency": "CRITICAL",
+          "toolsCount": 6,
+          "queriesCount": 7,
+          "findingsCount": 3
+        },
+        "APPLICATION": {
+          "urgency": "HIGH",
+          "toolsCount": 5,
+          "queriesCount": 7,
+          "findingsCount": 3
+        },
+        "RESOURCE": {
+          "urgency": "HIGH",
+          "toolsCount": 4,
+          "queriesCount": 7,
+          "findingsCount": 3
+        },
+        "NETWORK": {
+          "urgency": "HIGH",
+          "toolsCount": 4,
+          "queriesCount": 7,
+          "findingsCount": 3
+        },
+        "ETCD": {
+          "urgency": "BLOCKER",
+          "toolsCount": 4,
+          "queriesCount": 7,
+          "findingsCount": 3
+        },
+        "MONITORING": {
+          "urgency": "MEDIUM",
+          "toolsCount": 2,
+          "queriesCount": 5,
+          "findingsCount": 3
+        },
+        "STORAGE": {
+          "urgency": "HIGH",
+          "toolsCount": 4,
+          "queriesCount": 9,
+          "findingsCount": 4
+        },
+        "API": {
+          "urgency": "CRITICAL",
+          "toolsCount": 4,
+          "queriesCount": 10,
+          "findingsCount": 4
+        },
+        "CERTIFICATE": {
+          "urgency": "CRITICAL",
+          "toolsCount": 2,
+          "queriesCount": 5,
+          "findingsCount": 2
+        },
+        "CLUSTER": {
+          "urgency": "CRITICAL",
+          "toolsCount": 5,
+          "queriesCount": 7,
+          "findingsCount": 3
+        },
+        "PROXY": {
+          "urgency": "HIGH",
+          "toolsCount": 4,
+          "queriesCount": 8,
+          "findingsCount": 4
+        },
+        "INFO": {
+          "urgency": "LOW",
+          "toolsCount": 1,
+          "queriesCount": 3,
+          "findingsCount": 3
+        },
+        "UNKNOWN": {
+          "urgency": "MEDIUM",
+          "toolsCount": 5,
+          "queriesCount": 4,
+          "findingsCount": 1
+        }
+      },
+      "currentCategory": {
+        "name": "UNKNOWN",
+        "urgency": "MEDIUM",
+        "priority": "MEDIUM",
+        "phasesCount": 3,
+        "expectedFindings": 1
+      },
+      "csvEnhanced": true,
+      "version": "2.0-Complete"
+    }
+  }
+]

@@ -1,0 +1,216 @@
+[
+  {
+    "normalizedAlert": {
+      "source": "alertmanager",
+      "sourceId": "alertmanager-1765629803231",
+      "timestamp": "2025-12-13T08:49:41.236Z",
+      "title": "KubeAPIDown",
+      "body": "KubeAPI has disappeared from Prometheus target discovery.",
+      "sender": "AlertManager",
+      "priority": "critical",
+      "container": null,
+      "pod": null,
+      "namespace": "default",
+      "service": null,
+      "deployment": null,
+      "instance": null,
+      "job": null,
+      "node": null,
+      "persistentvolumeclaim": null,
+      "volumename": null,
+      "cluster": null,
+      "alertname": "KubeAPIDown",
+      "status": "firing",
+      "reason": null,
+      "uid": null,
+      "fingerprint": "3ea286ca18e805ff",
+      "generatorURL": "http://kube-prometheus-stack-prometheus.bss-prod-eks-monitoring:9090/graph?g0.expr=absent%28up%7Bjob%3D%22apiserver%22%7D+%3D%3D+1%29&g0.tab=1",
+      "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapidown",
+      "raw": {
+        "headers": {
+          "host": "etiya-infra-n8n-test.etiya.com",
+          "x-real-ip": "10.94.179.157",
+          "x-forwarded-for": "10.94.179.157",
+          "x-forwarded-proto": "https",
+          "connection": "upgrade",
+          "content-length": "1340",
+          "user-agent": "Alertmanager/0.28.1",
+          "content-type": "application/json"
+        },
+        "params": {},
+        "query": {},
+        "body": {
+          "receiver": "mail-and-teams",
+          "status": "firing",
+          "alerts": [
+            {
+              "status": "firing",
+              "labels": {
+                "alertname": "KubeAPIDown",
+                "prometheus": "bss-prod-eks-monitoring/kube-prometheus-stack-prometheus",
+                "severity": "critical"
+              },
+              "annotations": {
+                "description": "KubeAPI has disappeared from Prometheus target discovery.",
+                "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapidown",
+                "summary": "Target disappeared from Prometheus target discovery."
+              },
+              "startsAt": "2025-12-13T08:49:41.236Z",
+              "endsAt": "0001-01-01T00:00:00Z",
+              "generatorURL": "http://kube-prometheus-stack-prometheus.bss-prod-eks-monitoring:9090/graph?g0.expr=absent%28up%7Bjob%3D%22apiserver%22%7D+%3D%3D+1%29&g0.tab=1",
+              "fingerprint": "3ea286ca18e805ff"
+            }
+          ],
+          "groupLabels": {
+            "alertname": "KubeAPIDown"
+          },
+          "commonLabels": {
+            "alertname": "KubeAPIDown",
+            "prometheus": "bss-prod-eks-monitoring/kube-prometheus-stack-prometheus",
+            "severity": "critical"
+          },
+          "commonAnnotations": {
+            "description": "KubeAPI has disappeared from Prometheus target discovery.",
+            "runbook_url": "https://runbooks.prometheus-operator.dev/runbooks/kubernetes/kubeapidown",
+            "summary": "Target disappeared from Prometheus target discovery."
+          },
+          "externalURL": "http://kube-prometheus-stack-alertmanager.bss-prod-eks-monitoring:9093",
+          "version": "4",
+          "groupKey": "{}/{severity=\"critical\"}:{alertname=\"KubeAPIDown\"}",
+          "truncatedAlerts": 0
+        },
+        "webhookUrl": "https://etiya-infra-n8n-test.etiya.com/webhook/a7d43f92-9431-4e83-80a2-050907cb7551",
+        "executionMode": "production"
+      }
+    },
+    "alertAnalysis": {
+      "alertId": "alert-1765629808503",
+      "analyzedAt": "2025-12-13T12:43:28.503Z",
+      "incidentTimeRange": {
+        "detectedAt": "2025-12-13T08:49:41.236Z",
+        "startedAt": "2025-12-13T12:13:28.503Z",
+        "isOngoing": true,
+        "duration": "30 minutes"
+      },
+      "affectedComponents": [
+        {
+          "name": "default",
+          "type": "namespace",
+          "impact": "down",
+          "confidence": "low",
+          "source": "fallback"
+        }
+      ],
+      "pattern": {
+        "type": "chaos-induced",
+        "description": "KubeAPIDown detected in default",
+        "frequency": "triggered",
+        "trend": "test-induced"
+      },
+      "technicalIndicators": {
+        "errorRates": [],
+        "latencyMetrics": [],
+        "resourceUtilization": {},
+        "errorMessages": [
+          "Chaos engineering test pattern"
+        ],
+        "httpCodes": [],
+        "thresholdsBreached": []
+      },
+      "severity": {
+        "level": "critical",
+        "reasoning": "Chaos engineering test impact assessment for KubeAPIDown",
+        "businessImpact": "Test Environment - No Business Impact",
+        "estimatedAffectedUsers": "Test Environment",
+        "financialImpact": "No Impact"
+      },
+      "correlations": {
+        "relatedAlerts": [],
+        "commonPatterns": [],
+        "rootCauseHints": [
+          "This is a planned chaos engineering test",
+          "Monitor system recovery behavior",
+          "Validate auto-healing mechanisms",
+          "Document observed failure patterns"
+        ]
+      },
+      "orchestratorParams": {
+        "priority": "medium",
+        "forceDeepAnalysis": true,
+        "suggestedAgents": [
+          "tempo",
+          "prometheus",
+          "loki"
+        ],
+        "focusAreas": [
+          "chaos-recovery",
+          "resilience-testing"
+        ],
+        "timeWindowMinutes": 30,
+        "kubernetesFilters": {
+          "container": null,
+          "pod": null,
+          "namespace": "default",
+          "service": null,
+          "deployment": null,
+          "node": null,
+          "persistentvolumeclaim": null,
+          "volumename": null,
+          "useSpecificFilters": false
+        }
+      },
+      "actionRequired": {
+        "immediate": false,
+        "escalation": "test-team",
+        "suggestedActions": [
+          "Monitor system recovery patterns",
+          "Document observed behaviors",
+          "Validate auto-healing mechanisms",
+          "Measure recovery times",
+          "Update runbooks based on findings"
+        ]
+      },
+      "chaosContext": {
+        "testType": "unknown-chaos-test",
+        "expectedBehavior": "System should demonstrate resilience and recover automatically",
+        "recoveryMetrics": {
+          "expectedRecoveryTime": "5-15 minutes",
+          "autoHealingCapability": "Standard Kubernetes self-healing expected"
+        },
+        "monitoringFocus": [
+          "Monitor KubeAPIDown recovery pattern",
+          "Track pod rescheduling times",
+          "Measure service availability impact",
+          "Document recovery behavior"
+        ],
+        "successCriteria": [
+          "System recovers automatically within expected timeframe",
+          "No permanent data loss",
+          "Service availability maintained above SLI thresholds",
+          "No manual intervention required"
+        ]
+      }
+    },
+    "alertId": "alert-1765629808503",
+    "kubernetesFilters": {
+      "container": null,
+      "pod": null,
+      "namespace": "default",
+      "service": null,
+      "deployment": null,
+      "node": null,
+      "persistentvolumeclaim": null,
+      "volumename": null,
+      "useSpecificFilters": false
+    },
+    "focusAreas": [
+      "chaos-recovery",
+      "resilience-testing"
+    ],
+    "affectedServices": [],
+    "isChaosTest": true,
+    "chaosEnhanced": true,
+    "processedAt": "2025-12-13T12:43:28.504Z",
+    "version": "v2-backward-compatible-chaos-enhanced"
+  }
+]

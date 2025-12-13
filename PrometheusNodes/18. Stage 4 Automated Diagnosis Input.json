@@ -1,0 +1,587 @@
+[
+  {
+    "output": {
+      "stage": "alert_intelligence",
+      "active_alerts": [
+        {
+          "name": "No alerts",
+          "severity": "unknown",
+          "count": 0,
+          "duration": "unknown",
+          "labels": {},
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        }
+      ],
+      "alert_groups": [
+        {
+          "root_alert": "none",
+          "related_alerts": [],
+          "correlation_score": 0,
+          "shared_labels": {}
+        }
+      ],
+      "knowledge_base_matches": [],
+      "alert_patterns": {
+        "recurring": [],
+        "storm_detection": {
+          "detected": false,
+          "alert_count": 1,
+          "time_window": "5m",
+          "likely_root": null,
+          "storm_category": null
+        },
+        "category_distribution": [
+          {
+            "category": "UNKNOWN",
+            "count": 1,
+            "percentage": "100.0"
+          }
+        ]
+      },
+      "slo_impact": {
+        "availability_slo": {
+          "target": "99.9%",
+          "current": "100%",
+          "error_budget_used": "0%",
+          "time_remaining": "30d",
+          "status": "green",
+          "components": {
+            "deployment_health": "100%"
+          }
+        },
+        "affected_slis": []
+      },
+      "recommended_alert_actions": [
+        {
+          "alert": "none",
+          "action": "Monitor",
+          "confidence": 0,
+          "risk": "low",
+          "command": null
+        },
+        {
+          "alert": "No alerts",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        }
+      ],
+      "proceed_to_stage4": true,
+      "auto_remediation_approved": true,
+      "_context": {
+        "contextId": "ctx-1765629808596-j4tf5t",
+        "initialParams": {
+          "startTime": 1765626208,
+          "endTime": 1765629808
+        },
+        "stageResults": {
+          "stage3": {
+            "output": {
+              "active_alerts": [
+                {
+                  "name": "No alerts",
+                  "severity": "unknown",
+                  "count": 0,
+                  "duration": "unknown",
+                  "labels": {},
+                  "annotations": {},
+                  "category": "UNKNOWN",
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50,
+                  "correlations": []
+                }
+              ],
+              "alert_groups": [
+                {
+                  "root_alert": "none",
+                  "related_alerts": [],
+                  "correlation_score": 0,
+                  "shared_labels": {}
+                }
+              ],
+              "knowledge_base_matches": [],
+              "alert_patterns": {
+                "recurring": [],
+                "storm_detection": {
+                  "detected": false,
+                  "alert_count": 1,
+                  "time_window": "5m",
+                  "likely_root": null,
+                  "storm_category": null
+                },
+                "category_distribution": [
+                  {
+                    "category": "UNKNOWN",
+                    "count": 1,
+                    "percentage": "100.0"
+                  }
+                ]
+              },
+              "slo_impact": {
+                "availability_slo": {
+                  "target": "99.9%",
+                  "current": "100%",
+                  "error_budget_used": "0%",
+                  "time_remaining": "30d",
+                  "status": "green",
+                  "components": {
+                    "deployment_health": "100%"
+                  }
+                },
+                "affected_slis": []
+              },
+              "recommended_alert_actions": [
+                {
+                  "alert": "none",
+                  "action": "Monitor",
+                  "confidence": 0,
+                  "risk": "low",
+                  "command": null
+                },
+                {
+                  "alert": "No alerts",
+                  "action": "Investigate alert",
+                  "confidence": 0.3,
+                  "risk": "medium",
+                  "command": null,
+                  "category": "UNKNOWN",
+                  "priority": 50
+                }
+              ],
+              "proceed_to_stage4": true,
+              "auto_remediation_approved": true,
+              "alert_category": "UNKNOWN"
+            },
+            "completedAt": "2025-12-13T12:43:53.846Z",
+            "decision": true
+          }
+        },
+        "decisions": {
+          "forceDeepAnalysisOverride": {
+            "timestamp": "2025-12-13T12:43:37.740Z",
+            "forceDeepAnalysis": true,
+            "overrideApplied": true,
+            "reason": "Deep analysis forced due to critical priority from alert-listener"
+          },
+          "stage3Proceed": {
+            "timestamp": "2025-12-13T12:43:46.848Z",
+            "shouldProceed": true,
+            "reason": "Priority or category requires full analysis"
+          },
+          "stage4Proceed": {
+            "timestamp": "2025-12-13T12:43:53.846Z",
+            "shouldProceed": true,
+            "autoRemediationApproved": true,
+            "alertCount": 1,
+            "sloImpact": "100%",
+            "alertStorm": false,
+            "primaryCategory": "UNKNOWN"
+          }
+        }
+      },
+      "_debug": {
+        "nodeType": "Stage 3: Alert Intelligence",
+        "processedAt": "2023-11-01T09:25:09.000Z",
+        "contextId": "ctx-1765629808596-j4tf5t",
+        "contextPreserved": true,
+        "receivedFromStage": "Fix Stage 2 Context",
+        "priority": "critical",
+        "alertCategory": "UNKNOWN",
+        "rootCauseIdentified": false,
+        "correlationPatternsApplied": true,
+        "stormDetected": false,
+        "sloToolErrors": [],
+        "stageSequence": [
+          "Unified Entry Point",
+          "Stage 1: Health Snapshot",
+          "Fix Stage 1 Context",
+          "Stage 2 Decision",
+          "Force Deep Analysis Override",
+          "Wait 3s",
+          "Stage 2: Deep Analysis",
+          "Fix Stage 2 Context",
+          "Stage 3: Alert Intelligence",
+          "Fix Stage 3 Context"
+        ],
+        "timeRangeUsed": {
+          "start": 1765626208,
+          "end": 1765629808
+        }
+      }
+    },
+    "_context": {
+      "contextId": "ctx-1765629808596-j4tf5t",
+      "initialParams": {
+        "startTime": 1765626208,
+        "endTime": 1765629808
+      },
+      "stageResults": {
+        "stage3": {
+          "output": {
+            "active_alerts": [
+              {
+                "name": "No alerts",
+                "severity": "unknown",
+                "count": 0,
+                "duration": "unknown",
+                "labels": {},
+                "annotations": {},
+                "category": "UNKNOWN",
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50,
+                "correlations": []
+              }
+            ],
+            "alert_groups": [
+              {
+                "root_alert": "none",
+                "related_alerts": [],
+                "correlation_score": 0,
+                "shared_labels": {}
+              }
+            ],
+            "knowledge_base_matches": [],
+            "alert_patterns": {
+              "recurring": [],
+              "storm_detection": {
+                "detected": false,
+                "alert_count": 1,
+                "time_window": "5m",
+                "likely_root": null,
+                "storm_category": null
+              },
+              "category_distribution": [
+                {
+                  "category": "UNKNOWN",
+                  "count": 1,
+                  "percentage": "100.0"
+                }
+              ]
+            },
+            "slo_impact": {
+              "availability_slo": {
+                "target": "99.9%",
+                "current": "100%",
+                "error_budget_used": "0%",
+                "time_remaining": "30d",
+                "status": "green",
+                "components": {
+                  "deployment_health": "100%"
+                }
+              },
+              "affected_slis": []
+            },
+            "recommended_alert_actions": [
+              {
+                "alert": "none",
+                "action": "Monitor",
+                "confidence": 0,
+                "risk": "low",
+                "command": null
+              },
+              {
+                "alert": "No alerts",
+                "action": "Investigate alert",
+                "confidence": 0.3,
+                "risk": "medium",
+                "command": null,
+                "category": "UNKNOWN",
+                "priority": 50
+              }
+            ],
+            "proceed_to_stage4": true,
+            "auto_remediation_approved": true,
+            "alert_category": "UNKNOWN"
+          },
+          "completedAt": "2025-12-13T12:43:53.846Z",
+          "decision": true,
+          "kbEnhanced": true,
+          "alertCategory": "API",
+          "urgencyLevel": "BLOCKER",
+          "kbEnhancedAlerts": 0
+        }
+      }
+    },
+    "contextId": "ctx-1765629808596-j4tf5t",
+    "stage3Data": {
+      "active_alerts": [
+        {
+          "name": "No alerts",
+          "severity": "unknown",
+          "count": 0,
+          "duration": "unknown",
+          "labels": {},
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        }
+      ],
+      "alert_groups": [
+        {
+          "root_alert": "none",
+          "related_alerts": [],
+          "correlation_score": 0,
+          "shared_labels": {}
+        }
+      ],
+      "knowledge_base_matches": [],
+      "slo_impact": {
+        "availability_slo": {
+          "target": "99.9%",
+          "current": "100%",
+          "error_budget_used": "0%",
+          "time_remaining": "30d",
+          "status": "green",
+          "components": {
+            "deployment_health": "100%"
+          }
+        },
+        "affected_slis": []
+      },
+      "recommended_actions": [
+        {
+          "alert": "none",
+          "action": "Monitor",
+          "confidence": 0,
+          "risk": "low",
+          "command": null
+        },
+        {
+          "alert": "No alerts",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        }
+      ],
+      "auto_remediation_approved": true,
+      "proceed_to_stage4": true,
+      "kb_enriched_count": 0,
+      "alert_category": "UNKNOWN",
+      "alert_patterns": {
+        "recurring": [],
+        "storm_detection": {
+          "detected": false,
+          "alert_count": 1,
+          "time_window": "5m",
+          "likely_root": null,
+          "storm_category": null
+        },
+        "category_distribution": [
+          {
+            "category": "UNKNOWN",
+            "count": 1,
+            "percentage": "100.0"
+          }
+        ]
+      },
+      "correlation_analysis": {
+        "groups_found": 1,
+        "storm_detected": false,
+        "primary_category": "UNKNOWN",
+        "category_distribution": [
+          {
+            "category": "UNKNOWN",
+            "count": 1,
+            "percentage": "100.0"
+          }
+        ]
+      }
+    },
+    "stage1Data": {
+      "overall_status": "critical",
+      "alerts": {
+        "total": 1,
+        "critical": 1,
+        "warning": 0,
+        "top_alerts": [
+          "KubeAPIDown"
+        ]
+      },
+      "scores": {
+        "cluster_health": 20,
+        "node_availability": 50,
+        "pod_stability": 50,
+        "api_reliability": 10
+      },
+      "quick_findings": [
+        "API server is down, impacting cluster operations and kubectl access."
+      ]
+    },
+    "stage2Data": {
+      "root_cause": {
+        "identified": false,
+        "component": "",
+        "issue": "",
+        "evidence": [],
+        "confidence": 0,
+        "category": "UNKNOWN",
+        "pattern_matched": null
+      },
+      "affected_services": [
+        "default"
+      ],
+      "critical_pods": [],
+      "cascading_effects": {
+        "hasCascadingFailures": false,
+        "affectedComponents": [],
+        "spreadPattern": "isolated",
+        "cascadeCategory": "UNKNOWN"
+      },
+      "correlation_matrix": {
+        "primary_chain": "unknown",
+        "affected_services": [
+          "default"
+        ],
+        "blast_radius": "unknown",
+        "kubernetes_impact": {
+          "evicted_pods": 0,
+          "pending_pods": 0,
+          "failed_schedules": 0
+        }
+      },
+      "alert_category": "UNKNOWN"
+    },
+    "stage4PrepData": {
+      "rootCause": {
+        "identified": false,
+        "component": "",
+        "issue": "",
+        "evidence": [],
+        "confidence": 0,
+        "category": "UNKNOWN",
+        "pattern_matched": null
+      },
+      "affectedServices": [
+        "default"
+      ],
+      "criticalPods": [],
+      "primaryAlert": {
+        "name": "No alerts",
+        "severity": "unknown",
+        "count": 0,
+        "duration": "unknown",
+        "labels": {},
+        "annotations": {},
+        "category": "UNKNOWN",
+        "kb_enriched": false,
+        "severity_score": 30,
+        "impact_score": 50,
+        "correlations": []
+      },
+      "kbMatches": [],
+      "contextId": "ctx-1765629808596-j4tf5t",
+      "alertCategory": "UNKNOWN",
+      "correlationGroups": [
+        {
+          "root_alert": "none",
+          "related_alerts": [],
+          "correlation_score": 0,
+          "shared_labels": {}
+        }
+      ]
+    },
+    "namespaces": [
+      "default"
+    ],
+    "timeRange": {
+      "start": 1765626208,
+      "end": 1765629808
+    },
+    "knowledgeBase": {
+      "alertCategory": "API",
+      "urgencyLevel": "BLOCKER",
+      "cascadeRisk": "CRITICAL",
+      "kbEntriesAvailable": 9,
+      "enhancementVersion": "KB-Enhanced-Full-v1.0",
+      "kbEnhancedAlerts": 0
+    },
+    "alertKBStats": {
+      "alertCategory": "API",
+      "urgencyLevel": "BLOCKER",
+      "cascadeRisk": "CRITICAL",
+      "kbAlertKnowledgeBase": {
+        "severity": "critical",
+        "description": "Kubernetes API server is down",
+        "commonCauses": [
+          "API server process crashed",
+          "etcd connectivity issues",
+          "Certificate problems",
+          "Resource exhaustion"
+        ],
+        "troubleshootingSteps": [
+          "Check API server pod status",
+          "Verify etcd connectivity",
+          "Check certificates",
+          "Review resource usage"
+        ],
+        "expectedResults": [
+          "API server responding",
+          "etcd connectivity restored",
+          "Valid certificates",
+          "Sufficient resources"
+        ],
+        "immediateActions": [
+          "Restart API server",
+          "Fix etcd issues",
+          "Renew certificates",
+          "Scale up resources"
+        ],
+        "longTermSolutions": [
+          "API server high availability",
+          "Certificate automation",
+          "Resource monitoring"
+        ],
+        "requiredMetrics": [
+          "apiserver_up",
+          "apiserver_request_duration_seconds"
+        ],
+        "cascadeCheckPoints": [
+          "cluster_operations",
+          "kubectl_access",
+          "controller_functions"
+        ]
+      },
+      "kbEnhanced": true,
+      "kbEntriesLoaded": 9,
+      "totalCategories": 151,
+      "totalMappings": 12,
+      "exportedAt": "2025-12-13T12:43:53.848Z",
+      "debug": {
+        "originalUrgency": "BLOCKER",
+        "originalCascadeRisk": "CRITICAL",
+        "severityScore": 136,
+        "hasKBData": true
+      }
+    },
+    "_debugInfo": {
+      "fromNode": "Fix Stage 3 Context",
+      "contextFixed": true,
+      "validationPassed": true,
+      "stage3AlertCount": 1,
+      "stage3Decision": true,
+      "alertCategory": "UNKNOWN",
+      "correlationGroupsFound": 1,
+      "stormDetected": false,
+      "allStagesDataPresent": true,
+      "kbEnhanced": true,
+      "kbEnhancedAlertsCount": 0,
+      "timestamp": "2025-12-13T12:43:53.848Z"
+    }
+  }
+]

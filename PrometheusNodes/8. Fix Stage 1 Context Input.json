@@ -1,0 +1,32 @@
+[
+  {
+    "output": {
+      "stage": "analysis",
+      "timestamp": "2025-12-13T12:43:28.596Z",
+      "cluster": "default",
+      "overall_status": "critical",
+      "proceed_to_stage2": true,
+      "urgency": "critical",
+      "reason": "KubeAPIDown alert is active with critical severity. No additional alerts or cascading effects detected in the same namespace.",
+      "alerts": {
+        "total": 1,
+        "critical": 1,
+        "warning": 0,
+        "top_alerts": [
+          "KubeAPIDown"
+        ]
+      },
+      "scores": {
+        "cluster_health": 20,
+        "node_availability": 50,
+        "pod_stability": 50,
+        "api_reliability": 10
+      },
+      "quick_findings": [
+        "API server is down, impacting cluster operations and kubectl access."
+      ],
+      "forceDeepAnalysis": true,
+      "overridden": false
+    }
+  }
+]

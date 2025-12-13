@@ -1,0 +1,5 @@
+[
+  {
+    "output": "{\"stage\":\"deep_analysis\",\"investigation_id\":\"ctx-1765629808596-j4tf5t-s2\",\"execution_phases\":{\"instant\":{\"tools_used\":[\"Pod_Status_Check\",\"Container_Restarts\",\"Pod_Resource_Usage\"],\"findings\":{\"critical_pods\":[],\"resource_pressure\":[]}},\"trend\":{\"tools_used\":[\"Historical_Comparison_24h\"],\"findings\":{\"memory_growth\":\"\",\"restart_pattern\":\"\"}},\"anomaly\":{\"tools_used\":[\"Resource_Exhaustion_Prediction\",\"Anomaly_Patterns\"],\"findings\":{\"predictions\":[],\"anomalies\":[]}}},\"correlation_matrix\":{\"primary_chain\":\"\",\"affected_services\":[],\"blast_radius\":\"\",\"kubernetes_impact\":{\"evicted_pods\":0,\"pending_pods\":0}},\"root_cause\":{\"identified\":false,\"component\":\"\",\"issue\":\"\",\"evidence\":[],\"confidence\":0.0},\"proceed_to_stage3\":false,\"_context\":{\"contextId\":\"ctx-1765629808596-j4tf5t\",\"priority\":\"critical\"}}"
+  }
+]

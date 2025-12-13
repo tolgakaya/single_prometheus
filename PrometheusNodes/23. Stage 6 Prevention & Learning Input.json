@@ -1,0 +1,1113 @@
+[
+  {
+    "output": {
+      "stage": "ai_powered_analysis",
+      "analysis_id": "ctx-1765629808596-j4tf5t-stage5",
+      "remediation_plan": {
+        "immediate_actions": [
+          {
+            "action": "Rollback deployment to previous version",
+            "command": "kubectl rollout undo deployment/[object Object] -n ",
+            "risk": "low",
+            "estimated_time": "2-5 minutes",
+            "expected_outcome": "Restore service to previous stable version"
+          }
+        ],
+        "short_term_fixes": [
+          {
+            "action": "Increase memory limits temporarily",
+            "timeline": "1-2 days",
+            "details": "Set memory limit to 2Gi while investigating root cause"
+          }
+        ],
+        "long_term_solutions": [
+          {
+            "action": "Fix issues in component",
+            "timeline": "1-2 weeks",
+            "details": "Review and fix the root cause in component component"
+          }
+        ],
+        "preventive_measures": [
+          "Implement memory profiling in CI/CD",
+          "Add memory leak detection tests",
+          "Set up gradual rollout strategy"
+        ]
+      },
+      "risk_assessment": {
+        "overall_risk": "medium",
+        "factors": [
+          "default is critical",
+          "Rollback is tested and safe",
+          "Memory issue is contained to specific pods"
+        ],
+        "mitigation_steps": [
+          "Monitor closely after rollback",
+          "Keep team on standby",
+          "Prepare hotfix if needed"
+        ]
+      },
+      "implementation_order": [
+        {
+          "step": 1,
+          "action": "Execute rollback",
+          "dependencies": [],
+          "validation": "Check pod status and memory usage"
+        },
+        {
+          "step": 2,
+          "action": "Verify service health",
+          "dependencies": [
+            "step_1"
+          ],
+          "validation": "Check error rates and response times"
+        },
+        {
+          "step": 3,
+          "action": "Update monitoring alerts",
+          "dependencies": [
+            "step_2"
+          ],
+          "validation": "Ensure alerts are firing correctly"
+        }
+      ],
+      "success_metrics": {
+        "immediate": [
+          "Pod restart count = 0",
+          "Memory usage < 80% of limit",
+          "Error rate < 0.1%"
+        ],
+        "short_term": [
+          "No OOMKilled events in 24h",
+          "SLO compliance > 99.9%"
+        ],
+        "long_term": [
+          "Memory leak fixed in code",
+          "Automated memory testing in place"
+        ],
+        "category_enhanced": true,
+        "alert_category": "UNKNOWN"
+      },
+      "rollback_plan": {
+        "trigger_conditions": [
+          "Error rate > 5%",
+          "Multiple pod failures",
+          "Memory usage continues to spike"
+        ],
+        "steps": [
+          "Revert to current version",
+          "Scale up replicas",
+          "Enable circuit breaker"
+        ],
+        "validation": "Verify previous version number before rollback"
+      },
+      "_context": {
+        "contextId": "ctx-1765629808596-j4tf5t",
+        "initialParams": {
+          "startTime": 1765626208,
+          "endTime": 1765629808
+        },
+        "stageResults": {
+          "stage3": {
+            "output": {
+              "active_alerts": [
+                {
+                  "name": "No alerts",
+                  "severity": "unknown",
+                  "count": 0,
+                  "duration": "unknown",
+                  "labels": {},
+                  "annotations": {},
+                  "category": "UNKNOWN",
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50,
+                  "correlations": []
+                }
+              ],
+              "alert_groups": [
+                {
+                  "root_alert": "none",
+                  "related_alerts": [],
+                  "correlation_score": 0,
+                  "shared_labels": {}
+                }
+              ],
+              "knowledge_base_matches": [],
+              "alert_patterns": {
+                "recurring": [],
+                "storm_detection": {
+                  "detected": false,
+                  "alert_count": 1,
+                  "time_window": "5m",
+                  "likely_root": null,
+                  "storm_category": null
+                },
+                "category_distribution": [
+                  {
+                    "category": "UNKNOWN",
+                    "count": 1,
+                    "percentage": "100.0"
+                  }
+                ]
+              },
+              "slo_impact": {
+                "availability_slo": {
+                  "target": "99.9%",
+                  "current": "100%",
+                  "error_budget_used": "0%",
+                  "time_remaining": "30d",
+                  "status": "green",
+                  "components": {
+                    "deployment_health": "100%"
+                  }
+                },
+                "affected_slis": []
+              },
+              "recommended_alert_actions": [
+                {
+                  "alert": "none",
+                  "action": "Monitor",
+                  "confidence": 0,
+                  "risk": "low",
+                  "command": null
+                },
+                {
+                  "alert": "No alerts",
+                  "action": "Investigate alert",
+                  "confidence": 0.3,
+                  "risk": "medium",
+                  "command": null,
+                  "category": "UNKNOWN",
+                  "priority": 50
+                }
+              ],
+              "proceed_to_stage4": true,
+              "auto_remediation_approved": true,
+              "alert_category": "UNKNOWN"
+            },
+            "completedAt": "2025-12-13T12:43:53.846Z",
+            "decision": true,
+            "kbEnhanced": true,
+            "alertCategory": "API",
+            "urgencyLevel": "BLOCKER",
+            "kbEnhancedAlerts": 0
+          },
+          "stage4": {
+            "output": {
+              "diagnostics_executed": [
+                {
+                  "target": "cluster",
+                  "type": "category-based",
+                  "category": "UNKNOWN",
+                  "commands_run": [
+                    "kubectl get pods -n default -o wide",
+                    "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
+                    "kubectl get all -n default"
+                  ],
+                  "command_details": [
+                    {
+                      "command": "kubectl get pods -n default -o wide",
+                      "parser": "parseGeneralPodStatus",
+                      "type": "general_pod_status",
+                      "priority": 1,
+                      "category": "UNKNOWN"
+                    },
+                    {
+                      "command": "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
+                      "parser": "parseGeneralEvents",
+                      "type": "general_events",
+                      "priority": 1,
+                      "category": "UNKNOWN"
+                    },
+                    {
+                      "command": "kubectl get all -n default",
+                      "parser": "parseGeneralDescribe",
+                      "type": "general_describe",
+                      "priority": 2,
+                      "category": "UNKNOWN"
+                    }
+                  ],
+                  "findings": {
+                    "diagnostic_metadata": {
+                      "category": "UNKNOWN",
+                      "focus": "general diagnostics",
+                      "commands_prepared": 3
+                    }
+                  }
+                }
+              ],
+              "enriched_context": {
+                "deployment_info": {
+                  "name": "",
+                  "version": "unknown",
+                  "replicas": "unknown",
+                  "last_update": "",
+                  "update_strategy": "RollingUpdate"
+                },
+                "recent_changes": [],
+                "dependencies": {
+                  "upstream": [],
+                  "downstream": [],
+                  "databases": [],
+                  "external": []
+                },
+                "kb_analysis": {
+                  "alerts_matched": [],
+                  "diagnostic_coverage": 0,
+                  "remediation_available": 0,
+                  "highest_severity": "Low",
+                  "categories_covered": []
+                }
+              },
+              "diagnostic_summary": {
+                "confirmed_issues": [],
+                "secondary_issues": []
+              },
+              "proceed_to_stage5": false,
+              "remediation_confidence": 0,
+              "alert_category": "UNKNOWN",
+              "diagnostic_category": "UNKNOWN"
+            },
+            "completedAt": "2025-12-13T12:43:57.111Z",
+            "decision": false
+          },
+          "stage5": {
+            "output": {
+              "analysis_id": "ctx-1765629808596-j4tf5t-stage5",
+              "remediation_plan": {
+                "immediate_actions": [
+                  {
+                    "action": "Rollback deployment to previous version",
+                    "command": "kubectl rollout undo deployment/[object Object] -n ",
+                    "risk": "low",
+                    "estimated_time": "2-5 minutes",
+                    "expected_outcome": "Restore service to previous stable version"
+                  }
+                ],
+                "short_term_fixes": [
+                  {
+                    "action": "Increase memory limits temporarily",
+                    "timeline": "1-2 days",
+                    "details": "Set memory limit to 2Gi while investigating root cause"
+                  }
+                ],
+                "long_term_solutions": [
+                  {
+                    "action": "Fix issues in component",
+                    "timeline": "1-2 weeks",
+                    "details": "Review and fix the root cause in component component"
+                  }
+                ],
+                "preventive_measures": [
+                  "Implement memory profiling in CI/CD",
+                  "Add memory leak detection tests",
+                  "Set up gradual rollout strategy"
+                ]
+              },
+              "risk_assessment": {
+                "overall_risk": "medium",
+                "factors": [
+                  "default is critical",
+                  "Rollback is tested and safe",
+                  "Memory issue is contained to specific pods"
+                ],
+                "mitigation_steps": [
+                  "Monitor closely after rollback",
+                  "Keep team on standby",
+                  "Prepare hotfix if needed"
+                ]
+              },
+              "implementation_order": [
+                {
+                  "step": 1,
+                  "action": "Execute rollback",
+                  "dependencies": [],
+                  "validation": "Check pod status and memory usage"
+                },
+                {
+                  "step": 2,
+                  "action": "Verify service health",
+                  "dependencies": [
+                    "step_1"
+                  ],
+                  "validation": "Check error rates and response times"
+                },
+                {
+                  "step": 3,
+                  "action": "Update monitoring alerts",
+                  "dependencies": [
+                    "step_2"
+                  ],
+                  "validation": "Ensure alerts are firing correctly"
+                }
+              ],
+              "success_metrics": {
+                "immediate": [
+                  "Pod restart count = 0",
+                  "Memory usage < 80% of limit",
+                  "Error rate < 0.1%"
+                ],
+                "short_term": [
+                  "No OOMKilled events in 24h",
+                  "SLO compliance > 99.9%"
+                ],
+                "long_term": [
+                  "Memory leak fixed in code",
+                  "Automated memory testing in place"
+                ],
+                "category_enhanced": true,
+                "alert_category": "UNKNOWN"
+              },
+              "rollback_plan": {
+                "trigger_conditions": [
+                  "Error rate > 5%",
+                  "Multiple pod failures",
+                  "Memory usage continues to spike"
+                ],
+                "steps": [
+                  "Revert to current version",
+                  "Scale up replicas",
+                  "Enable circuit breaker"
+                ],
+                "validation": "Verify previous version number before rollback"
+              }
+            },
+            "completedAt": "2025-12-13T12:44:04.211Z"
+          }
+        },
+        "decisions": {
+          "stage6Proceed": {
+            "timestamp": "2025-12-13T12:44:04.211Z",
+            "remediationPlanCreated": true,
+            "riskAssessed": true,
+            "primaryActionDefined": true
+          }
+        }
+      },
+      "_debug": {
+        "nodeType": "Stage 5: AI-Powered Analysis",
+        "processedAt": "<use new Date().toISOString()>",
+        "contextId": "ctx-1765629808596-j4tf5t",
+        "contextPreserved": true,
+        "receivedFromStage": "Fix Stage 4 Context",
+        "priority": "normal",
+        "stagesCompleted": 5,
+        "stageSequence": [
+          "Unified Entry Point",
+          "Stage 1: Health Snapshot",
+          "Fix Stage 1 Context",
+          "Stage 2 Decision",
+          "Force Deep Analysis Override",
+          "Wait 3s",
+          "Stage 2: Deep Analysis",
+          "Fix Stage 2 Context",
+          "Stage 3: Alert Intelligence",
+          "Fix Stage 3 Context",
+          "Stage 4: Automated Diagnosis",
+          "Fix Stage 4 Context",
+          "Stage 5: AI-Powered Analysis",
+          "Fix Stage 5 Context"
+        ],
+        "analysisTimeRange": {
+          "start": 1765626208,
+          "end": 1765629808
+        }
+      }
+    },
+    "_context": {
+      "contextId": "ctx-1765629808596-j4tf5t",
+      "initialParams": {
+        "startTime": 1765626208,
+        "endTime": 1765629808
+      },
+      "stageResults": {
+        "stage3": {
+          "output": {
+            "active_alerts": [
+              {
+                "name": "No alerts",
+                "severity": "unknown",
+                "count": 0,
+                "duration": "unknown",
+                "labels": {},
+                "annotations": {},
+                "category": "UNKNOWN",
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50,
+                "correlations": []
+              }
+            ],
+            "alert_groups": [
+              {
+                "root_alert": "none",
+                "related_alerts": [],
+                "correlation_score": 0,
+                "shared_labels": {}
+              }
+            ],
+            "knowledge_base_matches": [],
+            "alert_patterns": {
+              "recurring": [],
+              "storm_detection": {
+                "detected": false,
+                "alert_count": 1,
+                "time_window": "5m",
+                "likely_root": null,
+                "storm_category": null
+              },
+              "category_distribution": [
+                {
+                  "category": "UNKNOWN",
+                  "count": 1,
+                  "percentage": "100.0"
+                }
+              ]
+            },
+            "slo_impact": {
+              "availability_slo": {
+                "target": "99.9%",
+                "current": "100%",
+                "error_budget_used": "0%",
+                "time_remaining": "30d",
+                "status": "green",
+                "components": {
+                  "deployment_health": "100%"
+                }
+              },
+              "affected_slis": []
+            },
+            "recommended_alert_actions": [
+              {
+                "alert": "none",
+                "action": "Monitor",
+                "confidence": 0,
+                "risk": "low",
+                "command": null
+              },
+              {
+                "alert": "No alerts",
+                "action": "Investigate alert",
+                "confidence": 0.3,
+                "risk": "medium",
+                "command": null,
+                "category": "UNKNOWN",
+                "priority": 50
+              }
+            ],
+            "proceed_to_stage4": true,
+            "auto_remediation_approved": true,
+            "alert_category": "UNKNOWN"
+          },
+          "completedAt": "2025-12-13T12:43:53.846Z",
+          "decision": true,
+          "kbEnhanced": true,
+          "alertCategory": "API",
+          "urgencyLevel": "BLOCKER",
+          "kbEnhancedAlerts": 0
+        },
+        "stage4": {
+          "output": {
+            "diagnostics_executed": [
+              {
+                "target": "cluster",
+                "type": "category-based",
+                "category": "UNKNOWN",
+                "commands_run": [
+                  "kubectl get pods -n default -o wide",
+                  "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
+                  "kubectl get all -n default"
+                ],
+                "command_details": [
+                  {
+                    "command": "kubectl get pods -n default -o wide",
+                    "parser": "parseGeneralPodStatus",
+                    "type": "general_pod_status",
+                    "priority": 1,
+                    "category": "UNKNOWN"
+                  },
+                  {
+                    "command": "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
+                    "parser": "parseGeneralEvents",
+                    "type": "general_events",
+                    "priority": 1,
+                    "category": "UNKNOWN"
+                  },
+                  {
+                    "command": "kubectl get all -n default",
+                    "parser": "parseGeneralDescribe",
+                    "type": "general_describe",
+                    "priority": 2,
+                    "category": "UNKNOWN"
+                  }
+                ],
+                "findings": {
+                  "diagnostic_metadata": {
+                    "category": "UNKNOWN",
+                    "focus": "general diagnostics",
+                    "commands_prepared": 3
+                  }
+                }
+              }
+            ],
+            "enriched_context": {
+              "deployment_info": {
+                "name": "",
+                "version": "unknown",
+                "replicas": "unknown",
+                "last_update": "",
+                "update_strategy": "RollingUpdate"
+              },
+              "recent_changes": [],
+              "dependencies": {
+                "upstream": [],
+                "downstream": [],
+                "databases": [],
+                "external": []
+              },
+              "kb_analysis": {
+                "alerts_matched": [],
+                "diagnostic_coverage": 0,
+                "remediation_available": 0,
+                "highest_severity": "Low",
+                "categories_covered": []
+              }
+            },
+            "diagnostic_summary": {
+              "confirmed_issues": [],
+              "secondary_issues": []
+            },
+            "proceed_to_stage5": false,
+            "remediation_confidence": 0,
+            "alert_category": "UNKNOWN",
+            "diagnostic_category": "UNKNOWN"
+          },
+          "completedAt": "2025-12-13T12:43:57.111Z",
+          "decision": false
+        },
+        "stage5": {
+          "output": {
+            "analysis_id": "ctx-1765629808596-j4tf5t-stage5",
+            "remediation_plan": {
+              "immediate_actions": [
+                {
+                  "action": "Rollback deployment to previous version",
+                  "command": "kubectl rollout undo deployment/[object Object] -n ",
+                  "risk": "low",
+                  "estimated_time": "2-5 minutes",
+                  "expected_outcome": "Restore service to previous stable version"
+                }
+              ],
+              "short_term_fixes": [
+                {
+                  "action": "Increase memory limits temporarily",
+                  "timeline": "1-2 days",
+                  "details": "Set memory limit to 2Gi while investigating root cause"
+                }
+              ],
+              "long_term_solutions": [
+                {
+                  "action": "Fix issues in component",
+                  "timeline": "1-2 weeks",
+                  "details": "Review and fix the root cause in component component"
+                }
+              ],
+              "preventive_measures": [
+                "Implement memory profiling in CI/CD",
+                "Add memory leak detection tests",
+                "Set up gradual rollout strategy"
+              ]
+            },
+            "risk_assessment": {
+              "overall_risk": "medium",
+              "factors": [
+                "default is critical",
+                "Rollback is tested and safe",
+                "Memory issue is contained to specific pods"
+              ],
+              "mitigation_steps": [
+                "Monitor closely after rollback",
+                "Keep team on standby",
+                "Prepare hotfix if needed"
+              ]
+            },
+            "implementation_order": [
+              {
+                "step": 1,
+                "action": "Execute rollback",
+                "dependencies": [],
+                "validation": "Check pod status and memory usage"
+              },
+              {
+                "step": 2,
+                "action": "Verify service health",
+                "dependencies": [
+                  "step_1"
+                ],
+                "validation": "Check error rates and response times"
+              },
+              {
+                "step": 3,
+                "action": "Update monitoring alerts",
+                "dependencies": [
+                  "step_2"
+                ],
+                "validation": "Ensure alerts are firing correctly"
+              }
+            ],
+            "success_metrics": {
+              "immediate": [
+                "Pod restart count = 0",
+                "Memory usage < 80% of limit",
+                "Error rate < 0.1%"
+              ],
+              "short_term": [
+                "No OOMKilled events in 24h",
+                "SLO compliance > 99.9%"
+              ],
+              "long_term": [
+                "Memory leak fixed in code",
+                "Automated memory testing in place"
+              ],
+              "category_enhanced": true,
+              "alert_category": "UNKNOWN"
+            },
+            "rollback_plan": {
+              "trigger_conditions": [
+                "Error rate > 5%",
+                "Multiple pod failures",
+                "Memory usage continues to spike"
+              ],
+              "steps": [
+                "Revert to current version",
+                "Scale up replicas",
+                "Enable circuit breaker"
+              ],
+              "validation": "Verify previous version number before rollback"
+            }
+          },
+          "completedAt": "2025-12-13T12:44:04.211Z"
+        }
+      }
+    },
+    "contextId": "ctx-1765629808596-j4tf5t",
+    "stage5Data": {
+      "analysis_id": "ctx-1765629808596-j4tf5t-stage5",
+      "remediation_plan": {
+        "immediate_actions": [
+          {
+            "action": "Rollback deployment to previous version",
+            "command": "kubectl rollout undo deployment/[object Object] -n ",
+            "risk": "low",
+            "estimated_time": "2-5 minutes",
+            "expected_outcome": "Restore service to previous stable version"
+          }
+        ],
+        "short_term_fixes": [
+          {
+            "action": "Increase memory limits temporarily",
+            "timeline": "1-2 days",
+            "details": "Set memory limit to 2Gi while investigating root cause"
+          }
+        ],
+        "long_term_solutions": [
+          {
+            "action": "Fix issues in component",
+            "timeline": "1-2 weeks",
+            "details": "Review and fix the root cause in component component"
+          }
+        ],
+        "preventive_measures": [
+          "Implement memory profiling in CI/CD",
+          "Add memory leak detection tests",
+          "Set up gradual rollout strategy"
+        ]
+      },
+      "risk_assessment": {
+        "overall_risk": "medium",
+        "factors": [
+          "default is critical",
+          "Rollback is tested and safe",
+          "Memory issue is contained to specific pods"
+        ],
+        "mitigation_steps": [
+          "Monitor closely after rollback",
+          "Keep team on standby",
+          "Prepare hotfix if needed"
+        ]
+      },
+      "implementation_order": [
+        {
+          "step": 1,
+          "action": "Execute rollback",
+          "dependencies": [],
+          "validation": "Check pod status and memory usage"
+        },
+        {
+          "step": 2,
+          "action": "Verify service health",
+          "dependencies": [
+            "step_1"
+          ],
+          "validation": "Check error rates and response times"
+        },
+        {
+          "step": 3,
+          "action": "Update monitoring alerts",
+          "dependencies": [
+            "step_2"
+          ],
+          "validation": "Ensure alerts are firing correctly"
+        }
+      ],
+      "success_metrics": {
+        "immediate": [
+          "Pod restart count = 0",
+          "Memory usage < 80% of limit",
+          "Error rate < 0.1%"
+        ],
+        "short_term": [
+          "No OOMKilled events in 24h",
+          "SLO compliance > 99.9%"
+        ],
+        "long_term": [
+          "Memory leak fixed in code",
+          "Automated memory testing in place"
+        ],
+        "category_enhanced": true,
+        "alert_category": "UNKNOWN"
+      },
+      "rollback_plan": {
+        "trigger_conditions": [
+          "Error rate > 5%",
+          "Multiple pod failures",
+          "Memory usage continues to spike"
+        ],
+        "steps": [
+          "Revert to current version",
+          "Scale up replicas",
+          "Enable circuit breaker"
+        ],
+        "validation": "Verify previous version number before rollback"
+      },
+      "primary_action": {
+        "action": "Rollback deployment to previous version",
+        "command": "kubectl rollout undo deployment/[object Object] -n ",
+        "risk": "low",
+        "estimated_time": "2-5 minutes",
+        "expected_outcome": "Restore service to previous stable version"
+      },
+      "overall_risk": "medium",
+      "kb_actions_added": 0,
+      "kb_enhanced": false
+    },
+    "stage1Data": {
+      "overall_status": "critical",
+      "alerts": {
+        "total": 1,
+        "critical": 1,
+        "warning": 0,
+        "top_alerts": [
+          "KubeAPIDown"
+        ]
+      },
+      "scores": {
+        "cluster_health": 20,
+        "node_availability": 50,
+        "pod_stability": 50,
+        "api_reliability": 10
+      },
+      "quick_findings": [
+        "API server is down, impacting cluster operations and kubectl access."
+      ]
+    },
+    "stage2Data": {
+      "root_cause": {
+        "identified": false,
+        "component": "",
+        "issue": "",
+        "evidence": [],
+        "confidence": 0,
+        "category": "UNKNOWN",
+        "pattern_matched": null
+      },
+      "affected_services": [
+        "default"
+      ],
+      "critical_pods": [],
+      "cascading_effects": {
+        "hasCascadingFailures": false,
+        "affectedComponents": [],
+        "spreadPattern": "isolated",
+        "cascadeCategory": "UNKNOWN"
+      },
+      "correlation_matrix": {
+        "primary_chain": "unknown",
+        "affected_services": [
+          "default"
+        ],
+        "blast_radius": "unknown",
+        "kubernetes_impact": {
+          "evicted_pods": 0,
+          "pending_pods": 0,
+          "failed_schedules": 0
+        }
+      },
+      "alert_category": "UNKNOWN"
+    },
+    "stage3Data": {
+      "active_alerts": [
+        {
+          "name": "No alerts",
+          "severity": "unknown",
+          "count": 0,
+          "duration": "unknown",
+          "labels": {},
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        }
+      ],
+      "alert_groups": [
+        {
+          "root_alert": "none",
+          "related_alerts": [],
+          "correlation_score": 0,
+          "shared_labels": {}
+        }
+      ],
+      "knowledge_base_matches": [],
+      "slo_impact": {
+        "availability_slo": {
+          "target": "99.9%",
+          "current": "100%",
+          "error_budget_used": "0%",
+          "time_remaining": "30d",
+          "status": "green",
+          "components": {
+            "deployment_health": "100%"
+          }
+        },
+        "affected_slis": []
+      },
+      "recommended_actions": [
+        {
+          "alert": "none",
+          "action": "Monitor",
+          "confidence": 0,
+          "risk": "low",
+          "command": null
+        },
+        {
+          "alert": "No alerts",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        }
+      ],
+      "auto_remediation_approved": true,
+      "proceed_to_stage4": true,
+      "kb_enriched_count": 0,
+      "alert_category": "UNKNOWN",
+      "alert_patterns": {
+        "recurring": [],
+        "storm_detection": {
+          "detected": false,
+          "alert_count": 1,
+          "time_window": "5m",
+          "likely_root": null,
+          "storm_category": null
+        },
+        "category_distribution": [
+          {
+            "category": "UNKNOWN",
+            "count": 1,
+            "percentage": "100.0"
+          }
+        ]
+      },
+      "correlation_analysis": {
+        "groups_found": 1,
+        "storm_detected": false,
+        "primary_category": "UNKNOWN",
+        "category_distribution": [
+          {
+            "category": "UNKNOWN",
+            "count": 1,
+            "percentage": "100.0"
+          }
+        ]
+      }
+    },
+    "stage4Data": {
+      "diagnostics_executed": [
+        {
+          "target": "cluster",
+          "type": "category-based",
+          "category": "UNKNOWN",
+          "commands_run": [
+            "kubectl get pods -n default -o wide",
+            "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
+            "kubectl get all -n default"
+          ],
+          "command_details": [
+            {
+              "command": "kubectl get pods -n default -o wide",
+              "parser": "parseGeneralPodStatus",
+              "type": "general_pod_status",
+              "priority": 1,
+              "category": "UNKNOWN"
+            },
+            {
+              "command": "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
+              "parser": "parseGeneralEvents",
+              "type": "general_events",
+              "priority": 1,
+              "category": "UNKNOWN"
+            },
+            {
+              "command": "kubectl get all -n default",
+              "parser": "parseGeneralDescribe",
+              "type": "general_describe",
+              "priority": 2,
+              "category": "UNKNOWN"
+            }
+          ],
+          "findings": {
+            "diagnostic_metadata": {
+              "category": "UNKNOWN",
+              "focus": "general diagnostics",
+              "commands_prepared": 3
+            }
+          }
+        }
+      ],
+      "enriched_context": {
+        "deployment_info": {
+          "name": "",
+          "version": "unknown",
+          "replicas": "unknown",
+          "last_update": "",
+          "update_strategy": "RollingUpdate"
+        },
+        "recent_changes": [],
+        "dependencies": {
+          "upstream": [],
+          "downstream": [],
+          "databases": [],
+          "external": []
+        },
+        "kb_analysis": {
+          "alerts_matched": [],
+          "diagnostic_coverage": 0,
+          "remediation_available": 0,
+          "highest_severity": "Low",
+          "categories_covered": []
+        }
+      },
+      "diagnostic_summary": {
+        "confirmed_issues": [],
+        "secondary_issues": []
+      },
+      "confirmed_issues": [],
+      "secondary_issues": [],
+      "remediation_confidence": 0,
+      "proceed_to_stage5": false,
+      "kb_enhanced": false,
+      "primary_diagnosis": null,
+      "diagnostic_metadata": {
+        "category": "UNKNOWN",
+        "total_commands": 3,
+        "kb_commands": 0,
+        "root_cause_commands": 0,
+        "correlation_commands": 0
+      }
+    },
+    "consolidatedFindings": {
+      "healthStatus": "critical",
+      "alertCount": 1,
+      "rootCause": {
+        "identified": false,
+        "component": "",
+        "issue": "",
+        "evidence": [],
+        "confidence": 0,
+        "category": "UNKNOWN",
+        "pattern_matched": null
+      },
+      "affectedServices": [
+        "default"
+      ],
+      "activeAlerts": [
+        {
+          "name": "No alerts",
+          "severity": "unknown",
+          "count": 0,
+          "duration": "unknown",
+          "labels": {},
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        }
+      ],
+      "confirmedIssues": [],
+      "primaryDiagnosis": null,
+      "remediationConfidence": 0,
+      "alertCategory": "UNKNOWN",
+      "diagnosticCoverage": {
+        "category": "UNKNOWN",
+        "total_commands": 3,
+        "kb_commands": 0,
+        "root_cause_commands": 0,
+        "correlation_commands": 0
+      }
+    },
+    "executiveSummary": {
+      "contextId": "ctx-1765629808596-j4tf5t",
+      "issue": "Unknown issue",
+      "severity": "medium",
+      "immediateAction": "Rollback deployment to previous version",
+      "command": "kubectl rollout undo deployment/[object Object] -n ",
+      "risk": "medium",
+      "estimatedTime": "2-5 minutes",
+      "stagesCompleted": 5,
+      "timestamp": "2025-12-13T12:44:04.215Z"
+    },
+    "namespaces": [
+      "bstp-cms-global-production",
+      "bstp-cms-prod-v3",
+      "em-global-prod-3pp",
+      "em-global-prod-eom",
+      "em-global-prod-flowe",
+      "em-global-prod",
+      "em-prod-3pp",
+      "em-prod-eom",
+      "em-prod-flowe",
+      "em-prod"
+    ],
+    "timeRange": {
+      "start": 1765626208,
+      "end": 1765629808
+    },
+    "_debugInfo": {
+      "fromNode": "Fix Stage 5 Context",
+      "contextFixed": true,
+      "validationPassed": true,
+      "templatesParsed": true,
+      "stage5Decision": true,
+      "primaryAction": "Rollback deployment to previous version",
+      "overallRisk": "medium",
+      "allStagesDataPresent": true,
+      "timestamp": "2025-12-13T12:44:04.216Z"
+    }
+  }
+]

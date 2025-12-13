@@ -1,0 +1,46 @@
+[
+  {
+    "output": {
+      "stage": "automated_diagnosis",
+      "diagnostics_executed": [],
+      "enriched_context": {
+        "deployment_info": {
+          "name": "",
+          "version": "unknown",
+          "replicas": "unknown",
+          "last_update": "",
+          "update_strategy": "RollingUpdate"
+        },
+        "recent_changes": [],
+        "dependencies": {
+          "upstream": [],
+          "downstream": [],
+          "databases": [],
+          "external": []
+        }
+      },
+      "diagnostic_summary": {
+        "confirmed_issues": [],
+        "secondary_issues": []
+      },
+      "proceed_to_stage5": false,
+      "remediation_confidence": 0,
+      "_context": {},
+      "_debug": {
+        "nodeType": "Stage 4: Automated Diagnosis",
+        "processedAt": "2023-10-11T18:25:43.511Z",
+        "contextId": "ctx-1765629808596-j4tf5t",
+        "contextPreserved": true,
+        "receivedFromStage": "Fix Stage 3 Context",
+        "stageSequence": "",
+        "diagnosticsCount": 0,
+        "autoRemediationEnabled": false,
+        "actualPodUsed": "",
+        "timeRangeUsed": {
+          "start": 1765626208,
+          "end": 1765629808
+        }
+      }
+    }
+  }
+]

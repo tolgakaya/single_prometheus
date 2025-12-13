@@ -1,0 +1,421 @@
+[
+  {
+    "timestamp": "2025-12-13T12:43:28.596Z",
+    "source": {
+      "type": "alert-listener",
+      "priority": "critical"
+    },
+    "analysisParams": {
+      "startTime": 1765626208,
+      "endTime": 1765629808,
+      "namespaces": [
+        "default"
+      ],
+      "services": [
+        "default"
+      ],
+      "focusAreas": [
+        "Chaos engineering test pattern"
+      ],
+      "analysisType": "alert-driven",
+      "context": {
+        "alertName": "KubeAPIDown",
+        "alertId": "alert-1765629808503",
+        "alertPriority": "critical",
+        "source": "alertmanager",
+        "kubernetes": {
+          "container": null,
+          "pod": null,
+          "namespace": "default",
+          "service": null,
+          "deployment": null,
+          "node": null,
+          "persistentvolumeclaim": null,
+          "volumename": null,
+          "useSpecificFilters": false
+        },
+        "affectedServices": [
+          "default"
+        ],
+        "errorPatterns": [
+          "Chaos engineering test pattern"
+        ],
+        "alerts": [
+          {
+            "alertname": "KubeAPIDown",
+            "severity": "critical"
+          }
+        ]
+      }
+    },
+    "kubernetesFilters": {
+      "container": null,
+      "pod": null,
+      "namespace": "default",
+      "service": null,
+      "deployment": null,
+      "node": null,
+      "persistentvolumeclaim": null,
+      "volumename": null,
+      "useSpecificFilters": false
+    },
+    "stageConfig": {
+      "maxStages": 6,
+      "enablePatternAnalysis": true,
+      "enableAnomalyDetection": true,
+      "enablePredictiveAnalysis": true,
+      "forceDeepAnalysis": true
+    },
+    "priority": "critical",
+    "forceDeepAnalysis": true,
+    "metadata": {
+      "workflowId": "LBDqj72azAqepcuC",
+      "executionId": "5140",
+      "requestId": "alert-alert-1765629808503-1765629808517",
+      "orchestratorId": "direct-1765629808517",
+      "alertId": "alert-1765629808503",
+      "alertName": "KubeAPIDown"
+    },
+    "prometheusQueries": [
+      {
+        "type": "container_cpu",
+        "query": "rate(container_cpu_usage_seconds_total{namespace=\"default\", pod=\"null\", container=\"null\"}[5m]) * 100",
+        "description": "CPU usage for null (namespaces: default)"
+      },
+      {
+        "type": "container_memory",
+        "query": "container_memory_working_set_bytes{namespace=\"default\", pod=\"null\", container=\"null\"}",
+        "description": "Memory usage for null (namespaces: default)"
+      },
+      {
+        "type": "container_memory_limit",
+        "query": "container_spec_memory_limit_bytes{namespace=\"default\", pod=\"null\", container=\"null\"}",
+        "description": "Memory limit for null (namespaces: default)"
+      },
+      {
+        "type": "container_restarts",
+        "query": "kube_pod_container_status_restarts_total{namespace=\"default\", pod=\"null\", container=\"null\"}",
+        "description": "Restart count for null (namespaces: default)"
+      },
+      {
+        "type": "pod_status",
+        "query": "kube_pod_status_phase{namespace=\"default\", pod=\"null\"}",
+        "description": "Pod phase for null (namespaces: default)"
+      },
+      {
+        "type": "pod_ready",
+        "query": "kube_pod_status_ready{namespace=\"default\", pod=\"null\"}",
+        "description": "Pod ready status for null (namespaces: default)"
+      },
+      {
+        "type": "service_cpu",
+        "query": "sum(rate(container_cpu_usage_seconds_total{namespace=\"default\", pod=~\"unknown.*\"}[5m])) by (pod) * 100",
+        "description": "CPU usage for service null (namespaces: default)"
+      },
+      {
+        "type": "service_memory",
+        "query": "sum(container_memory_working_set_bytes{namespace=\"default\", pod=~\"unknown.*\"}) by (pod)",
+        "description": "Memory usage for service null (namespaces: default)"
+      },
+      {
+        "type": "service_replicas",
+        "query": "kube_deployment_status_replicas{namespace=\"default\", deployment=\"unknown\"}",
+        "description": "Replica count for null (namespaces: default)"
+      },
+      {
+        "type": "crashloop_restarts",
+        "query": "rate(kube_pod_container_status_restarts_total{namespace=\"default\"}[15m]) > 0",
+        "description": "Pods with recent restarts (namespaces: default)"
+      }
+    ],
+    "_context": {
+      "contextId": "ctx-1765629808596-j4tf5t",
+      "createdAt": "2025-12-13T12:43:28.596Z",
+      "source": {
+        "type": "alert-listener",
+        "priority": "critical"
+      },
+      "initialParams": {
+        "startTime": 1765626208,
+        "endTime": 1765629808,
+        "namespaces": [
+          "default"
+        ],
+        "services": [
+          "default"
+        ],
+        "focusAreas": [
+          "Chaos engineering test pattern"
+        ],
+        "analysisType": "alert-driven",
+        "context": {
+          "alertName": "KubeAPIDown",
+          "alertId": "alert-1765629808503",
+          "alertPriority": "critical",
+          "source": "alertmanager",
+          "kubernetes": {
+            "container": null,
+            "pod": null,
+            "namespace": "default",
+            "service": null,
+            "deployment": null,
+            "node": null,
+            "persistentvolumeclaim": null,
+            "volumename": null,
+            "useSpecificFilters": false
+          },
+          "affectedServices": [
+            "default"
+          ],
+          "errorPatterns": [
+            "Chaos engineering test pattern"
+          ],
+          "alerts": [
+            {
+              "alertname": "KubeAPIDown",
+              "severity": "critical"
+            }
+          ]
+        }
+      },
+      "kubernetesFilters": {
+        "container": null,
+        "pod": null,
+        "namespace": "default",
+        "service": null,
+        "deployment": null,
+        "node": null,
+        "persistentvolumeclaim": null,
+        "volumename": null,
+        "useSpecificFilters": false
+      },
+      "alertContext": {
+        "alertName": "KubeAPIDown",
+        "alertId": "alert-1765629808503",
+        "alertPriority": "critical",
+        "source": "alertmanager",
+        "kubernetes": {
+          "container": null,
+          "pod": null,
+          "namespace": "default",
+          "service": null,
+          "deployment": null,
+          "node": null,
+          "persistentvolumeclaim": null,
+          "volumename": null,
+          "useSpecificFilters": false
+        },
+        "affectedServices": [
+          "default"
+        ],
+        "errorPatterns": [
+          "Chaos engineering test pattern"
+        ],
+        "alerts": [
+          {
+            "alertname": "KubeAPIDown",
+            "severity": "critical"
+          }
+        ]
+      },
+      "stageConfig": {
+        "maxStages": 6,
+        "enablePatternAnalysis": true,
+        "enableAnomalyDetection": true,
+        "enablePredictiveAnalysis": true,
+        "forceDeepAnalysis": true
+      },
+      "priority": "critical",
+      "forceDeepAnalysis": true,
+      "workflowMetadata": {
+        "workflowId": "LBDqj72azAqepcuC",
+        "executionId": "5140",
+        "requestId": "alert-alert-1765629808503-1765629808517",
+        "orchestratorId": "direct-1765629808517"
+      },
+      "stageResults": {},
+      "decisions": {},
+      "debug": {
+        "contextVersion": "1.0",
+        "createdBy": "Unified Entry Point",
+        "sourceType": "alert-listener",
+        "alertName": "KubeAPIDown",
+        "priority": "critical",
+        "knowledgeBaseEnriched": true,
+        "alertNameFound": "KubeAPIDown",
+        "alertCategory": "API",
+        "knowledgeBaseMatched": true,
+        "totalKnowledgeBaseEntries": 41,
+        "csvEnhanced": true,
+        "kbVersion": "2.0-CSV-Enhanced"
+      },
+      "alertCategory": "API",
+      "needsExtendedAnalysis": true,
+      "categoryBasedSeverity": 136,
+      "csvSeverity": "unknown",
+      "alertEnrichment": {
+        "category": "API",
+        "severityScore": 136,
+        "csvSeverity": "unknown",
+        "criticalAlert": true,
+        "categoryConfig": {
+          "baseScore": 85,
+          "criticalAlerts": [
+            "KubeAPIDown",
+            "KubeAPIErrorBudgetBurn",
+            "KubeStateMetricsListErrors"
+          ],
+          "multiplier": 1.6
+        },
+        "totalKnownAlerts": 151
+      },
+      "requiredMetrics": [
+        "apiserver_up",
+        "apiserver_request_duration_seconds"
+      ],
+      "cascadeCheckPoints": [
+        "cluster_operations",
+        "kubectl_access",
+        "controller_functions"
+      ],
+      "troubleshootingGuidance": [
+        "Check API server pod status",
+        "Verify etcd connectivity",
+        "Check certificates",
+        "Review resource usage"
+      ],
+      "expectedResults": [
+        "API server responding",
+        "etcd connectivity restored",
+        "Valid certificates",
+        "Sufficient resources"
+      ],
+      "immediateActions": [
+        "Restart API server",
+        "Fix etcd issues",
+        "Renew certificates",
+        "Scale up resources"
+      ],
+      "longTermSolutions": [
+        "API server high availability",
+        "Certificate automation",
+        "Resource monitoring"
+      ],
+      "alertKnowledgeEnriched": true,
+      "csvDataAvailable": true,
+      "alertSeverity": "critical"
+    },
+    "alertCategory": "API",
+    "alertCategoryConfig": {
+      "baseScore": 85,
+      "criticalAlerts": [
+        "KubeAPIDown",
+        "KubeAPIErrorBudgetBurn",
+        "KubeStateMetricsListErrors"
+      ],
+      "multiplier": 1.6
+    },
+    "calculatedSeverityScore": 136,
+    "csvSeverity": "unknown",
+    "csvEnhanced": true,
+    "categoryHandlingHints": {
+      "requiresNodeAnalysis": false,
+      "requiresPodAnalysis": false,
+      "requiresNetworkAnalysis": false,
+      "requiresCertificateCheck": false,
+      "requiresApplicationMetrics": false,
+      "requiresStorageCheck": false,
+      "requiresAPICheck": true,
+      "requiresMonitoringCheck": false,
+      "isInfrastructureCritical": true,
+      "cascadeRisk": "CRITICAL",
+      "immediateActionRequired": true
+    },
+    "_categoryStats": {
+      "totalAlerts": 151,
+      "categoryBreakdown": {
+        "ETCD": 15,
+        "INFRASTRUCTURE": 31,
+        "NETWORK": 5,
+        "APPLICATION": 19,
+        "MONITORING": 46,
+        "STORAGE": 5,
+        "API": 10,
+        "CERTIFICATE": 6,
+        "RESOURCE": 8,
+        "PROXY": 1,
+        "CLUSTER": 2,
+        "INFO": 3
+      },
+      "csvEnhanced": true,
+      "currentAlert": {
+        "name": "KubeAPIDown",
+        "category": "API",
+        "csvSeverity": "unknown",
+        "severityScore": 136
+      }
+    },
+    "knowledgeBase": {
+      "alert": {
+        "severity": "critical",
+        "description": "Kubernetes API server is down",
+        "commonCauses": [
+          "API server process crashed",
+          "etcd connectivity issues",
+          "Certificate problems",
+          "Resource exhaustion"
+        ],
+        "troubleshootingSteps": [
+          "Check API server pod status",
+          "Verify etcd connectivity",
+          "Check certificates",
+          "Review resource usage"
+        ],
+        "expectedResults": [
+          "API server responding",
+          "etcd connectivity restored",
+          "Valid certificates",
+          "Sufficient resources"
+        ],
+        "immediateActions": [
+          "Restart API server",
+          "Fix etcd issues",
+          "Renew certificates",
+          "Scale up resources"
+        ],
+        "longTermSolutions": [
+          "API server high availability",
+          "Certificate automation",
+          "Resource monitoring"
+        ],
+        "requiredMetrics": [
+          "apiserver_up",
+          "apiserver_request_duration_seconds"
+        ],
+        "cascadeCheckPoints": [
+          "cluster_operations",
+          "kubectl_access",
+          "controller_functions"
+        ]
+      },
+      "alertName": "KubeAPIDown",
+      "category": "API",
+      "enrichedAt": "2025-12-13T12:43:28.622Z",
+      "csvEnhanced": true,
+      "totalKBEntries": 41
+    },
+    "_kbStats": {
+      "totalEntries": 41,
+      "severityBreakdown": {
+        "blocker": 3,
+        "critical": 18,
+        "warning": 7,
+        "high": 8,
+        "medium": 3,
+        "info": 2
+      },
+      "csvEnhanced": true,
+      "loadedAt": "2025-12-13T12:43:28.622Z"
+    }
+  }
+]

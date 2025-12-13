@@ -1,0 +1,195 @@
+[
+  {
+    "alert": "KubeAPIDown",
+    "identifiedIssue": "Pod instability detected",
+    "confidence": 0.85,
+    "severity": "critical",
+    "impact": "Service cluster is experiencing outages",
+    "evidence": [],
+    "timeline": [
+      {
+        "time": "2025-12-13T11:43:28.000Z",
+        "stage": "Alert Triggered",
+        "finding": "KubeAPIDown detected for cluster (KB: None)",
+        "severity": "critical"
+      },
+      {
+        "time": "2025-12-13T11:43:58.000Z",
+        "stage": "Health Snapshot",
+        "finding": "Cluster: critical, 1 alerts (1 critical)",
+        "severity": "critical"
+      },
+      {
+        "time": "2025-12-13T11:44:28.000Z",
+        "stage": "Root Cause Analysis",
+        "finding": "Analyzing system correlations",
+        "severity": "info"
+      },
+      {
+        "time": "2025-12-13T11:44:58.000Z",
+        "stage": "Alert Intelligence",
+        "finding": "1 active alerts correlated, KB matches: 0, SLO: 100%",
+        "severity": "info"
+      },
+      {
+        "time": "2025-12-13T11:45:28.000Z",
+        "stage": "Automated Diagnosis",
+        "finding": "Confirmed: Pod instability detected",
+        "severity": "critical"
+      },
+      {
+        "time": "2025-12-13T11:45:58.000Z",
+        "stage": "Remediation Plan Ready",
+        "finding": "Rollback deployment to previous version",
+        "severity": "success"
+      }
+    ],
+    "metrics": {},
+    "actions": [
+      {
+        "action": "Rollback deployment to previous version",
+        "command": "kubectl rollout undo deployment/[object Object] -n ",
+        "risk": "low",
+        "estimated_time": "2-5 minutes",
+        "expected_outcome": "Restore service to previous stable version",
+        "kb_enhanced": false,
+        "kb_guidance": null
+      }
+    ],
+    "markdownReport": "\n<div style=\"border: 2px solid #d32f2f; border-radius: 8px; margin: 10px 0; background: #ffebee;\">\n  <div style=\"background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n    🚨 INCIDENT SUMMARY\n  </div>\n  <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n    <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n      <tr><td style=\"font-weight: bold; width: 130px; padding: 5px;\">Alert:</td><td style=\"padding: 5px;\">KubeAPIDown</td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Severity:</td><td style=\"padding: 5px;\"><span style=\"color: #d32f2f; font-weight: bold;\">🔴 CRITICAL</span></td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Service:</td><td style=\"padding: 5px;\">cluster</td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Namespace:</td><td style=\"padding: 5px;\">default</td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Detection:</td><td style=\"padding: 5px;\">2025-12-13T11:43:28.000Z</td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Duration:</td><td style=\"padding: 5px;\">60 minutes</td></tr>\n    </table>\n  </div>\n</div>\n\n<h2 style=\"color: #1976d2; margin-top: 20px;\">📊 INCIDENT DETAILS</h2>\n\n<div style=\"border: 1px solid #e0e0e0; border-radius: 6px; margin: 10px 0; overflow: hidden;\">\n  <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n    <tr style=\"background: #f5f5f5;\">\n      <td style=\"padding: 10px; font-weight: bold; border-bottom: 1px solid #e0e0e0;\">Field</td>\n      <td style=\"padding: 10px; font-weight: bold; border-bottom: 1px solid #e0e0e0;\">Details</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Alert Type</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">KubeAPIDown</td>\n    </tr>\n    <tr style=\"background: #fafafa;\">\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Pod Name</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;\">cluster</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Deployment</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;\">cluster</td>\n    </tr>\n    <tr style=\"background: #fafafa;\">\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Namespace</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;\">default</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Context ID</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace; color: #666;\">ctx-1765629808596-j4tf5t</td>\n    </tr>\n    <tr style=\"background: #fafafa;\">\n      <td style=\"padding: 8px;\">KB Integration</td>\n      <td style=\"padding: 8px;\"><span style=\"color: #f44336;\">❌ No KB Data</span></td>\n    </tr>\n    \n    \n  </table>\n</div>\n\n\n\n---\n\n<h2 style=\"color: #4caf50; margin-top: 25px;\">📚 KNOWLEDGE BASE INTELLIGENCE</h2>\n\n<div style=\"border: 1px solid #4caf50; border-radius: 6px; margin: 10px 0; overflow: hidden;\">\n  <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n    <tr style=\"background: #e8f5e8;\">\n      <td style=\"padding: 10px; font-weight: bold; border-bottom: 1px solid #4caf50;\">KB Metric</td>\n      <td style=\"padding: 10px; font-weight: bold; border-bottom: 1px solid #4caf50;\">Value</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;\">Original Alert KB Entry</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\"><span style=\"color: #f44336;\">❌ Not Found</span></td>\n    </tr>\n    <tr style=\"background: #fafafa;\">\n      <td style=\"padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;\">Final Alert KB Entry</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\"><span style=\"color: #f44336;\">❌ Not Found</span></td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;\">KB Enhanced Correlation</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\"><span style=\"color: #f44336;\">❌ No</span></td>\n    </tr>\n    <tr style=\"background: #fafafa;\">\n      <td style=\"padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;\">Enhanced KB Matches</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\"><strong>0</strong></td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; font-weight: bold;\">KB-Guided Actions</td>\n      <td style=\"padding: 8px;\"><strong>0</strong></td>\n    </tr>\n  </table>\n</div>\n\n---\n\n## 🔍 ISSUE IDENTIFICATION\n\n### Pod instability detected\n\n**Confidence Level**: 85%\n\n**Business Impact**: Service cluster is experiencing outages\n\n### 📊 EVIDENCE SUMMARY\n- Diagnostic evidence collected\n\n---\n\n## 🕐 INCIDENT TIMELINE\n\n| Time | Stage | Finding | Status |\n|------|-------|---------|--------|\n| 2025-12-13T11:43:28.000Z | Alert Triggered | KubeAPIDown detected for cluster (KB: None) | 🔴 Critical |\n| 2025-12-13T11:43:58.000Z | Health Snapshot | Cluster: critical, 1 alerts (1 critical) | 🔴 Critical |\n| 2025-12-13T11:44:28.000Z | Root Cause Analysis | Analyzing system correlations | 🔵 Info |\n| 2025-12-13T11:44:58.000Z | Alert Intelligence | 1 active alerts correlated, KB matches: 0, SLO: 100% | 🔵 Info |\n| 2025-12-13T11:45:28.000Z | Automated Diagnosis | Confirmed: Pod instability detected | 🔴 Critical |\n| 2025-12-13T11:45:58.000Z | Remediation Plan Ready | Rollback deployment to previous version | ✅ Ready |\n\n---\n\n## 🚀 ACTION PLAN\n\n\n\n### 🔴 IMMEDIATE ACTIONS (Execute NOW)\n\n#### 1. Service Recovery Action\n\n**Command to execute:**\n```bash\nkubectl rollout undo deployment/cluster -n default\n```\n\n**Verification command:**\n```bash\nkubectl get pods -n default | grep cluster\nkubectl rollout status deployment/cluster -n default\n```\n\n- **Risk Level**: Low\n- **Estimated Time**: 2-5 minutes\n- **Expected Outcome**: Restore service to previous stable version\n- **KB Enhancement**: Standard recovery approach\n\n---\n\n## 📎 Additional Information\n\n- **Analysis Context ID**: ctx-1765629808596-j4tf5t\n- **Alert Source**: KubeAPIDown\n\n- **Analysis Completed**: 2025-12-13T12:44:09.026Z\n- **Total Analysis Time**: 60 minutes\n- **System**: KB-Aware Universal Correlation Engine v1.0 (Hybrid)\n- **KB Integration**: 9 alerts in knowledge base\n\n---\n\n*This report was automatically generated by the KB-Aware Universal Correlation System*\n*Enhanced with existing Knowledge Base integration and 320+ alert pattern support*\n*Report Version: 4.0 - KB-Aware Correlation (Hybrid) | Generated: 2025-12-13T12:44:09.026Z*\n",
+    "oncallTicket": {
+      "title": "🔵 LOW KubeAPIDown: cluster",
+      "description": "\n<div style=\"font-family: Arial, sans-serif; max-width: 800px;\">\n  <div style=\"background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;\">\n    <h1 style=\"margin: 0; font-size: 24px;\">🔵 LOW KubeAPIDown: cluster</h1>\n  </div>\n  \n  <div style=\"border: 1px solid #2196f3; border-radius: 6px; margin: 10px 0; background: #e3f2fd; padding: 15px;\"><h3 style=\"color: #1976d2; margin-top: 0;\">⚡ QUICK FINDINGS</h3><div style=\"margin: 5px 0;\">• API server is down, impacting cluster operations and kubectl access.</div></div>\n  \n  <div style=\"border: 2px solid #d32f2f; border-radius: 8px; margin: 15px 0; background: #ffebee;\">\n    <div style=\"background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🚨 SYMPTOMS (What's Happening)\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <div style=\"margin: 8px 0; padding-left: 10px;\">• cluster service experiencing issues</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Alert: KubeAPIDown active</div>\n    </div>\n  </div>\n  \n  <div style=\"border: 2px solid #ff9800; border-radius: 8px; margin: 15px 0; background: #fff3e0;\">\n    <div style=\"background: #ff9800; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🔍 ROOT CAUSE (Why It's Happening)\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <p style=\"margin: 0 0 10px 0;\"><strong>Root Cause:</strong> Kubernetes Resource Pressure: 0 pods evicted, 0 pods pending</p>\n\n      <div style=\"background: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 10px;\">\n        <strong>Evidence:</strong>\n        <div style=\"margin-top: 8px;\">\n          • <strong>Pod Status:</strong> <code>Unknown</code><br/>\n          • <strong>Last Error:</strong> None (Exit Code: N/A)<br/>\n          • <strong>Memory Usage:</strong> N/A / N/A<br/>\n          \n          \n          \n        </div>\n        \n\n**📚 Knowledge Base Guidance:**\n**Alert Category:** API | **Urgency:** BLOCKER | **Cascade Risk:** CRITICAL\n\n      </div>\n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #4caf50; border-radius: 8px; margin: 15px 0; background: #e8f5e8;\">\n    <div style=\"background: #4caf50; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      ✅ SOLUTION (What To Do)\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 15px 0; padding: 15px; background: #fafafa;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #d32f2f;\">1. undefined </h4>\n          <p style=\"margin: 10px 0;\"><strong>Action Required:</strong> Rollback deployment to previous version</p>\n          <p style=\"margin: 10px 0;\"><strong>Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl rollout undo deployment/[object Object] -n </code>\n          </div>\n          <div style=\"margin-top: 10px;\">\n            <span style=\"margin-right: 15px;\">⏱️ <strong>Duration:</strong> undefined</span>\n            <span style=\"margin-right: 15px;\">⚠️ <strong>Risk:</strong> low</span>\n            <div style=\"margin-top: 5px;\">🎯 <strong>Expected Result:</strong> undefined</div>\n          </div>\n        </div>\n        \n      \n    </div>\n  </div>\n  \n  <div style=\"border: 2px solid #2196f3; border-radius: 8px; margin: 15px 0; background: #e3f2fd;\">\n    <div style=\"background: #2196f3; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      📋 VERIFY SOLUTION EFFECTIVENESS\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: #f9f9f9;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">1. Check pod status</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl get pods -n default | grep cluster</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> STATUS: Running (all pods in running state)</p>\n        </div>\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: white;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">2. Check service response</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl get svc -n default | grep cluster && curl -s -o /dev/null -w \"%{http_code}\" http://cluster-service/health</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> Service available and 200 OK response received</p>\n        </div>\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: #f9f9f9;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">3. Check for restarts</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl describe pod -n default -l app=cluster | grep \"Restart Count\"</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> Restart Count: 0 (should not increase, no new restarts)</p>\n        </div>\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: white;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">4. Check Kubernetes events</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl get events -n default --sort-by='.lastTimestamp' | grep cluster | tail -5</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> No Warning or Error events should be present</p>\n        </div>\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: #f9f9f9;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">5. Stage 5 Success Metric: immediate</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl get pods -n default | grep cluster</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> Pod restart count = 0,Memory usage < 80% of limit,Error rate < 0.1%</p>\n        </div>\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: white;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">6. Stage 5 Success Metric: short_term</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl get pods -n default | grep cluster</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> No OOMKilled events in 24h,SLO compliance > 99.9%</p>\n        </div>\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: #f9f9f9;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">7. Stage 5 Success Metric: long_term</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl get pods -n default | grep cluster</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> Memory leak fixed in code,Automated memory testing in place</p>\n        </div>\n      \n    </div>\n  </div>\n  \n  \n## ⚠️ RISK ASSESSMENT\n- **Overall Risk Level:** medium\n**Risk Factors:**\n  - default is critical\n  - Rollback is tested and safe\n  - Memory issue is contained to specific pods\n**Mitigation Steps:**\n  - Monitor closely after rollback\n  - Keep team on standby\n  - Prepare hotfix if needed\n\n  \n  <div style=\"border: 2px solid #607d8b; border-radius: 8px; margin: 15px 0; background: #eceff1;\">\n    <div style=\"background: #607d8b; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      📞 SUPPORT INFORMATION\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n        <tr><td style=\"font-weight: bold; width: 150px; padding: 5px;\">Incident ID:</td><td style=\"padding: 5px; font-family: monospace;\">ctx-1765629808596-j4tf5t</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Timestamp:</td><td style=\"padding: 5px;\">12/13/2025, 3:44:09 PM</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Namespace:</td><td style=\"padding: 5px; font-family: monospace;\">default</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Pod:</td><td style=\"padding: 5px; font-family: monospace;\">cluster</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Deployment:</td><td style=\"padding: 5px; font-family: monospace;\">cluster</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Cluster Status:</td><td style=\"padding: 5px;\">critical</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Total Alerts:</td><td style=\"padding: 5px;\">1 (1 critical)</td></tr>\n      </table>\n      <div style=\"margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 4px; border-left: 4px solid #ff9800;\">\n        <strong>If issue persists:</strong> Escalate to Development Team\n      </div>\n    </div>\n  </div>\n  \n  \n  \n  <div style=\"text-align: center; margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666;\">\n    <div>This report was auto-generated | 12/13/2025, 3:44:09 PM</div>\n    <div>Stages Completed: 7/6</div>\n  </div>\n</div>\n",
+      "priority": "Low",
+      "labels": [
+        "KubeAPIDown",
+        "LOW",
+        "default",
+        "cluster",
+        "Oncall-Ready",
+        "English-Format",
+        "Application",
+        "Service-Level"
+      ],
+      "components": [
+        "cluster"
+      ],
+      "issueType": "Incident",
+      "customFields": {
+        "contextId": "ctx-1765629808596-j4tf5t",
+        "oncallFriendly": true,
+        "language": "English",
+        "symptoms": 2,
+        "rootCause": "Kubernetes Resource Pressure: 0 pods evicted, 0 pods pending"
+      }
+    },
+    "jiraTicket": {
+      "title": "[KubeAPIDown] cluster - Pod instability detected",
+      "description": "\n<div style=\"border: 2px solid #d32f2f; border-radius: 8px; margin: 10px 0; background: #ffebee;\">\n  <div style=\"background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n    🚨 INCIDENT SUMMARY\n  </div>\n  <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n    <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n      <tr><td style=\"font-weight: bold; width: 130px; padding: 5px;\">Alert:</td><td style=\"padding: 5px;\">KubeAPIDown</td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Severity:</td><td style=\"padding: 5px;\"><span style=\"color: #d32f2f; font-weight: bold;\">🔴 CRITICAL</span></td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Service:</td><td style=\"padding: 5px;\">cluster</td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Namespace:</td><td style=\"padding: 5px;\">default</td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Detection:</td><td style=\"padding: 5px;\">2025-12-13T11:43:28.000Z</td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Duration:</td><td style=\"padding: 5px;\">60 minutes</td></tr>\n    </table>\n  </div>\n</div>\n\n<h2 style=\"color: #1976d2; margin-top: 20px;\">📊 INCIDENT DETAILS</h2>\n\n<div style=\"border: 1px solid #e0e0e0; border-radius: 6px; margin: 10px 0; overflow: hidden;\">\n  <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n    <tr style=\"background: #f5f5f5;\">\n      <td style=\"padding: 10px; font-weight: bold; border-bottom: 1px solid #e0e0e0;\">Field</td>\n      <td style=\"padding: 10px; font-weight: bold; border-bottom: 1px solid #e0e0e0;\">Details</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Alert Type</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">KubeAPIDown</td>\n    </tr>\n    <tr style=\"background: #fafafa;\">\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Pod Name</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;\">cluster</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Deployment</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;\">cluster</td>\n    </tr>\n    <tr style=\"background: #fafafa;\">\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Namespace</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;\">default</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Context ID</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace; color: #666;\">ctx-1765629808596-j4tf5t</td>\n    </tr>\n    <tr style=\"background: #fafafa;\">\n      <td style=\"padding: 8px;\">KB Integration</td>\n      <td style=\"padding: 8px;\"><span style=\"color: #f44336;\">❌ No KB Data</span></td>\n    </tr>\n    \n    \n  </table>\n</div>\n\n\n\n---\n\n<h2 style=\"color: #4caf50; margin-top: 25px;\">📚 KNOWLEDGE BASE INTELLIGENCE</h2>\n\n<div style=\"border: 1px solid #4caf50; border-radius: 6px; margin: 10px 0; overflow: hidden;\">\n  <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n    <tr style=\"background: #e8f5e8;\">\n      <td style=\"padding: 10px; font-weight: bold; border-bottom: 1px solid #4caf50;\">KB Metric</td>\n      <td style=\"padding: 10px; font-weight: bold; border-bottom: 1px solid #4caf50;\">Value</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;\">Original Alert KB Entry</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\"><span style=\"color: #f44336;\">❌ Not Found</span></td>\n    </tr>\n    <tr style=\"background: #fafafa;\">\n      <td style=\"padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;\">Final Alert KB Entry</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\"><span style=\"color: #f44336;\">❌ Not Found</span></td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;\">KB Enhanced Correlation</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\"><span style=\"color: #f44336;\">❌ No</span></td>\n    </tr>\n    <tr style=\"background: #fafafa;\">\n      <td style=\"padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;\">Enhanced KB Matches</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\"><strong>0</strong></td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; font-weight: bold;\">KB-Guided Actions</td>\n      <td style=\"padding: 8px;\"><strong>0</strong></td>\n    </tr>\n  </table>\n</div>\n\n---\n\n## 🔍 ISSUE IDENTIFICATION\n\n### Pod instability detected\n\n**Confidence Level**: 85%\n\n**Business Impact**: Service cluster is experiencing outages\n\n### 📊 EVIDENCE SUMMARY\n- Diagnostic evidence collected\n\n---\n\n## 🕐 INCIDENT TIMELINE\n\n| Time | Stage | Finding | Status |\n|------|-------|---------|--------|\n| 2025-12-13T11:43:28.000Z | Alert Triggered | KubeAPIDown detected for cluster (KB: None) | 🔴 Critical |\n| 2025-12-13T11:43:58.000Z | Health Snapshot | Cluster: critical, 1 alerts (1 critical) | 🔴 Critical |\n| 2025-12-13T11:44:28.000Z | Root Cause Analysis | Analyzing system correlations | 🔵 Info |\n| 2025-12-13T11:44:58.000Z | Alert Intelligence | 1 active alerts correlated, KB matches: 0, SLO: 100% | 🔵 Info |\n| 2025-12-13T11:45:28.000Z | Automated Diagnosis | Confirmed: Pod instability detected | 🔴 Critical |\n| 2025-12-13T11:45:58.000Z | Remediation Plan Ready | Rollback deployment to previous version | ✅ Ready |\n\n---\n\n## 🚀 ACTION PLAN\n\n\n\n### 🔴 IMMEDIATE ACTIONS (Execute NOW)\n\n#### 1. Service Recovery Action\n\n**Command to execute:**\n```bash\nkubectl rollout undo deployment/cluster -n default\n```\n\n**Verification command:**\n```bash\nkubectl get pods -n default | grep cluster\nkubectl rollout status deployment/cluster -n default\n```\n\n- **Risk Level**: Low\n- **Estimated Time**: 2-5 minutes\n- **Expected Outcome**: Restore service to previous stable version\n- **KB Enhancement**: Standard recovery approach\n\n---\n\n## 📎 Additional Information\n\n- **Analysis Context ID**: ctx-1765629808596-j4tf5t\n- **Alert Source**: KubeAPIDown\n\n- **Analysis Completed**: 2025-12-13T12:44:09.026Z\n- **Total Analysis Time**: 60 minutes\n- **System**: KB-Aware Universal Correlation Engine v1.0 (Hybrid)\n- **KB Integration**: 9 alerts in knowledge base\n\n---\n\n*This report was automatically generated by the KB-Aware Universal Correlation System*\n*Enhanced with existing Knowledge Base integration and 320+ alert pattern support*\n*Report Version: 4.0 - KB-Aware Correlation (Hybrid) | Generated: 2025-12-13T12:44:09.026Z*\n",
+      "priority": "Critical",
+      "labels": [
+        "KubeAPIDown",
+        "critical",
+        "default",
+        "cluster",
+        "Auto-Detected",
+        "KB-Aware-Correlation"
+      ],
+      "components": [
+        "cluster"
+      ],
+      "issueType": "Incident",
+      "customFields": {
+        "contextId": "ctx-1765629808596-j4tf5t",
+        "analysisTime": 60,
+        "automationConfidence": 0.85
+      }
+    },
+    "executiveSummary": {
+      "contextId": "ctx-1765629808596-j4tf5t",
+      "issue": "Pod instability detected",
+      "severity": "critical",
+      "immediateAction": "Rollback deployment to previous version",
+      "command": "kubectl rollout undo deployment/[object Object] -n ",
+      "risk": "medium",
+      "estimatedTime": "2-5 minutes",
+      "stagesCompleted": 5,
+      "timestamp": "2025-12-13T12:44:09.031Z",
+      "quickActions": {
+        "rollback": "kubectl rollout undo deployment/cluster -n default",
+        "monitor": "watch kubectl get pods -n default | grep cluster",
+        "logs": "kubectl logs -f deployment/cluster -n default",
+        "scale": "kubectl scale deployment/cluster --replicas=3 -n default"
+      }
+    },
+    "knowledgeBaseInsights": {
+      "kbIntegrationEnabled": true,
+      "kbEnhanced": true,
+      "alertCategory": "API",
+      "urgencyLevel": "BLOCKER",
+      "cascadeRisk": "CRITICAL",
+      "existingKBAlerts": 9,
+      "enhancedKBMatches": [],
+      "correlationKBEnhanced": false,
+      "originalAlertKB": null,
+      "finalAlertKB": null,
+      "kbUtilization": {
+        "utilizationRate": "0%",
+        "matchedEntries": 0,
+        "enhancedDiagnostics": 0,
+        "appliedRemediations": 0
+      },
+      "kbEnhancementStats": {
+        "categoriesSupported": 151,
+        "alertMappings": 12,
+        "kbEntriesLoaded": 9,
+        "enhancementSource": "KB Node Integration v1.0"
+      }
+    },
+    "_debug": {
+      "contextId": "ctx-1765629808596-j4tf5t",
+      "hasStage1Data": true,
+      "hasStage2Data": true,
+      "hasStage3Data": true,
+      "hasStage4Data": true,
+      "hasStage5Data": true,
+      "podName": "cluster",
+      "namespace": "default",
+      "deployment": "cluster",
+      "topAlert": "KubeAPIDown",
+      "originalAlert": "KubeAPIDown",
+      "evidenceFormatted": true,
+      "dataAccessPattern": "hybrid-old-new",
+      "kbAwareCorrelation": {
+        "engine": "KB-Aware Universal Correlation Engine",
+        "version": "1.0-HYBRID",
+        "hasCorrelation": false,
+        "correlationType": null,
+        "confidence": 0,
+        "actionabilityScore": 0.5,
+        "kbEnhanced": false,
+        "originalCategory": {
+          "category": "INFRASTRUCTURE",
+          "priority": "HIGH_INFRASTRUCTURE",
+          "rootCauseLevel": "INFRASTRUCTURE",
+          "hasKBEntry": false
+        },
+        "finalCategory": {
+          "category": "INFRASTRUCTURE",
+          "priority": "HIGH_INFRASTRUCTURE",
+          "rootCauseLevel": "INFRASTRUCTURE",
+          "hasKBEntry": false
+        },
+        "alertSelectionProcess": {
+          "stage1Alert": "KubeAPIDown",
+          "stage3CorrelatedAlert": "No alerts",
+          "stage3RecommendedAlert": "none",
+          "defaultFallback": "KubeAPIDown",
+          "selectionReason": "Using real alert from input payload"
+        },
+        "existingKBAlertsCount": 9,
+        "enhancedKBMatchesCount": 0
+      }
+    }
+  }
+]
