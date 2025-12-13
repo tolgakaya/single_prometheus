@@ -58,8 +58,19 @@ const prometheusInput = {
   // Kubernetes filters
   kubernetesFilters: kubernetesFilters,
   
-  // Namespaces
-  namespaces: input.namespaces || [kubernetesFilters.namespace || 'etiyamobile-production'],
+  // Namespaces - Default to all production namespaces if not specified
+  namespaces: input.namespaces || (kubernetesFilters.namespace ? [kubernetesFilters.namespace] : [
+    'bstp-cms-global-production',
+    'bstp-cms-prod-v3',
+    'em-global-prod-3pp',
+    'em-global-prod-eom',
+    'em-global-prod-flowe',
+    'em-global-prod',
+    'em-prod-3pp',
+    'em-prod-eom',
+    'em-prod-flowe',
+    'em-prod'
+  ]),
   
   // Prometheus context
   prometheusContext: prometheusContext

@@ -193,9 +193,11 @@ NO PARAMETERS NEEDED - Tool automatically uses:
 
 ### SLO Tools (MULTI-NAMESPACE):
 {
-  "namespace": "{{ $json._context.initialParams.namespaces[0] || 'etiyamobile-production' }}",
+  "namespace": "{{ $json._context.initialParams.namespaces[0] || 'bstp-cms-global-production' }}",
   "service": "{{ $json.output.correlation_matrix.affected_services && $json.output.correlation_matrix.affected_services[0] || '' }}"
 }
+
+DEFAULT_NAMESPACES (if no namespace specified): bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod
 
 NOTE: For multi-namespace scenarios, namespaces={{ $json._context.initialParams.namespaces.join(', ') }}.
 SLO tools will check the primary namespace. For comprehensive analysis across multiple namespaces,

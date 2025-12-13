@@ -11,8 +11,22 @@ const alertName = inputData.context?.alertName ||
                   'unknown';
 
 // MULTI-NAMESPACE SUPPORT: Get namespace array and build filter
+// Default namespaces to monitor when none specified
+const DEFAULT_NAMESPACES = [
+  'bstp-cms-global-production',
+  'bstp-cms-prod-v3',
+  'em-global-prod-3pp',
+  'em-global-prod-eom',
+  'em-global-prod-flowe',
+  'em-global-prod',
+  'em-prod-3pp',
+  'em-prod-eom',
+  'em-prod-flowe',
+  'em-prod'
+];
+
 const namespaces = inputData.namespaces ||
-                   (inputData.kubernetesFilters?.namespace ? [inputData.kubernetesFilters.namespace] : ['etiyamobile-production']);
+                   (inputData.kubernetesFilters?.namespace ? [inputData.kubernetesFilters.namespace] : DEFAULT_NAMESPACES);
 
 // Build namespace filter for Prometheus queries
 // Single namespace: namespace="ns1"

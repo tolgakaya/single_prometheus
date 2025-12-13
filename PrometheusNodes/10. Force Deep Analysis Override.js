@@ -142,7 +142,20 @@ const requestedService = unifiedData.analysisParams?.services?.[0] ||
                         '';
 
 // Stage 2'ye gidecek parametreleri root'a ekle
-output.namespace = unifiedData.analysisParams.namespaces[0] || 'etiyamobile-production';
+// Default to all production namespaces if not specified
+const DEFAULT_NAMESPACES = [
+  'bstp-cms-global-production',
+  'bstp-cms-prod-v3',
+  'em-global-prod-3pp',
+  'em-global-prod-eom',
+  'em-global-prod-flowe',
+  'em-global-prod',
+  'em-prod-3pp',
+  'em-prod-eom',
+  'em-prod-flowe',
+  'em-prod'
+];
+output.namespace = unifiedData.analysisParams.namespaces[0] || DEFAULT_NAMESPACES[0];
 output.service = requestedService;
 output.startTime = unifiedData.analysisParams.startTime;
 output.endTime = unifiedData.analysisParams.endTime;

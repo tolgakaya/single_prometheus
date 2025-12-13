@@ -18,11 +18,25 @@ console.log('🔍 Namespace from alert:', normalizedAlert.namespace);
 const isChaosTest = detectChaosEngineering(normalizedAlert);
 console.log('🧪 Chaos Engineering Detected:', isChaosTest);
 
+// Default production namespaces
+const DEFAULT_NAMESPACES = [
+  'bstp-cms-global-production',
+  'bstp-cms-prod-v3',
+  'em-global-prod-3pp',
+  'em-global-prod-eom',
+  'em-global-prod-flowe',
+  'em-global-prod',
+  'em-prod-3pp',
+  'em-prod-eom',
+  'em-prod-flowe',
+  'em-prod'
+];
+
 // Extract key Kubernetes filters (critical for targeting)
 const kubernetesFilters = {
     container: normalizedAlert.container || null,
     pod: normalizedAlert.pod || null,
-    namespace: normalizedAlert.namespace || 'etiyamobile-production',
+    namespace: normalizedAlert.namespace || DEFAULT_NAMESPACES[0],
     service: normalizedAlert.service || null,
     deployment: normalizedAlert.deployment || null,
     node: normalizedAlert.node || null,

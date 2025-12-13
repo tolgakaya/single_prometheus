@@ -910,8 +910,20 @@ fixedOutput.stage4PrepData = {
   correlationGroups: actualOutput.alert_groups || []
 };
 
-// Namespaces and time range
-fixedOutput.namespaces = previousContext?.initialParams?.namespaces || ['etiyamobile-production'];
+// Namespaces and time range - Default to all production namespaces
+const DEFAULT_NAMESPACES = [
+  'bstp-cms-global-production',
+  'bstp-cms-prod-v3',
+  'em-global-prod-3pp',
+  'em-global-prod-eom',
+  'em-global-prod-flowe',
+  'em-global-prod',
+  'em-prod-3pp',
+  'em-prod-eom',
+  'em-prod-flowe',
+  'em-prod'
+];
+fixedOutput.namespaces = previousContext?.initialParams?.namespaces || DEFAULT_NAMESPACES;
 fixedOutput.timeRange = {
   start: previousContext?.initialParams?.startTime || 0,
   end: previousContext?.initialParams?.endTime || 0
