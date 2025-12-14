@@ -60,18 +60,9 @@ const prometheusInput = {
     }
   },
   
-  // Kubernetes filters for Prometheus queries
-  kubernetesFilters: {
-    container: normalizedAlert.container || null,
-    pod: normalizedAlert.pod || null,
-    namespace: normalizedAlert.namespace || 'etiyamobile-prod',
-    service: normalizedAlert.service || null,
-    deployment: normalizedAlert.deployment || null,
-    node: normalizedAlert.node || null,
-    persistentvolumeclaim: normalizedAlert.persistentvolumeclaim || null,
-    volumename: normalizedAlert.volumename || null,
-    useSpecificFilters: !!(normalizedAlert.container || normalizedAlert.pod || normalizedAlert.service)
-  },
+  // Kubernetes filters for Prometheus queries (from Node 5 Process AI Output)
+  // Multi-namespace support: infrastructure alerts → query ALL production namespaces
+  kubernetesFilters: kubernetesFilters,
   
   // Prometheus context
   prometheusContext: {
@@ -83,9 +74,9 @@ const prometheusInput = {
   
   // Focus areas for analysis
   focusAreas: focusAreas,
-  
-  // Namespaces for analysis
-  namespaces: [normalizedAlert.namespace || 'etiyamobile-prod'],
+
+  // Namespaces for analysis (multi-namespace support from Node 5)
+  namespaces: kubernetesFilters.namespaces || [normalizedAlert.namespace || 'em-prod'],
   
   // Metadata
   metadata: {
@@ -110,13 +101,15 @@ const prometheusInput = {
     kubernetes: {
       container: normalizedAlert.container,
       pod: normalizedAlert.pod,
-      namespace: normalizedAlert.namespace || 'etiyamobile-prod',
+      namespace: kubernetesFilters.namespace,  // null for infrastructure alerts
+      namespaces: kubernetesFilters.namespaces,  // array of namespaces to query
       service: normalizedAlert.service,
       deployment: normalizedAlert.deployment,
       node: normalizedAlert.node,
       persistentvolumeclaim: normalizedAlert.persistentvolumeclaim,
       volumename: normalizedAlert.volumename,
-      useSpecificFilters: !!(normalizedAlert.container || normalizedAlert.pod || normalizedAlert.service)
+      useSpecificFilters: kubernetesFilters.useSpecificFilters,
+      useMultiNamespace: kubernetesFilters.useMultiNamespace
     },
     
     affectedServices: alertAnalysisData.affectedComponents?.map(c => c?.name).filter(name => name) || [],
@@ -132,7 +125,9 @@ const prometheusInput = {
 console.log('=== PROMETHEUS INPUT SUMMARY ===');
 console.log('Request ID:', prometheusInput.requestId);
 console.log('Alert Name:', prometheusInput.alertContext.alertName);
-console.log('Namespace:', prometheusInput.kubernetesFilters.namespace);
+console.log('Namespace (single):', prometheusInput.kubernetesFilters.namespace || 'null');
+console.log('Namespaces (multi):', prometheusInput.kubernetesFilters.namespaces?.join(', ') || 'none');
+console.log('Use Multi-Namespace:', prometheusInput.kubernetesFilters.useMultiNamespace);
 console.log('Use Specific Filters:', prometheusInput.kubernetesFilters.useSpecificFilters);
 console.log('Analysis Mode:', prometheusInput.metadata.analysisMode);
 console.log('Time Range:', `${startTime} to ${endTime}`);

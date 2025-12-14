@@ -133,11 +133,13 @@ if (input.body && (input.body.alerts || input.body.commonLabels || input.body.ve
     body: annotations.description || annotations.summary || JSON.stringify(input.body),
     sender: 'AlertManager',
     priority: mapAlertManagerSeverity(labels.severity),
-    
+
     // Kubernetes fields
+    // NOTE: Infrastructure alerts (KubeAPIDown) don't have namespace labels - this is NORMAL
+    // We keep namespace as null here, and Node 5 will handle multi-namespace queries
     container: labels.container || null,
     pod: labels.pod || null,
-    namespace: labels.namespace || 'default',
+    namespace: labels.namespace || null,
     service: service,
     deployment: labels.deployment || null,
     
@@ -180,7 +182,7 @@ else if (Array.isArray(input) && input[0]?.labels) {
     priority: mapAlertManagerSeverity(alert.labels?.severity),
     container: alert.labels?.container || null,
     pod: alert.labels?.pod || null,
-    namespace: alert.labels?.namespace || 'default',
+    namespace: alert.labels?.namespace || null,  // Keep null for infrastructure alerts
     service: service,
     deployment: alert.labels?.deployment || null,
     alertname: alert.labels?.alertname || null,

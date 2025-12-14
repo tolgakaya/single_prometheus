@@ -18,8 +18,11 @@ console.log('🔍 Namespace from alert:', normalizedAlert.namespace);
 const isChaosTest = detectChaosEngineering(normalizedAlert);
 console.log('🧪 Chaos Engineering Detected:', isChaosTest);
 
-// Default production namespaces
+// Default production namespaces (12 total: 10 application + 1 monitoring + 1 control-plane)
+// Infrastructure alerts (like KubeAPIDown) don't have namespace labels - this is NORMAL
+// When namespace is missing/default, we search across ALL these namespaces
 const DEFAULT_NAMESPACES = [
+  'bss-prod-eks-monitoring',      // 45 services: Prometheus, Grafana, Loki, Alertmanager
   'bstp-cms-global-production',
   'bstp-cms-prod-v3',
   'em-global-prod-3pp',
@@ -29,20 +32,25 @@ const DEFAULT_NAMESPACES = [
   'em-prod-3pp',
   'em-prod-eom',
   'em-prod-flowe',
-  'em-prod'
+  'em-prod',
+  'em-control-plane-prod'          // 5 services: control plane components
 ];
 
 // Extract key Kubernetes filters (critical for targeting)
+// Multi-namespace support: infrastructure alerts without namespace → search ALL production namespaces
+const hasSpecificNamespace = normalizedAlert.namespace && normalizedAlert.namespace !== 'default';
 const kubernetesFilters = {
     container: normalizedAlert.container || null,
     pod: normalizedAlert.pod || null,
-    namespace: normalizedAlert.namespace || DEFAULT_NAMESPACES[0],
+    namespace: hasSpecificNamespace ? normalizedAlert.namespace : null,  // Single namespace (app alerts)
+    namespaces: hasSpecificNamespace ? [normalizedAlert.namespace] : DEFAULT_NAMESPACES,  // Multi-namespace (infra alerts)
     service: normalizedAlert.service || null,
     deployment: normalizedAlert.deployment || null,
     node: normalizedAlert.node || null,
     persistentvolumeclaim: normalizedAlert.persistentvolumeclaim || null,
     volumename: normalizedAlert.volumename || null,
-    useSpecificFilters: !!(normalizedAlert.container || normalizedAlert.pod || normalizedAlert.service)
+    useSpecificFilters: !!(normalizedAlert.container || normalizedAlert.pod || normalizedAlert.service),
+    useMultiNamespace: !hasSpecificNamespace  // Flag for query builders
 };
 
 // Determine focus areas based on alert type and chaos context
