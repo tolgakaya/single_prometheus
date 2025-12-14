@@ -645,13 +645,17 @@ if (actualOutput.diagnostics_executed && actualOutput.diagnostics_executed.lengt
     const actualNamespace = stage3Data?.namespaces?.[0] ||
                            previousContext?.initialParams?.namespaces?.[0] ||
                            DEFAULT_NAMESPACES[0];
-    
+
+    // FIX: Priority 7 - Use deployment from previousContext first, fallback to extraction
+    const actualDeployment = previousContext?.kubernetesFilters?.deployment ||
+                             actualTarget.split('-').slice(0, -2).join('-') || '';
+
     // Get filters for diagnostic commands
     const kubernetesFilters = previousContext?.kubernetesFilters || {
       namespace: actualNamespace,
       pod: actualTarget,
       service: actualAffectedServices[0] || '',
-      deployment: actualTarget.split('-').slice(0, -2).join('-') || '',
+      deployment: actualDeployment,  // FIX: Use actualDeployment instead of inline extraction
       node: criticalPods[0]?.node || ''
     };
     
@@ -706,7 +710,7 @@ if (actualOutput.diagnostics_executed && actualOutput.diagnostics_executed.lengt
     actualOutput.enriched_context = {
       ...actualOutput.enriched_context,
       deployment_info: {
-        name: actualTarget.split('-').slice(0, -2).join('-') || "unknown-deployment",
+        name: actualDeployment || "unknown-deployment",
         namespace: actualNamespace,
         version: "unknown",
         replicas: "unknown",
