@@ -1144,6 +1144,42 @@ const alertKnowledgeBase = {
     cascadeCheckPoints: ['cluster_operations', 'kubectl_access', 'controller_functions']
   },
 
+  'KubeProxyDown': {
+    severity: 'critical',
+    description: 'kube-proxy is down on nodes',
+    commonCauses: [
+      'kube-proxy pod crashed',
+      'DaemonSet configuration issues',
+      'Node network problems',
+      'RBAC permission issues'
+    ],
+    troubleshootingSteps: [
+      'kubectl get pods -n kube-system -l k8s-app=kube-proxy',
+      'kubectl logs -n kube-system -l k8s-app=kube-proxy --tail=100',
+      'kubectl describe daemonset kube-proxy -n kube-system',
+      'Check iptables rules on affected nodes'
+    ],
+    expectedResults: [
+      'kube-proxy pods running on all nodes',
+      'No error logs',
+      'iptables rules configured correctly',
+      'Service networking functional'
+    ],
+    immediateActions: [
+      'Restart kube-proxy pods',
+      'Check DaemonSet configuration',
+      'Verify node network connectivity',
+      'Review RBAC permissions'
+    ],
+    longTermSolutions: [
+      'Monitor kube-proxy health',
+      'Implement auto-restart policies',
+      'Network redundancy setup'
+    ],
+    requiredMetrics: ['kube_daemonset_status_number_ready', 'up{job="kube-proxy"}'],
+    cascadeCheckPoints: ['service_networking', 'pod_communication', 'loadbalancer_connectivity']
+  },
+
   'KubeAPITerminatedRequests': {
     severity: 'warning',
     description: 'API requests >20% terminated',

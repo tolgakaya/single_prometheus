@@ -14,38 +14,61 @@ Execute targeted diagnostics based on previous findings.
 - Root Cause: {{ $json.stage2Data.root_cause.issue }}
 
 ## 🎯 CRITICAL POD INFORMATION (MULTI-NAMESPACE):
-- Pod Name: {{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}
-- Namespaces (All): {{ $json._context.initialParams.namespaces.join(', ') }} (Total: {{ $json._context.initialParams.namespaces.length }})
-- Pod Namespace: {{ $json.stage2Data.critical_pods[0].namespace || $json.namespaces[0] }}
-- Status: {{ $json.stage2Data.critical_pods[0].status || 'Unknown' }}
-- Restart Count: {{ $json.stage2Data.critical_pods[0].restart_count || 0 }}
-- Memory Usage: {{ $json.stage2Data.critical_pods[0].resource_usage.memory || 'Unknown' }}
-- CPU Usage: {{ $json.stage2Data.critical_pods[0].resource_usage.cpu || 'Unknown' }}
+{{ $json.stage2Data.critical_pods && $json.stage2Data.critical_pods.length > 0 ?
+'- Pod Name: ' + ($json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown') + '\n' +
+'- Namespaces (All): ' + $json._context.initialParams.namespaces.join(', ') + ' (Total: ' + $json._context.initialParams.namespaces.length + ')\n' +
+'- Pod Namespace: ' + ($json.stage2Data.critical_pods[0].namespace || $json.namespaces[0]) + '\n' +
+'- Status: ' + ($json.stage2Data.critical_pods[0].status || 'Unknown') + '\n' +
+'- Restart Count: ' + ($json.stage2Data.critical_pods[0].restart_count || 0) + '\n' +
+'- Memory Usage: ' + ($json.stage2Data.critical_pods[0].resource_usage.memory || 'Unknown') + '\n' +
+'- CPU Usage: ' + ($json.stage2Data.critical_pods[0].resource_usage.cpu || 'Unknown')
+:
+'⚠️ NO POD INFORMATION AVAILABLE - This is an INFRASTRUCTURE/API alarm\n' +
+'- Alert Category: ' + ($json.knowledgeBase?.alertCategory || 'UNKNOWN') + '\n' +
+'- Alert: ' + ($json._context.alertContext?.alertName || 'Unknown') + '\n' +
+'- Urgency: ' + ($json.knowledgeBase?.urgencyLevel || 'UNKNOWN') + '\n' +
+'- Use Knowledge Base troubleshooting for infrastructure-level diagnostics'
+}}
 
 ## 🔧 DIAGNOSTIC EXECUTION:
 
-Based on findings, execute appropriate diagnostics:
-- For pod issues: Use pod-specific tools with actual pod names
-- For node issues: Use node-specific tools with actual node names
-- Use exact timestamps from context
-
-Tool parameters (MULTI-NAMESPACE AWARE):
-{
-  "namespace": "{{ $json.stage2Data.critical_pods[0].namespace || $json.namespaces[0] }}",
-  "start": {{ $json._context.initialParams.startTime }},
-  "end": {{ $json._context.initialParams.endTime }},
-  "pod": "{{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}",
-  "node": "{{ $json.stage2Data.critical_pods[0].node || 'unknown' }}"
-}
-
-NOTE: kubectl commands use specific pod's namespace ({{ $json.stage2Data.critical_pods[0].namespace || $json.namespaces[0] }})
-not the full namespace list, as kubectl operates on single namespace per command.
-
-IMPORTANT: You MUST use the following pod for diagnostics:
-- Target Pod: {{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}
-- DO NOT use any mock pod names like "pod-abc123" or "pod-xyz123"
-- DO NOT use mock deployment names like "mobile-app-deployment"
-- Use the ACTUAL pod name provided above
+{{ $json.stage2Data.critical_pods && $json.stage2Data.critical_pods.length > 0 ?
+'Based on findings, execute appropriate diagnostics:\n' +
+'- For pod issues: Use pod-specific tools with actual pod names\n' +
+'- For node issues: Use node-specific tools with actual node names\n' +
+'- Use exact timestamps from context\n\n' +
+'Tool parameters (MULTI-NAMESPACE AWARE):\n' +
+'{\n' +
+'  "namespace": "' + ($json.stage2Data.critical_pods[0].namespace || $json.namespaces[0]) + '",\n' +
+'  "start": ' + $json._context.initialParams.startTime + ',\n' +
+'  "end": ' + $json._context.initialParams.endTime + ',\n' +
+'  "pod": "' + ($json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown') + '",\n' +
+'  "node": "' + ($json.stage2Data.critical_pods[0].node || 'unknown') + '"\n' +
+'}\n\n' +
+'NOTE: kubectl commands use specific pod\'s namespace (' + ($json.stage2Data.critical_pods[0].namespace || $json.namespaces[0]) + ')\n' +
+'not the full namespace list, as kubectl operates on single namespace per command.\n\n' +
+'IMPORTANT: You MUST use the following pod for diagnostics:\n' +
+'- Target Pod: ' + ($json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown') + '\n' +
+'- DO NOT use any mock pod names like "pod-abc123" or "pod-xyz123"\n' +
+'- DO NOT use mock deployment names like "mobile-app-deployment"\n' +
+'- Use the ACTUAL pod name provided above'
+:
+'⚠️ INFRASTRUCTURE/API ALARM - NO POD AVAILABLE\n\n' +
+'Use Knowledge Base troubleshooting guidance:\n\n' +
+'### KB Troubleshooting Steps:\n' +
+($json.alertKBStats?.kbAlertKnowledgeBase?.troubleshootingSteps || []).map((step, i) => (i+1) + '. ' + step).join('\n') + '\n\n' +
+'### KB Expected Results:\n' +
+($json.alertKBStats?.kbAlertKnowledgeBase?.expectedResults || []).map(r => '- ' + r).join('\n') + '\n\n' +
+'### KB Immediate Actions:\n' +
+($json.alertKBStats?.kbAlertKnowledgeBase?.immediateActions || []).map(a => '- ' + a).join('\n') + '\n\n' +
+'### KB Common Causes:\n' +
+($json.alertKBStats?.kbAlertKnowledgeBase?.commonCauses || []).map(c => '- ' + c).join('\n') + '\n\n' +
+'IMPORTANT: For infrastructure diagnostics:\n' +
+'- Alert: ' + ($json._context.alertContext?.alertName || 'Unknown') + '\n' +
+'- Category: ' + ($json.knowledgeBase?.alertCategory || 'UNKNOWN') + '\n' +
+'- Description: ' + ($json.alertKBStats?.kbAlertKnowledgeBase?.description || 'No description') + '\n' +
+'- Use KB guidance above as primary evidence source'
+}}
 
 ## 🚨 OUTPUT REQUIREMENT:
 **RETURN ONLY VALID JSON WITH ACTUAL DATA**
@@ -53,41 +76,74 @@ IMPORTANT: You MUST use the following pod for diagnostics:
 {
   "stage": "automated_diagnosis",
   "diagnostics_executed": [
-    {
-      "target": "{{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}",
-      "type": "pod",
-      "commands_run": [
-        "kubectl describe pod {{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }} -n {{ $json.namespaces[0] }}",
-        "kubectl logs {{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }} -n {{ $json.namespaces[0] }} --since=24h",
-        "kubectl get events -n {{ $json.namespaces[0] }} --field-selector involvedObject.name={{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}"
-      ],
-      "findings": {
-        "pod_status": {
-          "phase": "{{ $json.stage2Data.critical_pods[0].status || 'Unknown' }}",
-          "restart_count": {{ $json.stage2Data.critical_pods[0].restart_count || 0 }},
-          "last_termination": {
-            "reason": "OOMKilled",
-            "exit_code": 137,
-            "finished_at": "{{ new Date($json._context.initialParams.endTime * 1000).toISOString() }}"
-          }
-        },
-        "error_logs": [
-          {
-            "timestamp": "{{ new Date($json._context.initialParams.endTime * 1000).toISOString() }}",
-            "level": "Error",
-            "message": "Container killed due to memory limit",
-            "stack_trace": null
-          }
-        ],
-        "events": [<actual k8s events>],
-        "resource_usage": {
-          "memory_request": "1Gi",
-          "memory_limit": "2Gi",
-          "memory_used": "{{ $json.stage2Data.critical_pods[0].resource_usage.memory || 'Unknown' }}",
-          "cpu_used": "{{ $json.stage2Data.critical_pods[0].resource_usage.cpu || 'Unknown' }}"
-        }
-      }
-    }
+    {{ $json.stage2Data.critical_pods && $json.stage2Data.critical_pods.length > 0 ?
+    '{\n' +
+    '      "target": "' + ($json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown') + '",\n' +
+    '      "type": "pod",\n' +
+    '      "commands_run": [\n' +
+    '        "kubectl describe pod ' + ($json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown') + ' -n ' + $json.namespaces[0] + '",\n' +
+    '        "kubectl logs ' + ($json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown') + ' -n ' + $json.namespaces[0] + ' --since=24h",\n' +
+    '        "kubectl get events -n ' + $json.namespaces[0] + ' --field-selector involvedObject.name=' + ($json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown') + '"\n' +
+    '      ],\n' +
+    '      "findings": {\n' +
+    '        "pod_status": {\n' +
+    '          "phase": "' + ($json.stage2Data.critical_pods[0].status || 'Unknown') + '",\n' +
+    '          "restart_count": ' + ($json.stage2Data.critical_pods[0].restart_count || 0) + ',\n' +
+    '          "last_termination": {\n' +
+    '            "reason": "OOMKilled",\n' +
+    '            "exit_code": 137,\n' +
+    '            "finished_at": "' + new Date($json._context.initialParams.endTime * 1000).toISOString() + '"\n' +
+    '          }\n' +
+    '        },\n' +
+    '        "error_logs": [\n' +
+    '          {\n' +
+    '            "timestamp": "' + new Date($json._context.initialParams.endTime * 1000).toISOString() + '",\n' +
+    '            "level": "Error",\n' +
+    '            "message": "Container killed due to memory limit",\n' +
+    '            "stack_trace": null\n' +
+    '          }\n' +
+    '        ],\n' +
+    '        "events": [],\n' +
+    '        "resource_usage": {\n' +
+    '          "memory_request": "1Gi",\n' +
+    '          "memory_limit": "2Gi",\n' +
+    '          "memory_used": "' + ($json.stage2Data.critical_pods[0].resource_usage.memory || 'Unknown') + '",\n' +
+    '          "cpu_used": "' + ($json.stage2Data.critical_pods[0].resource_usage.cpu || 'Unknown') + '"\n' +
+    '        }\n' +
+    '      }\n' +
+    '    }'
+    :
+    '{\n' +
+    '      "target": "' + ($json._context.alertContext?.alertName || 'infrastructure') + '",\n' +
+    '      "type": "infrastructure",\n' +
+    '      "commands_run": [\n' +
+    '        "KB Troubleshooting: ' + ($json.alertKBStats?.kbAlertKnowledgeBase?.troubleshootingSteps?.[0] || 'Check system logs') + '",\n' +
+    '        "KB Troubleshooting: ' + ($json.alertKBStats?.kbAlertKnowledgeBase?.troubleshootingSteps?.[1] || 'Verify connectivity') + '",\n' +
+    '        "KB Troubleshooting: ' + ($json.alertKBStats?.kbAlertKnowledgeBase?.troubleshootingSteps?.[2] || 'Check configuration') + '"\n' +
+    '      ],\n' +
+    '      "findings": {\n' +
+    '        "infrastructure_status": {\n' +
+    '          "component": "' + ($json._context.alertContext?.alertName || 'Unknown') + '",\n' +
+    '          "description": "' + ($json.alertKBStats?.kbAlertKnowledgeBase?.description || 'Infrastructure issue detected') + '",\n' +
+    '          "category": "' + ($json.knowledgeBase?.alertCategory || 'INFRASTRUCTURE') + '",\n' +
+    '          "urgency": "' + ($json.knowledgeBase?.urgencyLevel || 'HIGH') + '"\n' +
+    '        },\n' +
+    '        "kb_evidence": {\n' +
+    '          "common_causes": ' + JSON.stringify($json.alertKBStats?.kbAlertKnowledgeBase?.commonCauses || []) + ',\n' +
+    '          "immediate_actions": ' + JSON.stringify($json.alertKBStats?.kbAlertKnowledgeBase?.immediateActions || []) + ',\n' +
+    '          "expected_results": ' + JSON.stringify($json.alertKBStats?.kbAlertKnowledgeBase?.expectedResults || []) + '\n' +
+    '        },\n' +
+    '        "error_logs": [\n' +
+    '          {\n' +
+    '            "timestamp": "' + new Date($json._context.initialParams.endTime * 1000).toISOString() + '",\n' +
+    '            "level": "Critical",\n' +
+    '            "message": "' + ($json.alertKBStats?.kbAlertKnowledgeBase?.description || 'Infrastructure alarm triggered') + '",\n' +
+    '            "stack_trace": null\n' +
+    '          }\n' +
+    '        ]\n' +
+    '      }\n' +
+    '    }'
+    }}
   ],
   "enriched_context": {
     "deployment_info": {
@@ -114,13 +170,24 @@ IMPORTANT: You MUST use the following pod for diagnostics:
   },
   "diagnostic_summary": {
     "confirmed_issues": [
-      {
-        "issue": "{{ $json.stage2Data.root_cause.issue || 'Pod instability detected' }}",
-        "evidence": {{ $json.stage2Data.root_cause.evidence || [] }},
-        "severity": "critical",
-        "impact": "Service {{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }} is experiencing outages",
-        "namespace": "{{ $json.namespaces[0] }}"
-      }
+      {{ $json.stage2Data.critical_pods && $json.stage2Data.critical_pods.length > 0 ?
+      '{\n' +
+      '        "issue": "' + ($json.stage2Data.root_cause.issue || 'Pod instability detected') + '",\n' +
+      '        "evidence": ' + JSON.stringify($json.stage2Data.root_cause.evidence || []) + ',\n' +
+      '        "severity": "critical",\n' +
+      '        "impact": "Service ' + ($json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown') + ' is experiencing outages",\n' +
+      '        "namespace": "' + $json.namespaces[0] + '"\n' +
+      '      }'
+      :
+      '{\n' +
+      '        "issue": "' + ($json.alertKBStats?.kbAlertKnowledgeBase?.description || 'Infrastructure alarm detected') + '",\n' +
+      '        "evidence": ' + JSON.stringify($json.alertKBStats?.kbAlertKnowledgeBase?.commonCauses || ['KB troubleshooting guidance available']) + ',\n' +
+      '        "severity": "' + ($json.alertKBStats?.kbAlertKnowledgeBase?.severity || 'critical') + '",\n' +
+      '        "impact": "' + ($json._context.alertContext?.alertName || 'Infrastructure component') + ': ' + ($json.alertKBStats?.kbAlertKnowledgeBase?.description || 'System-level issue affecting infrastructure') + '",\n' +
+      '        "namespace": "infrastructure",\n' +
+      '        "kb_guidance": ' + JSON.stringify($json.alertKBStats?.kbAlertKnowledgeBase?.immediateActions || []) + '\n' +
+      '      }'
+      }}
     ],
     "secondary_issues": []
   },
@@ -136,7 +203,11 @@ IMPORTANT: You MUST use the following pod for diagnostics:
     "stageSequence": "",
     "diagnosticsCount": 1,
     "autoRemediationEnabled": true,
-    "actualPodUsed": "{{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}",
+    "actualPodUsed": "{{ $json.stage2Data.critical_pods && $json.stage2Data.critical_pods.length > 0 ? ($json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown') : 'N/A (infrastructure alarm)' }}",
+    "diagnosticType": "{{ $json.stage2Data.critical_pods && $json.stage2Data.critical_pods.length > 0 ? 'pod-based' : 'kb-infrastructure' }}",
+    "kbFallbackUsed": {{ !($json.stage2Data.critical_pods && $json.stage2Data.critical_pods.length > 0) }},
+    "alertName": "{{ $json._context.alertContext?.alertName || 'Unknown' }}",
+    "alertCategory": "{{ $json.knowledgeBase?.alertCategory || 'UNKNOWN' }}",
     "timeRangeUsed": {
       "start": {{ $json._context.initialParams.startTime }},
       "end": {{ $json._context.initialParams.endTime }}
@@ -150,4 +221,12 @@ IMPORTANT: You MUST use the following pod for diagnostics:
 - USE REAL PROMETHEUS METRICS
 - NO MOCK DATA
 - secondary_issues MUST BE AN ARRAY (even if empty: [])
-- TARGET POD MUST BE: {{ $json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown' }}
+{{ $json.stage2Data.critical_pods && $json.stage2Data.critical_pods.length > 0 ?
+'- TARGET POD MUST BE: ' + ($json.stage2Data.critical_pods[0].pod || $json.stage2Data.critical_pods[0].pod_name || 'unknown')
+:
+'- INFRASTRUCTURE ALARM DETECTED: Use KB-based evidence\n' +
+'- Alert: ' + ($json._context.alertContext?.alertName || 'Unknown') + '\n' +
+'- KB Data Available: ' + ($json.alertKBStats?.kbAlertKnowledgeBase ? 'YES' : 'NO') + '\n' +
+'- DO NOT use generic pod templates for infrastructure alarms\n' +
+'- USE KB troubleshooting steps and immediate actions as evidence'
+}}

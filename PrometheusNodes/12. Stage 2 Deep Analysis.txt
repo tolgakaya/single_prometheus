@@ -24,6 +24,17 @@ Focus Areas: {{ $json.deepAnalysisHints?.focusAreas?.join(', ') || 'General inve
 Expected Findings: {{ $json.deepAnalysisHints?.expectedFindings?.join(', ') || 'Standard metrics' }}
 Correlation Focus: {{ $json.deepAnalysisHints?.correlationFocus || 'deployment_and_service' }}
 
+## KNOWLEDGE BASE TROUBLESHOOTING GUIDANCE:
+{{ $json.deepAnalysisHints?.kbTroubleshooting ? '### KB Troubleshooting Steps:\n' + $json.deepAnalysisHints.kbTroubleshooting.steps.map((step, i) => `${i+1}. ${step}`).join('\n') : 'Use category-based analysis phases below' }}
+
+{{ $json.deepAnalysisHints?.kbTroubleshooting ? '### KB Expected Results:\n' + $json.deepAnalysisHints.kbTroubleshooting.expectedResults.map((result, i) => `- ${result}`).join('\n') : '' }}
+
+{{ $json.deepAnalysisHints?.kbTroubleshooting ? '### KB Immediate Actions:\n' + $json.deepAnalysisHints.kbTroubleshooting.immediateActions.map((action, i) => `- ${action}`).join('\n') : '' }}
+
+{{ $json.deepAnalysisHints?.kbTroubleshooting ? '### KB Common Causes to Investigate:\n' + $json.deepAnalysisHints.kbTroubleshooting.commonCauses.map((cause, i) => `- ${cause}`).join('\n') : '' }}
+
+{{ $json.stage1Data?.kbFallbackUsed ? '⚠️ IMPORTANT: Prometheus queries failed (likely due to ' + $json._context.alertContext.alertName + '). Use KB troubleshooting above as primary guidance.' : '' }}
+
 ## EXECUTE ANALYSIS (Category: {{ $json.deepAnalysisHints?.category || 'GENERIC' }}):
 
 Phase 1 (Instant Check):

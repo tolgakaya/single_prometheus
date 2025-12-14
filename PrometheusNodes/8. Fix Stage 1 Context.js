@@ -146,6 +146,39 @@ fixedOutput._contextFixed = true;
 fixedOutput._fixedAt = new Date().toISOString();
 
 // ============= KB ENHANCEMENT INTEGRATION (NEW) =============
+// FIX: Priority 9 - KB-based fallback when Prometheus queries fail
+// For KubeAPIDown/KubeProxyDown: API down = queries fail = use KB instead
+const prometheusQueriesFailed = (actualOutput.alerts?.total === 0 || !actualOutput.alerts) &&
+                                (actualOutput.scores?.cluster_health === 0 || !actualOutput.scores) &&
+                                actualOutput.overall_status === 'critical';
+
+const hasKBData = loadAlertKB.knowledgeBase?.alert && Object.keys(loadAlertKB.knowledgeBase.alert).length > 0;
+
+if (prometheusQueriesFailed && hasKBData) {
+  console.log("🔍 PROMETHEUS QUERY FAILURE DETECTED - Using KB fallback");
+  console.log("Alert:", loadAlertKB.knowledgeBase.alertName);
+  console.log("KB Entry Available:", hasKBData);
+
+  // Override quick_findings with KB-based information
+  actualOutput.quick_findings = [
+    `${loadAlertKB.knowledgeBase.alertName}: ${loadAlertKB.knowledgeBase.alert.description}`,
+    `Prometheus queries unavailable (likely due to ${loadAlertKB.knowledgeBase.alertName})`,
+    `KB Guidance: ${loadAlertKB.knowledgeBase.alert.commonCauses?.[0] || 'Check system logs'}`
+  ];
+
+  // Add KB-based reason
+  actualOutput.reason = `${loadAlertKB.knowledgeBase.alertName} detected. Using Knowledge Base for analysis (Prometheus unavailable).`;
+
+  // Ensure deep analysis continues with KB data
+  actualOutput.proceed_to_stage2 = true;
+  actualOutput.forceDeepAnalysis = true;
+
+  // Mark that KB fallback was used
+  actualOutput.kbFallbackUsed = true;
+
+  console.log("✅ KB fallback applied - quick_findings updated with KB data");
+}
+
 // Add KB information to the context
 fixedOutput.knowledgeBase = {
   alertCategory: kbAlertCategory,
@@ -154,7 +187,9 @@ fixedOutput.knowledgeBase = {
   kbEntriesAvailable: kbEnhancedStats.kbEntriesLoaded,
   categoriesSupported: kbEnhancedStats.totalCategories,
   alertMappings: kbEnhancedStats.totalMappings,
-  enhancementVersion: "KB-Enhanced-Full-v1.0"
+  enhancementVersion: "KB-Enhanced-Full-v1.0",
+  kbFallbackUsed: actualOutput.kbFallbackUsed || false,
+  alert: loadAlertKB.knowledgeBase?.alert || null
 };
 
 // Add KB to stage results

@@ -484,7 +484,11 @@ if (output.userMessage) {
     `EXPECTED FINDINGS: ${categoryConfig.expectedFindings.join(', ')}`;
 }
 
-// Enhanced category-specific analysis hints
+// FIX: Priority 10 - Add KB troubleshooting data to deep analysis hints
+const kbAlert = output.knowledgeBase?.alert || {};
+const hasKBTroubleshooting = kbAlert.troubleshootingSteps && kbAlert.troubleshootingSteps.length > 0;
+
+// Enhanced category-specific analysis hints with KB integration
 output.deepAnalysisHints = {
   category: alertCategory,
   urgency: categoryConfig.urgency,
@@ -493,7 +497,20 @@ output.deepAnalysisHints = {
   expectedFindings: categoryConfig.expectedFindings,
   criticalQueries: getAllQueries(categoryConfig),
   priority: getCategoryAnalysisPriority(alertCategory),
-  totalSupportedCategories: Object.keys(CATEGORY_DEEP_ANALYSIS).length
+  totalSupportedCategories: Object.keys(CATEGORY_DEEP_ANALYSIS).length,
+  // KB Troubleshooting Integration
+  kbTroubleshooting: hasKBTroubleshooting ? {
+    steps: kbAlert.troubleshootingSteps,
+    expectedResults: kbAlert.expectedResults || [],
+    immediateActions: kbAlert.immediateActions || [],
+    commonCauses: kbAlert.commonCauses || []
+  } : null,
+  message: hasKBTroubleshooting ?
+    `KB Guidance Available: ${kbAlert.description}. Follow KB troubleshooting steps for ${alertCategory} alerts.` :
+    `Category-based analysis for ${alertCategory} alerts.`,
+  focusAreas: hasKBTroubleshooting ?
+    [...categoryConfig.expectedFindings, ...kbAlert.commonCauses] :
+    categoryConfig.expectedFindings
 };
 
 // Helper function - Collect all queries
