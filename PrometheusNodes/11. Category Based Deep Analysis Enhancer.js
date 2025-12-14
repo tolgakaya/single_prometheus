@@ -9,7 +9,11 @@ const inputData = items[0]?.json || {};
 let output = { ...inputData };
 
 // Get alert category and context
-const alertCategory = output.alertCategory || output._context?.alertEnrichment?.category || 'UNKNOWN';
+// FIX: Priority 2 - Category detection from Knowledge Base
+const alertCategory = output.knowledgeBase?.alertCategory ||
+                      output.alertCategory ||
+                      output._context?.alertEnrichment?.category ||
+                      'UNKNOWN';
 const alertName = output._context?.alertContext?.alertName || 'unknown';
 const stage1Results = output.stage1Results || output.stage1Data || {};
 const kubernetesFilters = output._context?.kubernetesFilters || {};

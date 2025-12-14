@@ -10,25 +10,30 @@ Alert: {{ $json._context.alertContext.alertName }}
 Pod: {{ $json._context.kubernetesFilters.pod }}
 Namespaces: {{ $json._context.initialParams.namespaces.join(', ') }} (Total: {{ $json._context.initialParams.namespaces.length }})
 Priority: {{ $json._context.priority }}
+Category: {{ $json.deepAnalysisHints?.category || 'UNKNOWN' }}
 
 ## STAGE 1 KEY FINDINGS:
 Status: {{ $json.stage1Results.overall_status }}
 Alerts: {{ $json.stage1Results.alerts.critical }} critical
 Issue: {{ $json.stage1Results.quick_findings[0] }}
 
-## EXECUTE ANALYSIS:
+## CATEGORY-SPECIFIC DEEP ANALYSIS HINTS:
+{{ $json.deepAnalysisHints?.message || 'No specific hints available' }}
 
-Phase 1 (Pod Analysis):
-- Pod Status Check
-- Container Restarts  
-- Pod Resource Usage
+Focus Areas: {{ $json.deepAnalysisHints?.focusAreas?.join(', ') || 'General investigation' }}
+Expected Findings: {{ $json.deepAnalysisHints?.expectedFindings?.join(', ') || 'Standard metrics' }}
+Correlation Focus: {{ $json.deepAnalysisHints?.correlationFocus || 'deployment_and_service' }}
+
+## EXECUTE ANALYSIS (Category: {{ $json.deepAnalysisHints?.category || 'GENERIC' }}):
+
+Phase 1 (Instant Check):
+{{ $json.deepAnalysisHints?.phases?.instant || '- Pod Status Check\n- Container Restarts\n- Pod Resource Usage' }}
 
 Phase 2 (Trends):
-- Historical Comparison 24h
+{{ $json.deepAnalysisHints?.phases?.trend || '- Historical Comparison 24h' }}
 
 Phase 3 (Anomaly):
-- Resource Exhaustion Prediction
-- Anomaly Patterns
+{{ $json.deepAnalysisHints?.phases?.anomaly || '- Resource Exhaustion Prediction\n- Anomaly Patterns' }}
 
 ## OUTPUT JSON (NO MARKDOWN):
 {

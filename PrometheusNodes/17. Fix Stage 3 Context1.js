@@ -159,6 +159,7 @@ const CATEGORY_SEVERITY_MULTIPLIERS = {
   'ETCD': 2.0,
   'INFRASTRUCTURE': 1.5,
   'CERTIFICATE': 1.6,
+  'API': 1.5,          // FIX: Priority 5 - Added missing API category (same criticality as INFRASTRUCTURE)
   'NETWORK': 1.4,
   'CLUSTER': 1.3,
   'RESOURCE': 1.2,

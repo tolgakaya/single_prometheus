@@ -1,6 +1,19 @@
 // Agent'tan gelen veriyi al
 const items = $input.all();
 
+// FIX: Priority 6 - Context Recovery from Previous Node
+// AI Agent only returns minimal context, we need to recover full context
+let previousNodeData = {};
+try {
+  const forceDeepAnalysisNode = $node["Force Deep Analysis Override"];
+  if (forceDeepAnalysisNode?.json) {
+    previousNodeData = forceDeepAnalysisNode.json;
+    console.log("✅ Context recovered from Force Deep Analysis Override");
+  }
+} catch(e) {
+  console.log("⚠️ Previous node not available, context may be incomplete");
+}
+
 // Dönüştürülmüş sonuçları tutacak array
 const transformedItems = [];
 
@@ -8,7 +21,7 @@ for (const item of items) {
   try {
     // Agent'ın output'u string olarak geliyor, önce parse edelim
     let parsedData;
-    
+
     if (typeof item.json.output === 'string') {
       // String JSON'ı parse et
       parsedData = JSON.parse(item.json.output);
@@ -19,14 +32,43 @@ for (const item of items) {
       // Zaten object ise
       parsedData = item.json.output || item.json;
     }
-    
-    // _context'i düzelt - eğer string ise object'e çevir
+
+    // FIX: Priority 6 - Context Recovery with Full Preservation
+    // Merge with previous node's complete context instead of creating minimal context
+    const previousContext = previousNodeData._context || {};
+
     if (typeof parsedData._context === 'string') {
+      // Agent returned contextId as string
       parsedData._context = {
-        contextId: parsedData._context
+        ...previousContext,  // ✅ Preserve ALL previous context
+        contextId: parsedData._context,
+        updatedAt: new Date().toISOString()
       };
-    } else if (!parsedData._context) {
-      parsedData._context = {};
+    } else if (!parsedData._context || Object.keys(parsedData._context).length < 3) {
+      // Agent returned minimal or no context
+      parsedData._context = {
+        ...previousContext,  // ✅ Preserve ALL previous context
+        ...(parsedData._context || {}),  // Merge any AI-provided context
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    // Preserve knowledge base data
+    if (!parsedData.knowledgeBase && previousNodeData.knowledgeBase) {
+      parsedData.knowledgeBase = previousNodeData.knowledgeBase;
+    }
+
+    // Preserve category-specific data
+    if (!parsedData.deepAnalysisHints && previousNodeData.deepAnalysisHints) {
+      parsedData.deepAnalysisHints = previousNodeData.deepAnalysisHints;
+    }
+
+    // Preserve stage 1 results
+    if (!parsedData.stage1Results && previousNodeData.stage1Results) {
+      parsedData.stage1Results = previousNodeData.stage1Results;
+    }
+    if (!parsedData.stage1Data && previousNodeData.stage1Data) {
+      parsedData.stage1Data = previousNodeData.stage1Data;
     }
     
     // Eksik alanları kontrol et ve varsayılan değerler ekle

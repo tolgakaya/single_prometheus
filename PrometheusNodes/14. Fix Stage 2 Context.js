@@ -80,7 +80,12 @@ try {
 const previousContext = previousData?._context || output._context || {};
 
 // Alert category ve knowledge base bilgilerini al
-const alertCategory = previousData?.alertCategory || output.alertCategory || 'UNKNOWN';
+// FIX: Priority 4 - Category detection from Knowledge Base (same fix as Node 11)
+const alertCategory = previousData?.knowledgeBase?.alertCategory ||
+                      previousData?.alertCategory ||
+                      output.knowledgeBase?.alertCategory ||
+                      output.alertCategory ||
+                      'UNKNOWN';
 const alertName = previousContext.alertContext?.alertName || 'unknown';
 const knowledgeBase = previousData?.knowledgeBase || output.knowledgeBase || {};
 const categoryRootCausePatterns = previousData?.categoryRootCausePatterns || [];
