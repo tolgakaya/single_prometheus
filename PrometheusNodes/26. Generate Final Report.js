@@ -883,7 +883,7 @@ function extractDeploymentFromPod(podName) {
 }
 
 // Get deployment name from stage data, kubernetesData, then extract from pod name
-const realDeployment = kubernetesData?.deployment ||
+const realDeploymentRaw = kubernetesData?.deployment ||
                       kubernetesData?.deploymentName ||
                       alertContext?.kubernetes?.deployment ||
                       stage4Data?.enriched_context?.deployment_info?.name ||
@@ -892,18 +892,26 @@ const realDeployment = kubernetesData?.deployment ||
                       inputData?.deployment ||
                       extractDeploymentFromPod(realPod);
 
+// FIX: Priority 14 - Safe deployment stringification at source
+const realDeployment = typeof realDeploymentRaw === 'object' ?
+  (realDeploymentRaw?.name || realDeploymentRaw?.deploymentName || 'unknown') :
+  realDeploymentRaw;
+
 // ALERT TYPE DETECTION AND CONTEXT SWITCHING
 function detectAlertType(alertName) {
   const nodeAlerts = ['KubeNodeNotReady', 'KubeNodeUnreachable', 'KubeNodeDiskPressure', 'KubeNodeMemoryPressure', 'KubeNodePIDPressure'];
   const podAlerts = ['KubePodCrashLooping', 'KubePodNotReady', 'KubeContainerWaiting', 'KubePodOOMKilled'];
   const deploymentAlerts = ['KubeDeploymentReplicasMismatch', 'KubeDeploymentRolloutStuck'];
   const serviceAlerts = ['KubeServiceDown', 'KubeEndpointDown'];
-  
+  // FIX: Priority 11 - Add infrastructure alert types (KubeAPIDown, KubeProxyDown, etc.)
+  const infrastructureAlerts = ['KubeAPIDown', 'KubeProxyDown', 'KubeAPIServerDown', 'etcdInsufficientMembers', 'etcdDown', 'etcdMembersDown'];
+
   if (nodeAlerts.includes(alertName)) return 'NODE';
   if (podAlerts.includes(alertName)) return 'POD';
   if (deploymentAlerts.includes(alertName)) return 'DEPLOYMENT';
   if (serviceAlerts.includes(alertName)) return 'SERVICE';
-  
+  if (infrastructureAlerts.includes(alertName)) return 'INFRASTRUCTURE';
+
   return 'UNKNOWN';
 }
 
@@ -922,6 +930,14 @@ if (alertType === 'NODE') {
     namespace: realNamespace, // Keep namespace for context
     affectedResource: realNodeName
   };
+} else if (alertType === 'INFRASTRUCTURE') {
+  // FIX: Priority 12 - Infrastructure alert context (no pod, no node)
+  contextualData = {
+    type: 'INFRASTRUCTURE',
+    component: realAlertName,
+    namespace: 'infrastructure',
+    affectedResource: realAlertName
+  };
 } else if (alertType === 'POD') {
   // For pod alerts, extract pod-specific information
   contextualData = {
@@ -932,13 +948,12 @@ if (alertType === 'NODE') {
     affectedResource: realPod
   };
 } else {
-  // Default to pod context for unknown alerts
+  // FIX: Default to infrastructure context for unknown alerts (safer than POD)
   contextualData = {
-    type: 'POD',
-    pod: realPod,
-    namespace: realNamespace,
-    deployment: realDeployment,
-    affectedResource: realPod
+    type: 'INFRASTRUCTURE',
+    component: realAlertName,
+    namespace: 'infrastructure',
+    affectedResource: realAlertName
   };
 }
 
@@ -2191,6 +2206,49 @@ function generateOncallActionsOriginal(allStageData, deployment, namespace, reso
         kb_guidance: null
       }
     ];
+  } else if (alertType === 'INFRASTRUCTURE') {
+    // FIX: Priority 13 - Infrastructure-specific actions from Stage 4 KB evidence
+    console.log("===== INFRASTRUCTURE ALERT HANDLER =====");
+    console.log("Alert Type: INFRASTRUCTURE");
+    console.log("Resource Name:", resourceName);
+
+    // Access Stage 4 KB evidence
+    const stage4Diagnostics = allStageData.stage4?.diagnostics_executed?.[0];
+    const kbEvidence = stage4Diagnostics?.findings?.kb_evidence;
+    const kbGuidance = allStageData.stage4?.diagnostic_summary?.confirmed_issues?.[0]?.kb_guidance;
+
+    console.log("Stage 4 Diagnostics Type:", stage4Diagnostics?.type);
+    console.log("KB Evidence Available:", !!kbEvidence);
+    console.log("KB Guidance Available:", !!kbGuidance);
+    console.log("KB Immediate Actions:", kbEvidence?.immediate_actions);
+    console.log("KB Guidance Array:", kbGuidance);
+    console.log("========================================");
+
+    // If KB evidence and guidance exist, use them
+    if (kbEvidence && kbGuidance && kbGuidance.length > 0) {
+      console.log("✅ Using KB-based actions for infrastructure alert");
+      return kbGuidance.slice(0, 3).map((action, idx) => ({
+        action: action,
+        command: action, // KB actions are already full kubectl commands
+        risk: idx === 0 ? "high" : "medium",
+        estimated_time: idx === 0 ? "2-5 minutes" : "5-10 minutes",
+        expected_outcome: kbEvidence.expected_results?.[idx] || "Infrastructure component status verified",
+        kb_enhanced: true,  // FIX: Mark as KB-enhanced
+        kb_guidance: kbEvidence.immediate_actions?.[idx] || action  // FIX: Include KB guidance
+      }));
+    }
+
+    // If no KB data, return diagnostic actions only (no generic fallback)
+    console.log("⚠️ No KB data available - returning diagnostic actions only");
+    return [{
+      action: "Investigate infrastructure component status",
+      command: `kubectl get pods --all-namespaces | grep kube-system`,
+      risk: "low",
+      estimated_time: "2-5 minutes",
+      expected_outcome: "Identify infrastructure component status",
+      kb_enhanced: false,
+      kb_guidance: null
+    }];
   } else {
     // SMART ENGINE: Root Cause Analysis for POD alerts
     const rootCauseAnalysis = analyzeRootCause(allStageData, evidence, alertType);
@@ -2225,9 +2283,14 @@ function generateOncallActionsOriginal(allStageData, deployment, namespace, reso
     // For POD alerts, use Stage 5 remediation plan if available
     const stage5Actions = allStageData.stage5?.remediation_plan?.immediate_actions || [];
     if (stage5Actions.length > 0) {
+      // FIX: Priority 14 - Safe deployment stringification to prevent [object Object]
+      const deploymentName = typeof deployment === 'object' ?
+        (deployment?.name || deployment?.deploymentName || 'unknown-deployment') :
+        deployment;
+
       return stage5Actions.map(action => ({
         action: action.action || "Execute remediation step",
-        command: action.command || `kubectl rollout undo deployment/${deployment} -n ${namespace}`,
+        command: action.command || `kubectl rollout undo deployment/${deploymentName} -n ${namespace}`,
         risk: action.risk || "low",
         estimated_time: action.estimated_time || "2-5 minutes",
         expected_outcome: action.expected_outcome || "Restore service stability",
