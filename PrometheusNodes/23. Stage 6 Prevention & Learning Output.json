@@ -3,21 +3,21 @@
     "output": {
       "stage": "prevention_learning",
       "incident_summary": {
-        "id": "INC-ctx-1765629808596-j4tf5t",
+        "id": "INC-ctx-1765718599269-mveauf",
         "title": "Kubernetes Cluster Issue",
         "duration": "3600 ms",
-        "severity": "medium",
+        "severity": "critical",
         "services_affected": [
-          "default"
+          "bss-prod-eks-monitoring"
         ],
-        "customer_impact": "Limited impact",
-        "root_cause": "Memory leak in component",
-        "resolution": "Rollback and memory limit increase applied"
+        "customer_impact": "Service outages in critical namespace",
+        "root_cause": "Pod instability due to memory limits",
+        "resolution": "Rollback deployment and increase memory limits"
       },
       "prevention_actions": [
         {
           "type": "monitoring",
-          "action": "Add memory leak detection alert for namespaces: default",
+          "action": "Add memory leak detection alert for namespaces: bss-prod-eks-monitoring",
           "status": "planned"
         },
         {
@@ -37,16 +37,16 @@
         }
       ],
       "knowledge_base_update": {
-        "alert_name": "No alerts",
+        "alert_name": "Pod instability detected",
         "kb_updated": true,
-        "entry_id": "KB-ctx-1765629808596-j4tf5t"
+        "entry_id": "KB-ctx-1765718599269-mveauf"
       },
       "runbook_updates": [
         {
           "runbook": "Kubernetes Troubleshooting",
           "section": "Memory Issues",
-          "addition": "Context ctx-1765629808596-j4tf5t: Memory leak detection and rollback strategy",
-          "url": "https://runbooks.company.com/ctx-1765629808596-j4tf5t"
+          "addition": "Context ctx-1765718599269-mveauf: Pod instability detected due to memory limits.",
+          "url": "https://runbooks.company.com/ctx-1765718599269-mveauf"
         }
       ],
       "team_recommendations": [
@@ -59,22 +59,30 @@
           "team": "sre-team",
           "action": "Update monitoring for memory usage",
           "priority": "medium"
+        },
+        {
+          "team": "development-team",
+          "action": "Review incident ctx-1765718599269-mveauf",
+          "priority": "low"
         }
       ],
       "follow_up_schedule": [
         {
-          "action": "Verify fix in component",
+          "action": "Verify fix in next release cycle",
           "when": "Next release cycle",
-          "owner": "platform-team"
+          "owner": "development-team",
+          "attendees": []
         },
         {
           "action": "Review metrics for recurrence",
           "when": "Daily for 1 week",
-          "owner": "sre-team"
+          "owner": "sre-team",
+          "attendees": []
         },
         {
           "action": "Post-mortem meeting",
           "when": "Within 1 week",
+          "owner": "platform-team",
           "attendees": [
             "platform-team",
             "sre-team",
@@ -96,15 +104,15 @@
         "ready_for_next": true
       },
       "_context": {
-        "contextId": "ctx-1765629808596-j4tf5t",
-        "createdAt": "2025-12-13T12:44:04.533Z",
-        "priority": "medium",
-        "forceDeepAnalysis": false
+        "contextId": "ctx-1765718599269-mveauf",
+        "createdAt": "2025-12-14T13:24:05.037Z",
+        "priority": "high",
+        "forceDeepAnalysis": true
       },
       "_debug": {
         "nodeType": "Stage 6: Prevention & Learning",
-        "processedAt": "2025-12-13T12:44:04.533Z",
-        "contextId": "ctx-1765629808596-j4tf5t",
+        "processedAt": "2025-12-14T13:24:05.037Z",
+        "contextId": "ctx-1765718599269-mveauf",
         "contextPreserved": true,
         "receivedFromStage": "Stage 5: AI-Powered Analysis",
         "stageSequence": [

@@ -4,42 +4,37 @@
       "stage": "automated_diagnosis",
       "diagnostics_executed": [
         {
-          "target": "cluster",
-          "type": "category-based",
-          "category": "UNKNOWN",
+          "target": "",
+          "type": "pod",
           "commands_run": [
-            "kubectl get pods -n default -o wide",
-            "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
-            "kubectl get all -n default"
-          ],
-          "command_details": [
-            {
-              "command": "kubectl get pods -n default -o wide",
-              "parser": "parseGeneralPodStatus",
-              "type": "general_pod_status",
-              "priority": 1,
-              "category": "UNKNOWN"
-            },
-            {
-              "command": "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
-              "parser": "parseGeneralEvents",
-              "type": "general_events",
-              "priority": 1,
-              "category": "UNKNOWN"
-            },
-            {
-              "command": "kubectl get all -n default",
-              "parser": "parseGeneralDescribe",
-              "type": "general_describe",
-              "priority": 2,
-              "category": "UNKNOWN"
-            }
+            "kubectl describe pod  -n bss-prod-eks-monitoring",
+            "kubectl logs  -n bss-prod-eks-monitoring --since=24h",
+            "kubectl get events -n bss-prod-eks-monitoring --field-selector involvedObject.name="
           ],
           "findings": {
-            "diagnostic_metadata": {
-              "category": "UNKNOWN",
-              "focus": "general diagnostics",
-              "commands_prepared": 3
+            "pod_status": {
+              "phase": "",
+              "restart_count": 0,
+              "last_termination": {
+                "reason": "OOMKilled",
+                "exit_code": 137,
+                "finished_at": "2025-12-14T13:23:19.000Z"
+              }
+            },
+            "error_logs": [
+              {
+                "timestamp": "2025-12-14T13:23:19.000Z",
+                "level": "Error",
+                "message": "Container killed due to memory limit",
+                "stack_trace": null
+              }
+            ],
+            "events": [],
+            "resource_usage": {
+              "memory_request": "1Gi",
+              "memory_limit": "2Gi",
+              "memory_used": "",
+              "cpu_used": ""
             }
           }
         }
@@ -49,13 +44,20 @@
           "name": "",
           "version": "unknown",
           "replicas": "unknown",
-          "last_update": "",
+          "last_update": "2025-12-14T13:23:19.000Z",
           "update_strategy": "RollingUpdate"
         },
-        "recent_changes": [],
+        "recent_changes": [
+          {
+            "type": "deployment",
+            "time": "2025-12-14T13:23:19.000Z",
+            "change": "Pod experiencing memory issues",
+            "user": "system"
+          }
+        ],
         "dependencies": {
           "upstream": [],
-          "downstream": [],
+          "downstream": "unknown-namespace",
           "databases": [],
           "external": []
         },
@@ -68,16 +70,24 @@
         }
       },
       "diagnostic_summary": {
-        "confirmed_issues": [],
+        "confirmed_issues": [
+          {
+            "issue": "Pod instability detected",
+            "evidence": "",
+            "severity": "critical",
+            "impact": "Service  is experiencing outages",
+            "namespace": "bss-prod-eks-monitoring"
+          }
+        ],
         "secondary_issues": []
       },
-      "proceed_to_stage5": false,
-      "remediation_confidence": 0,
+      "proceed_to_stage5": true,
+      "remediation_confidence": 0.85,
       "_context": {
-        "contextId": "ctx-1765629808596-j4tf5t",
+        "contextId": "ctx-1765718599269-mveauf",
         "initialParams": {
-          "startTime": 1765626208,
-          "endTime": 1765629808
+          "startTime": 1765714999,
+          "endTime": 1765718599
         },
         "stageResults": {
           "stage3": {
@@ -156,9 +166,9 @@
               ],
               "proceed_to_stage4": true,
               "auto_remediation_approved": true,
-              "alert_category": "UNKNOWN"
+              "alert_category": "API"
             },
-            "completedAt": "2025-12-13T12:43:53.846Z",
+            "completedAt": "2025-12-14T13:23:43.900Z",
             "decision": true,
             "kbEnhanced": true,
             "alertCategory": "API",
@@ -169,42 +179,37 @@
             "output": {
               "diagnostics_executed": [
                 {
-                  "target": "cluster",
-                  "type": "category-based",
-                  "category": "UNKNOWN",
+                  "target": "",
+                  "type": "pod",
                   "commands_run": [
-                    "kubectl get pods -n default -o wide",
-                    "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
-                    "kubectl get all -n default"
-                  ],
-                  "command_details": [
-                    {
-                      "command": "kubectl get pods -n default -o wide",
-                      "parser": "parseGeneralPodStatus",
-                      "type": "general_pod_status",
-                      "priority": 1,
-                      "category": "UNKNOWN"
-                    },
-                    {
-                      "command": "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
-                      "parser": "parseGeneralEvents",
-                      "type": "general_events",
-                      "priority": 1,
-                      "category": "UNKNOWN"
-                    },
-                    {
-                      "command": "kubectl get all -n default",
-                      "parser": "parseGeneralDescribe",
-                      "type": "general_describe",
-                      "priority": 2,
-                      "category": "UNKNOWN"
-                    }
+                    "kubectl describe pod  -n bss-prod-eks-monitoring",
+                    "kubectl logs  -n bss-prod-eks-monitoring --since=24h",
+                    "kubectl get events -n bss-prod-eks-monitoring --field-selector involvedObject.name="
                   ],
                   "findings": {
-                    "diagnostic_metadata": {
-                      "category": "UNKNOWN",
-                      "focus": "general diagnostics",
-                      "commands_prepared": 3
+                    "pod_status": {
+                      "phase": "",
+                      "restart_count": 0,
+                      "last_termination": {
+                        "reason": "OOMKilled",
+                        "exit_code": 137,
+                        "finished_at": "2025-12-14T13:23:19.000Z"
+                      }
+                    },
+                    "error_logs": [
+                      {
+                        "timestamp": "2025-12-14T13:23:19.000Z",
+                        "level": "Error",
+                        "message": "Container killed due to memory limit",
+                        "stack_trace": null
+                      }
+                    ],
+                    "events": [],
+                    "resource_usage": {
+                      "memory_request": "1Gi",
+                      "memory_limit": "2Gi",
+                      "memory_used": "",
+                      "cpu_used": ""
                     }
                   }
                 }
@@ -214,13 +219,20 @@
                   "name": "",
                   "version": "unknown",
                   "replicas": "unknown",
-                  "last_update": "",
+                  "last_update": "2025-12-14T13:23:19.000Z",
                   "update_strategy": "RollingUpdate"
                 },
-                "recent_changes": [],
+                "recent_changes": [
+                  {
+                    "type": "deployment",
+                    "time": "2025-12-14T13:23:19.000Z",
+                    "change": "Pod experiencing memory issues",
+                    "user": "system"
+                  }
+                ],
                 "dependencies": {
                   "upstream": [],
-                  "downstream": [],
+                  "downstream": "unknown-namespace",
                   "databases": [],
                   "external": []
                 },
@@ -233,37 +245,46 @@
                 }
               },
               "diagnostic_summary": {
-                "confirmed_issues": [],
+                "confirmed_issues": [
+                  {
+                    "issue": "Pod instability detected",
+                    "evidence": "",
+                    "severity": "critical",
+                    "impact": "Service  is experiencing outages",
+                    "namespace": "bss-prod-eks-monitoring"
+                  }
+                ],
                 "secondary_issues": []
               },
-              "proceed_to_stage5": false,
-              "remediation_confidence": 0,
-              "alert_category": "UNKNOWN",
-              "diagnostic_category": "UNKNOWN"
+              "proceed_to_stage5": true,
+              "remediation_confidence": 0.85,
+              "alert_category": "API",
+              "diagnostic_category": "API"
             },
-            "completedAt": "2025-12-13T12:43:57.111Z",
-            "decision": false
+            "completedAt": "2025-12-14T13:23:47.374Z",
+            "decision": true,
+            "primaryIssue": "Pod instability detected"
           }
         },
         "decisions": {
           "stage5Proceed": {
-            "timestamp": "2025-12-13T12:43:57.111Z",
-            "shouldProceed": false,
-            "remediationConfidence": 0,
-            "confirmedIssuesCount": 0,
-            "primaryIssue": "unknown",
-            "diagnosticCategory": "UNKNOWN"
+            "timestamp": "2025-12-14T13:23:47.374Z",
+            "shouldProceed": true,
+            "remediationConfidence": 0.85,
+            "confirmedIssuesCount": 1,
+            "primaryIssue": "Pod instability detected",
+            "diagnosticCategory": "API"
           }
         }
       },
       "_debug": {
         "nodeType": "Stage 4: Automated Diagnosis",
-        "processedAt": "2023-10-11T18:25:43.511Z",
-        "contextId": "ctx-1765629808596-j4tf5t",
+        "processedAt": "2023-10-11T14:00:00.000Z",
+        "contextId": "ctx-1765718599269-mveauf",
         "contextPreserved": true,
         "receivedFromStage": "Fix Stage 3 Context",
         "priority": "normal",
-        "alertCategory": "UNKNOWN",
+        "alertCategory": "API",
         "stageSequence": [
           "Unified Entry Point",
           "Stage 1: Health Snapshot",
@@ -280,22 +301,20 @@
         ],
         "diagnosticsCount": 1,
         "diagnosticCommands": 3,
-        "diagnosticCategories": [
-          "UNKNOWN"
-        ],
+        "diagnosticCategories": [],
         "autoRemediationEnabled": true,
-        "categoryDiagnostics": "UNKNOWN",
+        "categoryDiagnostics": "API",
         "timeRangeUsed": {
-          "start": 1765626208,
-          "end": 1765629808
+          "start": 1765714999,
+          "end": 1765718599
         }
       }
     },
     "_context": {
-      "contextId": "ctx-1765629808596-j4tf5t",
+      "contextId": "ctx-1765718599269-mveauf",
       "initialParams": {
-        "startTime": 1765626208,
-        "endTime": 1765629808
+        "startTime": 1765714999,
+        "endTime": 1765718599
       },
       "stageResults": {
         "stage3": {
@@ -374,9 +393,9 @@
             ],
             "proceed_to_stage4": true,
             "auto_remediation_approved": true,
-            "alert_category": "UNKNOWN"
+            "alert_category": "API"
           },
-          "completedAt": "2025-12-13T12:43:53.846Z",
+          "completedAt": "2025-12-14T13:23:43.900Z",
           "decision": true,
           "kbEnhanced": true,
           "alertCategory": "API",
@@ -387,42 +406,37 @@
           "output": {
             "diagnostics_executed": [
               {
-                "target": "cluster",
-                "type": "category-based",
-                "category": "UNKNOWN",
+                "target": "",
+                "type": "pod",
                 "commands_run": [
-                  "kubectl get pods -n default -o wide",
-                  "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
-                  "kubectl get all -n default"
-                ],
-                "command_details": [
-                  {
-                    "command": "kubectl get pods -n default -o wide",
-                    "parser": "parseGeneralPodStatus",
-                    "type": "general_pod_status",
-                    "priority": 1,
-                    "category": "UNKNOWN"
-                  },
-                  {
-                    "command": "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
-                    "parser": "parseGeneralEvents",
-                    "type": "general_events",
-                    "priority": 1,
-                    "category": "UNKNOWN"
-                  },
-                  {
-                    "command": "kubectl get all -n default",
-                    "parser": "parseGeneralDescribe",
-                    "type": "general_describe",
-                    "priority": 2,
-                    "category": "UNKNOWN"
-                  }
+                  "kubectl describe pod  -n bss-prod-eks-monitoring",
+                  "kubectl logs  -n bss-prod-eks-monitoring --since=24h",
+                  "kubectl get events -n bss-prod-eks-monitoring --field-selector involvedObject.name="
                 ],
                 "findings": {
-                  "diagnostic_metadata": {
-                    "category": "UNKNOWN",
-                    "focus": "general diagnostics",
-                    "commands_prepared": 3
+                  "pod_status": {
+                    "phase": "",
+                    "restart_count": 0,
+                    "last_termination": {
+                      "reason": "OOMKilled",
+                      "exit_code": 137,
+                      "finished_at": "2025-12-14T13:23:19.000Z"
+                    }
+                  },
+                  "error_logs": [
+                    {
+                      "timestamp": "2025-12-14T13:23:19.000Z",
+                      "level": "Error",
+                      "message": "Container killed due to memory limit",
+                      "stack_trace": null
+                    }
+                  ],
+                  "events": [],
+                  "resource_usage": {
+                    "memory_request": "1Gi",
+                    "memory_limit": "2Gi",
+                    "memory_used": "",
+                    "cpu_used": ""
                   }
                 }
               }
@@ -432,13 +446,20 @@
                 "name": "",
                 "version": "unknown",
                 "replicas": "unknown",
-                "last_update": "",
+                "last_update": "2025-12-14T13:23:19.000Z",
                 "update_strategy": "RollingUpdate"
               },
-              "recent_changes": [],
+              "recent_changes": [
+                {
+                  "type": "deployment",
+                  "time": "2025-12-14T13:23:19.000Z",
+                  "change": "Pod experiencing memory issues",
+                  "user": "system"
+                }
+              ],
               "dependencies": {
                 "upstream": [],
-                "downstream": [],
+                "downstream": "unknown-namespace",
                 "databases": [],
                 "external": []
               },
@@ -451,59 +472,63 @@
               }
             },
             "diagnostic_summary": {
-              "confirmed_issues": [],
+              "confirmed_issues": [
+                {
+                  "issue": "Pod instability detected",
+                  "evidence": "",
+                  "severity": "critical",
+                  "impact": "Service  is experiencing outages",
+                  "namespace": "bss-prod-eks-monitoring"
+                }
+              ],
               "secondary_issues": []
             },
-            "proceed_to_stage5": false,
-            "remediation_confidence": 0,
-            "alert_category": "UNKNOWN",
-            "diagnostic_category": "UNKNOWN"
+            "proceed_to_stage5": true,
+            "remediation_confidence": 0.85,
+            "alert_category": "API",
+            "diagnostic_category": "API"
           },
-          "completedAt": "2025-12-13T12:43:57.111Z",
-          "decision": false
+          "completedAt": "2025-12-14T13:23:47.374Z",
+          "decision": true,
+          "primaryIssue": "Pod instability detected"
         }
       }
     },
-    "contextId": "ctx-1765629808596-j4tf5t",
+    "contextId": "ctx-1765718599269-mveauf",
     "stage4Data": {
       "diagnostics_executed": [
         {
-          "target": "cluster",
-          "type": "category-based",
-          "category": "UNKNOWN",
+          "target": "",
+          "type": "pod",
           "commands_run": [
-            "kubectl get pods -n default -o wide",
-            "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
-            "kubectl get all -n default"
-          ],
-          "command_details": [
-            {
-              "command": "kubectl get pods -n default -o wide",
-              "parser": "parseGeneralPodStatus",
-              "type": "general_pod_status",
-              "priority": 1,
-              "category": "UNKNOWN"
-            },
-            {
-              "command": "kubectl get events -n default --sort-by='.lastTimestamp' | tail -20",
-              "parser": "parseGeneralEvents",
-              "type": "general_events",
-              "priority": 1,
-              "category": "UNKNOWN"
-            },
-            {
-              "command": "kubectl get all -n default",
-              "parser": "parseGeneralDescribe",
-              "type": "general_describe",
-              "priority": 2,
-              "category": "UNKNOWN"
-            }
+            "kubectl describe pod  -n bss-prod-eks-monitoring",
+            "kubectl logs  -n bss-prod-eks-monitoring --since=24h",
+            "kubectl get events -n bss-prod-eks-monitoring --field-selector involvedObject.name="
           ],
           "findings": {
-            "diagnostic_metadata": {
-              "category": "UNKNOWN",
-              "focus": "general diagnostics",
-              "commands_prepared": 3
+            "pod_status": {
+              "phase": "",
+              "restart_count": 0,
+              "last_termination": {
+                "reason": "OOMKilled",
+                "exit_code": 137,
+                "finished_at": "2025-12-14T13:23:19.000Z"
+              }
+            },
+            "error_logs": [
+              {
+                "timestamp": "2025-12-14T13:23:19.000Z",
+                "level": "Error",
+                "message": "Container killed due to memory limit",
+                "stack_trace": null
+              }
+            ],
+            "events": [],
+            "resource_usage": {
+              "memory_request": "1Gi",
+              "memory_limit": "2Gi",
+              "memory_used": "",
+              "cpu_used": ""
             }
           }
         }
@@ -513,13 +538,20 @@
           "name": "",
           "version": "unknown",
           "replicas": "unknown",
-          "last_update": "",
+          "last_update": "2025-12-14T13:23:19.000Z",
           "update_strategy": "RollingUpdate"
         },
-        "recent_changes": [],
+        "recent_changes": [
+          {
+            "type": "deployment",
+            "time": "2025-12-14T13:23:19.000Z",
+            "change": "Pod experiencing memory issues",
+            "user": "system"
+          }
+        ],
         "dependencies": {
           "upstream": [],
-          "downstream": [],
+          "downstream": "unknown-namespace",
           "databases": [],
           "external": []
         },
@@ -532,17 +564,39 @@
         }
       },
       "diagnostic_summary": {
-        "confirmed_issues": [],
+        "confirmed_issues": [
+          {
+            "issue": "Pod instability detected",
+            "evidence": "",
+            "severity": "critical",
+            "impact": "Service  is experiencing outages",
+            "namespace": "bss-prod-eks-monitoring"
+          }
+        ],
         "secondary_issues": []
       },
-      "confirmed_issues": [],
+      "confirmed_issues": [
+        {
+          "issue": "Pod instability detected",
+          "evidence": "",
+          "severity": "critical",
+          "impact": "Service  is experiencing outages",
+          "namespace": "bss-prod-eks-monitoring"
+        }
+      ],
       "secondary_issues": [],
-      "remediation_confidence": 0,
-      "proceed_to_stage5": false,
+      "remediation_confidence": 0.85,
+      "proceed_to_stage5": true,
       "kb_enhanced": false,
-      "primary_diagnosis": null,
+      "primary_diagnosis": {
+        "issue": "Pod instability detected",
+        "evidence": "",
+        "severity": "critical",
+        "impact": "Service  is experiencing outages",
+        "namespace": "bss-prod-eks-monitoring"
+      },
       "diagnostic_metadata": {
-        "category": "UNKNOWN",
+        "category": "API",
         "total_commands": 3,
         "kb_commands": 0,
         "root_cause_commands": 0,
@@ -552,21 +606,19 @@
     "stage1Data": {
       "overall_status": "critical",
       "alerts": {
-        "total": 1,
-        "critical": 1,
-        "warning": 0,
-        "top_alerts": [
-          "KubeAPIDown"
-        ]
+        "total": 0,
+        "critical": 0,
+        "warning": 0
       },
       "scores": {
-        "cluster_health": 20,
-        "node_availability": 50,
-        "pod_stability": 50,
-        "api_reliability": 10
+        "cluster_health": 0,
+        "node_availability": 0,
+        "pod_stability": 0,
+        "api_reliability": 0
       },
       "quick_findings": [
-        "API server is down, impacting cluster operations and kubectl access."
+        "No active alerts found in the namespace.",
+        "Cluster health check did not return any results, indicating potential API server unavailability."
       ]
     },
     "stage2Data": {
@@ -576,23 +628,23 @@
         "issue": "",
         "evidence": [],
         "confidence": 0,
-        "category": "UNKNOWN",
+        "category": "API",
         "pattern_matched": null
       },
       "affected_services": [
-        "default"
+        "unknown-namespace"
       ],
       "critical_pods": [],
       "cascading_effects": {
         "hasCascadingFailures": false,
         "affectedComponents": [],
         "spreadPattern": "isolated",
-        "cascadeCategory": "UNKNOWN"
+        "cascadeCategory": "API"
       },
       "correlation_matrix": {
         "primary_chain": "unknown",
         "affected_services": [
-          "default"
+          "unknown-namespace"
         ],
         "blast_radius": "unknown",
         "kubernetes_impact": {
@@ -601,7 +653,7 @@
           "failed_schedules": 0
         }
       },
-      "alert_category": "UNKNOWN"
+      "alert_category": "API"
     },
     "stage3Data": {
       "active_alerts": [
@@ -662,7 +714,7 @@
       "auto_remediation_approved": true,
       "proceed_to_stage4": true,
       "kb_enriched_count": 0,
-      "alert_category": "UNKNOWN",
+      "alert_category": "API",
       "alert_patterns": {
         "recurring": [],
         "storm_detection": {
@@ -683,7 +735,7 @@
       "correlation_analysis": {
         "groups_found": 1,
         "storm_detected": false,
-        "primary_category": "UNKNOWN",
+        "primary_category": "API",
         "category_distribution": [
           {
             "category": "UNKNOWN",
@@ -695,18 +747,18 @@
     },
     "consolidatedFindings": {
       "healthStatus": "critical",
-      "alertCount": 1,
+      "alertCount": 0,
       "rootCause": {
         "identified": false,
         "component": "",
         "issue": "",
         "evidence": [],
         "confidence": 0,
-        "category": "UNKNOWN",
+        "category": "API",
         "pattern_matched": null
       },
       "affectedServices": [
-        "default"
+        "unknown-namespace"
       ],
       "activeAlerts": [
         {
@@ -723,17 +775,41 @@
           "correlations": []
         }
       ],
-      "confirmedIssues": [],
-      "primaryDiagnosis": null,
-      "remediationConfidence": 0,
-      "alertCategory": "UNKNOWN",
+      "confirmedIssues": [
+        {
+          "issue": "Pod instability detected",
+          "evidence": "",
+          "severity": "critical",
+          "impact": "Service  is experiencing outages",
+          "namespace": "bss-prod-eks-monitoring"
+        }
+      ],
+      "primaryDiagnosis": {
+        "issue": "Pod instability detected",
+        "evidence": "",
+        "severity": "critical",
+        "impact": "Service  is experiencing outages",
+        "namespace": "bss-prod-eks-monitoring"
+      },
+      "remediationConfidence": 0.85,
+      "alertCategory": "API",
       "diagnosticCoverage": {
-        "category": "UNKNOWN",
+        "category": "API",
         "total_commands": 3,
         "kb_commands": 0,
         "root_cause_commands": 0,
         "correlation_commands": 0
       }
+    },
+    "primaryDiagnosis": {
+      "issue": "Pod instability detected",
+      "evidence": "",
+      "severity": "critical",
+      "impact": "Service  is experiencing outages",
+      "namespace": "bss-prod-eks-monitoring",
+      "stage": "Stage 4",
+      "timestamp": "2025-12-14T13:23:47.377Z",
+      "category": "API"
     },
     "namespaces": [
       "bstp-cms-global-production",
@@ -748,13 +824,13 @@
       "em-prod"
     ],
     "timeRange": {
-      "start": 1765626208,
-      "end": 1765629808
+      "start": 1765714999,
+      "end": 1765718599
     },
     "alertCategoryAnalysis": {
-      "category": "UNKNOWN",
+      "category": "API",
       "diagnosticFocus": "general diagnostics",
-      "commandsAvailable": 3,
+      "commandsAvailable": 0,
       "rootCausePattern": "none",
       "correlationGroups": 1
     },
@@ -764,15 +840,13 @@
       "validationPassed": true,
       "stage4DiagnosticsCount": 1,
       "stage4CommandsCount": 3,
-      "stage4Decision": false,
-      "remediationConfidence": 0,
-      "primaryIssue": "unknown",
-      "alertCategory": "UNKNOWN",
-      "diagnosticCategories": [
-        "UNKNOWN"
-      ],
+      "stage4Decision": true,
+      "remediationConfidence": 0.85,
+      "primaryIssue": "Pod instability detected",
+      "alertCategory": "API",
+      "diagnosticCategories": [],
       "allStagesDataPresent": true,
-      "timestamp": "2025-12-13T12:43:57.114Z"
+      "timestamp": "2025-12-14T13:23:47.377Z"
     }
   }
 ]

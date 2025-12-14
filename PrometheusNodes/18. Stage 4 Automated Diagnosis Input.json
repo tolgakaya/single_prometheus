@@ -77,10 +77,10 @@
       "proceed_to_stage4": true,
       "auto_remediation_approved": true,
       "_context": {
-        "contextId": "ctx-1765629808596-j4tf5t",
+        "contextId": "ctx-1765718599269-mveauf",
         "initialParams": {
-          "startTime": 1765626208,
-          "endTime": 1765629808
+          "startTime": 1765714999,
+          "endTime": 1765718599
         },
         "stageResults": {
           "stage3": {
@@ -159,43 +159,43 @@
               ],
               "proceed_to_stage4": true,
               "auto_remediation_approved": true,
-              "alert_category": "UNKNOWN"
+              "alert_category": "API"
             },
-            "completedAt": "2025-12-13T12:43:53.846Z",
+            "completedAt": "2025-12-14T13:23:43.900Z",
             "decision": true
           }
         },
         "decisions": {
           "forceDeepAnalysisOverride": {
-            "timestamp": "2025-12-13T12:43:37.740Z",
+            "timestamp": "2025-12-14T13:23:28.735Z",
             "forceDeepAnalysis": true,
             "overrideApplied": true,
             "reason": "Deep analysis forced due to critical priority from alert-listener"
           },
           "stage3Proceed": {
-            "timestamp": "2025-12-13T12:43:46.848Z",
+            "timestamp": "2025-12-14T13:23:39.008Z",
             "shouldProceed": true,
             "reason": "Priority or category requires full analysis"
           },
           "stage4Proceed": {
-            "timestamp": "2025-12-13T12:43:53.846Z",
+            "timestamp": "2025-12-14T13:23:43.900Z",
             "shouldProceed": true,
             "autoRemediationApproved": true,
             "alertCount": 1,
             "sloImpact": "100%",
             "alertStorm": false,
-            "primaryCategory": "UNKNOWN"
+            "primaryCategory": "API"
           }
         }
       },
       "_debug": {
         "nodeType": "Stage 3: Alert Intelligence",
-        "processedAt": "2023-11-01T09:25:09.000Z",
-        "contextId": "ctx-1765629808596-j4tf5t",
+        "processedAt": "2023-11-01T09:14:00.000Z",
+        "contextId": "ctx-1765718599269-mveauf",
         "contextPreserved": true,
         "receivedFromStage": "Fix Stage 2 Context",
         "priority": "critical",
-        "alertCategory": "UNKNOWN",
+        "alertCategory": "API",
         "rootCauseIdentified": false,
         "correlationPatternsApplied": true,
         "stormDetected": false,
@@ -213,16 +213,16 @@
           "Fix Stage 3 Context"
         ],
         "timeRangeUsed": {
-          "start": 1765626208,
-          "end": 1765629808
+          "start": 1765714999,
+          "end": 1765718599
         }
       }
     },
     "_context": {
-      "contextId": "ctx-1765629808596-j4tf5t",
+      "contextId": "ctx-1765718599269-mveauf",
       "initialParams": {
-        "startTime": 1765626208,
-        "endTime": 1765629808
+        "startTime": 1765714999,
+        "endTime": 1765718599
       },
       "stageResults": {
         "stage3": {
@@ -301,9 +301,9 @@
             ],
             "proceed_to_stage4": true,
             "auto_remediation_approved": true,
-            "alert_category": "UNKNOWN"
+            "alert_category": "API"
           },
-          "completedAt": "2025-12-13T12:43:53.846Z",
+          "completedAt": "2025-12-14T13:23:43.900Z",
           "decision": true,
           "kbEnhanced": true,
           "alertCategory": "API",
@@ -312,7 +312,7 @@
         }
       }
     },
-    "contextId": "ctx-1765629808596-j4tf5t",
+    "contextId": "ctx-1765718599269-mveauf",
     "stage3Data": {
       "active_alerts": [
         {
@@ -372,7 +372,7 @@
       "auto_remediation_approved": true,
       "proceed_to_stage4": true,
       "kb_enriched_count": 0,
-      "alert_category": "UNKNOWN",
+      "alert_category": "API",
       "alert_patterns": {
         "recurring": [],
         "storm_detection": {
@@ -393,7 +393,7 @@
       "correlation_analysis": {
         "groups_found": 1,
         "storm_detected": false,
-        "primary_category": "UNKNOWN",
+        "primary_category": "API",
         "category_distribution": [
           {
             "category": "UNKNOWN",
@@ -406,21 +406,19 @@
     "stage1Data": {
       "overall_status": "critical",
       "alerts": {
-        "total": 1,
-        "critical": 1,
-        "warning": 0,
-        "top_alerts": [
-          "KubeAPIDown"
-        ]
+        "total": 0,
+        "critical": 0,
+        "warning": 0
       },
       "scores": {
-        "cluster_health": 20,
-        "node_availability": 50,
-        "pod_stability": 50,
-        "api_reliability": 10
+        "cluster_health": 0,
+        "node_availability": 0,
+        "pod_stability": 0,
+        "api_reliability": 0
       },
       "quick_findings": [
-        "API server is down, impacting cluster operations and kubectl access."
+        "No active alerts found in the namespace.",
+        "Cluster health check did not return any results, indicating potential API server unavailability."
       ]
     },
     "stage2Data": {
@@ -430,23 +428,23 @@
         "issue": "",
         "evidence": [],
         "confidence": 0,
-        "category": "UNKNOWN",
+        "category": "API",
         "pattern_matched": null
       },
       "affected_services": [
-        "default"
+        "unknown-namespace"
       ],
       "critical_pods": [],
       "cascading_effects": {
         "hasCascadingFailures": false,
         "affectedComponents": [],
         "spreadPattern": "isolated",
-        "cascadeCategory": "UNKNOWN"
+        "cascadeCategory": "API"
       },
       "correlation_matrix": {
         "primary_chain": "unknown",
         "affected_services": [
-          "default"
+          "unknown-namespace"
         ],
         "blast_radius": "unknown",
         "kubernetes_impact": {
@@ -455,7 +453,7 @@
           "failed_schedules": 0
         }
       },
-      "alert_category": "UNKNOWN"
+      "alert_category": "API"
     },
     "stage4PrepData": {
       "rootCause": {
@@ -464,11 +462,11 @@
         "issue": "",
         "evidence": [],
         "confidence": 0,
-        "category": "UNKNOWN",
+        "category": "API",
         "pattern_matched": null
       },
       "affectedServices": [
-        "default"
+        "unknown-namespace"
       ],
       "criticalPods": [],
       "primaryAlert": {
@@ -485,8 +483,8 @@
         "correlations": []
       },
       "kbMatches": [],
-      "contextId": "ctx-1765629808596-j4tf5t",
-      "alertCategory": "UNKNOWN",
+      "contextId": "ctx-1765718599269-mveauf",
+      "alertCategory": "API",
       "correlationGroups": [
         {
           "root_alert": "none",
@@ -497,11 +495,22 @@
       ]
     },
     "namespaces": [
-      "default"
+      "bss-prod-eks-monitoring",
+      "bstp-cms-global-production",
+      "bstp-cms-prod-v3",
+      "em-global-prod-3pp",
+      "em-global-prod-eom",
+      "em-global-prod-flowe",
+      "em-global-prod",
+      "em-prod-3pp",
+      "em-prod-eom",
+      "em-prod-flowe",
+      "em-prod",
+      "em-control-plane-prod"
     ],
     "timeRange": {
-      "start": 1765626208,
-      "end": 1765629808
+      "start": 1765714999,
+      "end": 1765718599
     },
     "knowledgeBase": {
       "alertCategory": "API",
@@ -561,7 +570,7 @@
       "kbEntriesLoaded": 9,
       "totalCategories": 151,
       "totalMappings": 12,
-      "exportedAt": "2025-12-13T12:43:53.848Z",
+      "exportedAt": "2025-12-14T13:23:43.901Z",
       "debug": {
         "originalUrgency": "BLOCKER",
         "originalCascadeRisk": "CRITICAL",
@@ -575,13 +584,13 @@
       "validationPassed": true,
       "stage3AlertCount": 1,
       "stage3Decision": true,
-      "alertCategory": "UNKNOWN",
+      "alertCategory": "API",
       "correlationGroupsFound": 1,
       "stormDetected": false,
       "allStagesDataPresent": true,
       "kbEnhanced": true,
       "kbEnhancedAlertsCount": 0,
-      "timestamp": "2025-12-13T12:43:53.848Z"
+      "timestamp": "2025-12-14T13:23:43.901Z"
     }
   }
 ]

@@ -1,47 +1,56 @@
 [
   {
     "output": {
-      "stage": "analysis",
-      "timestamp": "2025-12-13T12:43:28.596Z",
-      "cluster": "default",
+      "stage": "initial_analysis",
+      "timestamp": "2023-11-24T18:31:19.000Z",
+      "cluster": "null",
       "overall_status": "critical",
       "proceed_to_stage2": true,
       "urgency": "critical",
-      "reason": "KubeAPIDown alert is active with critical severity. No additional alerts or cascading effects detected in the same namespace.",
+      "reason": "KubeAPIDown alert is active and critical. Quick Cluster Health and Active Alerts Count indicate potential widespread issues.",
       "alerts": {
-        "total": 1,
-        "critical": 1,
-        "warning": 0,
-        "top_alerts": [
-          "KubeAPIDown"
-        ]
+        "total": 0,
+        "critical": 0,
+        "warning": 0
       },
       "scores": {
-        "cluster_health": 20,
-        "node_availability": 50,
-        "pod_stability": 50,
-        "api_reliability": 10
+        "cluster_health": 0,
+        "node_availability": 0,
+        "pod_stability": 0,
+        "api_reliability": 0
       },
       "quick_findings": [
-        "API server is down, impacting cluster operations and kubectl access."
+        "No active alerts found in the namespace.",
+        "Cluster health check did not return any results, indicating potential API server unavailability."
       ],
       "forceDeepAnalysis": true,
       "overridden": false,
       "_context": {
-        "contextId": "ctx-1765629808596-j4tf5t",
-        "createdAt": "2025-12-13T12:43:28.596Z",
+        "contextId": "ctx-1765718599269-mveauf",
+        "createdAt": "2025-12-14T13:23:19.269Z",
         "source": {
           "type": "alert-listener",
           "priority": "critical"
         },
         "initialParams": {
-          "startTime": 1765626208,
-          "endTime": 1765629808,
+          "startTime": 1765714999,
+          "endTime": 1765718599,
           "namespaces": [
-            "default"
+            "bss-prod-eks-monitoring",
+            "bstp-cms-global-production",
+            "bstp-cms-prod-v3",
+            "em-global-prod-3pp",
+            "em-global-prod-eom",
+            "em-global-prod-flowe",
+            "em-global-prod",
+            "em-prod-3pp",
+            "em-prod-eom",
+            "em-prod-flowe",
+            "em-prod",
+            "em-control-plane-prod"
           ],
           "services": [
-            "default"
+            "unknown-namespace"
           ],
           "focusAreas": [
             "Chaos engineering test pattern"
@@ -49,22 +58,37 @@
           "analysisType": "alert-driven",
           "context": {
             "alertName": "KubeAPIDown",
-            "alertId": "alert-1765629808503",
+            "alertId": "alert-1765718599169",
             "alertPriority": "critical",
             "source": "alertmanager",
             "kubernetes": {
               "container": null,
               "pod": null,
-              "namespace": "default",
+              "namespace": null,
+              "namespaces": [
+                "bss-prod-eks-monitoring",
+                "bstp-cms-global-production",
+                "bstp-cms-prod-v3",
+                "em-global-prod-3pp",
+                "em-global-prod-eom",
+                "em-global-prod-flowe",
+                "em-global-prod",
+                "em-prod-3pp",
+                "em-prod-eom",
+                "em-prod-flowe",
+                "em-prod",
+                "em-control-plane-prod"
+              ],
               "service": null,
               "deployment": null,
               "node": null,
               "persistentvolumeclaim": null,
               "volumename": null,
-              "useSpecificFilters": false
+              "useSpecificFilters": false,
+              "useMultiNamespace": true
             },
             "affectedServices": [
-              "default"
+              "unknown-namespace"
             ],
             "errorPatterns": [
               "Chaos engineering test pattern"
@@ -80,32 +104,62 @@
         "kubernetesFilters": {
           "container": null,
           "pod": null,
-          "namespace": "default",
+          "namespace": null,
+          "namespaces": [
+            "bss-prod-eks-monitoring",
+            "bstp-cms-global-production",
+            "bstp-cms-prod-v3",
+            "em-global-prod-3pp",
+            "em-global-prod-eom",
+            "em-global-prod-flowe",
+            "em-global-prod",
+            "em-prod-3pp",
+            "em-prod-eom",
+            "em-prod-flowe",
+            "em-prod",
+            "em-control-plane-prod"
+          ],
           "service": null,
           "deployment": null,
           "node": null,
           "persistentvolumeclaim": null,
           "volumename": null,
-          "useSpecificFilters": false
+          "useSpecificFilters": false,
+          "useMultiNamespace": true
         },
         "alertContext": {
           "alertName": "KubeAPIDown",
-          "alertId": "alert-1765629808503",
+          "alertId": "alert-1765718599169",
           "alertPriority": "critical",
           "source": "alertmanager",
           "kubernetes": {
             "container": null,
             "pod": null,
-            "namespace": "default",
+            "namespace": null,
+            "namespaces": [
+              "bss-prod-eks-monitoring",
+              "bstp-cms-global-production",
+              "bstp-cms-prod-v3",
+              "em-global-prod-3pp",
+              "em-global-prod-eom",
+              "em-global-prod-flowe",
+              "em-global-prod",
+              "em-prod-3pp",
+              "em-prod-eom",
+              "em-prod-flowe",
+              "em-prod",
+              "em-control-plane-prod"
+            ],
             "service": null,
             "deployment": null,
             "node": null,
             "persistentvolumeclaim": null,
             "volumename": null,
-            "useSpecificFilters": false
+            "useSpecificFilters": false,
+            "useMultiNamespace": true
           },
           "affectedServices": [
-            "default"
+            "unknown-namespace"
           ],
           "errorPatterns": [
             "Chaos engineering test pattern"
@@ -128,41 +182,39 @@
         "forceDeepAnalysis": true,
         "workflowMetadata": {
           "workflowId": "LBDqj72azAqepcuC",
-          "executionId": "5140",
-          "requestId": "alert-alert-1765629808503-1765629808517",
-          "orchestratorId": "direct-1765629808517"
+          "executionId": "5598",
+          "requestId": "alert-alert-1765718599169-1765718599181",
+          "orchestratorId": "direct-1765718599181"
         },
         "stageResults": {
           "stage1": {
             "output": {
               "overall_status": "critical",
               "alerts": {
-                "total": 1,
-                "critical": 1,
-                "warning": 0,
-                "top_alerts": [
-                  "KubeAPIDown"
-                ]
+                "total": 0,
+                "critical": 0,
+                "warning": 0
               },
               "scores": {
-                "cluster_health": 20,
-                "node_availability": 50,
-                "pod_stability": 50,
-                "api_reliability": 10
+                "cluster_health": 0,
+                "node_availability": 0,
+                "pod_stability": 0,
+                "api_reliability": 0
               },
               "quick_findings": [
-                "API server is down, impacting cluster operations and kubectl access."
+                "No active alerts found in the namespace.",
+                "Cluster health check did not return any results, indicating potential API server unavailability."
               ],
               "proceed_to_stage2": true,
               "urgency": "critical",
-              "reason": "KubeAPIDown alert is active with critical severity. No additional alerts or cascading effects detected in the same namespace.",
+              "reason": "KubeAPIDown alert is active and critical. Quick Cluster Health and Active Alerts Count indicate potential widespread issues.",
               "forceDeepAnalysis": true,
               "overridden": false
             },
-            "completedAt": "2025-12-13T12:43:37.719Z",
+            "completedAt": "2025-12-14T13:23:28.711Z",
             "decision": true,
             "status": "critical",
-            "alerts": 1
+            "alerts": 0
           }
         },
         "decisions": {},
@@ -176,20 +228,31 @@
       }
     },
     "_context": {
-      "contextId": "ctx-1765629808596-j4tf5t",
-      "createdAt": "2025-12-13T12:43:28.596Z",
+      "contextId": "ctx-1765718599269-mveauf",
+      "createdAt": "2025-12-14T13:23:19.269Z",
       "source": {
         "type": "alert-listener",
         "priority": "critical"
       },
       "initialParams": {
-        "startTime": 1765626208,
-        "endTime": 1765629808,
+        "startTime": 1765714999,
+        "endTime": 1765718599,
         "namespaces": [
-          "default"
+          "bss-prod-eks-monitoring",
+          "bstp-cms-global-production",
+          "bstp-cms-prod-v3",
+          "em-global-prod-3pp",
+          "em-global-prod-eom",
+          "em-global-prod-flowe",
+          "em-global-prod",
+          "em-prod-3pp",
+          "em-prod-eom",
+          "em-prod-flowe",
+          "em-prod",
+          "em-control-plane-prod"
         ],
         "services": [
-          "default"
+          "unknown-namespace"
         ],
         "focusAreas": [
           "Chaos engineering test pattern"
@@ -197,22 +260,37 @@
         "analysisType": "alert-driven",
         "context": {
           "alertName": "KubeAPIDown",
-          "alertId": "alert-1765629808503",
+          "alertId": "alert-1765718599169",
           "alertPriority": "critical",
           "source": "alertmanager",
           "kubernetes": {
             "container": null,
             "pod": null,
-            "namespace": "default",
+            "namespace": null,
+            "namespaces": [
+              "bss-prod-eks-monitoring",
+              "bstp-cms-global-production",
+              "bstp-cms-prod-v3",
+              "em-global-prod-3pp",
+              "em-global-prod-eom",
+              "em-global-prod-flowe",
+              "em-global-prod",
+              "em-prod-3pp",
+              "em-prod-eom",
+              "em-prod-flowe",
+              "em-prod",
+              "em-control-plane-prod"
+            ],
             "service": null,
             "deployment": null,
             "node": null,
             "persistentvolumeclaim": null,
             "volumename": null,
-            "useSpecificFilters": false
+            "useSpecificFilters": false,
+            "useMultiNamespace": true
           },
           "affectedServices": [
-            "default"
+            "unknown-namespace"
           ],
           "errorPatterns": [
             "Chaos engineering test pattern"
@@ -228,32 +306,62 @@
       "kubernetesFilters": {
         "container": null,
         "pod": null,
-        "namespace": "default",
+        "namespace": null,
+        "namespaces": [
+          "bss-prod-eks-monitoring",
+          "bstp-cms-global-production",
+          "bstp-cms-prod-v3",
+          "em-global-prod-3pp",
+          "em-global-prod-eom",
+          "em-global-prod-flowe",
+          "em-global-prod",
+          "em-prod-3pp",
+          "em-prod-eom",
+          "em-prod-flowe",
+          "em-prod",
+          "em-control-plane-prod"
+        ],
         "service": null,
         "deployment": null,
         "node": null,
         "persistentvolumeclaim": null,
         "volumename": null,
-        "useSpecificFilters": false
+        "useSpecificFilters": false,
+        "useMultiNamespace": true
       },
       "alertContext": {
         "alertName": "KubeAPIDown",
-        "alertId": "alert-1765629808503",
+        "alertId": "alert-1765718599169",
         "alertPriority": "critical",
         "source": "alertmanager",
         "kubernetes": {
           "container": null,
           "pod": null,
-          "namespace": "default",
+          "namespace": null,
+          "namespaces": [
+            "bss-prod-eks-monitoring",
+            "bstp-cms-global-production",
+            "bstp-cms-prod-v3",
+            "em-global-prod-3pp",
+            "em-global-prod-eom",
+            "em-global-prod-flowe",
+            "em-global-prod",
+            "em-prod-3pp",
+            "em-prod-eom",
+            "em-prod-flowe",
+            "em-prod",
+            "em-control-plane-prod"
+          ],
           "service": null,
           "deployment": null,
           "node": null,
           "persistentvolumeclaim": null,
           "volumename": null,
-          "useSpecificFilters": false
+          "useSpecificFilters": false,
+          "useMultiNamespace": true
         },
         "affectedServices": [
-          "default"
+          "unknown-namespace"
         ],
         "errorPatterns": [
           "Chaos engineering test pattern"
@@ -276,53 +384,62 @@
       "forceDeepAnalysis": true,
       "workflowMetadata": {
         "workflowId": "LBDqj72azAqepcuC",
-        "executionId": "5140",
-        "requestId": "alert-alert-1765629808503-1765629808517",
-        "orchestratorId": "direct-1765629808517"
+        "executionId": "5598",
+        "requestId": "alert-alert-1765718599169-1765718599181",
+        "orchestratorId": "direct-1765718599181"
       },
       "stageResults": {
         "stage1": {
-          "stage": "analysis",
-          "timestamp": "2025-12-13T12:43:28.596Z",
-          "cluster": "default",
+          "stage": "initial_analysis",
+          "timestamp": "2023-11-24T18:31:19.000Z",
+          "cluster": "null",
           "overall_status": "critical",
           "proceed_to_stage2": true,
           "urgency": "critical",
-          "reason": "KubeAPIDown alert is active with critical severity. No additional alerts or cascading effects detected in the same namespace.",
+          "reason": "KubeAPIDown alert is active and critical. Quick Cluster Health and Active Alerts Count indicate potential widespread issues.",
           "alerts": {
-            "total": 1,
-            "critical": 1,
-            "warning": 0,
-            "top_alerts": [
-              "KubeAPIDown"
-            ]
+            "total": 0,
+            "critical": 0,
+            "warning": 0
           },
           "scores": {
-            "cluster_health": 20,
-            "node_availability": 50,
-            "pod_stability": 50,
-            "api_reliability": 10
+            "cluster_health": 0,
+            "node_availability": 0,
+            "pod_stability": 0,
+            "api_reliability": 0
           },
           "quick_findings": [
-            "API server is down, impacting cluster operations and kubectl access."
+            "No active alerts found in the namespace.",
+            "Cluster health check did not return any results, indicating potential API server unavailability."
           ],
           "forceDeepAnalysis": true,
           "overridden": false,
           "_context": {
-            "contextId": "ctx-1765629808596-j4tf5t",
-            "createdAt": "2025-12-13T12:43:28.596Z",
+            "contextId": "ctx-1765718599269-mveauf",
+            "createdAt": "2025-12-14T13:23:19.269Z",
             "source": {
               "type": "alert-listener",
               "priority": "critical"
             },
             "initialParams": {
-              "startTime": 1765626208,
-              "endTime": 1765629808,
+              "startTime": 1765714999,
+              "endTime": 1765718599,
               "namespaces": [
-                "default"
+                "bss-prod-eks-monitoring",
+                "bstp-cms-global-production",
+                "bstp-cms-prod-v3",
+                "em-global-prod-3pp",
+                "em-global-prod-eom",
+                "em-global-prod-flowe",
+                "em-global-prod",
+                "em-prod-3pp",
+                "em-prod-eom",
+                "em-prod-flowe",
+                "em-prod",
+                "em-control-plane-prod"
               ],
               "services": [
-                "default"
+                "unknown-namespace"
               ],
               "focusAreas": [
                 "Chaos engineering test pattern"
@@ -330,22 +447,37 @@
               "analysisType": "alert-driven",
               "context": {
                 "alertName": "KubeAPIDown",
-                "alertId": "alert-1765629808503",
+                "alertId": "alert-1765718599169",
                 "alertPriority": "critical",
                 "source": "alertmanager",
                 "kubernetes": {
                   "container": null,
                   "pod": null,
-                  "namespace": "default",
+                  "namespace": null,
+                  "namespaces": [
+                    "bss-prod-eks-monitoring",
+                    "bstp-cms-global-production",
+                    "bstp-cms-prod-v3",
+                    "em-global-prod-3pp",
+                    "em-global-prod-eom",
+                    "em-global-prod-flowe",
+                    "em-global-prod",
+                    "em-prod-3pp",
+                    "em-prod-eom",
+                    "em-prod-flowe",
+                    "em-prod",
+                    "em-control-plane-prod"
+                  ],
                   "service": null,
                   "deployment": null,
                   "node": null,
                   "persistentvolumeclaim": null,
                   "volumename": null,
-                  "useSpecificFilters": false
+                  "useSpecificFilters": false,
+                  "useMultiNamespace": true
                 },
                 "affectedServices": [
-                  "default"
+                  "unknown-namespace"
                 ],
                 "errorPatterns": [
                   "Chaos engineering test pattern"
@@ -361,32 +493,62 @@
             "kubernetesFilters": {
               "container": null,
               "pod": null,
-              "namespace": "default",
+              "namespace": null,
+              "namespaces": [
+                "bss-prod-eks-monitoring",
+                "bstp-cms-global-production",
+                "bstp-cms-prod-v3",
+                "em-global-prod-3pp",
+                "em-global-prod-eom",
+                "em-global-prod-flowe",
+                "em-global-prod",
+                "em-prod-3pp",
+                "em-prod-eom",
+                "em-prod-flowe",
+                "em-prod",
+                "em-control-plane-prod"
+              ],
               "service": null,
               "deployment": null,
               "node": null,
               "persistentvolumeclaim": null,
               "volumename": null,
-              "useSpecificFilters": false
+              "useSpecificFilters": false,
+              "useMultiNamespace": true
             },
             "alertContext": {
               "alertName": "KubeAPIDown",
-              "alertId": "alert-1765629808503",
+              "alertId": "alert-1765718599169",
               "alertPriority": "critical",
               "source": "alertmanager",
               "kubernetes": {
                 "container": null,
                 "pod": null,
-                "namespace": "default",
+                "namespace": null,
+                "namespaces": [
+                  "bss-prod-eks-monitoring",
+                  "bstp-cms-global-production",
+                  "bstp-cms-prod-v3",
+                  "em-global-prod-3pp",
+                  "em-global-prod-eom",
+                  "em-global-prod-flowe",
+                  "em-global-prod",
+                  "em-prod-3pp",
+                  "em-prod-eom",
+                  "em-prod-flowe",
+                  "em-prod",
+                  "em-control-plane-prod"
+                ],
                 "service": null,
                 "deployment": null,
                 "node": null,
                 "persistentvolumeclaim": null,
                 "volumename": null,
-                "useSpecificFilters": false
+                "useSpecificFilters": false,
+                "useMultiNamespace": true
               },
               "affectedServices": [
-                "default"
+                "unknown-namespace"
               ],
               "errorPatterns": [
                 "Chaos engineering test pattern"
@@ -409,41 +571,39 @@
             "forceDeepAnalysis": true,
             "workflowMetadata": {
               "workflowId": "LBDqj72azAqepcuC",
-              "executionId": "5140",
-              "requestId": "alert-alert-1765629808503-1765629808517",
-              "orchestratorId": "direct-1765629808517"
+              "executionId": "5598",
+              "requestId": "alert-alert-1765718599169-1765718599181",
+              "orchestratorId": "direct-1765718599181"
             },
             "stageResults": {
               "stage1": {
                 "output": {
                   "overall_status": "critical",
                   "alerts": {
-                    "total": 1,
-                    "critical": 1,
-                    "warning": 0,
-                    "top_alerts": [
-                      "KubeAPIDown"
-                    ]
+                    "total": 0,
+                    "critical": 0,
+                    "warning": 0
                   },
                   "scores": {
-                    "cluster_health": 20,
-                    "node_availability": 50,
-                    "pod_stability": 50,
-                    "api_reliability": 10
+                    "cluster_health": 0,
+                    "node_availability": 0,
+                    "pod_stability": 0,
+                    "api_reliability": 0
                   },
                   "quick_findings": [
-                    "API server is down, impacting cluster operations and kubectl access."
+                    "No active alerts found in the namespace.",
+                    "Cluster health check did not return any results, indicating potential API server unavailability."
                   ],
                   "proceed_to_stage2": true,
                   "urgency": "critical",
-                  "reason": "KubeAPIDown alert is active with critical severity. No additional alerts or cascading effects detected in the same namespace.",
+                  "reason": "KubeAPIDown alert is active and critical. Quick Cluster Health and Active Alerts Count indicate potential widespread issues.",
                   "forceDeepAnalysis": true,
                   "overridden": false
                 },
-                "completedAt": "2025-12-13T12:43:37.719Z",
+                "completedAt": "2025-12-14T13:23:28.711Z",
                 "decision": true,
                 "status": "critical",
-                "alerts": 1
+                "alerts": 0
               }
             },
             "decisions": {},
@@ -466,12 +626,12 @@
               "priority": "critical"
             }
           },
-          "completedAt": "2025-12-13T12:43:37.741Z"
+          "completedAt": "2025-12-14T13:23:28.735Z"
         }
       },
       "decisions": {
         "forceDeepAnalysisOverride": {
-          "timestamp": "2025-12-13T12:43:37.740Z",
+          "timestamp": "2025-12-14T13:23:28.735Z",
           "forceDeepAnalysis": true,
           "overrideApplied": true,
           "reason": "Deep analysis forced due to critical priority from alert-listener"
@@ -487,7 +647,7 @@
       "stage1Complete": true,
       "stage2Decision": {
         "requiresDeepAnalysis": true,
-        "timestamp": "2025-12-13T12:43:37.728Z",
+        "timestamp": "2025-12-14T13:23:28.720Z",
         "reasons": [
           "Critical alert requires full analysis pipeline",
           "Force deep analysis flag is set"
@@ -507,9 +667,9 @@
         "estimatedTime": "25-50 seconds"
       }
     },
-    "contextId": "ctx-1765629808596-j4tf5t",
+    "contextId": "ctx-1765718599269-mveauf",
     "_contextFixed": true,
-    "_fixedAt": "2025-12-13T12:43:37.719Z",
+    "_fixedAt": "2025-12-14T13:23:28.711Z",
     "knowledgeBase": {
       "alertCategory": "API",
       "urgencyLevel": "BLOCKER",
@@ -522,21 +682,19 @@
     "stage1Data": {
       "overall_status": "critical",
       "alerts": {
-        "total": 1,
-        "critical": 1,
-        "warning": 0,
-        "top_alerts": [
-          "KubeAPIDown"
-        ]
+        "total": 0,
+        "critical": 0,
+        "warning": 0
       },
       "scores": {
-        "cluster_health": 20,
-        "node_availability": 50,
-        "pod_stability": 50,
-        "api_reliability": 10
+        "cluster_health": 0,
+        "node_availability": 0,
+        "pod_stability": 0,
+        "api_reliability": 0
       },
       "quick_findings": [
-        "API server is down, impacting cluster operations and kubectl access."
+        "No active alerts found in the namespace.",
+        "Cluster health check did not return any results, indicating potential API server unavailability."
       ]
     },
     "_debugInfo": {
@@ -545,51 +703,60 @@
       "originalHadTemplates": false,
       "stage1Decision": true,
       "stage1Status": "critical",
-      "stage1Alerts": 1,
-      "timestamp": "2025-12-13T12:43:37.720Z"
+      "stage1Alerts": 0,
+      "timestamp": "2025-12-14T13:23:28.711Z"
     },
     "stage1Results": {
-      "stage": "analysis",
-      "timestamp": "2025-12-13T12:43:28.596Z",
-      "cluster": "default",
+      "stage": "initial_analysis",
+      "timestamp": "2023-11-24T18:31:19.000Z",
+      "cluster": "null",
       "overall_status": "critical",
       "proceed_to_stage2": true,
       "urgency": "critical",
-      "reason": "KubeAPIDown alert is active with critical severity. No additional alerts or cascading effects detected in the same namespace.",
+      "reason": "KubeAPIDown alert is active and critical. Quick Cluster Health and Active Alerts Count indicate potential widespread issues.",
       "alerts": {
-        "total": 1,
-        "critical": 1,
-        "warning": 0,
-        "top_alerts": [
-          "KubeAPIDown"
-        ]
+        "total": 0,
+        "critical": 0,
+        "warning": 0
       },
       "scores": {
-        "cluster_health": 20,
-        "node_availability": 50,
-        "pod_stability": 50,
-        "api_reliability": 10
+        "cluster_health": 0,
+        "node_availability": 0,
+        "pod_stability": 0,
+        "api_reliability": 0
       },
       "quick_findings": [
-        "API server is down, impacting cluster operations and kubectl access."
+        "No active alerts found in the namespace.",
+        "Cluster health check did not return any results, indicating potential API server unavailability."
       ],
       "forceDeepAnalysis": true,
       "overridden": false,
       "_context": {
-        "contextId": "ctx-1765629808596-j4tf5t",
-        "createdAt": "2025-12-13T12:43:28.596Z",
+        "contextId": "ctx-1765718599269-mveauf",
+        "createdAt": "2025-12-14T13:23:19.269Z",
         "source": {
           "type": "alert-listener",
           "priority": "critical"
         },
         "initialParams": {
-          "startTime": 1765626208,
-          "endTime": 1765629808,
+          "startTime": 1765714999,
+          "endTime": 1765718599,
           "namespaces": [
-            "default"
+            "bss-prod-eks-monitoring",
+            "bstp-cms-global-production",
+            "bstp-cms-prod-v3",
+            "em-global-prod-3pp",
+            "em-global-prod-eom",
+            "em-global-prod-flowe",
+            "em-global-prod",
+            "em-prod-3pp",
+            "em-prod-eom",
+            "em-prod-flowe",
+            "em-prod",
+            "em-control-plane-prod"
           ],
           "services": [
-            "default"
+            "unknown-namespace"
           ],
           "focusAreas": [
             "Chaos engineering test pattern"
@@ -597,22 +764,37 @@
           "analysisType": "alert-driven",
           "context": {
             "alertName": "KubeAPIDown",
-            "alertId": "alert-1765629808503",
+            "alertId": "alert-1765718599169",
             "alertPriority": "critical",
             "source": "alertmanager",
             "kubernetes": {
               "container": null,
               "pod": null,
-              "namespace": "default",
+              "namespace": null,
+              "namespaces": [
+                "bss-prod-eks-monitoring",
+                "bstp-cms-global-production",
+                "bstp-cms-prod-v3",
+                "em-global-prod-3pp",
+                "em-global-prod-eom",
+                "em-global-prod-flowe",
+                "em-global-prod",
+                "em-prod-3pp",
+                "em-prod-eom",
+                "em-prod-flowe",
+                "em-prod",
+                "em-control-plane-prod"
+              ],
               "service": null,
               "deployment": null,
               "node": null,
               "persistentvolumeclaim": null,
               "volumename": null,
-              "useSpecificFilters": false
+              "useSpecificFilters": false,
+              "useMultiNamespace": true
             },
             "affectedServices": [
-              "default"
+              "unknown-namespace"
             ],
             "errorPatterns": [
               "Chaos engineering test pattern"
@@ -628,32 +810,62 @@
         "kubernetesFilters": {
           "container": null,
           "pod": null,
-          "namespace": "default",
+          "namespace": null,
+          "namespaces": [
+            "bss-prod-eks-monitoring",
+            "bstp-cms-global-production",
+            "bstp-cms-prod-v3",
+            "em-global-prod-3pp",
+            "em-global-prod-eom",
+            "em-global-prod-flowe",
+            "em-global-prod",
+            "em-prod-3pp",
+            "em-prod-eom",
+            "em-prod-flowe",
+            "em-prod",
+            "em-control-plane-prod"
+          ],
           "service": null,
           "deployment": null,
           "node": null,
           "persistentvolumeclaim": null,
           "volumename": null,
-          "useSpecificFilters": false
+          "useSpecificFilters": false,
+          "useMultiNamespace": true
         },
         "alertContext": {
           "alertName": "KubeAPIDown",
-          "alertId": "alert-1765629808503",
+          "alertId": "alert-1765718599169",
           "alertPriority": "critical",
           "source": "alertmanager",
           "kubernetes": {
             "container": null,
             "pod": null,
-            "namespace": "default",
+            "namespace": null,
+            "namespaces": [
+              "bss-prod-eks-monitoring",
+              "bstp-cms-global-production",
+              "bstp-cms-prod-v3",
+              "em-global-prod-3pp",
+              "em-global-prod-eom",
+              "em-global-prod-flowe",
+              "em-global-prod",
+              "em-prod-3pp",
+              "em-prod-eom",
+              "em-prod-flowe",
+              "em-prod",
+              "em-control-plane-prod"
+            ],
             "service": null,
             "deployment": null,
             "node": null,
             "persistentvolumeclaim": null,
             "volumename": null,
-            "useSpecificFilters": false
+            "useSpecificFilters": false,
+            "useMultiNamespace": true
           },
           "affectedServices": [
-            "default"
+            "unknown-namespace"
           ],
           "errorPatterns": [
             "Chaos engineering test pattern"
@@ -676,41 +888,39 @@
         "forceDeepAnalysis": true,
         "workflowMetadata": {
           "workflowId": "LBDqj72azAqepcuC",
-          "executionId": "5140",
-          "requestId": "alert-alert-1765629808503-1765629808517",
-          "orchestratorId": "direct-1765629808517"
+          "executionId": "5598",
+          "requestId": "alert-alert-1765718599169-1765718599181",
+          "orchestratorId": "direct-1765718599181"
         },
         "stageResults": {
           "stage1": {
             "output": {
               "overall_status": "critical",
               "alerts": {
-                "total": 1,
-                "critical": 1,
-                "warning": 0,
-                "top_alerts": [
-                  "KubeAPIDown"
-                ]
+                "total": 0,
+                "critical": 0,
+                "warning": 0
               },
               "scores": {
-                "cluster_health": 20,
-                "node_availability": 50,
-                "pod_stability": 50,
-                "api_reliability": 10
+                "cluster_health": 0,
+                "node_availability": 0,
+                "pod_stability": 0,
+                "api_reliability": 0
               },
               "quick_findings": [
-                "API server is down, impacting cluster operations and kubectl access."
+                "No active alerts found in the namespace.",
+                "Cluster health check did not return any results, indicating potential API server unavailability."
               ],
               "proceed_to_stage2": true,
               "urgency": "critical",
-              "reason": "KubeAPIDown alert is active with critical severity. No additional alerts or cascading effects detected in the same namespace.",
+              "reason": "KubeAPIDown alert is active and critical. Quick Cluster Health and Active Alerts Count indicate potential widespread issues.",
               "forceDeepAnalysis": true,
               "overridden": false
             },
-            "completedAt": "2025-12-13T12:43:37.719Z",
+            "completedAt": "2025-12-14T13:23:28.711Z",
             "decision": true,
             "status": "critical",
-            "alerts": 1
+            "alerts": 0
           }
         },
         "decisions": {},
@@ -725,7 +935,7 @@
     },
     "decision": {
       "requiresDeepAnalysis": true,
-      "timestamp": "2025-12-13T12:43:37.728Z",
+      "timestamp": "2025-12-14T13:23:28.720Z",
       "reasons": [
         "Critical alert requires full analysis pipeline",
         "Force deep analysis flag is set"
@@ -763,13 +973,24 @@
         "forceDeepAnalysis": true
       },
       "analysisParams": {
-        "startTime": 1765626208,
-        "endTime": 1765629808,
+        "startTime": 1765714999,
+        "endTime": 1765718599,
         "namespaces": [
-          "default"
+          "bss-prod-eks-monitoring",
+          "bstp-cms-global-production",
+          "bstp-cms-prod-v3",
+          "em-global-prod-3pp",
+          "em-global-prod-eom",
+          "em-global-prod-flowe",
+          "em-global-prod",
+          "em-prod-3pp",
+          "em-prod-eom",
+          "em-prod-flowe",
+          "em-prod",
+          "em-control-plane-prod"
         ],
         "services": [
-          "default"
+          "unknown-namespace"
         ],
         "focusAreas": [
           "Chaos engineering test pattern"
@@ -777,22 +998,37 @@
         "analysisType": "alert-driven",
         "context": {
           "alertName": "KubeAPIDown",
-          "alertId": "alert-1765629808503",
+          "alertId": "alert-1765718599169",
           "alertPriority": "critical",
           "source": "alertmanager",
           "kubernetes": {
             "container": null,
             "pod": null,
-            "namespace": "default",
+            "namespace": null,
+            "namespaces": [
+              "bss-prod-eks-monitoring",
+              "bstp-cms-global-production",
+              "bstp-cms-prod-v3",
+              "em-global-prod-3pp",
+              "em-global-prod-eom",
+              "em-global-prod-flowe",
+              "em-global-prod",
+              "em-prod-3pp",
+              "em-prod-eom",
+              "em-prod-flowe",
+              "em-prod",
+              "em-control-plane-prod"
+            ],
             "service": null,
             "deployment": null,
             "node": null,
             "persistentvolumeclaim": null,
             "volumename": null,
-            "useSpecificFilters": false
+            "useSpecificFilters": false,
+            "useMultiNamespace": true
           },
           "affectedServices": [
-            "default"
+            "unknown-namespace"
           ],
           "errorPatterns": [
             "Chaos engineering test pattern"
@@ -810,13 +1046,24 @@
       "proceed": true,
       "priority": "critical",
       "analysisParams": {
-        "startTime": 1765626208,
-        "endTime": 1765629808,
+        "startTime": 1765714999,
+        "endTime": 1765718599,
         "namespaces": [
-          "default"
+          "bss-prod-eks-monitoring",
+          "bstp-cms-global-production",
+          "bstp-cms-prod-v3",
+          "em-global-prod-3pp",
+          "em-global-prod-eom",
+          "em-global-prod-flowe",
+          "em-global-prod",
+          "em-prod-3pp",
+          "em-prod-eom",
+          "em-prod-flowe",
+          "em-prod",
+          "em-control-plane-prod"
         ],
         "services": [
-          "default"
+          "unknown-namespace"
         ],
         "focusAreas": [
           "Chaos engineering test pattern"
@@ -824,22 +1071,37 @@
         "analysisType": "alert-driven",
         "context": {
           "alertName": "KubeAPIDown",
-          "alertId": "alert-1765629808503",
+          "alertId": "alert-1765718599169",
           "alertPriority": "critical",
           "source": "alertmanager",
           "kubernetes": {
             "container": null,
             "pod": null,
-            "namespace": "default",
+            "namespace": null,
+            "namespaces": [
+              "bss-prod-eks-monitoring",
+              "bstp-cms-global-production",
+              "bstp-cms-prod-v3",
+              "em-global-prod-3pp",
+              "em-global-prod-eom",
+              "em-global-prod-flowe",
+              "em-global-prod",
+              "em-prod-3pp",
+              "em-prod-eom",
+              "em-prod-flowe",
+              "em-prod",
+              "em-control-plane-prod"
+            ],
             "service": null,
             "deployment": null,
             "node": null,
             "persistentvolumeclaim": null,
             "volumename": null,
-            "useSpecificFilters": false
+            "useSpecificFilters": false,
+            "useMultiNamespace": true
           },
           "affectedServices": [
-            "default"
+            "unknown-namespace"
           ],
           "errorPatterns": [
             "Chaos engineering test pattern"
@@ -853,11 +1115,22 @@
         }
       },
       "timeRange": {
-        "start": 1765626208,
-        "end": 1765629808
+        "start": 1765714999,
+        "end": 1765718599
       },
       "namespaces": [
-        "default"
+        "bss-prod-eks-monitoring",
+        "bstp-cms-global-production",
+        "bstp-cms-prod-v3",
+        "em-global-prod-3pp",
+        "em-global-prod-eom",
+        "em-global-prod-flowe",
+        "em-global-prod",
+        "em-prod-3pp",
+        "em-prod-eom",
+        "em-prod-flowe",
+        "em-prod",
+        "em-control-plane-prod"
       ],
       "focusAreas": [
         "Chaos engineering test pattern"
@@ -865,8 +1138,8 @@
     },
     "_debug": {
       "nodeType": "Force Deep Analysis Override",
-      "processedAt": "2025-12-13T12:43:37.741Z",
-      "contextId": "ctx-1765629808596-j4tf5t",
+      "processedAt": "2025-12-14T13:23:28.735Z",
+      "contextId": "ctx-1765718599269-mveauf",
       "contextPreserved": true,
       "overrideApplied": true,
       "stageSequence": [
@@ -876,14 +1149,14 @@
         "Force Deep Analysis Override"
       ]
     },
-    "namespace": "default",
-    "service": "default",
-    "startTime": 1765626208,
-    "endTime": 1765629808,
+    "namespace": "bss-prod-eks-monitoring",
+    "service": "unknown-namespace",
+    "startTime": 1765714999,
+    "endTime": 1765718599,
     "stage2Instructions": {
-      "service": "default",
-      "namespace": "default",
-      "message": "Focus on service: default"
+      "service": "unknown-namespace",
+      "namespace": "bss-prod-eks-monitoring",
+      "message": "Focus on service: unknown-namespace"
     }
   }
 ]

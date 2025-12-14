@@ -1,18 +1,29 @@
 [
   {
-    "timestamp": "2025-12-13T12:43:28.596Z",
+    "timestamp": "2025-12-14T13:23:19.269Z",
     "source": {
       "type": "alert-listener",
       "priority": "critical"
     },
     "analysisParams": {
-      "startTime": 1765626208,
-      "endTime": 1765629808,
+      "startTime": 1765714999,
+      "endTime": 1765718599,
       "namespaces": [
-        "default"
+        "bss-prod-eks-monitoring",
+        "bstp-cms-global-production",
+        "bstp-cms-prod-v3",
+        "em-global-prod-3pp",
+        "em-global-prod-eom",
+        "em-global-prod-flowe",
+        "em-global-prod",
+        "em-prod-3pp",
+        "em-prod-eom",
+        "em-prod-flowe",
+        "em-prod",
+        "em-control-plane-prod"
       ],
       "services": [
-        "default"
+        "unknown-namespace"
       ],
       "focusAreas": [
         "Chaos engineering test pattern"
@@ -20,22 +31,37 @@
       "analysisType": "alert-driven",
       "context": {
         "alertName": "KubeAPIDown",
-        "alertId": "alert-1765629808503",
+        "alertId": "alert-1765718599169",
         "alertPriority": "critical",
         "source": "alertmanager",
         "kubernetes": {
           "container": null,
           "pod": null,
-          "namespace": "default",
+          "namespace": null,
+          "namespaces": [
+            "bss-prod-eks-monitoring",
+            "bstp-cms-global-production",
+            "bstp-cms-prod-v3",
+            "em-global-prod-3pp",
+            "em-global-prod-eom",
+            "em-global-prod-flowe",
+            "em-global-prod",
+            "em-prod-3pp",
+            "em-prod-eom",
+            "em-prod-flowe",
+            "em-prod",
+            "em-control-plane-prod"
+          ],
           "service": null,
           "deployment": null,
           "node": null,
           "persistentvolumeclaim": null,
           "volumename": null,
-          "useSpecificFilters": false
+          "useSpecificFilters": false,
+          "useMultiNamespace": true
         },
         "affectedServices": [
-          "default"
+          "unknown-namespace"
         ],
         "errorPatterns": [
           "Chaos engineering test pattern"
@@ -51,13 +77,28 @@
     "kubernetesFilters": {
       "container": null,
       "pod": null,
-      "namespace": "default",
+      "namespace": null,
+      "namespaces": [
+        "bss-prod-eks-monitoring",
+        "bstp-cms-global-production",
+        "bstp-cms-prod-v3",
+        "em-global-prod-3pp",
+        "em-global-prod-eom",
+        "em-global-prod-flowe",
+        "em-global-prod",
+        "em-prod-3pp",
+        "em-prod-eom",
+        "em-prod-flowe",
+        "em-prod",
+        "em-control-plane-prod"
+      ],
       "service": null,
       "deployment": null,
       "node": null,
       "persistentvolumeclaim": null,
       "volumename": null,
-      "useSpecificFilters": false
+      "useSpecificFilters": false,
+      "useMultiNamespace": true
     },
     "stageConfig": {
       "maxStages": 6,
@@ -70,79 +111,90 @@
     "forceDeepAnalysis": true,
     "metadata": {
       "workflowId": "LBDqj72azAqepcuC",
-      "executionId": "5140",
-      "requestId": "alert-alert-1765629808503-1765629808517",
-      "orchestratorId": "direct-1765629808517",
-      "alertId": "alert-1765629808503",
+      "executionId": "5598",
+      "requestId": "alert-alert-1765718599169-1765718599181",
+      "orchestratorId": "direct-1765718599181",
+      "alertId": "alert-1765718599169",
       "alertName": "KubeAPIDown"
     },
     "prometheusQueries": [
       {
         "type": "container_cpu",
-        "query": "rate(container_cpu_usage_seconds_total{namespace=\"default\", pod=\"null\", container=\"null\"}[5m]) * 100",
-        "description": "CPU usage for null (namespaces: default)"
+        "query": "rate(container_cpu_usage_seconds_total{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}[5m]) * 100",
+        "description": "CPU usage for all containers (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
       },
       {
         "type": "container_memory",
-        "query": "container_memory_working_set_bytes{namespace=\"default\", pod=\"null\", container=\"null\"}",
-        "description": "Memory usage for null (namespaces: default)"
+        "query": "container_memory_working_set_bytes{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
+        "description": "Memory usage for all containers (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
       },
       {
         "type": "container_memory_limit",
-        "query": "container_spec_memory_limit_bytes{namespace=\"default\", pod=\"null\", container=\"null\"}",
-        "description": "Memory limit for null (namespaces: default)"
+        "query": "container_spec_memory_limit_bytes{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
+        "description": "Memory limit for all containers (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
       },
       {
         "type": "container_restarts",
-        "query": "kube_pod_container_status_restarts_total{namespace=\"default\", pod=\"null\", container=\"null\"}",
-        "description": "Restart count for null (namespaces: default)"
+        "query": "kube_pod_container_status_restarts_total{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
+        "description": "Restart count for all containers (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
       },
       {
         "type": "pod_status",
-        "query": "kube_pod_status_phase{namespace=\"default\", pod=\"null\"}",
-        "description": "Pod phase for null (namespaces: default)"
+        "query": "kube_pod_status_phase{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
+        "description": "Pod phase for all pods (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
       },
       {
         "type": "pod_ready",
-        "query": "kube_pod_status_ready{namespace=\"default\", pod=\"null\"}",
-        "description": "Pod ready status for null (namespaces: default)"
+        "query": "kube_pod_status_ready{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
+        "description": "Pod ready status for all pods (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
       },
       {
         "type": "service_cpu",
-        "query": "sum(rate(container_cpu_usage_seconds_total{namespace=\"default\", pod=~\"unknown.*\"}[5m])) by (pod) * 100",
-        "description": "CPU usage for service null (namespaces: default)"
+        "query": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}[5m])) by (pod) * 100",
+        "description": "CPU usage for service all services (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
       },
       {
         "type": "service_memory",
-        "query": "sum(container_memory_working_set_bytes{namespace=\"default\", pod=~\"unknown.*\"}) by (pod)",
-        "description": "Memory usage for service null (namespaces: default)"
+        "query": "sum(container_memory_working_set_bytes{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}) by (pod)",
+        "description": "Memory usage for service all services (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
       },
       {
         "type": "service_replicas",
-        "query": "kube_deployment_status_replicas{namespace=\"default\", deployment=\"unknown\"}",
-        "description": "Replica count for null (namespaces: default)"
+        "query": "kube_deployment_status_replicas{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
+        "description": "Replica count for all deployments (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
       },
       {
         "type": "crashloop_restarts",
-        "query": "rate(kube_pod_container_status_restarts_total{namespace=\"default\"}[15m]) > 0",
-        "description": "Pods with recent restarts (namespaces: default)"
+        "query": "rate(kube_pod_container_status_restarts_total{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}[15m]) > 0",
+        "description": "Pods with recent restarts (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
       }
     ],
     "_context": {
-      "contextId": "ctx-1765629808596-j4tf5t",
-      "createdAt": "2025-12-13T12:43:28.596Z",
+      "contextId": "ctx-1765718599269-mveauf",
+      "createdAt": "2025-12-14T13:23:19.269Z",
       "source": {
         "type": "alert-listener",
         "priority": "critical"
       },
       "initialParams": {
-        "startTime": 1765626208,
-        "endTime": 1765629808,
+        "startTime": 1765714999,
+        "endTime": 1765718599,
         "namespaces": [
-          "default"
+          "bss-prod-eks-monitoring",
+          "bstp-cms-global-production",
+          "bstp-cms-prod-v3",
+          "em-global-prod-3pp",
+          "em-global-prod-eom",
+          "em-global-prod-flowe",
+          "em-global-prod",
+          "em-prod-3pp",
+          "em-prod-eom",
+          "em-prod-flowe",
+          "em-prod",
+          "em-control-plane-prod"
         ],
         "services": [
-          "default"
+          "unknown-namespace"
         ],
         "focusAreas": [
           "Chaos engineering test pattern"
@@ -150,22 +202,37 @@
         "analysisType": "alert-driven",
         "context": {
           "alertName": "KubeAPIDown",
-          "alertId": "alert-1765629808503",
+          "alertId": "alert-1765718599169",
           "alertPriority": "critical",
           "source": "alertmanager",
           "kubernetes": {
             "container": null,
             "pod": null,
-            "namespace": "default",
+            "namespace": null,
+            "namespaces": [
+              "bss-prod-eks-monitoring",
+              "bstp-cms-global-production",
+              "bstp-cms-prod-v3",
+              "em-global-prod-3pp",
+              "em-global-prod-eom",
+              "em-global-prod-flowe",
+              "em-global-prod",
+              "em-prod-3pp",
+              "em-prod-eom",
+              "em-prod-flowe",
+              "em-prod",
+              "em-control-plane-prod"
+            ],
             "service": null,
             "deployment": null,
             "node": null,
             "persistentvolumeclaim": null,
             "volumename": null,
-            "useSpecificFilters": false
+            "useSpecificFilters": false,
+            "useMultiNamespace": true
           },
           "affectedServices": [
-            "default"
+            "unknown-namespace"
           ],
           "errorPatterns": [
             "Chaos engineering test pattern"
@@ -181,32 +248,62 @@
       "kubernetesFilters": {
         "container": null,
         "pod": null,
-        "namespace": "default",
+        "namespace": null,
+        "namespaces": [
+          "bss-prod-eks-monitoring",
+          "bstp-cms-global-production",
+          "bstp-cms-prod-v3",
+          "em-global-prod-3pp",
+          "em-global-prod-eom",
+          "em-global-prod-flowe",
+          "em-global-prod",
+          "em-prod-3pp",
+          "em-prod-eom",
+          "em-prod-flowe",
+          "em-prod",
+          "em-control-plane-prod"
+        ],
         "service": null,
         "deployment": null,
         "node": null,
         "persistentvolumeclaim": null,
         "volumename": null,
-        "useSpecificFilters": false
+        "useSpecificFilters": false,
+        "useMultiNamespace": true
       },
       "alertContext": {
         "alertName": "KubeAPIDown",
-        "alertId": "alert-1765629808503",
+        "alertId": "alert-1765718599169",
         "alertPriority": "critical",
         "source": "alertmanager",
         "kubernetes": {
           "container": null,
           "pod": null,
-          "namespace": "default",
+          "namespace": null,
+          "namespaces": [
+            "bss-prod-eks-monitoring",
+            "bstp-cms-global-production",
+            "bstp-cms-prod-v3",
+            "em-global-prod-3pp",
+            "em-global-prod-eom",
+            "em-global-prod-flowe",
+            "em-global-prod",
+            "em-prod-3pp",
+            "em-prod-eom",
+            "em-prod-flowe",
+            "em-prod",
+            "em-control-plane-prod"
+          ],
           "service": null,
           "deployment": null,
           "node": null,
           "persistentvolumeclaim": null,
           "volumename": null,
-          "useSpecificFilters": false
+          "useSpecificFilters": false,
+          "useMultiNamespace": true
         },
         "affectedServices": [
-          "default"
+          "unknown-namespace"
         ],
         "errorPatterns": [
           "Chaos engineering test pattern"
@@ -229,9 +326,9 @@
       "forceDeepAnalysis": true,
       "workflowMetadata": {
         "workflowId": "LBDqj72azAqepcuC",
-        "executionId": "5140",
-        "requestId": "alert-alert-1765629808503-1765629808517",
-        "orchestratorId": "direct-1765629808517"
+        "executionId": "5598",
+        "requestId": "alert-alert-1765718599169-1765718599181",
+        "orchestratorId": "direct-1765718599181"
       },
       "stageResults": {},
       "decisions": {},
