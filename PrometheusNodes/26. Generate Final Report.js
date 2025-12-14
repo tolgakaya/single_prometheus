@@ -752,6 +752,13 @@ function safeGet(obj, path, defaultValue) {
 // Input data from route
 const inputData = $input.first().json;
 
+// FIX: Priority 8 - Define inputAlert from context (for fallback namespace/pod/alert extraction)
+// inputAlert represents the original Alertmanager webhook data
+const inputAlert = inputData?._context?.originalAlert ||
+                   inputData?.originalAlert ||
+                   inputData?.alert ||
+                   null;
+
 // ============= FIX STAGE NODE DATA EXTRACTION =============
 // Extract data from Fix Stage nodes - these contain the actual stage outputs
 const stage1FixData = $node["Fix Stage 1 Context"]?.json || {};
