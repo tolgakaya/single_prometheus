@@ -1,4 +1,21 @@
 // Fix Stage 5 Context - Optimized without circular references
+
+// Default production namespaces
+const DEFAULT_NAMESPACES = [
+  'bstp-cms-global-production',
+  'bstp-cms-prod-v3',
+  'em-global-prod-3pp',
+  'em-global-prod-eom',
+  'em-global-prod-flowe',
+  'em-global-prod',
+  'em-prod-3pp',
+  'em-prod-eom',
+  'em-prod-flowe',
+  'em-prod',
+  'etiyamobile-production',
+  'etiyamobile-prod'
+];
+
 const stage5Output = $input.first().json;
 
 // Önceki stage'den context ve data'yı al
@@ -160,9 +177,9 @@ if (actualOutput.remediation_plan && actualOutput.remediation_plan.immediate_act
       let actualComponent = actualRootCause.component || 
                            stage4Data?.primaryDiagnosis?.component || 
                            "unknown-component";
-      const actualNamespace = stage4Data?.primaryDiagnosis?.namespace || 
-                             stage4Data?.stage2Data?.affected_services?.[0]?.split('-')?.[0] || 
-                             "etiyamobile-production";
+      const actualNamespace = stage4Data?.primaryDiagnosis?.namespace ||
+                             stage4Data?.stage2Data?.affected_services?.[0]?.split('-')?.[0] ||
+                             DEFAULT_NAMESPACES[0];
       const actualIssue = actualRootCause.issue || 
                          stage4Data?.primaryDiagnosis?.issue || 
                          "Unknown issue";
@@ -450,7 +467,7 @@ fixedOutput.executiveSummary = {
 };
 
 // Namespaces and time range
-fixedOutput.namespaces = previousContext?.initialParams?.namespaces || ['etiyamobile-production'];
+fixedOutput.namespaces = previousContext?.initialParams?.namespaces || DEFAULT_NAMESPACES;
 fixedOutput.timeRange = {
  start: previousContext?.initialParams?.startTime || 0,
  end: previousContext?.initialParams?.endTime || 0

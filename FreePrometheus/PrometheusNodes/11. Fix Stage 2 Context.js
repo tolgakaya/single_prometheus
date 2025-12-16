@@ -1,4 +1,21 @@
 // Fix Stage 2 Context - Circular Reference Safe Version
+
+// Default production namespaces
+const DEFAULT_NAMESPACES = [
+  'bstp-cms-global-production',
+  'bstp-cms-prod-v3',
+  'em-global-prod-3pp',
+  'em-global-prod-eom',
+  'em-global-prod-flowe',
+  'em-global-prod',
+  'em-prod-3pp',
+  'em-prod-eom',
+  'em-prod-flowe',
+  'em-prod',
+  'etiyamobile-production',
+  'etiyamobile-prod'
+];
+
 const stage2Output = $input.first().json;
 const previousData = $node["Force Deep Analysis Override"].json;
 const stage1FixData = $node["Fix Stage 1 Context"].json;
@@ -259,7 +276,7 @@ actualOutput._context.decisions.stage3Proceed = {
 };
 
 // Add namespace and time range info
-fixedOutput.namespaces = previousData._context?.initialParams?.namespaces || ['etiyamobile-production'];
+fixedOutput.namespaces = previousData._context?.initialParams?.namespaces || DEFAULT_NAMESPACES;
 fixedOutput.timeRange = {
     start: previousData._context?.initialParams?.startTime || 0,
     end: previousData._context?.initialParams?.endTime || 0

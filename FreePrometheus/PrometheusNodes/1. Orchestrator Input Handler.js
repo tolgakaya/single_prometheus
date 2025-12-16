@@ -1,6 +1,22 @@
 // Prometheus Workflow - Orchestrator Input Handler
 // Bu node Orchestrator'dan gelen veriyi işler ve Prometheus'a uygun formata çevirir
 
+// Default production namespaces to monitor (matches Alert-Driven flow)
+const DEFAULT_NAMESPACES = [
+  'bstp-cms-global-production',
+  'bstp-cms-prod-v3',
+  'em-global-prod-3pp',
+  'em-global-prod-eom',
+  'em-global-prod-flowe',
+  'em-global-prod',
+  'em-prod-3pp',
+  'em-prod-eom',
+  'em-prod-flowe',
+  'em-prod',
+  'etiyamobile-production',
+  'etiyamobile-prod'
+];
+
 const input = $input.first().json;
 
 // Debug için - console.log yerine değişkenlere yazalım
@@ -15,7 +31,7 @@ const defaults = {
     duration: 3600, // 1 saat
     lookback: 3600
   },
-  environment: 'etiyamobile-production',
+  environment: 'k8s-prod', // Multi-namespace cluster
   cluster: 'k8s-prod',
   limits: {
     maxStages: 6,
@@ -281,17 +297,18 @@ if (input.focusAreas && Array.isArray(input.focusAreas)) {
 }
 
 // 5. NAMESPACE FILTERING
-if (input.namespaces && Array.isArray(input.namespaces)) {
+if (input.namespaces && Array.isArray(input.namespaces) && input.namespaces.length > 0) {
   processedInput.searchParams.namespaces = input.namespaces;
-} else if (processedInput.searchParams.services.length > 0) {
-  // Default to etiyamobile-production namespace if services mentioned
-  processedInput.searchParams.namespaces = ['etiyamobile-production'];
+} else {
+  // Default to all production namespaces
+  processedInput.searchParams.namespaces = DEFAULT_NAMESPACES;
+  console.log(`Using DEFAULT_NAMESPACES: ${DEFAULT_NAMESPACES.length} namespaces`);
 }
 
 // 6. BUILD ANALYSIS PARAMETERS for existing flow
 processedInput.analysisParams = {
   cluster: processedInput.searchParams.cluster,
-  environment: processedInput.source === 'orchestrator' ? 'k8s-prod' : 'etiyamobile-production',
+  environment: 'k8s-prod', // Always use k8s-prod for multi-namespace
   namespaceFilter: processedInput.searchParams.namespaces.join(',') || 'all',
   timeRange: processedInput.timeRange.duration,
   includeAlerts: processedInput.features.includeAlerts,

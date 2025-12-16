@@ -1,4 +1,21 @@
 // Fix Stage 3 Context - Optimized without circular references
+
+// Default production namespaces
+const DEFAULT_NAMESPACES = [
+  'bstp-cms-global-production',
+  'bstp-cms-prod-v3',
+  'em-global-prod-3pp',
+  'em-global-prod-eom',
+  'em-global-prod-flowe',
+  'em-global-prod',
+  'em-prod-3pp',
+  'em-prod-eom',
+  'em-prod-flowe',
+  'em-prod',
+  'etiyamobile-production',
+  'etiyamobile-prod'
+];
+
 const stage3Output = $input.first().json;
 
 // Stage 2'den gelen context ve data'yı al
@@ -336,7 +353,7 @@ fixedOutput.stage4PrepData = {
 };
 
 // Namespaces and time range
-fixedOutput.namespaces = previousContext?.initialParams?.namespaces || ['etiyamobile-production'];
+fixedOutput.namespaces = previousContext?.initialParams?.namespaces || DEFAULT_NAMESPACES;
 fixedOutput.timeRange = {
   start: previousContext?.initialParams?.startTime || 0,
   end: previousContext?.initialParams?.endTime || 0

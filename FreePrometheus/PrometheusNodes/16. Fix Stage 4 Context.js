@@ -1,4 +1,21 @@
 // Fix Stage 4 Context - Optimized without circular reference removal
+
+// Default production namespaces
+const DEFAULT_NAMESPACES = [
+  'bstp-cms-global-production',
+  'bstp-cms-prod-v3',
+  'em-global-prod-3pp',
+  'em-global-prod-eom',
+  'em-global-prod-flowe',
+  'em-global-prod',
+  'em-prod-3pp',
+  'em-prod-eom',
+  'em-prod-flowe',
+  'em-prod',
+  'etiyamobile-production',
+  'etiyamobile-prod'
+];
+
 const stage4Output = $input.first().json;
 
 // Stage 3'ten gelen context'i al
@@ -53,9 +70,9 @@ if (actualOutput.diagnostics_executed && actualOutput.diagnostics_executed.lengt
       actualTarget = actualTarget.name;
     }
     
-    const actualNamespace = stage3Data?.namespaces?.[0] || 
-                           previousContext?.initialParams?.namespaces?.[0] || 
-                           'etiyamobile-production';
+    const actualNamespace = stage3Data?.namespaces?.[0] ||
+                           previousContext?.initialParams?.namespaces?.[0] ||
+                           DEFAULT_NAMESPACES[0];
     
     actualOutput.diagnostics_executed = [{
       target: actualTarget,
@@ -317,7 +334,7 @@ if (actualOutput.diagnostic_summary?.confirmed_issues?.[0]) {
 }
 
 // Namespaces and time range
-fixedOutput.namespaces = previousContext?.initialParams?.namespaces || ['etiyamobile-production'];
+fixedOutput.namespaces = previousContext?.initialParams?.namespaces || DEFAULT_NAMESPACES;
 fixedOutput.timeRange = {
   start: previousContext?.initialParams?.startTime || 0,
   end: previousContext?.initialParams?.endTime || 0

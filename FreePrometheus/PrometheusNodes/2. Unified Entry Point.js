@@ -1,4 +1,21 @@
 // Unified Entry Point - Orchestrator Request Handler with Enhanced Context
+
+// Default production namespaces to monitor (matches Alert-Driven flow)
+const DEFAULT_NAMESPACES = [
+  'bstp-cms-global-production',
+  'bstp-cms-prod-v3',
+  'em-global-prod-3pp',
+  'em-global-prod-eom',
+  'em-global-prod-flowe',
+  'em-global-prod',
+  'em-prod-3pp',
+  'em-prod-eom',
+  'em-prod-flowe',
+  'em-prod',
+  'etiyamobile-production',
+  'etiyamobile-prod'
+];
+
 const input = $input.first().json;
 
 // Detect source and extract parameters
@@ -17,7 +34,7 @@ if (input.orchestratorId && input.startTime && input.endTime) {
   analysisParams = {
     startTime: input.startTime,
     endTime: input.endTime,
-    namespaces: input.namespaces || ['etiyamobile-production'],
+    namespaces: (input.namespaces && input.namespaces.length > 0) ? input.namespaces : DEFAULT_NAMESPACES,
     focusAreas: input.focusAreas || [],
     analysisType: input.analysisType || 'general',
     context: input.context || {}
@@ -37,7 +54,7 @@ if (input.orchestratorId && input.startTime && input.endTime) {
   analysisParams = {
     startTime: Math.floor(new Date(timeRange.start).getTime() / 1000),
     endTime: Math.floor(new Date(timeRange.end).getTime() / 1000),
-    namespaces: ['etiyamobile-production'],
+    namespaces: DEFAULT_NAMESPACES,
     userMessage: message,
     keywords: extractKeywords(message)
   };
@@ -73,7 +90,7 @@ if (input.orchestratorId && input.startTime && input.endTime) {
   analysisParams = {
     startTime: input.startTime || Math.floor(Date.now() / 1000) - 3600,
     endTime: input.endTime || Math.floor(Date.now() / 1000),
-    namespaces: input.namespaces || ['etiyamobile-production'],
+    namespaces: (input.namespaces && input.namespaces.length > 0) ? input.namespaces : DEFAULT_NAMESPACES,
     services: input.searchParams?.services || [], // YENİ EKLENDİ
     focusAreas: input.focusAreas || [],
     analysisType: input.analysisType || 'general',

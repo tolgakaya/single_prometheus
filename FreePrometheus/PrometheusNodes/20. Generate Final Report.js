@@ -1,5 +1,21 @@
 // Generate Final Report - Orchestrator Support with Full Context Preservation
 
+// Default production namespaces
+const DEFAULT_NAMESPACES = [
+  'bstp-cms-global-production',
+  'bstp-cms-prod-v3',
+  'em-global-prod-3pp',
+  'em-global-prod-eom',
+  'em-global-prod-flowe',
+  'em-global-prod',
+  'em-prod-3pp',
+  'em-prod-eom',
+  'em-prod-flowe',
+  'em-prod',
+  'etiyamobile-production',
+  'etiyamobile-prod'
+];
+
 // Güvenli node verisi alma fonksiyonu
 function getNodeData(nodeName) {
   try {
@@ -91,7 +107,7 @@ if (!masterContext || !masterContext.contextId) {
     decisions: {},
     debug: { error: 'Context lost - emergency creation' },
     initialParams: {
-      namespaces: ['etiyamobile-production'],
+      namespaces: DEFAULT_NAMESPACES,
       startTime: Math.floor(Date.now() / 1000) - 3600,
       endTime: Math.floor(Date.now() / 1000)
     }
@@ -199,7 +215,7 @@ if (allStageData.stage4 && detectAndCleanMockData(allStageData.stage4)) {
         evidence: allStageData.stage2.root_cause.evidence,
         severity: "high",
         impact: `${allStageData.stage2.root_cause.component} is experiencing issues`,
-        namespace: allStageData.stage2.affected_services?.[0]?.split('-')?.[0] || "etiyamobile-production"
+        namespace: allStageData.stage2.affected_services?.[0]?.split('-')?.[0] || DEFAULT_NAMESPACES[0]
       }],
       secondary_issues: []
     };
@@ -211,7 +227,7 @@ if (allStageData.stage5?.remediation_plan?.immediate_actions) {
   allStageData.stage5.remediation_plan.immediate_actions.forEach((action, idx) => {
     if (action.command && action.command.includes('payment-service')) {
       const actualComponent = allStageData.stage2?.root_cause?.component || "unknown-component";
-      const actualNamespace = allStageData.stage2?.affected_services?.[0]?.split('-')?.[0] || "etiyamobile-production";
+      const actualNamespace = allStageData.stage2?.affected_services?.[0]?.split('-')?.[0] || DEFAULT_NAMESPACES[0];
       
       action.command = `kubectl delete pod ${actualComponent} -n ${actualNamespace}`;
       action.action = action.action.replace(/payment-service/g, actualComponent);
@@ -229,7 +245,7 @@ if (allStageData.primaryDiagnosis && JSON.stringify(allStageData.primaryDiagnosi
       severity: "high",
       evidence: allStageData.stage2.root_cause.evidence,
       impact: `${allStageData.stage2.root_cause.component} causing service disruption`,
-      namespace: allStageData.stage2.affected_services?.[0]?.split('-')?.[0] || "etiyamobile-production"
+      namespace: allStageData.stage2.affected_services?.[0]?.split('-')?.[0] || DEFAULT_NAMESPACES[0]
     };
   }
   mockDataFound = true;
