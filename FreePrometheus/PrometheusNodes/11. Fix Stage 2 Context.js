@@ -187,8 +187,9 @@ if (previousData.stage1Data) {
         alerts: previousData.stage1Data.alerts,
         scores: previousData.stage1Data.scores,
         quick_findings: previousData.stage1Data.quick_findings || [],
-        active_services: previousData.stage1Data.active_services || [],
-        requested_services: previousData.stage1Data.requested_services || [],
+        services_analyzed: previousData.stage1Data.services_analyzed || [],
+        services_count: previousData.stage1Data.services_count || 0,
+        namespaces_analyzed: previousData.stage1Data.namespaces_analyzed || [],
         proceed_to_stage2: previousData.stage1Data.proceed_to_stage2,
         urgency: previousData.stage1Data.urgency,
         reason: previousData.stage1Data.reason
@@ -200,8 +201,9 @@ if (previousData.stage1Data) {
         alerts: stage1FixData.stage1Data.alerts,
         scores: stage1FixData.stage1Data.scores,
         quick_findings: stage1FixData.stage1Data.quick_findings || [],
-        active_services: stage1FixData.stage1Data.active_services || [],
-        requested_services: stage1FixData.stage1Data.requested_services || [],
+        services_analyzed: stage1FixData.stage1Data.services_analyzed || [],
+        services_count: stage1FixData.stage1Data.services_count || 0,
+        namespaces_analyzed: stage1FixData.stage1Data.namespaces_analyzed || [],
         proceed_to_stage2: stage1FixData.stage1Data.proceed_to_stage2,
         urgency: stage1FixData.stage1Data.urgency,
         reason: stage1FixData.stage1Data.reason
@@ -214,8 +216,9 @@ if (previousData.stage1Data) {
         alerts: s1Output.alerts,
         scores: s1Output.scores,
         quick_findings: s1Output.quick_findings || [],
-        active_services: s1Output.active_services || [],
-        requested_services: s1Output.requested_services || [],
+        services_analyzed: s1Output.services_analyzed || [],
+        services_count: s1Output.services_count || 0,
+        namespaces_analyzed: s1Output.namespaces_analyzed || [],
         proceed_to_stage2: s1Output.proceed_to_stage2,
         urgency: s1Output.urgency,
         reason: s1Output.reason
@@ -234,8 +237,9 @@ if (stage1Data) {
         alerts: { total: 0, critical: 0, warning: 0 },
         scores: {},
         quick_findings: [],
-        active_services: [],
-        requested_services: []
+        services_analyzed: [],
+        services_count: 0,
+        namespaces_analyzed: []
     };
 }
 
