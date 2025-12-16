@@ -1,0 +1,146 @@
+# Stage 2: Deep Kubernetes Analysis - CONTEXT AWARE
+
+Execute comprehensive analysis based on Stage 1 findings.
+
+## 🕐 TIME PARAMETERS:
+Use these EXACT timestamps from context:
+- Start Time: {{ $json._context.initialParams.startTime }}
+- End Time: {{ $json._context.initialParams.endTime }}
+
+IMPORTANT: 
+- These are Unix timestamps in seconds
+- Convert for display: new Date(timestamp * 1000).toISOString()
+- DO NOT use mock dates like "2024-06-01"
+- ALL tool calls must use these timestamps
+
+## 🎯 SERVICE FOCUS:
+{{ $json.requested_services && $json.requested_services.length > 0 ? 'Analyze these services: ' + $json.requested_services.join(', ') : 'General cluster analysis' }}
+{{ $json.active_services && $json.active_services.length > 0 ? 'Active service variants: ' + $json.active_services.join(', ') : '' }}
+
+## 📋 CONTEXT INFORMATION:
+- Context ID: {{ $json._context.contextId }}
+- Full Context: {{ JSON.stringify($json._context) }}
+- Stage 1 Findings: {{ JSON.stringify($json.stage1Results) }}
+
+## 🔧 TOOL EXECUTION:
+
+When calling ANY tool, use:
+{
+  "start": {{ $json._context.initialParams.startTime }},
+  "end": {{ $json._context.initialParams.endTime }},
+  "namespace": "{{ $json._context.initialParams.namespaces[0] }}",
+  "service": "{{ $json.requested_services && $json.requested_services[0] ? $json.requested_services[0] : '' }}"
+}
+
+## 🎯 ANALYSIS PHASES:
+
+### Phase 1: INSTANT (0-10s)
+Execute based on Stage 1 findings:
+- If pods failing: Use `Pod Status Check`, `Container Restarts`, `Pod Resource Usage`
+- If node issues: Use `Node Status Check`, `Node Resource Usage`
+- If network issues: Use `Service Endpoints Health`, `Ingress Status`
+
+### Phase 2: TREND (10-20s)
+Historical analysis:
+- Use `Historical Comparison 24h` with actual timestamps
+- Look for patterns in the time range
+
+### Phase 3: ANOMALY (20-30s)
+- Use `Resource Exhaustion Prediction`
+- Use `Anomaly Patterns`
+
+## 🔧 JSON FORMAT VALIDATION RULES:
+
+1. Start your response with { and end with }
+2. Do not include any text before or after the JSON
+3. Do not use any code block formatting or markdown. No triple backticks before or after the JSON
+4. Ensure all string values are in double quotes
+5. Ensure all numbers are unquoted (5 not "5")
+6. Ensure booleans are unquoted (true not "true")
+7. For _context field, use this exact value: {{ JSON.stringify($json._context) }}
+8. Empty arrays are valid: []
+9. All arrays must use square brackets []
+10. All objects must use curly braces {}
+
+## ✅ RESPONSE VALIDATION:
+Your complete response must:
+- Be valid JSON that starts with { and ends with }
+- Include all required fields from the template
+- Use actual tool response data, not placeholders
+- Have proper nesting for execution_phases, correlation_matrix, and root_cause objects
+- Contain real timestamps and data from Prometheus
+
+## 📝 FINAL REMINDER:
+RETURN RAW JSON ONLY - NO EXPLANATIONS, NO MARKDOWN, NO CODE BLOCKS
+
+## 🚨 CRITICAL OUTPUT REQUIREMENT:
+**RETURN ONLY VALID JSON - NO MARKDOWN**
+
+{
+  "stage": "deep_analysis",
+  "investigation_id": "{{ $json._context.contextId }}-stage2",
+  "triggered_by": "Stage 1: {{ $json.stage1Results.alerts.total }} alerts",
+  "execution_phases": {
+    "instant": {
+      "tools_used": ["<actual tools used>"],
+      "duration": "<actual duration>",
+      "findings": {
+        "critical_pods": ["<from actual tool responses>"],
+        "resource_pressure": ["<from actual tool responses>"],
+        "workload_issues": ["<from actual tool responses>"],
+        "scaling_issues": ["<from actual tool responses>"]
+      }
+    },
+    "trend": {
+      "tools_used": ["<actual tools used>"],
+      "findings": {
+        "memory_growth": "<from actual 24h comparison>",
+        "restart_pattern": "<from actual data>",
+        "peak_times": ["<actual timestamps if found>"],
+        "pvc_growth": "<from actual metrics>"
+      }
+    },
+    "anomaly": {
+      "tools_used": ["<actual tools used>"],
+      "findings": {
+        "predictions": ["<from actual analysis>"],
+        "anomalies": ["<from actual detection>"]
+      }
+    }
+  },
+  "correlation_matrix": {
+    "primary_chain": "<actual correlation found>",
+    "affected_services": ["<from actual findings>"],
+    "blast_radius": "<actual impact>",
+    "kubernetes_impact": {
+      "evicted_pods": 0,
+      "pending_pods": 0,
+      "failed_schedules": 0
+    }
+  },
+  "root_cause": {
+    "identified": false,
+    "component": "<actual component from findings>",
+    "issue": "<actual issue description>",
+    "evidence": ["<actual evidence from tools>"],
+    "confidence": 0.0
+  },
+  "proceed_to_stage3": false,
+  "alert_correlation_needed": false,
+  "_context": {{ JSON.stringify($json._context) }},
+  "_debug": {
+    "nodeType": "Stage 2: Deep Analysis",
+    "processedAt": "<current ISO timestamp>",
+    "contextId": "{{ $json._context.contextId }}",
+    "contextPreserved": true,
+    "receivedFromStage": "",
+    "stageSequence": {{ JSON.stringify($json._debug.stageSequence) }},
+    "timeRangeUsed": {
+      "start": {{ $json._context.initialParams.startTime }},
+      "end": {{ $json._context.initialParams.endTime }}
+    }
+  }
+}
+
+## ⚠️ CRITICAL FINAL INSTRUCTION:
+Your ENTIRE response must be ONLY the JSON object above. Do NOT add any text before the opening { or after the closing }. Do NOT use markdown code blocks or backticks. Start with { and end with }

@@ -1,0 +1,134 @@
+# Stage 5: AI-Powered Remediation Plan - CONTEXT AWARE
+
+Generate remediation plan based on all findings.
+
+## 🚨 CRITICAL OUTPUT REQUIREMENT:
+**YOU MUST RETURN ONLY VALID JSON - NO MARKDOWN, NO CODE BLOCKS, NO EXTRA TEXT**
+**DO NOT WRAP YOUR RESPONSE IN ```json``` TAGS**
+**RETURN RAW JSON ONLY**
+
+## 🕐 TIME PARAMETERS:
+- Analysis Period: From timestamp {{ $json._context.initialParams.startTime }} to {{ $json._context.initialParams.endTime }}
+- Current Time: Use new Date().toISOString() for current timestamp
+
+## 📋 COMPLETE CONTEXT:
+- Context ID: {{ $json._context.contextId }}
+- Primary Issue: {{ $json.primaryDiagnosis.issue }}
+- Severity: {{ $json.primaryDiagnosis.severity }}
+- Affected Component: {{  $json.stage4Data.enriched_context.deployment_info.name}}
+
+## 💾 OUTPUT FORMAT (MUST BE PURE JSON):
+
+{
+  "stage": "ai_powered_analysis",
+  "analysis_id": "{{ $json._context.contextId }}-stage5",
+  "remediation_plan": {
+    "immediate_actions": [
+      {
+        "action": "Rollback deployment to previous version",
+        "command": "kubectl rollout undo deployment/{{ $json.stage4Data.enriched_context.deployment_info}} -n {{ $json.primaryDiagnosis.namespace }}",
+        "risk": "low",
+        "estimated_time": "2-5 minutes",
+        "expected_outcome": "Restore service to previous stable version"
+      }
+    ],
+    "short_term_fixes": [
+      {
+        "action": "Increase memory limits temporarily",
+        "timeline": "1-2 days",
+        "details": "Set memory limit to 2Gi while investigating root cause"
+      }
+    ],
+    "long_term_solutions": [
+      {
+        "action": "Fix memory leak in TransactionHandler",
+        "timeline": "1-2 weeks",
+        "details": "Review and fix the memory leak in payment processing code"
+      }
+    ],
+    "preventive_measures": [
+      "Implement memory profiling in CI/CD",
+      "Add memory leak detection tests",
+      "Set up gradual rollout strategy"
+    ]
+  },
+  "risk_assessment": {
+    "overall_risk": "medium",
+    "factors": [
+      "Payment service is critical",
+      "Rollback is tested and safe",
+      "Memory issue is contained to specific pods"
+    ],
+    "mitigation_steps": [
+      "Monitor closely after rollback",
+      "Keep team on standby",
+      "Prepare hotfix if needed"
+    ]
+  },
+  "implementation_order": [
+    {
+      "step": 1,
+      "action": "Execute rollback",
+      "dependencies": [],
+      "validation": "Check pod status and memory usage"
+    },
+    {
+      "step": 2,
+      "action": "Verify service health",
+      "dependencies": ["step_1"],
+      "validation": "Check error rates and response times"
+    },
+    {
+      "step": 3,
+      "action": "Update monitoring alerts",
+      "dependencies": ["step_2"],
+      "validation": "Ensure alerts are firing correctly"
+    }
+  ],
+  "success_metrics": {
+    "immediate": [
+      "Pod restart count = 0",
+      "Memory usage < 80% of limit",
+      "Error rate < 0.1%"
+    ],
+    "short_term": [
+      "No OOMKilled events in 24h",
+      "SLO compliance > 99.9%"
+    ],
+    "long_term": [
+      "Memory leak fixed in code",
+      "Automated memory testing in place"
+    ]
+  },
+  "rollback_plan": {
+    "trigger_conditions": [
+      "Error rate > 5%",
+      "Multiple pod failures",
+      "Memory usage continues to spike"
+    ],
+    "steps": [
+      "Revert to current version",
+      "Scale up replicas",
+      "Enable circuit breaker"
+    ],
+    "validation": "Verify previous version number before rollback"
+  },
+  "_context": {{ JSON.stringify($json._context) }},
+  "_debug": {
+    "nodeType": "Stage 5: AI-Powered Analysis",
+    "processedAt": "<use new Date().toISOString()>",
+    "contextId": "{{ $json._context.contextId }}",
+    "contextPreserved": true,
+    "analysisTimeRange": {
+      "start": {{ $json._context.initialParams.startTime }},
+      "end": {{ $json._context.initialParams.endTime }}
+    },
+    "stagesCompleted": 5
+  }
+}
+
+## ⚠️ FINAL REMINDER:
+- **RETURN ONLY THE JSON OBJECT ABOVE**
+- **NO MARKDOWN FORMATTING**
+- **NO EXPLANATORY TEXT**
+- **NO CODE BLOCKS**

@@ -1,0 +1,129 @@
+# Stage 4: Automated Diagnosis & Deep Dive - CONTEXT AWARE
+
+Execute targeted diagnostics based on previous findings.
+
+## 🕐 TIME PARAMETERS:
+- Start: {{ $json._context.initialParams.startTime }}
+- End: {{ $json._context.initialParams.endTime }}
+- Display: new Date(timestamp * 1000).toISOString()
+- DO NOT use fake dates like "2024-01-15"
+
+## 📋 CONTEXT:
+- Context ID: {{ $json._context.contextId }}
+- Primary Issue: {{ $json.stage3Data.recommended_actions[0].alert }}
+- Root Cause: {{ $json.stage2Data.root_cause.issue }}
+
+## 🔧 DIAGNOSTIC EXECUTION:
+
+Based on findings, execute appropriate diagnostics:
+- For pod issues: Use pod-specific tools with actual pod names
+- For node issues: Use node-specific tools with actual node names
+- Use exact timestamps from context
+
+Tool parameters:
+{
+  "namespace": "{{  $json.namespaces[0]}}",
+  "start": {{ $json._context.initialParams.startTime }},
+  "end": {{ $json._context.initialParams.endTime }},
+  "pod": "<actual pod name from previous stages>",
+  "node": "<actual node name from previous stages>"
+}
+
+## 🚨 OUTPUT REQUIREMENT:
+**RETURN ONLY VALID JSON WITH ACTUAL DATA**
+
+{
+  "stage": "automated_diagnosis",
+  "diagnostics_executed": [
+    {
+      "target": "<actual pod/node/service name>",
+      "type": "<pod|node|service>",
+      "commands_run": [<simulated but realistic commands>],
+      "findings": {
+        "pod_status": {
+          "phase": "<from actual pod status>",
+          "restart_count": <actual count from metrics>,
+          "last_termination": {
+            "reason": "<from actual events>",
+            "exit_code": <if available>,
+            "finished_at": "<actual timestamp from events>"
+          }
+        },
+        "error_logs": [
+          {
+            "timestamp": "<actual timestamp from logs>",
+            "level": "<actual log level>",
+            "message": "<actual error message>",
+            "stack_trace": "<if available>"
+          }
+        ],
+        "events": [<actual k8s events>],
+        "resource_usage": {
+          "memory_request": "<from actual pod spec>",
+          "memory_limit": "<from actual pod spec>",
+          "memory_used": "<from actual metrics>",
+          "cpu_used": "<from actual metrics>"
+        }
+      }
+    }
+  ],
+  "enriched_context": {
+    "deployment_info": {
+      "name": "<actual deployment name>",
+      "version": "<from actual labels>",
+      "replicas": "<actual ready/total>",
+      "last_update": "<actual update timestamp>",
+      "update_strategy": "<actual strategy>"
+    },
+    "recent_changes": [
+      {
+        "type": "deployment",
+        "time": "<actual timestamp>",
+        "change": "<from actual events>",
+        "user": "<if available>"
+      }
+    ],
+    "dependencies": {
+      "upstream": [<from actual service discovery>],
+      "downstream": [<from actual service discovery>],
+      "databases": [<from actual config>],
+      "external": [<from actual config>]
+    }
+  },
+  "diagnostic_summary": {
+    "confirmed_issues": [
+      {
+        "issue": "<specific issue description>",
+        "evidence": [<actual evidence from diagnostics>],
+        "severity": "critical|high|medium|low",
+        "impact": "<actual impact description>",
+        "namespace": "{{ $json.namespaces[0] }}"
+      }
+    ],
+    "secondary_issues": []
+  },
+  "proceed_to_stage5": <true/false>,
+  "remediation_confidence": <0.0-1.0>,
+  "_context": {{ JSON.stringify($json._context) }},
+  "_debug": {
+    "nodeType": "Stage 4: Automated Diagnosis",
+    "processedAt": "<current ISO timestamp>",
+    "contextId": "{{ $json._context.contextId }}",
+    "contextPreserved": true,
+    "receivedFromStage": "",
+    "stageSequence": "",
+    "diagnosticsCount": <actual count>,
+    "autoRemediationEnabled": true,
+    "timeRangeUsed": {
+      "start": {{ $json._context.initialParams.startTime }},
+      "end": {{ $json._context.initialParams.endTime }}
+    }
+  }
+}
+
+## ⚠️ CRITICAL:
+- ALL TIMESTAMPS MUST BE FROM ACTUAL DATA
+- NO HARDCODED DATES
+- USE REAL PROMETHEUS METRICS
+- NO MOCK DATA
+- secondary_issues MUST BE AN ARRAY (even if empty: [])
