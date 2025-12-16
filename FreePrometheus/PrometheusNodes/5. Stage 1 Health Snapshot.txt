@@ -63,8 +63,8 @@ Service regex pattern (use if filtering services): {{ $json.serviceRegex }}
 ## 📋 CRITICAL CONTEXT INFORMATION:
 YOU MUST USE THIS EXACT CONTEXT - DO NOT CREATE YOUR OWN VALUES:
 - Context ID: {{ $json.contextId }}
-- Full Context Object: {{ JSON.stringify($json._context) }}
-- Context Data Backup: {{ JSON.stringify($json.contextData) }}
+- Full Context Object: {{ $json._contextStringified }}
+- Context Data Backup: Available in $json._context
 
 ## 💾 OUTPUT FORMAT (MUST BE PURE JSON):
 
@@ -135,4 +135,4 @@ Return ONLY this JSON structure with NO markdown formatting:
 - **RETURN ONLY JSON - NO MARKDOWN FORMATTING**
 - **USE ACTUAL TOOL RESPONSE DATA - NO MOCK DATA**
 - **USE PROVIDED TIMESTAMPS - NO HARDCODED DATES**
-- For _context field: copy {{ JSON.stringify($json._context) }} exactly
+- For _context field: copy {{ $json._contextStringified }} exactly

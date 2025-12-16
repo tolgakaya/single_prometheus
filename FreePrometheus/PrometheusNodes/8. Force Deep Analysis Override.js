@@ -186,6 +186,10 @@ output.queryHelpers = queryHelpers;
 output.startTime = unifiedData.analysisParams.startTime;
 output.endTime = unifiedData.analysisParams.endTime;
 
+// Context'i stringify edilmiş halde de gönder (n8n template için)
+output._contextStringified = JSON.stringify(output._context);
+output.stage1ResultsStringified = JSON.stringify(output.stage1Data);
+
 // Backward compatibility için eski parametreleri de koru (deprecated)
 output.namespace = namespaces[0] || DEFAULT_NAMESPACES[0]; // DEPRECATED: Use namespaceRegex instead
 output.service = services[0] || ''; // DEPRECATED: Use serviceRegex instead

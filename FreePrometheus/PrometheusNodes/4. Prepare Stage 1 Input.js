@@ -39,6 +39,9 @@ const stage1Input = {
   contextId: unifiedOutput._context.contextId,
   contextData: unifiedOutput._context,
 
+  // Context'i stringify edilmiş halde de gönder (n8n template için)
+  _contextStringified: JSON.stringify(unifiedOutput._context),
+
   // Query helpers - AI agent kullanabilsin
   queryHelpers: queryHelpers,
   namespaceRegex: namespaceRegex,
