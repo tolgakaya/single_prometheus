@@ -29,10 +29,30 @@ When calling Prometheus tools, ALWAYS use:
   "step": 60
 }
 
-## 🎯 SERVICE FILTERING:
-{{ $json.analysisParams?.services?.length > 0 ? 'Focus on these services: ' + $json.analysisParams.services.join(', ') : 'Analyze all services in cluster' }}
-- When querying metrics, add service label filter if services are specified
-- List Kubernetes Services should filter by requested services if provided
+## 🎯 NAMESPACE & SERVICE FILTERING:
+
+**CRITICAL: Use these READY-TO-USE query filters in ALL Prometheus queries:**
+
+Namespace regex pattern (use in all queries): {{ $json.namespaceRegex }}
+Service regex pattern (use if filtering services): {{ $json.serviceRegex }}
+
+**COPY THESE EXACT FILTERS INTO YOUR PROMETHEUS QUERIES:**
+1. Namespace filter only: {{ $json.queryHelpers?.namespaceFilter }}
+2. Combined namespace + service: {{ $json.queryHelpers?.combinedFilter }}
+
+**READY-TO-USE EXAMPLE QUERIES (COPY EXACTLY):**
+- Pod count query: {{ $json.queryHelpers?.exampleQueries?.podCount }}
+- Service list query: {{ $json.queryHelpers?.exampleQueries?.serviceList }}
+- Alert count query: {{ $json.queryHelpers?.exampleQueries?.alertCount }}
+
+**CRITICAL RULES:**
+- NEVER use hardcoded namespaces like "etiyamobile-production"
+- COPY the ready-to-use queries shown above
+- DO NOT construct your own namespace regex - use {{ $json.namespaceRegex }}
+- The filters above are pre-validated and ready to paste
+
+**For reference, target namespaces:**
+{{ JSON.stringify($json._context.initialParams.namespaces) }}
 
 ## 🚨 CRITICAL OUTPUT REQUIREMENT:
 **YOU MUST RETURN ONLY VALID JSON - NO MARKDOWN, NO CODE BLOCKS, NO EXTRA TEXT**

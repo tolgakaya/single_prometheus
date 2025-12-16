@@ -153,28 +153,60 @@ output.stage1Data = {
   quick_findings: stage1Result.quick_findings || stage1Result.stage1Results?.quick_findings
 };
 
-// Stage 2 için service parametresini hazırla
-const requestedService = unifiedData.analysisParams?.services?.[0] || 
-                        stage1Result.requested_services?.[0] || 
-                        '';
+// Stage 2 için namespace ve service filtering hazırla
+const namespaces = unifiedData.analysisParams?.namespaces || DEFAULT_NAMESPACES;
+const services = unifiedData.analysisParams?.services || [];
+
+// Prometheus query için regex pattern oluştur
+const namespaceRegex = namespaces.join('|');
+const serviceRegex = services.length > 0 ? services.join('|') : '.*';
+
+// Ready-to-use query templates for Stage 2
+const queryHelpers = {
+  namespaceFilter: `namespace=~"${namespaceRegex}"`,
+  serviceFilter: services.length > 0 ? `service=~"${serviceRegex}"` : 'service!=""',
+  combinedFilter: services.length > 0
+    ? `namespace=~"${namespaceRegex}",service=~"${serviceRegex}"`
+    : `namespace=~"${namespaceRegex}",service!=""`,
+
+  // Örnek kullanıma hazır sorgular
+  exampleQueries: {
+    podCount: `count by (namespace, service, pod) (up{namespace=~"${namespaceRegex}", service!="", pod!=""})`,
+    serviceList: `group by (namespace, service) (up{namespace=~"${namespaceRegex}", service!=""})`,
+    alertCount: `ALERTS{namespace=~"${namespaceRegex}"}`,
+    cpuUsage: `rate(container_cpu_usage_seconds_total{namespace=~"${namespaceRegex}"}[5m])`,
+    memoryUsage: `container_memory_usage_bytes{namespace=~"${namespaceRegex}"}`
+  }
+};
 
 // Stage 2'ye gidecek parametreleri root'a ekle
-output.namespace = unifiedData.analysisParams.namespaces[0] || DEFAULT_NAMESPACES[0];
-output.service = requestedService;
+output.namespaceRegex = namespaceRegex;
+output.serviceRegex = serviceRegex;
+output.queryHelpers = queryHelpers;
 output.startTime = unifiedData.analysisParams.startTime;
 output.endTime = unifiedData.analysisParams.endTime;
 
+// Backward compatibility için eski parametreleri de koru (deprecated)
+output.namespace = namespaces[0] || DEFAULT_NAMESPACES[0]; // DEPRECATED: Use namespaceRegex instead
+output.service = services[0] || ''; // DEPRECATED: Use serviceRegex instead
+
 // Stage 2 için açık talimatlar
 output.stage2Instructions = {
-  service: requestedService,
-  namespace: output.namespace,
-  message: requestedService ? `Focus on service: ${requestedService}` : 'General cluster analysis'
+  namespaces: namespaces,
+  services: services,
+  namespaceRegex: namespaceRegex,
+  serviceRegex: serviceRegex,
+  message: services.length > 0
+    ? `Focus on ${services.length} service(s) across ${namespaces.length} namespace(s)`
+    : `General cluster analysis across ${namespaces.length} namespace(s)`
 };
 
-console.log('=== Stage 2 Parameters ===');
-console.log('Service:', output.service);
-console.log('Namespace:', output.namespace);
-console.log('=========================');
+console.log('=== Stage 2 Query Parameters ===');
+console.log('Namespaces:', namespaces.length, 'namespaces');
+console.log('Services:', services.length, 'services');
+console.log('Namespace regex:', namespaceRegex);
+console.log('Query helpers generated:', Object.keys(queryHelpers));
+console.log('================================');
 
 console.log('=== Force Deep Analysis Override Complete ===');
 console.log('Context preserved:', !!output._context);

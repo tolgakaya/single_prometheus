@@ -13,9 +13,30 @@ IMPORTANT:
 - DO NOT use mock dates like "2024-06-01"
 - ALL tool calls must use these timestamps
 
-## 🎯 SERVICE FOCUS:
-{{ $json.requested_services && $json.requested_services.length > 0 ? 'Analyze these services: ' + $json.requested_services.join(', ') : 'General cluster analysis' }}
-{{ $json.active_services && $json.active_services.length > 0 ? 'Active service variants: ' + $json.active_services.join(', ') : '' }}
+## 🎯 NAMESPACE & SERVICE FILTERING:
+
+**CRITICAL: Use these READY-TO-USE query filters in ALL Prometheus queries:**
+
+Namespace regex pattern: {{ $json.namespaceRegex }}
+Service regex pattern: {{ $json.serviceRegex }}
+
+**COPY THESE EXACT FILTERS INTO YOUR PROMETHEUS QUERIES:**
+1. Namespace filter: {{ $json.queryHelpers?.namespaceFilter }}
+2. Combined filter: {{ $json.queryHelpers?.combinedFilter }}
+
+**READY-TO-USE EXAMPLE QUERIES (COPY EXACTLY):**
+- Pod count: {{ $json.queryHelpers?.exampleQueries?.podCount }}
+- Service list: {{ $json.queryHelpers?.exampleQueries?.serviceList }}
+- Alert count: {{ $json.queryHelpers?.exampleQueries?.alertCount }}
+- CPU usage: {{ $json.queryHelpers?.exampleQueries?.cpuUsage }}
+- Memory usage: {{ $json.queryHelpers?.exampleQueries?.memoryUsage }}
+
+**CRITICAL RULES:**
+- NEVER use hardcoded namespaces - use {{ $json.namespaceRegex }} pattern
+- COPY the ready-to-use queries shown above
+- The filters are pre-validated and ready to use
+
+**Analysis scope:** {{ $json.stage2Instructions?.message }}
 
 ## 📋 CONTEXT INFORMATION:
 - Context ID: {{ $json._context.contextId }}
@@ -24,12 +45,18 @@ IMPORTANT:
 
 ## 🔧 TOOL EXECUTION:
 
-When calling ANY tool, use:
+When calling ANY Prometheus tool, use these timestamps and filters:
 {
   "start": {{ $json._context.initialParams.startTime }},
   "end": {{ $json._context.initialParams.endTime }},
-  "namespace": "{{ $json._context.initialParams.namespaces[0] }}",
-  "service": "{{ $json.requested_services && $json.requested_services[0] ? $json.requested_services[0] : '' }}"
+  "query": "<use ready-to-use queries from above with namespace/service filters>"
+}
+
+Example tool call:
+{
+  "start": {{ $json.startTime }},
+  "end": {{ $json.endTime }},
+  "query": "{{ $json.queryHelpers?.exampleQueries?.podCount }}"
 }
 
 ## 🎯 ANALYSIS PHASES:
