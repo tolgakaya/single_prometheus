@@ -16,6 +16,23 @@ const DEFAULT_NAMESPACES = [
   'etiyamobile-prod'
 ];
 
+// Default production services to monitor (from kubectl get service -A)
+const DEFAULT_SERVICES = [
+  'bss-mc-crm-search-integrator', 'bss-mc-crm-customer-information', 'bss-mc-crm-customer-search',
+  'bss-mc-crm-mash-up', 'bss-mc-crm-ntf-integrator', 'bss-mc-activity', 'bss-mc-asset-management',
+  'bss-mc-cpq', 'bss-mc-cpq-batch', 'bss-mc-cpq-ntf-integrator', 'bss-mc-csr', 'bss-mc-domain-config',
+  'bss-mc-id-service', 'bss-mc-message-relay', 'bss-mc-ntf-engine', 'bss-mc-ntf-history', 'bss-mc-rim',
+  'bss-mc-ui-authz', 'bss-mc-user-management', 'bss-mc-wsc-new', 'bss-crm-batch', 'bss-ntf-batch',
+  'bss-mc-pcm-cfm', 'bss-mc-pcm-cms-integrator', 'bss-mc-pcm-product-catalog', 'bss-mc-pcm-product-offer-detail',
+  'bss-mc-pcm-next-gen-admintoolbox-config-manager', 'bss-mc-pcm-next-gen-admintoolbox-ui',
+  'eom-micro-flows', 'eom-operate', 'eom-scheduler', 'eom-ui', 'eom-activemqqueueoperations',
+  'eom-postgresqldboperations', 'eom-zeebe', 'eom-castlemock', 'bss-services-service',
+  'external-services-service', 'loyalty-services-service', 'om-services-service', 'fstp-bpmn-ms',
+  'fstp-configuration-ms', 'fstp-dashboard-ms', 'fstp-frontend', 'fstp-orchestra-ms', 'fstp-scheduler-ms',
+  'fstp-eca', 'eca', 'wso2am-gw-service', 'wso2am-cp-service', 'bss-saas-control-plane',
+  'bss-saas-control-plane-ui', 'bss-tenant-control-plane-batch'
+];
+
 const input = $input.first().json;
 
 // Detect source and extract parameters
@@ -63,6 +80,8 @@ if (input.orchestratorId && input.startTime && input.endTime) {
   const services = extractServicesFromMessage(message);
   if (services.length > 0) {
     analysisParams.services = services;
+  } else {
+    analysisParams.services = DEFAULT_SERVICES;
   }
   
 } else if (input.webhookUrl && input.body) {
@@ -91,7 +110,9 @@ if (input.orchestratorId && input.startTime && input.endTime) {
     startTime: input.startTime || Math.floor(Date.now() / 1000) - 3600,
     endTime: input.endTime || Math.floor(Date.now() / 1000),
     namespaces: (input.namespaces && input.namespaces.length > 0) ? input.namespaces : DEFAULT_NAMESPACES,
-    services: input.searchParams?.services || [], // YENİ EKLENDİ
+    services: (input.searchParams?.services && input.searchParams.services.length > 0)
+      ? input.searchParams.services
+      : DEFAULT_SERVICES,
     focusAreas: input.focusAreas || [],
     analysisType: input.analysisType || 'general',
     context: input.context || {}

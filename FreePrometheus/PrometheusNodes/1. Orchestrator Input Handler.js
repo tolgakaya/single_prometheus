@@ -17,6 +17,23 @@ const DEFAULT_NAMESPACES = [
   'etiyamobile-prod'
 ];
 
+// Default production services to monitor (from kubectl get service -A)
+const DEFAULT_SERVICES = [
+  'bss-mc-crm-search-integrator', 'bss-mc-crm-customer-information', 'bss-mc-crm-customer-search',
+  'bss-mc-crm-mash-up', 'bss-mc-crm-ntf-integrator', 'bss-mc-activity', 'bss-mc-asset-management',
+  'bss-mc-cpq', 'bss-mc-cpq-batch', 'bss-mc-cpq-ntf-integrator', 'bss-mc-csr', 'bss-mc-domain-config',
+  'bss-mc-id-service', 'bss-mc-message-relay', 'bss-mc-ntf-engine', 'bss-mc-ntf-history', 'bss-mc-rim',
+  'bss-mc-ui-authz', 'bss-mc-user-management', 'bss-mc-wsc-new', 'bss-crm-batch', 'bss-ntf-batch',
+  'bss-mc-pcm-cfm', 'bss-mc-pcm-cms-integrator', 'bss-mc-pcm-product-catalog', 'bss-mc-pcm-product-offer-detail',
+  'bss-mc-pcm-next-gen-admintoolbox-config-manager', 'bss-mc-pcm-next-gen-admintoolbox-ui',
+  'eom-micro-flows', 'eom-operate', 'eom-scheduler', 'eom-ui', 'eom-activemqqueueoperations',
+  'eom-postgresqldboperations', 'eom-zeebe', 'eom-castlemock', 'bss-services-service',
+  'external-services-service', 'loyalty-services-service', 'om-services-service', 'fstp-bpmn-ms',
+  'fstp-configuration-ms', 'fstp-dashboard-ms', 'fstp-frontend', 'fstp-orchestra-ms', 'fstp-scheduler-ms',
+  'fstp-eca', 'eca', 'wso2am-gw-service', 'wso2am-cp-service', 'bss-saas-control-plane',
+  'bss-saas-control-plane-ui', 'bss-tenant-control-plane-batch'
+];
+
 const input = $input.first().json;
 
 // Debug için - console.log yerine değişkenlere yazalım
@@ -209,6 +226,10 @@ const extractedServices = extractServices(message);
 if (extractedServices.length > 0) {
   processedInput.searchParams.services = extractedServices;
   console.log("Extracted services:", extractedServices);
+} else {
+  // No services extracted from message, use defaults
+  processedInput.searchParams.services = DEFAULT_SERVICES;
+  console.log(`No services in message, using DEFAULT_SERVICES: ${DEFAULT_SERVICES.length} services`);
 }
   
   // Application Metrics
