@@ -40,8 +40,8 @@ Service regex pattern: {{ $json.serviceRegex }}
 
 ## 📋 CONTEXT INFORMATION:
 - Context ID: {{ $json._context.contextId }}
-- Full Context: {{ $json._contextStringified }}
-- Stage 1 Findings: {{ $json.stage1ResultsStringified }}
+- Full Context: {{ JSON.stringify($json._context) }}
+- Stage 1 Findings: {{ JSON.stringify($json.stage1Results) }}
 
 ## 🔧 TOOL EXECUTION:
 
@@ -84,7 +84,7 @@ Historical analysis:
 4. Ensure all string values are in double quotes
 5. Ensure all numbers are unquoted (5 not "5")
 6. Ensure booleans are unquoted (true not "true")
-7. For _context field, use this exact value: {{ $json._contextStringified }}
+7. For _context field, use this exact value: {{ JSON.stringify($json._context) }}
 8. Empty arrays are valid: []
 9. All arrays must use square brackets []
 10. All objects must use curly braces {}
@@ -106,7 +106,7 @@ RETURN RAW JSON ONLY - NO EXPLANATIONS, NO MARKDOWN, NO CODE BLOCKS
 {
   "stage": "deep_analysis",
   "investigation_id": "{{ $json._context.contextId }}-stage2",
-  "triggered_by": "Stage 1: {{ $json.stage1Data.alerts.total }} alerts",
+  "triggered_by": "Stage 1: {{ $json.stage1Results.alerts.total }} alerts",
   "execution_phases": {
     "instant": {
       "tools_used": ["<actual tools used>"],
@@ -154,14 +154,14 @@ RETURN RAW JSON ONLY - NO EXPLANATIONS, NO MARKDOWN, NO CODE BLOCKS
   },
   "proceed_to_stage3": false,
   "alert_correlation_needed": false,
-  "_context": {{ $json._contextStringified }},
+  "_context": {{ JSON.stringify($json._context) }},
   "_debug": {
     "nodeType": "Stage 2: Deep Analysis",
     "processedAt": "<current ISO timestamp>",
     "contextId": "{{ $json._context.contextId }}",
     "contextPreserved": true,
     "receivedFromStage": "",
-    "stageSequence": [],
+    "stageSequence": {{ JSON.stringify($json._debug.stageSequence) }},
     "timeRangeUsed": {
       "start": {{ $json._context.initialParams.startTime }},
       "end": {{ $json._context.initialParams.endTime }}
