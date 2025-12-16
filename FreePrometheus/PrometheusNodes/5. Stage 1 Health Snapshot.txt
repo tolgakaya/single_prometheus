@@ -60,11 +60,10 @@ Service regex pattern (use if filtering services): {{ $json.serviceRegex }}
 **DO NOT WRAP YOUR RESPONSE IN ```json``` TAGS**
 **RETURN RAW JSON ONLY**
 
-## 📋 CRITICAL CONTEXT INFORMATION:
-YOU MUST USE THIS EXACT CONTEXT - DO NOT CREATE YOUR OWN VALUES:
-- Context ID: {{ $json.contextId }}
-- Full Context Object: {{ JSON.stringify($json._context) }}
-- Context Data Backup: {{ JSON.stringify($json.contextData) }}
+## 📋 CRITICAL CONTEXT PRESERVATION:
+In your JSON output, you MUST include a "_context" field.
+Simply copy the _context object from your input to your output WITHOUT any modifications.
+Do NOT create your own context values, use the exact context you received.
 
 ## 💾 OUTPUT FORMAT (MUST BE PURE JSON):
 
@@ -75,7 +74,7 @@ YOU MUST USE THIS EXACT CONTEXT - DO NOT CREATE YOUR OWN VALUES:
 3. Ensure all string values are in double quotes
 4. Ensure all numbers are unquoted (not "5" but 5)
 5. Ensure booleans are unquoted (not "true" but true)
-6. For _context field, use this exact value: {{ JSON.stringify($json._context) }}
+6. For _context field, copy the exact object from $json._context (no modification)
 7. Arrays must use square brackets []
 8. Empty arrays are valid: []
 9. Validate JSON mentally before returning
@@ -135,4 +134,4 @@ Return ONLY this JSON structure with NO markdown formatting:
 - **RETURN ONLY JSON - NO MARKDOWN FORMATTING**
 - **USE ACTUAL TOOL RESPONSE DATA - NO MOCK DATA**
 - **USE PROVIDED TIMESTAMPS - NO HARDCODED DATES**
-- For _context field: copy {{ JSON.stringify($json._context) }} exactly
+- For _context field: copy $json._context object exactly as-is
