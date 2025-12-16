@@ -1,0 +1,105 @@
+[
+  {
+    "output": {
+      "stage": "alert_intelligence",
+      "active_alerts": [
+        {
+          "name": "No alerts",
+          "severity": "unknown",
+          "count": 0,
+          "duration": "unknown",
+          "labels": {},
+          "annotations": {}
+        }
+      ],
+      "alert_groups": [
+        {
+          "root_alert": "none",
+          "related_alerts": [],
+          "correlation_score": 0,
+          "shared_labels": {}
+        }
+      ],
+      "knowledge_base_matches": [
+        {
+          "alert": "none",
+          "kb_entry": {
+            "root_causes": [
+              "Based on alert type and previous incidents"
+            ],
+            "diagnostic_commands": [
+              "kubectl describe",
+              "kubectl logs"
+            ],
+            "immediate_actions": [
+              "Check pod status",
+              "Review recent changes"
+            ],
+            "long_term_solutions": [
+              "Update resource limits",
+              "Fix application code"
+            ]
+          },
+          "applicability_score": 0
+        }
+      ],
+      "alert_patterns": {
+        "recurring": [],
+        "storm_detection": {
+          "detected": false,
+          "alert_count": 0,
+          "time_window": "5m",
+          "likely_root": null
+        }
+      },
+      "slo_impact": {
+        "availability_slo": {
+          "target": "99.9%",
+          "current": "100%",
+          "error_budget_used": "0%",
+          "time_remaining": "30d",
+          "status": "green",
+          "components": {
+            "deployment_health": "100%"
+          }
+        },
+        "affected_slis": []
+      },
+      "recommended_alert_actions": [
+        {
+          "alert": "none",
+          "action": "Monitor",
+          "confidence": 0,
+          "risk": "low",
+          "command": null
+        }
+      ],
+      "proceed_to_stage4": false,
+      "auto_remediation_approved": false,
+      "_context": {
+        "contextId": "ctx-1765718599269-mveauf",
+        "initialParams": {
+          "startTime": 1765714999,
+          "endTime": 1765718599
+        }
+      },
+      "_debug": {
+        "nodeType": "Stage 3: Alert Intelligence",
+        "processedAt": "2023-11-01T09:14:00.000Z",
+        "contextId": "ctx-1765718599269-mveauf",
+        "contextPreserved": true,
+        "receivedFromStage": "Fix Stage 2 Context",
+        "stageSequence": [
+          "Stage 3: Alert Intelligence"
+        ],
+        "timeRangeUsed": {
+          "start": 1765714999,
+          "end": 1765718599
+        },
+        "sloToolErrors": [],
+        "toolCallCount": 2,
+        "alertHistoryCallCount": 1
+      }
+    }
+  }
+]

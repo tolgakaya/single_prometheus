@@ -1,0 +1,1181 @@
+[
+  {
+    "output": {
+      "stage": "ai_powered_analysis",
+      "analysis_id": "ctx-1765718599269-mveauf-stage5",
+      "remediation_plan": {
+        "immediate_actions": [
+          {
+            "action": "Rollback deployment to previous version",
+            "command": "kubectl rollout undo deployment/[object Object] -n bss-prod-eks-monitoring",
+            "risk": "low",
+            "estimated_time": "2-5 minutes",
+            "expected_outcome": "Restore service to previous stable version"
+          }
+        ],
+        "short_term_fixes": [
+          {
+            "action": "Increase memory limits temporarily",
+            "timeline": "1-2 days",
+            "details": "Set memory limit to 2Gi while investigating root cause"
+          }
+        ],
+        "long_term_solutions": [
+          {
+            "action": "Fix issues in component",
+            "timeline": "1-2 weeks",
+            "details": "Review and fix the root cause in component component"
+          }
+        ],
+        "preventive_measures": [
+          "Implement memory profiling in CI/CD",
+          "Add memory leak detection tests",
+          "Set up gradual rollout strategy"
+        ]
+      },
+      "risk_assessment": {
+        "overall_risk": "medium",
+        "factors": [
+          "unknown-namespace is critical",
+          "Rollback is tested and safe",
+          "Memory issue is contained to specific pods"
+        ],
+        "mitigation_steps": [
+          "Monitor closely after rollback",
+          "Keep team on standby",
+          "Prepare hotfix if needed"
+        ]
+      },
+      "implementation_order": [
+        {
+          "step": 1,
+          "action": "Execute rollback",
+          "dependencies": [],
+          "validation": "Check pod status and memory usage"
+        },
+        {
+          "step": 2,
+          "action": "Verify service health",
+          "dependencies": [
+            "step_1"
+          ],
+          "validation": "Check error rates and response times"
+        },
+        {
+          "step": 3,
+          "action": "Update monitoring alerts",
+          "dependencies": [
+            "step_2"
+          ],
+          "validation": "Ensure alerts are firing correctly"
+        }
+      ],
+      "success_metrics": {
+        "immediate": [
+          "Pod restart count = 0",
+          "Memory usage < 80% of limit",
+          "Error rate < 0.1%"
+        ],
+        "short_term": [
+          "No OOMKilled events in 24h",
+          "SLO compliance > 99.9%"
+        ],
+        "long_term": [
+          "Memory leak fixed in code",
+          "Automated memory testing in place"
+        ],
+        "category_enhanced": true,
+        "alert_category": "API"
+      },
+      "rollback_plan": {
+        "trigger_conditions": [
+          "Error rate > 5%",
+          "Multiple pod failures",
+          "Memory usage continues to spike"
+        ],
+        "steps": [
+          "Revert to current version",
+          "Scale up replicas",
+          "Enable circuit breaker"
+        ],
+        "validation": "Verify previous version number before rollback"
+      },
+      "_context": {
+        "contextId": "ctx-1765718599269-mveauf",
+        "initialParams": {
+          "startTime": 1765714999,
+          "endTime": 1765718599
+        },
+        "stageResults": {
+          "stage3": {
+            "output": {
+              "active_alerts": [
+                {
+                  "name": "No alerts",
+                  "severity": "unknown",
+                  "count": 0,
+                  "duration": "unknown",
+                  "labels": {},
+                  "annotations": {},
+                  "category": "UNKNOWN",
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50,
+                  "correlations": []
+                }
+              ],
+              "alert_groups": [
+                {
+                  "root_alert": "none",
+                  "related_alerts": [],
+                  "correlation_score": 0,
+                  "shared_labels": {}
+                }
+              ],
+              "knowledge_base_matches": [],
+              "alert_patterns": {
+                "recurring": [],
+                "storm_detection": {
+                  "detected": false,
+                  "alert_count": 1,
+                  "time_window": "5m",
+                  "likely_root": null,
+                  "storm_category": null
+                },
+                "category_distribution": [
+                  {
+                    "category": "UNKNOWN",
+                    "count": 1,
+                    "percentage": "100.0"
+                  }
+                ]
+              },
+              "slo_impact": {
+                "availability_slo": {
+                  "target": "99.9%",
+                  "current": "100%",
+                  "error_budget_used": "0%",
+                  "time_remaining": "30d",
+                  "status": "green",
+                  "components": {
+                    "deployment_health": "100%"
+                  }
+                },
+                "affected_slis": []
+              },
+              "recommended_alert_actions": [
+                {
+                  "alert": "none",
+                  "action": "Monitor",
+                  "confidence": 0,
+                  "risk": "low",
+                  "command": null
+                },
+                {
+                  "alert": "No alerts",
+                  "action": "Investigate alert",
+                  "confidence": 0.3,
+                  "risk": "medium",
+                  "command": null,
+                  "category": "UNKNOWN",
+                  "priority": 50
+                }
+              ],
+              "proceed_to_stage4": true,
+              "auto_remediation_approved": true,
+              "alert_category": "API"
+            },
+            "completedAt": "2025-12-14T13:23:43.900Z",
+            "decision": true,
+            "kbEnhanced": true,
+            "alertCategory": "API",
+            "urgencyLevel": "BLOCKER",
+            "kbEnhancedAlerts": 0
+          },
+          "stage4": {
+            "output": {
+              "diagnostics_executed": [
+                {
+                  "target": "",
+                  "type": "pod",
+                  "commands_run": [
+                    "kubectl describe pod  -n bss-prod-eks-monitoring",
+                    "kubectl logs  -n bss-prod-eks-monitoring --since=24h",
+                    "kubectl get events -n bss-prod-eks-monitoring --field-selector involvedObject.name="
+                  ],
+                  "findings": {
+                    "pod_status": {
+                      "phase": "",
+                      "restart_count": 0,
+                      "last_termination": {
+                        "reason": "OOMKilled",
+                        "exit_code": 137,
+                        "finished_at": "2025-12-14T13:23:19.000Z"
+                      }
+                    },
+                    "error_logs": [
+                      {
+                        "timestamp": "2025-12-14T13:23:19.000Z",
+                        "level": "Error",
+                        "message": "Container killed due to memory limit",
+                        "stack_trace": null
+                      }
+                    ],
+                    "events": [],
+                    "resource_usage": {
+                      "memory_request": "1Gi",
+                      "memory_limit": "2Gi",
+                      "memory_used": "",
+                      "cpu_used": ""
+                    }
+                  }
+                }
+              ],
+              "enriched_context": {
+                "deployment_info": {
+                  "name": "",
+                  "version": "unknown",
+                  "replicas": "unknown",
+                  "last_update": "2025-12-14T13:23:19.000Z",
+                  "update_strategy": "RollingUpdate"
+                },
+                "recent_changes": [
+                  {
+                    "type": "deployment",
+                    "time": "2025-12-14T13:23:19.000Z",
+                    "change": "Pod experiencing memory issues",
+                    "user": "system"
+                  }
+                ],
+                "dependencies": {
+                  "upstream": [],
+                  "downstream": "unknown-namespace",
+                  "databases": [],
+                  "external": []
+                },
+                "kb_analysis": {
+                  "alerts_matched": [],
+                  "diagnostic_coverage": 0,
+                  "remediation_available": 0,
+                  "highest_severity": "Low",
+                  "categories_covered": []
+                }
+              },
+              "diagnostic_summary": {
+                "confirmed_issues": [
+                  {
+                    "issue": "Pod instability detected",
+                    "evidence": "",
+                    "severity": "critical",
+                    "impact": "Service  is experiencing outages",
+                    "namespace": "bss-prod-eks-monitoring"
+                  }
+                ],
+                "secondary_issues": []
+              },
+              "proceed_to_stage5": true,
+              "remediation_confidence": 0.85,
+              "alert_category": "API",
+              "diagnostic_category": "API"
+            },
+            "completedAt": "2025-12-14T13:23:47.374Z",
+            "decision": true,
+            "primaryIssue": "Pod instability detected"
+          },
+          "stage5": {
+            "output": {
+              "analysis_id": "ctx-1765718599269-mveauf-stage5",
+              "remediation_plan": {
+                "immediate_actions": [
+                  {
+                    "action": "Rollback deployment to previous version",
+                    "command": "kubectl rollout undo deployment/[object Object] -n bss-prod-eks-monitoring",
+                    "risk": "low",
+                    "estimated_time": "2-5 minutes",
+                    "expected_outcome": "Restore service to previous stable version"
+                  }
+                ],
+                "short_term_fixes": [
+                  {
+                    "action": "Increase memory limits temporarily",
+                    "timeline": "1-2 days",
+                    "details": "Set memory limit to 2Gi while investigating root cause"
+                  }
+                ],
+                "long_term_solutions": [
+                  {
+                    "action": "Fix issues in component",
+                    "timeline": "1-2 weeks",
+                    "details": "Review and fix the root cause in component component"
+                  }
+                ],
+                "preventive_measures": [
+                  "Implement memory profiling in CI/CD",
+                  "Add memory leak detection tests",
+                  "Set up gradual rollout strategy"
+                ]
+              },
+              "risk_assessment": {
+                "overall_risk": "medium",
+                "factors": [
+                  "unknown-namespace is critical",
+                  "Rollback is tested and safe",
+                  "Memory issue is contained to specific pods"
+                ],
+                "mitigation_steps": [
+                  "Monitor closely after rollback",
+                  "Keep team on standby",
+                  "Prepare hotfix if needed"
+                ]
+              },
+              "implementation_order": [
+                {
+                  "step": 1,
+                  "action": "Execute rollback",
+                  "dependencies": [],
+                  "validation": "Check pod status and memory usage"
+                },
+                {
+                  "step": 2,
+                  "action": "Verify service health",
+                  "dependencies": [
+                    "step_1"
+                  ],
+                  "validation": "Check error rates and response times"
+                },
+                {
+                  "step": 3,
+                  "action": "Update monitoring alerts",
+                  "dependencies": [
+                    "step_2"
+                  ],
+                  "validation": "Ensure alerts are firing correctly"
+                }
+              ],
+              "success_metrics": {
+                "immediate": [
+                  "Pod restart count = 0",
+                  "Memory usage < 80% of limit",
+                  "Error rate < 0.1%"
+                ],
+                "short_term": [
+                  "No OOMKilled events in 24h",
+                  "SLO compliance > 99.9%"
+                ],
+                "long_term": [
+                  "Memory leak fixed in code",
+                  "Automated memory testing in place"
+                ],
+                "category_enhanced": true,
+                "alert_category": "API"
+              },
+              "rollback_plan": {
+                "trigger_conditions": [
+                  "Error rate > 5%",
+                  "Multiple pod failures",
+                  "Memory usage continues to spike"
+                ],
+                "steps": [
+                  "Revert to current version",
+                  "Scale up replicas",
+                  "Enable circuit breaker"
+                ],
+                "validation": "Verify previous version number before rollback"
+              }
+            },
+            "completedAt": "2025-12-14T13:24:05.011Z"
+          }
+        },
+        "decisions": {
+          "stage6Proceed": {
+            "timestamp": "2025-12-14T13:24:05.011Z",
+            "remediationPlanCreated": true,
+            "riskAssessed": true,
+            "primaryActionDefined": true
+          }
+        }
+      },
+      "_debug": {
+        "nodeType": "Stage 5: AI-Powered Analysis",
+        "processedAt": "<use new Date().toISOString()>",
+        "contextId": "ctx-1765718599269-mveauf",
+        "contextPreserved": true,
+        "receivedFromStage": "Fix Stage 4 Context",
+        "priority": "normal",
+        "stagesCompleted": 5,
+        "stageSequence": [
+          "Unified Entry Point",
+          "Stage 1: Health Snapshot",
+          "Fix Stage 1 Context",
+          "Stage 2 Decision",
+          "Force Deep Analysis Override",
+          "Wait 3s",
+          "Stage 2: Deep Analysis",
+          "Fix Stage 2 Context",
+          "Stage 3: Alert Intelligence",
+          "Fix Stage 3 Context",
+          "Stage 4: Automated Diagnosis",
+          "Fix Stage 4 Context",
+          "Stage 5: AI-Powered Analysis",
+          "Fix Stage 5 Context"
+        ],
+        "analysisTimeRange": {
+          "start": 1765714999,
+          "end": 1765718599
+        }
+      }
+    },
+    "_context": {
+      "contextId": "ctx-1765718599269-mveauf",
+      "initialParams": {
+        "startTime": 1765714999,
+        "endTime": 1765718599
+      },
+      "stageResults": {
+        "stage3": {
+          "output": {
+            "active_alerts": [
+              {
+                "name": "No alerts",
+                "severity": "unknown",
+                "count": 0,
+                "duration": "unknown",
+                "labels": {},
+                "annotations": {},
+                "category": "UNKNOWN",
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50,
+                "correlations": []
+              }
+            ],
+            "alert_groups": [
+              {
+                "root_alert": "none",
+                "related_alerts": [],
+                "correlation_score": 0,
+                "shared_labels": {}
+              }
+            ],
+            "knowledge_base_matches": [],
+            "alert_patterns": {
+              "recurring": [],
+              "storm_detection": {
+                "detected": false,
+                "alert_count": 1,
+                "time_window": "5m",
+                "likely_root": null,
+                "storm_category": null
+              },
+              "category_distribution": [
+                {
+                  "category": "UNKNOWN",
+                  "count": 1,
+                  "percentage": "100.0"
+                }
+              ]
+            },
+            "slo_impact": {
+              "availability_slo": {
+                "target": "99.9%",
+                "current": "100%",
+                "error_budget_used": "0%",
+                "time_remaining": "30d",
+                "status": "green",
+                "components": {
+                  "deployment_health": "100%"
+                }
+              },
+              "affected_slis": []
+            },
+            "recommended_alert_actions": [
+              {
+                "alert": "none",
+                "action": "Monitor",
+                "confidence": 0,
+                "risk": "low",
+                "command": null
+              },
+              {
+                "alert": "No alerts",
+                "action": "Investigate alert",
+                "confidence": 0.3,
+                "risk": "medium",
+                "command": null,
+                "category": "UNKNOWN",
+                "priority": 50
+              }
+            ],
+            "proceed_to_stage4": true,
+            "auto_remediation_approved": true,
+            "alert_category": "API"
+          },
+          "completedAt": "2025-12-14T13:23:43.900Z",
+          "decision": true,
+          "kbEnhanced": true,
+          "alertCategory": "API",
+          "urgencyLevel": "BLOCKER",
+          "kbEnhancedAlerts": 0
+        },
+        "stage4": {
+          "output": {
+            "diagnostics_executed": [
+              {
+                "target": "",
+                "type": "pod",
+                "commands_run": [
+                  "kubectl describe pod  -n bss-prod-eks-monitoring",
+                  "kubectl logs  -n bss-prod-eks-monitoring --since=24h",
+                  "kubectl get events -n bss-prod-eks-monitoring --field-selector involvedObject.name="
+                ],
+                "findings": {
+                  "pod_status": {
+                    "phase": "",
+                    "restart_count": 0,
+                    "last_termination": {
+                      "reason": "OOMKilled",
+                      "exit_code": 137,
+                      "finished_at": "2025-12-14T13:23:19.000Z"
+                    }
+                  },
+                  "error_logs": [
+                    {
+                      "timestamp": "2025-12-14T13:23:19.000Z",
+                      "level": "Error",
+                      "message": "Container killed due to memory limit",
+                      "stack_trace": null
+                    }
+                  ],
+                  "events": [],
+                  "resource_usage": {
+                    "memory_request": "1Gi",
+                    "memory_limit": "2Gi",
+                    "memory_used": "",
+                    "cpu_used": ""
+                  }
+                }
+              }
+            ],
+            "enriched_context": {
+              "deployment_info": {
+                "name": "",
+                "version": "unknown",
+                "replicas": "unknown",
+                "last_update": "2025-12-14T13:23:19.000Z",
+                "update_strategy": "RollingUpdate"
+              },
+              "recent_changes": [
+                {
+                  "type": "deployment",
+                  "time": "2025-12-14T13:23:19.000Z",
+                  "change": "Pod experiencing memory issues",
+                  "user": "system"
+                }
+              ],
+              "dependencies": {
+                "upstream": [],
+                "downstream": "unknown-namespace",
+                "databases": [],
+                "external": []
+              },
+              "kb_analysis": {
+                "alerts_matched": [],
+                "diagnostic_coverage": 0,
+                "remediation_available": 0,
+                "highest_severity": "Low",
+                "categories_covered": []
+              }
+            },
+            "diagnostic_summary": {
+              "confirmed_issues": [
+                {
+                  "issue": "Pod instability detected",
+                  "evidence": "",
+                  "severity": "critical",
+                  "impact": "Service  is experiencing outages",
+                  "namespace": "bss-prod-eks-monitoring"
+                }
+              ],
+              "secondary_issues": []
+            },
+            "proceed_to_stage5": true,
+            "remediation_confidence": 0.85,
+            "alert_category": "API",
+            "diagnostic_category": "API"
+          },
+          "completedAt": "2025-12-14T13:23:47.374Z",
+          "decision": true,
+          "primaryIssue": "Pod instability detected"
+        },
+        "stage5": {
+          "output": {
+            "analysis_id": "ctx-1765718599269-mveauf-stage5",
+            "remediation_plan": {
+              "immediate_actions": [
+                {
+                  "action": "Rollback deployment to previous version",
+                  "command": "kubectl rollout undo deployment/[object Object] -n bss-prod-eks-monitoring",
+                  "risk": "low",
+                  "estimated_time": "2-5 minutes",
+                  "expected_outcome": "Restore service to previous stable version"
+                }
+              ],
+              "short_term_fixes": [
+                {
+                  "action": "Increase memory limits temporarily",
+                  "timeline": "1-2 days",
+                  "details": "Set memory limit to 2Gi while investigating root cause"
+                }
+              ],
+              "long_term_solutions": [
+                {
+                  "action": "Fix issues in component",
+                  "timeline": "1-2 weeks",
+                  "details": "Review and fix the root cause in component component"
+                }
+              ],
+              "preventive_measures": [
+                "Implement memory profiling in CI/CD",
+                "Add memory leak detection tests",
+                "Set up gradual rollout strategy"
+              ]
+            },
+            "risk_assessment": {
+              "overall_risk": "medium",
+              "factors": [
+                "unknown-namespace is critical",
+                "Rollback is tested and safe",
+                "Memory issue is contained to specific pods"
+              ],
+              "mitigation_steps": [
+                "Monitor closely after rollback",
+                "Keep team on standby",
+                "Prepare hotfix if needed"
+              ]
+            },
+            "implementation_order": [
+              {
+                "step": 1,
+                "action": "Execute rollback",
+                "dependencies": [],
+                "validation": "Check pod status and memory usage"
+              },
+              {
+                "step": 2,
+                "action": "Verify service health",
+                "dependencies": [
+                  "step_1"
+                ],
+                "validation": "Check error rates and response times"
+              },
+              {
+                "step": 3,
+                "action": "Update monitoring alerts",
+                "dependencies": [
+                  "step_2"
+                ],
+                "validation": "Ensure alerts are firing correctly"
+              }
+            ],
+            "success_metrics": {
+              "immediate": [
+                "Pod restart count = 0",
+                "Memory usage < 80% of limit",
+                "Error rate < 0.1%"
+              ],
+              "short_term": [
+                "No OOMKilled events in 24h",
+                "SLO compliance > 99.9%"
+              ],
+              "long_term": [
+                "Memory leak fixed in code",
+                "Automated memory testing in place"
+              ],
+              "category_enhanced": true,
+              "alert_category": "API"
+            },
+            "rollback_plan": {
+              "trigger_conditions": [
+                "Error rate > 5%",
+                "Multiple pod failures",
+                "Memory usage continues to spike"
+              ],
+              "steps": [
+                "Revert to current version",
+                "Scale up replicas",
+                "Enable circuit breaker"
+              ],
+              "validation": "Verify previous version number before rollback"
+            }
+          },
+          "completedAt": "2025-12-14T13:24:05.011Z"
+        }
+      }
+    },
+    "contextId": "ctx-1765718599269-mveauf",
+    "stage5Data": {
+      "analysis_id": "ctx-1765718599269-mveauf-stage5",
+      "remediation_plan": {
+        "immediate_actions": [
+          {
+            "action": "Rollback deployment to previous version",
+            "command": "kubectl rollout undo deployment/[object Object] -n bss-prod-eks-monitoring",
+            "risk": "low",
+            "estimated_time": "2-5 minutes",
+            "expected_outcome": "Restore service to previous stable version"
+          }
+        ],
+        "short_term_fixes": [
+          {
+            "action": "Increase memory limits temporarily",
+            "timeline": "1-2 days",
+            "details": "Set memory limit to 2Gi while investigating root cause"
+          }
+        ],
+        "long_term_solutions": [
+          {
+            "action": "Fix issues in component",
+            "timeline": "1-2 weeks",
+            "details": "Review and fix the root cause in component component"
+          }
+        ],
+        "preventive_measures": [
+          "Implement memory profiling in CI/CD",
+          "Add memory leak detection tests",
+          "Set up gradual rollout strategy"
+        ]
+      },
+      "risk_assessment": {
+        "overall_risk": "medium",
+        "factors": [
+          "unknown-namespace is critical",
+          "Rollback is tested and safe",
+          "Memory issue is contained to specific pods"
+        ],
+        "mitigation_steps": [
+          "Monitor closely after rollback",
+          "Keep team on standby",
+          "Prepare hotfix if needed"
+        ]
+      },
+      "implementation_order": [
+        {
+          "step": 1,
+          "action": "Execute rollback",
+          "dependencies": [],
+          "validation": "Check pod status and memory usage"
+        },
+        {
+          "step": 2,
+          "action": "Verify service health",
+          "dependencies": [
+            "step_1"
+          ],
+          "validation": "Check error rates and response times"
+        },
+        {
+          "step": 3,
+          "action": "Update monitoring alerts",
+          "dependencies": [
+            "step_2"
+          ],
+          "validation": "Ensure alerts are firing correctly"
+        }
+      ],
+      "success_metrics": {
+        "immediate": [
+          "Pod restart count = 0",
+          "Memory usage < 80% of limit",
+          "Error rate < 0.1%"
+        ],
+        "short_term": [
+          "No OOMKilled events in 24h",
+          "SLO compliance > 99.9%"
+        ],
+        "long_term": [
+          "Memory leak fixed in code",
+          "Automated memory testing in place"
+        ],
+        "category_enhanced": true,
+        "alert_category": "API"
+      },
+      "rollback_plan": {
+        "trigger_conditions": [
+          "Error rate > 5%",
+          "Multiple pod failures",
+          "Memory usage continues to spike"
+        ],
+        "steps": [
+          "Revert to current version",
+          "Scale up replicas",
+          "Enable circuit breaker"
+        ],
+        "validation": "Verify previous version number before rollback"
+      },
+      "primary_action": {
+        "action": "Rollback deployment to previous version",
+        "command": "kubectl rollout undo deployment/[object Object] -n bss-prod-eks-monitoring",
+        "risk": "low",
+        "estimated_time": "2-5 minutes",
+        "expected_outcome": "Restore service to previous stable version"
+      },
+      "overall_risk": "medium",
+      "kb_actions_added": 0,
+      "kb_enhanced": false
+    },
+    "stage1Data": {
+      "overall_status": "critical",
+      "alerts": {
+        "total": 0,
+        "critical": 0,
+        "warning": 0
+      },
+      "scores": {
+        "cluster_health": 0,
+        "node_availability": 0,
+        "pod_stability": 0,
+        "api_reliability": 0
+      },
+      "quick_findings": [
+        "No active alerts found in the namespace.",
+        "Cluster health check did not return any results, indicating potential API server unavailability."
+      ]
+    },
+    "stage2Data": {
+      "root_cause": {
+        "identified": false,
+        "component": "",
+        "issue": "",
+        "evidence": [],
+        "confidence": 0,
+        "category": "API",
+        "pattern_matched": null
+      },
+      "affected_services": [
+        "unknown-namespace"
+      ],
+      "critical_pods": [],
+      "cascading_effects": {
+        "hasCascadingFailures": false,
+        "affectedComponents": [],
+        "spreadPattern": "isolated",
+        "cascadeCategory": "API"
+      },
+      "correlation_matrix": {
+        "primary_chain": "unknown",
+        "affected_services": [
+          "unknown-namespace"
+        ],
+        "blast_radius": "unknown",
+        "kubernetes_impact": {
+          "evicted_pods": 0,
+          "pending_pods": 0,
+          "failed_schedules": 0
+        }
+      },
+      "alert_category": "API"
+    },
+    "stage3Data": {
+      "active_alerts": [
+        {
+          "name": "No alerts",
+          "severity": "unknown",
+          "count": 0,
+          "duration": "unknown",
+          "labels": {},
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        }
+      ],
+      "alert_groups": [
+        {
+          "root_alert": "none",
+          "related_alerts": [],
+          "correlation_score": 0,
+          "shared_labels": {}
+        }
+      ],
+      "knowledge_base_matches": [],
+      "slo_impact": {
+        "availability_slo": {
+          "target": "99.9%",
+          "current": "100%",
+          "error_budget_used": "0%",
+          "time_remaining": "30d",
+          "status": "green",
+          "components": {
+            "deployment_health": "100%"
+          }
+        },
+        "affected_slis": []
+      },
+      "recommended_actions": [
+        {
+          "alert": "none",
+          "action": "Monitor",
+          "confidence": 0,
+          "risk": "low",
+          "command": null
+        },
+        {
+          "alert": "No alerts",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        }
+      ],
+      "auto_remediation_approved": true,
+      "proceed_to_stage4": true,
+      "kb_enriched_count": 0,
+      "alert_category": "API",
+      "alert_patterns": {
+        "recurring": [],
+        "storm_detection": {
+          "detected": false,
+          "alert_count": 1,
+          "time_window": "5m",
+          "likely_root": null,
+          "storm_category": null
+        },
+        "category_distribution": [
+          {
+            "category": "UNKNOWN",
+            "count": 1,
+            "percentage": "100.0"
+          }
+        ]
+      },
+      "correlation_analysis": {
+        "groups_found": 1,
+        "storm_detected": false,
+        "primary_category": "API",
+        "category_distribution": [
+          {
+            "category": "UNKNOWN",
+            "count": 1,
+            "percentage": "100.0"
+          }
+        ]
+      }
+    },
+    "stage4Data": {
+      "diagnostics_executed": [
+        {
+          "target": "",
+          "type": "pod",
+          "commands_run": [
+            "kubectl describe pod  -n bss-prod-eks-monitoring",
+            "kubectl logs  -n bss-prod-eks-monitoring --since=24h",
+            "kubectl get events -n bss-prod-eks-monitoring --field-selector involvedObject.name="
+          ],
+          "findings": {
+            "pod_status": {
+              "phase": "",
+              "restart_count": 0,
+              "last_termination": {
+                "reason": "OOMKilled",
+                "exit_code": 137,
+                "finished_at": "2025-12-14T13:23:19.000Z"
+              }
+            },
+            "error_logs": [
+              {
+                "timestamp": "2025-12-14T13:23:19.000Z",
+                "level": "Error",
+                "message": "Container killed due to memory limit",
+                "stack_trace": null
+              }
+            ],
+            "events": [],
+            "resource_usage": {
+              "memory_request": "1Gi",
+              "memory_limit": "2Gi",
+              "memory_used": "",
+              "cpu_used": ""
+            }
+          }
+        }
+      ],
+      "enriched_context": {
+        "deployment_info": {
+          "name": "",
+          "version": "unknown",
+          "replicas": "unknown",
+          "last_update": "2025-12-14T13:23:19.000Z",
+          "update_strategy": "RollingUpdate"
+        },
+        "recent_changes": [
+          {
+            "type": "deployment",
+            "time": "2025-12-14T13:23:19.000Z",
+            "change": "Pod experiencing memory issues",
+            "user": "system"
+          }
+        ],
+        "dependencies": {
+          "upstream": [],
+          "downstream": "unknown-namespace",
+          "databases": [],
+          "external": []
+        },
+        "kb_analysis": {
+          "alerts_matched": [],
+          "diagnostic_coverage": 0,
+          "remediation_available": 0,
+          "highest_severity": "Low",
+          "categories_covered": []
+        }
+      },
+      "diagnostic_summary": {
+        "confirmed_issues": [
+          {
+            "issue": "Pod instability detected",
+            "evidence": "",
+            "severity": "critical",
+            "impact": "Service  is experiencing outages",
+            "namespace": "bss-prod-eks-monitoring"
+          }
+        ],
+        "secondary_issues": []
+      },
+      "confirmed_issues": [
+        {
+          "issue": "Pod instability detected",
+          "evidence": "",
+          "severity": "critical",
+          "impact": "Service  is experiencing outages",
+          "namespace": "bss-prod-eks-monitoring"
+        }
+      ],
+      "secondary_issues": [],
+      "remediation_confidence": 0.85,
+      "proceed_to_stage5": true,
+      "kb_enhanced": false,
+      "primary_diagnosis": {
+        "issue": "Pod instability detected",
+        "evidence": "",
+        "severity": "critical",
+        "impact": "Service  is experiencing outages",
+        "namespace": "bss-prod-eks-monitoring"
+      },
+      "diagnostic_metadata": {
+        "category": "API",
+        "total_commands": 3,
+        "kb_commands": 0,
+        "root_cause_commands": 0,
+        "correlation_commands": 0
+      }
+    },
+    "consolidatedFindings": {
+      "healthStatus": "critical",
+      "alertCount": 0,
+      "rootCause": {
+        "identified": false,
+        "component": "",
+        "issue": "",
+        "evidence": [],
+        "confidence": 0,
+        "category": "API",
+        "pattern_matched": null
+      },
+      "affectedServices": [
+        "unknown-namespace"
+      ],
+      "activeAlerts": [
+        {
+          "name": "No alerts",
+          "severity": "unknown",
+          "count": 0,
+          "duration": "unknown",
+          "labels": {},
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        }
+      ],
+      "confirmedIssues": [
+        {
+          "issue": "Pod instability detected",
+          "evidence": "",
+          "severity": "critical",
+          "impact": "Service  is experiencing outages",
+          "namespace": "bss-prod-eks-monitoring"
+        }
+      ],
+      "primaryDiagnosis": {
+        "issue": "Pod instability detected",
+        "evidence": "",
+        "severity": "critical",
+        "impact": "Service  is experiencing outages",
+        "namespace": "bss-prod-eks-monitoring"
+      },
+      "remediationConfidence": 0.85,
+      "alertCategory": "API",
+      "diagnosticCoverage": {
+        "category": "API",
+        "total_commands": 3,
+        "kb_commands": 0,
+        "root_cause_commands": 0,
+        "correlation_commands": 0
+      }
+    },
+    "primaryDiagnosis": {
+      "issue": "Pod instability detected",
+      "evidence": "",
+      "severity": "critical",
+      "impact": "Service  is experiencing outages",
+      "namespace": "bss-prod-eks-monitoring",
+      "stage": "Stage 4",
+      "timestamp": "2025-12-14T13:23:47.377Z",
+      "category": "API"
+    },
+    "executiveSummary": {
+      "contextId": "ctx-1765718599269-mveauf",
+      "issue": "Pod instability detected",
+      "severity": "critical",
+      "immediateAction": "Rollback deployment to previous version",
+      "command": "kubectl rollout undo deployment/[object Object] -n bss-prod-eks-monitoring",
+      "risk": "medium",
+      "estimatedTime": "2-5 minutes",
+      "stagesCompleted": 5,
+      "timestamp": "2025-12-14T13:24:05.016Z"
+    },
+    "namespaces": [
+      "bstp-cms-global-production",
+      "bstp-cms-prod-v3",
+      "em-global-prod-3pp",
+      "em-global-prod-eom",
+      "em-global-prod-flowe",
+      "em-global-prod",
+      "em-prod-3pp",
+      "em-prod-eom",
+      "em-prod-flowe",
+      "em-prod"
+    ],
+    "timeRange": {
+      "start": 1765714999,
+      "end": 1765718599
+    },
+    "_debugInfo": {
+      "fromNode": "Fix Stage 5 Context",
+      "contextFixed": true,
+      "validationPassed": true,
+      "templatesParsed": true,
+      "stage5Decision": true,
+      "primaryAction": "Rollback deployment to previous version",
+      "overallRisk": "medium",
+      "allStagesDataPresent": true,
+      "timestamp": "2025-12-14T13:24:05.017Z"
+    }
+  }
+]

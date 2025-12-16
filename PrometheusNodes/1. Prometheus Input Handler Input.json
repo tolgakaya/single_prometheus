@@ -1,0 +1,143 @@
+[
+  {
+    "workflowId": "alert-1765718599181",
+    "source": "alert-listener",
+    "orchestratorId": "direct-1765718599181",
+    "requestId": "alert-alert-1765718599169-1765718599181",
+    "startTime": 1765714999,
+    "endTime": 1765718599,
+    "priority": "critical",
+    "analysisType": "alert-driven",
+    "alertContext": {
+      "alertName": "KubeAPIDown",
+      "alertId": "alert-1765718599169",
+      "priority": "critical",
+      "source": "alertmanager",
+      "affectedServices": [
+        "unknown-namespace"
+      ],
+      "errorPatterns": [
+        "Chaos engineering test pattern"
+      ],
+      "focusAreas": [
+        "chaos-recovery",
+        "resilience-testing"
+      ],
+      "normalizedAlert": {
+        "alertname": "KubeAPIDown",
+        "priority": "critical",
+        "container": null,
+        "pod": null,
+        "namespace": null,
+        "service": null,
+        "node": null,
+        "status": "firing"
+      }
+    },
+    "kubernetesFilters": {
+      "container": null,
+      "pod": null,
+      "namespace": null,
+      "namespaces": [
+        "bss-prod-eks-monitoring",
+        "bstp-cms-global-production",
+        "bstp-cms-prod-v3",
+        "em-global-prod-3pp",
+        "em-global-prod-eom",
+        "em-global-prod-flowe",
+        "em-global-prod",
+        "em-prod-3pp",
+        "em-prod-eom",
+        "em-prod-flowe",
+        "em-prod",
+        "em-control-plane-prod"
+      ],
+      "service": null,
+      "deployment": null,
+      "node": null,
+      "persistentvolumeclaim": null,
+      "volumename": null,
+      "useSpecificFilters": false,
+      "useMultiNamespace": true
+    },
+    "prometheusContext": {
+      "nodeFilter": null,
+      "containerFilter": null,
+      "podFilter": null,
+      "useSpecificFilters": false
+    },
+    "focusAreas": [
+      "chaos-recovery",
+      "resilience-testing"
+    ],
+    "namespaces": [
+      "bss-prod-eks-monitoring",
+      "bstp-cms-global-production",
+      "bstp-cms-prod-v3",
+      "em-global-prod-3pp",
+      "em-global-prod-eom",
+      "em-global-prod-flowe",
+      "em-global-prod",
+      "em-prod-3pp",
+      "em-prod-eom",
+      "em-prod-flowe",
+      "em-prod",
+      "em-control-plane-prod"
+    ],
+    "metadata": {
+      "alertSource": "alertmanager",
+      "alertDetails": {
+        "id": "alert-1765718599169",
+        "title": "KubeAPIDown",
+        "alertname": "KubeAPIDown",
+        "detectedAt": "2025-12-13T08:49:41.236Z",
+        "isOngoing": true
+      },
+      "analysisMode": "GENERAL"
+    },
+    "context": {
+      "alertName": "KubeAPIDown",
+      "alertId": "alert-1765718599169",
+      "alertPriority": "critical",
+      "source": "alertmanager",
+      "kubernetes": {
+        "container": null,
+        "pod": null,
+        "namespace": null,
+        "namespaces": [
+          "bss-prod-eks-monitoring",
+          "bstp-cms-global-production",
+          "bstp-cms-prod-v3",
+          "em-global-prod-3pp",
+          "em-global-prod-eom",
+          "em-global-prod-flowe",
+          "em-global-prod",
+          "em-prod-3pp",
+          "em-prod-eom",
+          "em-prod-flowe",
+          "em-prod",
+          "em-control-plane-prod"
+        ],
+        "service": null,
+        "deployment": null,
+        "node": null,
+        "persistentvolumeclaim": null,
+        "volumename": null,
+        "useSpecificFilters": false,
+        "useMultiNamespace": true
+      },
+      "affectedServices": [
+        "unknown-namespace"
+      ],
+      "errorPatterns": [
+        "Chaos engineering test pattern"
+      ],
+      "alerts": [
+        {
+          "alertname": "KubeAPIDown",
+          "severity": "critical"
+        }
+      ]
+    }
+  }
+]

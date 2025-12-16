@@ -1,0 +1,99 @@
+# Stage 2: Deep Analysis
+
+## TIME:
+Start: {{ $json._context.initialParams.startTime }}
+End: {{ $json._context.initialParams.endTime }}
+
+## CONTEXT:
+ID: {{ $json._context.contextId }}
+Alert: {{ $json._context.alertContext.alertName }}
+Pod: {{ $json._context.kubernetesFilters.pod }}
+Namespaces: {{ $json._context.initialParams.namespaces.join(', ') }} (Total: {{ $json._context.initialParams.namespaces.length }})
+Priority: {{ $json._context.priority }}
+Category: {{ $json.deepAnalysisHints?.category || 'UNKNOWN' }}
+
+## STAGE 1 KEY FINDINGS:
+Status: {{ $json.stage1Results.overall_status }}
+Alerts: {{ $json.stage1Results.alerts.critical }} critical
+Issue: {{ $json.stage1Results.quick_findings[0] }}
+
+## CATEGORY-SPECIFIC DEEP ANALYSIS HINTS:
+{{ $json.deepAnalysisHints?.message || 'No specific hints available' }}
+
+Focus Areas: {{ $json.deepAnalysisHints?.focusAreas?.join(', ') || 'General investigation' }}
+Expected Findings: {{ $json.deepAnalysisHints?.expectedFindings?.join(', ') || 'Standard metrics' }}
+Correlation Focus: {{ $json.deepAnalysisHints?.correlationFocus || 'deployment_and_service' }}
+
+## KNOWLEDGE BASE TROUBLESHOOTING GUIDANCE:
+{{ $json.deepAnalysisHints?.kbTroubleshooting ? '### KB Troubleshooting Steps:\n' + $json.deepAnalysisHints.kbTroubleshooting.steps.map((step, i) => `${i+1}. ${step}`).join('\n') : 'Use category-based analysis phases below' }}
+
+{{ $json.deepAnalysisHints?.kbTroubleshooting ? '### KB Expected Results:\n' + $json.deepAnalysisHints.kbTroubleshooting.expectedResults.map((result, i) => `- ${result}`).join('\n') : '' }}
+
+{{ $json.deepAnalysisHints?.kbTroubleshooting ? '### KB Immediate Actions:\n' + $json.deepAnalysisHints.kbTroubleshooting.immediateActions.map((action, i) => `- ${action}`).join('\n') : '' }}
+
+{{ $json.deepAnalysisHints?.kbTroubleshooting ? '### KB Common Causes to Investigate:\n' + $json.deepAnalysisHints.kbTroubleshooting.commonCauses.map((cause, i) => `- ${cause}`).join('\n') : '' }}
+
+{{ $json.stage1Data?.kbFallbackUsed ? '⚠️ IMPORTANT: Prometheus queries failed (likely due to ' + $json._context.alertContext.alertName + '). Use KB troubleshooting above as primary guidance.' : '' }}
+
+## EXECUTE ANALYSIS (Category: {{ $json.deepAnalysisHints?.category || 'GENERIC' }}):
+
+Phase 1 (Instant Check):
+{{ $json.deepAnalysisHints?.phases?.instant || '- Pod Status Check\n- Container Restarts\n- Pod Resource Usage' }}
+
+Phase 2 (Trends):
+{{ $json.deepAnalysisHints?.phases?.trend || '- Historical Comparison 24h' }}
+
+Phase 3 (Anomaly):
+{{ $json.deepAnalysisHints?.phases?.anomaly || '- Resource Exhaustion Prediction\n- Anomaly Patterns' }}
+
+## OUTPUT JSON (NO MARKDOWN):
+{
+  "stage": "deep_analysis",
+  "investigation_id": "{{ $json._context.contextId }}-s2",
+  "execution_phases": {
+    "instant": {
+      "tools_used": [],
+      "findings": {
+        "critical_pods": [],
+        "resource_pressure": []
+      }
+    },
+    "trend": {
+      "tools_used": [],
+      "findings": {
+        "memory_growth": "",
+        "restart_pattern": ""
+      }
+    },
+    "anomaly": {
+      "tools_used": [],
+      "findings": {
+        "predictions": [],
+        "anomalies": []
+      }
+    }
+  },
+  "correlation_matrix": {
+    "primary_chain": "",
+    "affected_services": [],
+    "blast_radius": "",
+    "kubernetes_impact": {
+      "evicted_pods": 0,
+      "pending_pods": 0
+    }
+  },
+  "root_cause": {
+    "identified": false,
+    "component": "",
+    "issue": "",
+    "evidence": [],
+    "confidence": 0.0
+  },
+  "proceed_to_stage3": false,
+  "_context": {
+    "contextId": "{{ $json._context.contextId }}",
+    "priority": "{{ $json._context.priority }}"
+  }
+}
+
+Return ONLY JSON, no text before/after.
