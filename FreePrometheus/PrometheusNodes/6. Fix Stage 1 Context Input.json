@@ -1,0 +1,93 @@
+[
+  {
+    "output": {
+      "stage": "health_snapshot",
+      "timestamp": "2025-12-16T11:40:14.707Z",
+      "overall_status": "unknown",
+      "proceed_to_stage2": false,
+      "urgency": "normal",
+      "reason": "Cluster health data is unavailable, but alerts indicate some warnings.",
+      "alerts": {
+        "total": 6,
+        "critical": 0,
+        "warning": 2,
+        "top_alerts": [
+          "KubeHpaMaxedOut",
+          "KubeCPUOvercommit"
+        ]
+      },
+      "scores": {
+        "cluster_health": 3,
+        "node_availability": 3,
+        "pod_stability": 3,
+        "api_reliability": 3
+      },
+      "quick_findings": [
+        "No critical alerts but warnings present.",
+        "Cluster health data not retrieved."
+      ],
+      "forceDeepAnalysis": false,
+      "overridden": false,
+      "_context": {
+        "contextId": "ctx-1765885214707-umnz2jtti",
+        "createdAt": "2025-12-16T11:40:14.707Z",
+        "source": {
+          "type": "manual",
+          "priority": "normal"
+        },
+        "initialParams": {
+          "startTime": 1765881614,
+          "endTime": 1765885214,
+          "namespaces": [
+            "bstp-cms-global-production",
+            "bstp-cms-prod-v3",
+            "em-global-prod-3pp",
+            "em-global-prod-eom",
+            "em-global-prod-flowe",
+            "em-global-prod",
+            "em-prod-3pp",
+            "em-prod-eom",
+            "em-prod-flowe",
+            "em-prod",
+            "etiyamobile-production",
+            "etiyamobile-prod"
+          ],
+          "services": [],
+          "focusAreas": [],
+          "analysisType": "general",
+          "context": {
+            "otherAgents": [],
+            "userIntent": "",
+            "expectedOutputFormat": "detailed"
+          }
+        },
+        "stageConfig": {
+          "maxStages": 1,
+          "enablePatternAnalysis": false,
+          "enableAnomalyDetection": false,
+          "enablePredictiveAnalysis": false,
+          "forceDeepAnalysis": false
+        },
+        "priority": "normal",
+        "forceDeepAnalysis": false,
+        "workflowMetadata": {
+          "workflowId": "ysMD5nc5K6RCPF0Q",
+          "executionId": "6323",
+          "orchestratorId": null,
+          "requestId": "req-1765885214707"
+        },
+        "stageResults": {},
+        "decisions": {},
+        "debug": {
+          "contextVersion": "1.0",
+          "createdBy": "Unified Entry Point"
+        }
+      },
+      "_debug": {
+        "nodeType": "Stage 1: Health Snapshot",
+        "processedAt": "2025-12-16T11:40:14.707Z",
+        "contextId": "ctx-1765885214707-umnz2jtti"
+      }
+    }
+  }
+]

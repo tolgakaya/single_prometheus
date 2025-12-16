@@ -1,0 +1,102 @@
+[
+  {
+    "source": "direct",
+    "orchestratorId": null,
+    "requestId": "prom-1765885214694",
+    "timestamp": "2025-12-16T11:40:14.694Z",
+    "timeRange": {
+      "start": 1765881614,
+      "end": 1765885214,
+      "duration": 3600,
+      "humanReadable": {
+        "start": "2025-12-16T10:40:14.000Z",
+        "end": "2025-12-16T11:40:14.000Z",
+        "duration": "60 minutes"
+      }
+    },
+    "analysisConfig": {
+      "type": "metrics",
+      "priority": "normal",
+      "depth": "standard",
+      "forceDeepAnalysis": false,
+      "skipHealthGate": false
+    },
+    "searchParams": {
+      "cluster": "k8s-prod",
+      "namespaces": [
+        "bstp-cms-global-production",
+        "bstp-cms-prod-v3",
+        "em-global-prod-3pp",
+        "em-global-prod-eom",
+        "em-global-prod-flowe",
+        "em-global-prod",
+        "em-prod-3pp",
+        "em-prod-eom",
+        "em-prod-flowe",
+        "em-prod",
+        "etiyamobile-production",
+        "etiyamobile-prod"
+      ],
+      "services": [],
+      "nodes": [],
+      "pods": [],
+      "workloadTypes": [],
+      "metrics": [],
+      "alertTypes": [],
+      "resourceTypes": []
+    },
+    "features": {
+      "includeAlerts": true,
+      "includeKnowledgeBase": true,
+      "enableAutoRemediation": false,
+      "compareWithHistory": false,
+      "predictiveAnalysis": false,
+      "sloChecking": false,
+      "kubernetesHealth": true,
+      "applicationMetrics": true
+    },
+    "context": {
+      "otherAgents": [],
+      "userIntent": "",
+      "expectedOutputFormat": "detailed"
+    },
+    "analysisParams": {
+      "cluster": "k8s-prod",
+      "environment": "k8s-prod",
+      "namespaceFilter": "bstp-cms-global-production,bstp-cms-prod-v3,em-global-prod-3pp,em-global-prod-eom,em-global-prod-flowe,em-global-prod,em-prod-3pp,em-prod-eom,em-prod-flowe,em-prod,etiyamobile-production,etiyamobile-prod",
+      "timeRange": 3600,
+      "includeAlerts": true,
+      "includeKnowledgeBase": true,
+      "enableAutoRemediation": false,
+      "maxStages": 3,
+      "forceDeepAnalysis": false,
+      "skipHealthGate": false,
+      "analysisDepth": "standard",
+      "priority": "normal"
+    },
+    "_debug": {
+      "originalInput": "{}",
+      "processedAt": "2025-12-16T11:40:14.694Z",
+      "timeRangeInfo": "From 2025-12-16T10:40:14.000Z to 2025-12-16T11:40:14.000Z",
+      "servicesFound": [],
+      "namespacesFound": [
+        "bstp-cms-global-production",
+        "bstp-cms-prod-v3",
+        "em-global-prod-3pp",
+        "em-global-prod-eom",
+        "em-global-prod-flowe",
+        "em-global-prod",
+        "em-prod-3pp",
+        "em-prod-eom",
+        "em-prod-flowe",
+        "em-prod",
+        "etiyamobile-production",
+        "etiyamobile-prod"
+      ],
+      "metricsToCheck": [],
+      "analysisDepth": "standard",
+      "forceDeepAnalysis": false,
+      "priority": "normal"
+    }
+  }
+]

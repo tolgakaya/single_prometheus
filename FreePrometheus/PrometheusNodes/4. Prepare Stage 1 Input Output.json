@@ -1,0 +1,403 @@
+[
+  {
+    "timestamp": "2025-12-16T11:40:14.707Z",
+    "source": {
+      "type": "manual",
+      "priority": "normal"
+    },
+    "analysisParams": {
+      "startTime": 1765881614,
+      "endTime": 1765885214,
+      "namespaces": [
+        "bstp-cms-global-production",
+        "bstp-cms-prod-v3",
+        "em-global-prod-3pp",
+        "em-global-prod-eom",
+        "em-global-prod-flowe",
+        "em-global-prod",
+        "em-prod-3pp",
+        "em-prod-eom",
+        "em-prod-flowe",
+        "em-prod",
+        "etiyamobile-production",
+        "etiyamobile-prod"
+      ],
+      "services": [],
+      "focusAreas": [],
+      "analysisType": "general",
+      "context": {
+        "otherAgents": [],
+        "userIntent": "",
+        "expectedOutputFormat": "detailed"
+      }
+    },
+    "stageConfig": {
+      "maxStages": 1,
+      "enablePatternAnalysis": false,
+      "enableAnomalyDetection": false,
+      "enablePredictiveAnalysis": false,
+      "forceDeepAnalysis": false
+    },
+    "priority": "normal",
+    "forceDeepAnalysis": false,
+    "metadata": {
+      "workflowId": "ysMD5nc5K6RCPF0Q",
+      "executionId": "6323",
+      "orchestratorId": null,
+      "requestId": "req-1765885214707"
+    },
+    "_context": {
+      "contextId": "ctx-1765885214707-umnz2jtti",
+      "createdAt": "2025-12-16T11:40:14.707Z",
+      "source": {
+        "type": "manual",
+        "priority": "normal"
+      },
+      "initialParams": {
+        "startTime": 1765881614,
+        "endTime": 1765885214,
+        "namespaces": [
+          "bstp-cms-global-production",
+          "bstp-cms-prod-v3",
+          "em-global-prod-3pp",
+          "em-global-prod-eom",
+          "em-global-prod-flowe",
+          "em-global-prod",
+          "em-prod-3pp",
+          "em-prod-eom",
+          "em-prod-flowe",
+          "em-prod",
+          "etiyamobile-production",
+          "etiyamobile-prod"
+        ],
+        "services": [],
+        "focusAreas": [],
+        "analysisType": "general",
+        "context": {
+          "otherAgents": [],
+          "userIntent": "",
+          "expectedOutputFormat": "detailed"
+        }
+      },
+      "stageConfig": {
+        "maxStages": 1,
+        "enablePatternAnalysis": false,
+        "enableAnomalyDetection": false,
+        "enablePredictiveAnalysis": false,
+        "forceDeepAnalysis": false
+      },
+      "priority": "normal",
+      "forceDeepAnalysis": false,
+      "workflowMetadata": {
+        "workflowId": "ysMD5nc5K6RCPF0Q",
+        "executionId": "6323",
+        "orchestratorId": null,
+        "requestId": "req-1765885214707"
+      },
+      "stageResults": {},
+      "decisions": {},
+      "debug": {
+        "contextVersion": "1.0",
+        "createdBy": "Unified Entry Point"
+      }
+    },
+    "_alertKB": {
+      "loaded": true,
+      "totalAlerts": 3,
+      "severityBreakdown": {
+        "Critical": 2,
+        "Blocker": 1
+      },
+      "loadedAt": "2025-12-16T11:40:14.717Z"
+    },
+    "_alertKBData": [
+      {
+        "alertName": "KubePodCrashLooping",
+        "severity": "Critical",
+        "description": "Pod repeatedly crashes after starting",
+        "rootCauses": [
+          "1. Application bugs causing crashes",
+          "2. Insufficient memory/CPU resources",
+          "3. Missing ConfigMaps or Secrets",
+          "4. Failed health checks",
+          "5. Image pull errors",
+          "6. Permission issues"
+        ],
+        "diagnosticCommands": [
+          "kubectl logs [pod] -n [namespace] --previous",
+          "kubectl describe pod [pod] -n [namespace]",
+          "kubectl get events -n [namespace] --field-selector involvedObject.name=[pod]",
+          "kubectl top pod [pod] -n [namespace]",
+          "kubectl get pod [pod] -n [namespace] -o yaml | grep -A 10 'status:'",
+          "kubectl exec [pod] -n [namespace] -- df -h"
+        ],
+        "expectedResults": [
+          "1. Error logs before crash (stack trace, exception)",
+          "2. Exit code and reason (OOMKilled, Error, etc.)",
+          "3. Resource limits and current usage",
+          "4. Recent events showing failures",
+          "5. Restart count > 5",
+          "6. Container state details"
+        ],
+        "immediateActions": [
+          "1. Check logs for error messages",
+          "2. Verify resource limits are adequate",
+          "3. Check if ConfigMaps/Secrets exist and are mounted",
+          "4. Delete and recreate pod: kubectl delete pod [pod] -n [namespace]",
+          "5. If OOMKilled: Increase memory limits",
+          "6. Rollback deployment if issue persists"
+        ],
+        "longTermSolutions": [
+          "1. Fix application bugs identified in logs",
+          "2. Adjust resource requests/limits based on actual usage",
+          "3. Implement proper health checks (liveness/readiness probes)",
+          "4. Add monitoring for memory leaks",
+          "5. Set up PodDisruptionBudget",
+          "6. Implement graceful shutdown handling"
+        ]
+      },
+      {
+        "alertName": "etcdInsufficientMembers",
+        "severity": "Blocker",
+        "description": "etcd cluster lost quorum",
+        "rootCauses": [
+          "1. AZ outage",
+          "2. EC2 instance failure",
+          "3. Network partition",
+          "4. Storage corruption"
+        ],
+        "diagnosticCommands": [
+          "aws eks describe-cluster --name [cluster]",
+          "kubectl get ns -v=6",
+          "aws cloudwatch get-metric-data --metric-data-queries"
+        ],
+        "expectedResults": [
+          "1. API requests failing",
+          "2. AWS console shows etcd warnings",
+          "3. CloudWatch shows <3 members"
+        ],
+        "immediateActions": [
+          "1. IMMEDIATE AWS SUPPORT TICKET",
+          "2. Stop cluster changes",
+          "3. Prepare DR plan"
+        ],
+        "longTermSolutions": [
+          "1. Deploy multi-AZ etcd",
+          "2. Regular snapshots",
+          "3. Monitor etcd_health metrics"
+        ]
+      },
+      {
+        "alertName": "KubeAPIErrorBudgetBurn",
+        "severity": "Critical",
+        "description": "API server error rate >5% for 15min",
+        "rootCauses": [
+          "1. etcd performance issues",
+          "2. Abusive API clients",
+          "3. Network congestion",
+          "4. Certificate expiry"
+        ],
+        "diagnosticCommands": [
+          "kubectl get --raw /metrics | grep apiserver_request",
+          "kubectl top nodes",
+          "kubectl logs -n kube-system kube-apiserver-*"
+        ],
+        "expectedResults": [
+          "1. 5xx errors >5%",
+          "2. High CPU/memory on masters",
+          "3. Error logs in API server"
+        ],
+        "immediateActions": [
+          "1. Identify abusive clients",
+          "2. Scale API servers",
+          "3. Enable rate limiting",
+          "4. Check certificates"
+        ],
+        "longTermSolutions": [
+          "1. Implement client QPS limits",
+          "2. Deploy API caching layer",
+          "3. Monitor client behavior"
+        ]
+      }
+    ],
+    "_alertKBBySeverity": {
+      "Critical": [
+        {
+          "alertName": "KubePodCrashLooping",
+          "severity": "Critical",
+          "description": "Pod repeatedly crashes after starting",
+          "rootCauses": [
+            "1. Application bugs causing crashes",
+            "2. Insufficient memory/CPU resources",
+            "3. Missing ConfigMaps or Secrets",
+            "4. Failed health checks",
+            "5. Image pull errors",
+            "6. Permission issues"
+          ],
+          "diagnosticCommands": [
+            "kubectl logs [pod] -n [namespace] --previous",
+            "kubectl describe pod [pod] -n [namespace]",
+            "kubectl get events -n [namespace] --field-selector involvedObject.name=[pod]",
+            "kubectl top pod [pod] -n [namespace]",
+            "kubectl get pod [pod] -n [namespace] -o yaml | grep -A 10 'status:'",
+            "kubectl exec [pod] -n [namespace] -- df -h"
+          ],
+          "expectedResults": [
+            "1. Error logs before crash (stack trace, exception)",
+            "2. Exit code and reason (OOMKilled, Error, etc.)",
+            "3. Resource limits and current usage",
+            "4. Recent events showing failures",
+            "5. Restart count > 5",
+            "6. Container state details"
+          ],
+          "immediateActions": [
+            "1. Check logs for error messages",
+            "2. Verify resource limits are adequate",
+            "3. Check if ConfigMaps/Secrets exist and are mounted",
+            "4. Delete and recreate pod: kubectl delete pod [pod] -n [namespace]",
+            "5. If OOMKilled: Increase memory limits",
+            "6. Rollback deployment if issue persists"
+          ],
+          "longTermSolutions": [
+            "1. Fix application bugs identified in logs",
+            "2. Adjust resource requests/limits based on actual usage",
+            "3. Implement proper health checks (liveness/readiness probes)",
+            "4. Add monitoring for memory leaks",
+            "5. Set up PodDisruptionBudget",
+            "6. Implement graceful shutdown handling"
+          ]
+        },
+        {
+          "alertName": "KubeAPIErrorBudgetBurn",
+          "severity": "Critical",
+          "description": "API server error rate >5% for 15min",
+          "rootCauses": [
+            "1. etcd performance issues",
+            "2. Abusive API clients",
+            "3. Network congestion",
+            "4. Certificate expiry"
+          ],
+          "diagnosticCommands": [
+            "kubectl get --raw /metrics | grep apiserver_request",
+            "kubectl top nodes",
+            "kubectl logs -n kube-system kube-apiserver-*"
+          ],
+          "expectedResults": [
+            "1. 5xx errors >5%",
+            "2. High CPU/memory on masters",
+            "3. Error logs in API server"
+          ],
+          "immediateActions": [
+            "1. Identify abusive clients",
+            "2. Scale API servers",
+            "3. Enable rate limiting",
+            "4. Check certificates"
+          ],
+          "longTermSolutions": [
+            "1. Implement client QPS limits",
+            "2. Deploy API caching layer",
+            "3. Monitor client behavior"
+          ]
+        }
+      ],
+      "Blocker": [
+        {
+          "alertName": "etcdInsufficientMembers",
+          "severity": "Blocker",
+          "description": "etcd cluster lost quorum",
+          "rootCauses": [
+            "1. AZ outage",
+            "2. EC2 instance failure",
+            "3. Network partition",
+            "4. Storage corruption"
+          ],
+          "diagnosticCommands": [
+            "aws eks describe-cluster --name [cluster]",
+            "kubectl get ns -v=6",
+            "aws cloudwatch get-metric-data --metric-data-queries"
+          ],
+          "expectedResults": [
+            "1. API requests failing",
+            "2. AWS console shows etcd warnings",
+            "3. CloudWatch shows <3 members"
+          ],
+          "immediateActions": [
+            "1. IMMEDIATE AWS SUPPORT TICKET",
+            "2. Stop cluster changes",
+            "3. Prepare DR plan"
+          ],
+          "longTermSolutions": [
+            "1. Deploy multi-AZ etcd",
+            "2. Regular snapshots",
+            "3. Monitor etcd_health metrics"
+          ]
+        }
+      ]
+    },
+    "_severityScores": {
+      "Blocker": 100,
+      "Critical": 80,
+      "High": 60,
+      "Medium": 40,
+      "Low": 20
+    },
+    "contextId": "ctx-1765885214707-umnz2jtti",
+    "contextData": {
+      "contextId": "ctx-1765885214707-umnz2jtti",
+      "createdAt": "2025-12-16T11:40:14.707Z",
+      "source": {
+        "type": "manual",
+        "priority": "normal"
+      },
+      "initialParams": {
+        "startTime": 1765881614,
+        "endTime": 1765885214,
+        "namespaces": [
+          "bstp-cms-global-production",
+          "bstp-cms-prod-v3",
+          "em-global-prod-3pp",
+          "em-global-prod-eom",
+          "em-global-prod-flowe",
+          "em-global-prod",
+          "em-prod-3pp",
+          "em-prod-eom",
+          "em-prod-flowe",
+          "em-prod",
+          "etiyamobile-production",
+          "etiyamobile-prod"
+        ],
+        "services": [],
+        "focusAreas": [],
+        "analysisType": "general",
+        "context": {
+          "otherAgents": [],
+          "userIntent": "",
+          "expectedOutputFormat": "detailed"
+        }
+      },
+      "stageConfig": {
+        "maxStages": 1,
+        "enablePatternAnalysis": false,
+        "enableAnomalyDetection": false,
+        "enablePredictiveAnalysis": false,
+        "forceDeepAnalysis": false
+      },
+      "priority": "normal",
+      "forceDeepAnalysis": false,
+      "workflowMetadata": {
+        "workflowId": "ysMD5nc5K6RCPF0Q",
+        "executionId": "6323",
+        "orchestratorId": null,
+        "requestId": "req-1765885214707"
+      },
+      "stageResults": {},
+      "decisions": {},
+      "debug": {
+        "contextVersion": "1.0",
+        "createdBy": "Unified Entry Point"
+      }
+    },
+    "_inputPrepared": true,
+    "_preparedAt": "2025-12-16T11:40:14.730Z"
+  }
+]
