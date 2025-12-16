@@ -1,13 +1,13 @@
 [
   {
-    "timestamp": "2025-12-16T11:40:14.707Z",
+    "timestamp": "2025-12-16T18:45:27.048Z",
     "source": {
       "type": "manual",
       "priority": "normal"
     },
     "analysisParams": {
-      "startTime": 1765881614,
-      "endTime": 1765885214,
+      "startTime": 1765907127,
+      "endTime": 1765910727,
       "namespaces": [
         "bstp-cms-global-production",
         "bstp-cms-prod-v3",
@@ -22,14 +22,64 @@
         "etiyamobile-production",
         "etiyamobile-prod"
       ],
-      "services": [],
+      "services": [
+        "bss-mc-crm-search-integrator",
+        "bss-mc-crm-customer-information",
+        "bss-mc-crm-customer-search",
+        "bss-mc-crm-mash-up",
+        "bss-mc-crm-ntf-integrator",
+        "bss-mc-activity",
+        "bss-mc-asset-management",
+        "bss-mc-cpq",
+        "bss-mc-cpq-batch",
+        "bss-mc-cpq-ntf-integrator",
+        "bss-mc-csr",
+        "bss-mc-domain-config",
+        "bss-mc-id-service",
+        "bss-mc-message-relay",
+        "bss-mc-ntf-engine",
+        "bss-mc-ntf-history",
+        "bss-mc-rim",
+        "bss-mc-ui-authz",
+        "bss-mc-user-management",
+        "bss-mc-wsc-new",
+        "bss-crm-batch",
+        "bss-ntf-batch",
+        "bss-mc-pcm-cfm",
+        "bss-mc-pcm-cms-integrator",
+        "bss-mc-pcm-product-catalog",
+        "bss-mc-pcm-product-offer-detail",
+        "bss-mc-pcm-next-gen-admintoolbox-config-manager",
+        "bss-mc-pcm-next-gen-admintoolbox-ui",
+        "eom-micro-flows",
+        "eom-operate",
+        "eom-scheduler",
+        "eom-ui",
+        "eom-activemqqueueoperations",
+        "eom-postgresqldboperations",
+        "eom-zeebe",
+        "eom-castlemock",
+        "bss-services-service",
+        "external-services-service",
+        "loyalty-services-service",
+        "om-services-service",
+        "fstp-bpmn-ms",
+        "fstp-configuration-ms",
+        "fstp-dashboard-ms",
+        "fstp-frontend",
+        "fstp-orchestra-ms",
+        "fstp-scheduler-ms",
+        "fstp-eca",
+        "eca",
+        "wso2am-gw-service",
+        "wso2am-cp-service",
+        "bss-saas-control-plane",
+        "bss-saas-control-plane-ui",
+        "bss-tenant-control-plane-batch"
+      ],
       "focusAreas": [],
       "analysisType": "general",
-      "context": {
-        "otherAgents": [],
-        "userIntent": "",
-        "expectedOutputFormat": "detailed"
-      }
+      "context": {}
     },
     "stageConfig": {
       "maxStages": 1,
@@ -42,20 +92,20 @@
     "forceDeepAnalysis": false,
     "metadata": {
       "workflowId": "ysMD5nc5K6RCPF0Q",
-      "executionId": "6323",
+      "executionId": "6480",
       "orchestratorId": null,
-      "requestId": "req-1765885214707"
+      "requestId": "req-1765910727048"
     },
     "_context": {
-      "contextId": "ctx-1765885214707-umnz2jtti",
-      "createdAt": "2025-12-16T11:40:14.707Z",
+      "contextId": "ctx-1765910727047-tj2ba2gdv",
+      "createdAt": "2025-12-16T18:45:27.048Z",
       "source": {
         "type": "manual",
         "priority": "normal"
       },
       "initialParams": {
-        "startTime": 1765881614,
-        "endTime": 1765885214,
+        "startTime": 1765907127,
+        "endTime": 1765910727,
         "namespaces": [
           "bstp-cms-global-production",
           "bstp-cms-prod-v3",
@@ -70,14 +120,64 @@
           "etiyamobile-production",
           "etiyamobile-prod"
         ],
-        "services": [],
+        "services": [
+          "bss-mc-crm-search-integrator",
+          "bss-mc-crm-customer-information",
+          "bss-mc-crm-customer-search",
+          "bss-mc-crm-mash-up",
+          "bss-mc-crm-ntf-integrator",
+          "bss-mc-activity",
+          "bss-mc-asset-management",
+          "bss-mc-cpq",
+          "bss-mc-cpq-batch",
+          "bss-mc-cpq-ntf-integrator",
+          "bss-mc-csr",
+          "bss-mc-domain-config",
+          "bss-mc-id-service",
+          "bss-mc-message-relay",
+          "bss-mc-ntf-engine",
+          "bss-mc-ntf-history",
+          "bss-mc-rim",
+          "bss-mc-ui-authz",
+          "bss-mc-user-management",
+          "bss-mc-wsc-new",
+          "bss-crm-batch",
+          "bss-ntf-batch",
+          "bss-mc-pcm-cfm",
+          "bss-mc-pcm-cms-integrator",
+          "bss-mc-pcm-product-catalog",
+          "bss-mc-pcm-product-offer-detail",
+          "bss-mc-pcm-next-gen-admintoolbox-config-manager",
+          "bss-mc-pcm-next-gen-admintoolbox-ui",
+          "eom-micro-flows",
+          "eom-operate",
+          "eom-scheduler",
+          "eom-ui",
+          "eom-activemqqueueoperations",
+          "eom-postgresqldboperations",
+          "eom-zeebe",
+          "eom-castlemock",
+          "bss-services-service",
+          "external-services-service",
+          "loyalty-services-service",
+          "om-services-service",
+          "fstp-bpmn-ms",
+          "fstp-configuration-ms",
+          "fstp-dashboard-ms",
+          "fstp-frontend",
+          "fstp-orchestra-ms",
+          "fstp-scheduler-ms",
+          "fstp-eca",
+          "eca",
+          "wso2am-gw-service",
+          "wso2am-cp-service",
+          "bss-saas-control-plane",
+          "bss-saas-control-plane-ui",
+          "bss-tenant-control-plane-batch"
+        ],
         "focusAreas": [],
         "analysisType": "general",
-        "context": {
-          "otherAgents": [],
-          "userIntent": "",
-          "expectedOutputFormat": "detailed"
-        }
+        "context": {}
       },
       "stageConfig": {
         "maxStages": 1,
@@ -90,9 +190,9 @@
       "forceDeepAnalysis": false,
       "workflowMetadata": {
         "workflowId": "ysMD5nc5K6RCPF0Q",
-        "executionId": "6323",
+        "executionId": "6480",
         "orchestratorId": null,
-        "requestId": "req-1765885214707"
+        "requestId": "req-1765910727048"
       },
       "stageResults": {},
       "decisions": {},
@@ -108,7 +208,7 @@
         "Critical": 2,
         "Blocker": 1
       },
-      "loadedAt": "2025-12-16T11:40:14.717Z"
+      "loadedAt": "2025-12-16T18:45:27.060Z"
     },
     "_alertKBData": [
       {

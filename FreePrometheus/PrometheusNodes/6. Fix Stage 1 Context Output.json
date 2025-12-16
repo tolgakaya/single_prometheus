@@ -2,11 +2,11 @@
   {
     "output": {
       "stage": "health_snapshot",
-      "timestamp": "2025-12-16T11:40:14.707Z",
+      "timestamp": "2023-11-15T04:32:07.047Z",
       "overall_status": "unknown",
       "proceed_to_stage2": false,
-      "urgency": "normal",
-      "reason": "Cluster health data is unavailable, but alerts indicate some warnings.",
+      "urgency": "low",
+      "reason": "Cluster health data is unavailable, but alerts indicate minor issues.",
       "alerts": {
         "total": 6,
         "critical": 0,
@@ -23,21 +23,21 @@
         "api_reliability": 3
       },
       "quick_findings": [
-        "No critical alerts but warnings present.",
-        "Cluster health data not retrieved."
+        "No critical alerts detected.",
+        "Minor warnings related to CPU overcommit and HPA maxed out."
       ],
       "forceDeepAnalysis": false,
       "overridden": false,
       "_context": {
-        "contextId": "ctx-1765885214707-umnz2jtti",
-        "createdAt": "2025-12-16T11:40:14.707Z",
+        "contextId": "ctx-1765910727047-tj2ba2gdv",
+        "createdAt": "2025-12-16T18:45:27.048Z",
         "source": {
           "type": "manual",
           "priority": "normal"
         },
         "initialParams": {
-          "startTime": 1765881614,
-          "endTime": 1765885214,
+          "startTime": 1765907127,
+          "endTime": 1765910727,
           "namespaces": [
             "bstp-cms-global-production",
             "bstp-cms-prod-v3",
@@ -52,14 +52,64 @@
             "etiyamobile-production",
             "etiyamobile-prod"
           ],
-          "services": [],
+          "services": [
+            "bss-mc-crm-search-integrator",
+            "bss-mc-crm-customer-information",
+            "bss-mc-crm-customer-search",
+            "bss-mc-crm-mash-up",
+            "bss-mc-crm-ntf-integrator",
+            "bss-mc-activity",
+            "bss-mc-asset-management",
+            "bss-mc-cpq",
+            "bss-mc-cpq-batch",
+            "bss-mc-cpq-ntf-integrator",
+            "bss-mc-csr",
+            "bss-mc-domain-config",
+            "bss-mc-id-service",
+            "bss-mc-message-relay",
+            "bss-mc-ntf-engine",
+            "bss-mc-ntf-history",
+            "bss-mc-rim",
+            "bss-mc-ui-authz",
+            "bss-mc-user-management",
+            "bss-mc-wsc-new",
+            "bss-crm-batch",
+            "bss-ntf-batch",
+            "bss-mc-pcm-cfm",
+            "bss-mc-pcm-cms-integrator",
+            "bss-mc-pcm-product-catalog",
+            "bss-mc-pcm-product-offer-detail",
+            "bss-mc-pcm-next-gen-admintoolbox-config-manager",
+            "bss-mc-pcm-next-gen-admintoolbox-ui",
+            "eom-micro-flows",
+            "eom-operate",
+            "eom-scheduler",
+            "eom-ui",
+            "eom-activemqqueueoperations",
+            "eom-postgresqldboperations",
+            "eom-zeebe",
+            "eom-castlemock",
+            "bss-services-service",
+            "external-services-service",
+            "loyalty-services-service",
+            "om-services-service",
+            "fstp-bpmn-ms",
+            "fstp-configuration-ms",
+            "fstp-dashboard-ms",
+            "fstp-frontend",
+            "fstp-orchestra-ms",
+            "fstp-scheduler-ms",
+            "fstp-eca",
+            "eca",
+            "wso2am-gw-service",
+            "wso2am-cp-service",
+            "bss-saas-control-plane",
+            "bss-saas-control-plane-ui",
+            "bss-tenant-control-plane-batch"
+          ],
           "focusAreas": [],
           "analysisType": "general",
-          "context": {
-            "otherAgents": [],
-            "userIntent": "",
-            "expectedOutputFormat": "detailed"
-          }
+          "context": {}
         },
         "stageConfig": {
           "maxStages": 1,
@@ -72,9 +122,9 @@
         "forceDeepAnalysis": false,
         "workflowMetadata": {
           "workflowId": "ysMD5nc5K6RCPF0Q",
-          "executionId": "6323",
+          "executionId": "6480",
           "orchestratorId": null,
-          "requestId": "req-1765885214707"
+          "requestId": "req-1765910727048"
         },
         "stageResults": {
           "stage1": {
@@ -96,16 +146,16 @@
                 "api_reliability": 3
               },
               "quick_findings": [
-                "No critical alerts but warnings present.",
-                "Cluster health data not retrieved."
+                "No critical alerts detected.",
+                "Minor warnings related to CPU overcommit and HPA maxed out."
               ],
               "proceed_to_stage2": false,
-              "urgency": "normal",
-              "reason": "Cluster health data is unavailable, but alerts indicate some warnings.",
+              "urgency": "low",
+              "reason": "Cluster health data is unavailable, but alerts indicate minor issues.",
               "forceDeepAnalysis": false,
               "overridden": false
             },
-            "completedAt": "2025-12-16T11:40:14.707Z",
+            "completedAt": "2023-11-15T04:32:07.047Z",
             "decision": false,
             "status": "unknown",
             "alerts": 6
@@ -119,20 +169,20 @@
       },
       "_debug": {
         "nodeType": "Stage 1: Health Snapshot",
-        "processedAt": "2025-12-16T11:40:14.707Z",
-        "contextId": "ctx-1765885214707-umnz2jtti"
+        "processedAt": "2023-11-15T04:32:07.047Z",
+        "contextId": "ctx-1765910727047-tj2ba2gdv"
       }
     },
     "_context": {
-      "contextId": "ctx-1765885214707-umnz2jtti",
-      "createdAt": "2025-12-16T11:40:14.707Z",
+      "contextId": "ctx-1765910727047-tj2ba2gdv",
+      "createdAt": "2025-12-16T18:45:27.048Z",
       "source": {
         "type": "manual",
         "priority": "normal"
       },
       "initialParams": {
-        "startTime": 1765881614,
-        "endTime": 1765885214,
+        "startTime": 1765907127,
+        "endTime": 1765910727,
         "namespaces": [
           "bstp-cms-global-production",
           "bstp-cms-prod-v3",
@@ -147,14 +197,64 @@
           "etiyamobile-production",
           "etiyamobile-prod"
         ],
-        "services": [],
+        "services": [
+          "bss-mc-crm-search-integrator",
+          "bss-mc-crm-customer-information",
+          "bss-mc-crm-customer-search",
+          "bss-mc-crm-mash-up",
+          "bss-mc-crm-ntf-integrator",
+          "bss-mc-activity",
+          "bss-mc-asset-management",
+          "bss-mc-cpq",
+          "bss-mc-cpq-batch",
+          "bss-mc-cpq-ntf-integrator",
+          "bss-mc-csr",
+          "bss-mc-domain-config",
+          "bss-mc-id-service",
+          "bss-mc-message-relay",
+          "bss-mc-ntf-engine",
+          "bss-mc-ntf-history",
+          "bss-mc-rim",
+          "bss-mc-ui-authz",
+          "bss-mc-user-management",
+          "bss-mc-wsc-new",
+          "bss-crm-batch",
+          "bss-ntf-batch",
+          "bss-mc-pcm-cfm",
+          "bss-mc-pcm-cms-integrator",
+          "bss-mc-pcm-product-catalog",
+          "bss-mc-pcm-product-offer-detail",
+          "bss-mc-pcm-next-gen-admintoolbox-config-manager",
+          "bss-mc-pcm-next-gen-admintoolbox-ui",
+          "eom-micro-flows",
+          "eom-operate",
+          "eom-scheduler",
+          "eom-ui",
+          "eom-activemqqueueoperations",
+          "eom-postgresqldboperations",
+          "eom-zeebe",
+          "eom-castlemock",
+          "bss-services-service",
+          "external-services-service",
+          "loyalty-services-service",
+          "om-services-service",
+          "fstp-bpmn-ms",
+          "fstp-configuration-ms",
+          "fstp-dashboard-ms",
+          "fstp-frontend",
+          "fstp-orchestra-ms",
+          "fstp-scheduler-ms",
+          "fstp-eca",
+          "eca",
+          "wso2am-gw-service",
+          "wso2am-cp-service",
+          "bss-saas-control-plane",
+          "bss-saas-control-plane-ui",
+          "bss-tenant-control-plane-batch"
+        ],
         "focusAreas": [],
         "analysisType": "general",
-        "context": {
-          "otherAgents": [],
-          "userIntent": "",
-          "expectedOutputFormat": "detailed"
-        }
+        "context": {}
       },
       "stageConfig": {
         "maxStages": 1,
@@ -167,9 +267,9 @@
       "forceDeepAnalysis": false,
       "workflowMetadata": {
         "workflowId": "ysMD5nc5K6RCPF0Q",
-        "executionId": "6323",
+        "executionId": "6480",
         "orchestratorId": null,
-        "requestId": "req-1765885214707"
+        "requestId": "req-1765910727048"
       },
       "stageResults": {
         "stage1": {
@@ -191,16 +291,16 @@
               "api_reliability": 3
             },
             "quick_findings": [
-              "No critical alerts but warnings present.",
-              "Cluster health data not retrieved."
+              "No critical alerts detected.",
+              "Minor warnings related to CPU overcommit and HPA maxed out."
             ],
             "proceed_to_stage2": false,
-            "urgency": "normal",
-            "reason": "Cluster health data is unavailable, but alerts indicate some warnings.",
+            "urgency": "low",
+            "reason": "Cluster health data is unavailable, but alerts indicate minor issues.",
             "forceDeepAnalysis": false,
             "overridden": false
           },
-          "completedAt": "2025-12-16T11:40:14.707Z",
+          "completedAt": "2023-11-15T04:32:07.047Z",
           "decision": false,
           "status": "unknown",
           "alerts": 6
@@ -212,9 +312,9 @@
         "createdBy": "Unified Entry Point"
       }
     },
-    "contextId": "ctx-1765885214707-umnz2jtti",
+    "contextId": "ctx-1765910727047-tj2ba2gdv",
     "_contextFixed": true,
-    "_fixedAt": "2025-12-16T11:40:23.904Z",
+    "_fixedAt": "2025-12-16T18:45:34.779Z",
     "stage1Data": {
       "overall_status": "unknown",
       "alerts": {
@@ -233,14 +333,15 @@
         "api_reliability": 3
       },
       "quick_findings": [
-        "No critical alerts but warnings present.",
-        "Cluster health data not retrieved."
+        "No critical alerts detected.",
+        "Minor warnings related to CPU overcommit and HPA maxed out."
       ],
-      "active_services": [],
-      "requested_services": [],
+      "services_analyzed": [],
+      "services_count": 0,
+      "namespaces_analyzed": [],
       "proceed_to_stage2": false,
-      "urgency": "normal",
-      "reason": "Cluster health data is unavailable, but alerts indicate some warnings."
+      "urgency": "low",
+      "reason": "Cluster health data is unavailable, but alerts indicate minor issues."
     },
     "_debugInfo": {
       "fromNode": "Fix Stage 1 Context",
@@ -249,7 +350,7 @@
       "stage1Decision": false,
       "stage1Status": "unknown",
       "stage1Alerts": 6,
-      "timestamp": "2025-12-16T11:40:23.906Z"
+      "timestamp": "2025-12-16T18:45:34.779Z"
     }
   }
 ]
