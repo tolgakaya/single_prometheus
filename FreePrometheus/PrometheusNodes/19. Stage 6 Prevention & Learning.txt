@@ -6,7 +6,7 @@ You are the Prevention specialist, implementing long-term fixes and capturing le
 
 **Complete Context Journey**: 
 - Context ID: {{ $json._context.contextId }}
-- Source: {{ $json._context.source.type }}
+- Source: {{ $json._context.source?.type || 'manual_trigger' }}
 - Priority: {{ $json._context.priority }}
 - Workflow Duration: {{ $json._context.createdAt }} to now
 - Total Stages Executed: {{ $json._debug.stageSequence ? $json._debug.stageSequence.length : 5 }}
@@ -16,7 +16,7 @@ You are the Prevention specialist, implementing long-term fixes and capturing le
 - Stage 2: {{ JSON.stringify($json._context.stageResults?.stage2?.output?.root_cause?.issue) }}
 - Stage 3: {{ JSON.stringify($json._context.stageResults?.stage3?.output?.active_alerts?.length) }} alerts
 - Stage 4: Diagnostics completed
-- Stage 5: {{ JSON.stringify($json.stage5Results || $json) }}
+- Stage 5: {{ JSON.stringify($json.stage5Data?.remediation_plan || {}) }}
 
 **Full Context**: {{ JSON.stringify($json._context) }}
 
@@ -27,7 +27,7 @@ You are the Prevention specialist, implementing long-term fixes and capturing le
 
 **Current KB Stats**: 
 - Total Alerts in KB: {{ $node["Load Alert Knowledge Base"].json._alertKBData?.length || 0 }}
-- KB Last Updated: {{ $node["Load Alert Knowledge Base"].json._alertKB?.loadedAt || 'Never' }}
+- KB Last Updated: {{ $node["Load Alert Knowledge Base"]?.json?._alertKBData ? 'Available' : 'Never' }}
 
 **Stage 3 KB Matches**: {{ JSON.stringify($json._context.stageResults?.stage3?.output?.knowledge_base_matches?.length || 0) }} alerts matched
 **Stage 4 KB Enhanced Issues**: {{ JSON.stringify($json._context.stageResults?.stage4?.output?.diagnostic_summary?.confirmed_issues?.filter(i => i.kb_enhanced)?.length || 0) }}
@@ -144,12 +144,12 @@ Calculate prevention_quality_score (0.0 - 1.0) as SUM of these factors:
   "incident_summary": {
     "id": "INC-{{ $json._context.contextId }}",
     "title": "{{ $json._context.priority === 'critical' ? 'CRITICAL: ' : '' }}{{ $json._context.stageResults?.stage2?.output?.root_cause?.issue || 'Kubernetes Cluster Issue' }}",
-    "duration": "{{ new Date() - new Date($json._context.createdAt) }} ms",
+    "duration": "{{ Math.floor((new Date() - new Date($json._context.createdAt)) / 1000) }} seconds",
     "severity": "{{ $json._context.priority }}",
     "services_affected": {{ JSON.stringify($json._context.stageResults?.stage2?.output?.correlation_matrix?.affected_services || []) }},
     "customer_impact": "{{ $json._context.priority === 'critical' ? 'Significant impact' : 'Limited impact' }}",
     "root_cause": "{{ $json._context.stageResults?.stage2?.output?.root_cause?.issue || 'Under investigation' }}",
-    "resolution": "{{ $json._context.stageResults?.stage5?.output?.execution_results?.[0]?.output || 'Remediation applied' }}"
+    "resolution": "{{ $json._context.stageResults?.stage5?.output?.remediation_plan?.immediate_actions?.[0]?.expected_outcome || 'Remediation plan created' }}"
   },
   "prevention_actions": [
     {
@@ -199,7 +199,7 @@ Calculate prevention_quality_score (0.0 - 1.0) as SUM of these factors:
       "pattern": "{{ $json._context.stageResults?.stage2?.output?.root_cause?.issue }}",
       "diagnostic_shortcut": "Check {{ $json._context.stageResults?.stage4?.output?.diagnostic_summary?.confirmed_issues?.[0]?.issue }}",
       "quick_fix": "{{ $json._context.stageResults?.stage5?.output?.remediation_plan?.immediate_actions[0]?.action }}",
-      "prevention": "Monitor for {{ $json._context.stageResults?.stage2?.output?.correlation_matrix?.primary_chain }}",
+      "prevention": "Monitor {{ $json._context.stageResults?.stage2?.output?.affected_services?.[0] || 'affected services' }}",
       "context_id": "{{ $json._context.contextId }}",
       "priority_level": "{{ $json._context.priority }}"
     },

@@ -36,6 +36,10 @@ try {
   previousContext = {
     contextId: "ctx-emergency-" + Date.now(),
     createdAt: new Date().toISOString(),
+    source: {
+      type: "manual_trigger",
+      triggeredBy: "user"
+    },
     stageResults: {},
     decisions: {},
     initialParams: {
@@ -51,6 +55,10 @@ if (!previousContext || typeof previousContext !== 'object') {
   previousContext = {
     contextId: "ctx-recovery-" + Date.now(),
     createdAt: new Date().toISOString(),
+    source: {
+      type: "manual_trigger",
+      triggeredBy: "user"
+    },
     stageResults: {},
     decisions: {},
     initialParams: {
