@@ -81,6 +81,7 @@
         "estimated_future_prevention": { "type": "string" }
       }
     },
+    "prevention_quality_score": { "type": "number" },
     "final_status": { 
       "type": "object",
       "properties": {
@@ -116,9 +117,11 @@
         "receivedFromStage": { "type": "string" },
         "stageSequence": { "type": "array", "items": { "type": "string" } },
         "totalStagesExecuted": { "type": "number" },
-        "workflowComplete": { "type": "boolean" }
+        "workflowComplete": { "type": "boolean" },
+        "priorityLevel": { "type": "string" },
+        "contextJourneyComplete": { "type": "string" }
       }
     }
   },
-  "required": ["stage", "prevention_actions", "knowledge_base_update", "final_status"]
+  "required": ["stage", "incident_summary", "prevention_actions", "knowledge_base_update", "prevention_quality_score", "final_status", "_context", "_debug"]
 }
