@@ -1,0 +1,123 @@
+[
+  {
+    "output": {
+      "stage": "prevention_learning",
+      "incident_summary": {
+        "id": "INC-ctx-1765977697117-g8luecm1v",
+        "title": "Kubernetes Cluster Issue",
+        "duration": "3600 seconds",
+        "severity": "critical",
+        "services_affected": [
+          "bss-tenant-control-plane-batch"
+        ],
+        "customer_impact": "Limited impact",
+        "root_cause": "Pod OOMKilled due to memory pressure",
+        "resolution": "Restore service to previous stable version"
+      },
+      "prevention_actions": [
+        {
+          "type": "monitoring",
+          "action": "Add memory leak detection alert for bss-tenant-control-plane-batch",
+          "status": "planned"
+        },
+        {
+          "type": "code_fix",
+          "action": "Fix identified issue in Memory Management component",
+          "status": "in_progress"
+        },
+        {
+          "type": "configuration",
+          "action": "Implement resource limits in bss-tenant-control-plane-batch",
+          "status": "planned"
+        },
+        {
+          "type": "process",
+          "action": "Add automated testing for memory issues",
+          "status": "planned"
+        }
+      ],
+      "knowledge_base_update": {
+        "alert_name": "KubeHpaMaxedOut",
+        "kb_updated": true,
+        "entry_id": "KB-ctx-1765977697117-g8luecm1v"
+      },
+      "runbook_updates": [
+        {
+          "runbook": "Kubernetes Troubleshooting",
+          "section": "Memory Management Issues",
+          "addition": "Context ctx-1765977697117-g8luecm1v: Pod OOMKilled due to memory pressure",
+          "url": "https://runbooks.company.com/ctx-1765977697117-g8luecm1v"
+        }
+      ],
+      "team_recommendations": [
+        {
+          "team": "platform-team",
+          "action": "Review and implement prevention actions for memory issues",
+          "priority": "high"
+        },
+        {
+          "team": "sre-team",
+          "action": "Update monitoring for memory usage",
+          "priority": "medium"
+        }
+      ],
+      "follow_up_schedule": [
+        {
+          "action": "Verify fix in Memory Management component",
+          "when": "Next release cycle",
+          "owner": "platform-team"
+        },
+        {
+          "action": "Review metrics for recurrence",
+          "when": "Daily for 1 week",
+          "owner": "sre-team"
+        },
+        {
+          "action": "Post-mortem meeting",
+          "when": "Within 1 week",
+          "attendees": [
+            "platform-team",
+            "sre-team",
+            "affected-service-teams"
+          ]
+        }
+      ],
+      "metrics_improvements": {
+        "new_alerts": 1,
+        "runbook_updates": 1,
+        "kb_entries": 1,
+        "process_improvements": 2,
+        "estimated_future_prevention": "75%"
+      },
+      "final_status": {
+        "incident_resolved": true,
+        "prevention_implemented": true,
+        "learning_captured": true,
+        "ready_for_next": true
+      },
+      "_context": {
+        "contextId": "ctx-1765977697117-g8luecm1v",
+        "createdAt": "2025-12-17T13:23:22.130Z",
+        "priority": "high",
+        "forceDeepAnalysis": false
+      },
+      "_debug": {
+        "nodeType": "Stage 6: Prevention & Learning",
+        "processedAt": "2025-12-17T13:23:22.130Z",
+        "contextId": "ctx-1765977697117-g8luecm1v",
+        "contextPreserved": true,
+        "receivedFromStage": "Stage 5",
+        "stageSequence": [
+          "Stage 1",
+          "Stage 2",
+          "Stage 3",
+          "Stage 4",
+          "Stage 5",
+          "Stage 6"
+        ],
+        "totalStagesExecuted": 6,
+        "workflowComplete": true
+      }
+    }
+  }
+]
