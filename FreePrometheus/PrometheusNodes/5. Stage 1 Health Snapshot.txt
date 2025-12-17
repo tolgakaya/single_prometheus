@@ -60,6 +60,56 @@ Service regex pattern (use if filtering services): {{ $json.serviceRegex }}
 **DO NOT WRAP YOUR RESPONSE IN ```json``` TAGS**
 **RETURN RAW JSON ONLY**
 
+## 🎯 DECISION LOGIC - HOW TO SET proceed_to_stage2:
+
+**Set proceed_to_stage2 = true IF ANY OF THESE CONDITIONS:**
+1. Quick Cluster Health tool returns non-empty result (issues detected)
+   - Tool returns array with data = Problems found
+2. Active Alerts Count > 0 (any firing alerts)
+   - Any alerts present = Needs investigation
+
+**Set proceed_to_stage2 = false ONLY IF ALL CONDITIONS MET:**
+1. Quick Cluster Health returns empty [] (no node/pod issues)
+   AND
+2. Active Alerts Count = 0 (no firing alerts)
+   AND
+3. forceDeepAnalysis flag is NOT set to true
+
+**CRITICAL**: Default to true if uncertain. Better to investigate than miss issues.
+
+## 📊 SCORING LOGIC - HOW TO CONVERT TOOL RESPONSES TO SCORES (1-5):
+
+**Quick Cluster Health → cluster_health score:**
+- Empty result [] = No issues detected → Score: 5 (excellent)
+- Non-empty result with data = Issues found → Score: 1 (critical)
+- Tool error or no response = Unknown state → Score: 3 (degraded)
+
+**Quick Cluster Health → node_availability score:**
+- Check kube_node_status_condition in result
+- No failing nodes → Score: 5
+- 1-2 failing nodes → Score: 3
+- 3+ failing nodes → Score: 1
+- No data available → Score: 3
+
+**Quick Cluster Health → pod_stability score:**
+- Check kube_pod_container_status_restarts_total in result
+- No restarts (< 0.1 rate) → Score: 5
+- Low restart rate (0.1-0.5) → Score: 3
+- High restart rate (> 0.5) → Score: 1
+- No data available → Score: 3
+
+**Active Alerts Count → api_reliability score:**
+- 0 alerts → Score: 5 (excellent)
+- 1-3 alerts → Score: 3 (degraded)
+- 4+ alerts → Score: 1 (critical)
+- Tool error or no response → Score: 3 (unknown)
+
+**overall_status determination:**
+- All scores 4-5 → "healthy"
+- Any score 2-3 → "degraded"
+- Any score 1 → "critical"
+- All scores 3 (no data) → "unknown"
+
 ## 📋 CRITICAL CONTEXT PRESERVATION:
 In your JSON output, you MUST include a "_context" field.
 Simply copy the _context object from your input to your output WITHOUT any modifications.

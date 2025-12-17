@@ -244,7 +244,7 @@
           "parameters": [
             {
               "name": "=query",
-              "value": "=(sum(kube_node_status_condition{condition=\"Ready\",status=\"false\"} == 1) > 0) or (sum(rate(kube_pod_container_status_restarts_total[5m]) > 0.1) > 0)"
+              "value": "=(sum(kube_node_status_condition{condition=\"Ready\",status=\"false\",namespace=~\"{{ $json.namespaceRegex }}\"} == 1) > 0) or (sum(rate(kube_pod_container_status_restarts_total{namespace=~\"{{ $json.namespaceRegex }}\"}[5m]) > 0.1) > 0)"
             }
           ]
         },
