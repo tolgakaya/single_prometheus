@@ -1,0 +1,587 @@
+{
+  "name": "Scheduler Cluster Health Flow",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "5b3fccb8-e9c1-4693-a36b-ef82ff4dfdc6",
+      "name": "Manual Test Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1504,
+        368
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Process Kubernetes Analysis Results - Jira Integration\nconst analysisResult = $input.item.json;\nconst alertData = $node[\"Prepare Prometheus Input\"].json;\nconst dedupInfo = $node[\"Redis State Check\"].json;\n\n// Analysis result'tan Jira ticket bilgilerini al\n//const jiraTicketInfo = analysisResult.jiraTicket || {};\nconst jiraTicketInfo = analysisResult.oncallTicket || {};\nconst executiveSummary = analysisResult.executiveSummary || {};\n\n// Extract analysis report - yeni yapıda markdownReport kullanıyoruz\nlet analysisReport = null;\nif (analysisResult.markdownReport) {\n analysisReport = analysisResult.markdownReport;\n} else if (analysisResult.chatResponse) {\n analysisReport = analysisResult.chatResponse;\n} else if (analysisResult.summary) {\n analysisReport = analysisResult.summary;\n} else {\n analysisReport = 'Analysis completed - no detailed report available';\n}\n\n// Extract severity - yeni yapıda direkt severity field'ı var\nconst severity = analysisResult.severity || \n               executiveSummary.severity ||\n               alertData.priority || \n               'medium';\n\n// Extract alert info from new structure\nconst alertName = analysisResult.alert || \n                alertData.alertContext?.alertName || \n                'Unknown Alert';\n\nconst deployment = jiraTicketInfo.components?.[0] || \n                 analysisResult.deployment || \n                 'unknown';\n\nconst namespace = jiraTicketInfo.labels?.find(l => l.includes('production') || l.includes('staging')) || \n                analysisResult.namespace || \n                'unknown';\n\n// Determine if we need to create a Jira ticket\nconst needsJiraTicket = shouldCreateJiraTicket(analysisResult, alertData, dedupInfo);\n\n// Prepare the output\nconst output = {\n needsJiraTicket: needsJiraTicket && dedupInfo.dedupStatus === 'new',\n alertSummary: {\n   alertId: alertData.alertContext?.alertId || analysisResult.contextId,\n   source: alertData.source || 'kubernetes',\n   title: alertName,\n   detectedAt: new Date().toISOString(),\n   severity: severity,\n   businessImpact: analysisResult.impact || 'Service degradation detected',\n   identifiedIssue: analysisResult.identifiedIssue || 'Issue under investigation'\n },\n kubernetesAnalysis: {\n   contextId: analysisResult.contextId || executiveSummary.contextId,\n   confidence: analysisResult.confidence || 0.5,\n   deployment: deployment,\n   namespace: namespace,\n   pod: analysisResult.pod || 'unknown',\n   timeline: analysisResult.timeline || [],\n   metrics: analysisResult.metrics || {},\n   evidence: analysisResult.evidence || {},\n   actions: analysisResult.actions || []\n },\n report: analysisReport,\n jiraTicketData: needsJiraTicket && dedupInfo.dedupStatus === 'new' ? \n   prepareJiraTicketData(analysisResult, alertData, jiraTicketInfo) : null\n};\n\n// Existing ticket update case\nif (dedupInfo.dedupStatus === 'existing' && dedupInfo.existingTicket?.key) {\n output.jiraTicketData = {\n   ...output.jiraTicketData,\n   existingKey: dedupInfo.existingTicket.key,\n   isUpdate: true,\n   updateComment: createUpdateComment(analysisResult)\n };\n}\n\n// Helper functions\nfunction shouldCreateJiraTicket(result, alertData, dedupInfo) {\n const severity = result.severity;\n const confidence = result.confidence || 0;\n \n return (\n   severity === 'critical' ||\n   severity === 'high' ||\n   confidence >= 0.75 ||\n   result.identifiedIssue !== 'Issue Under Investigation' ||\n   alertData.priority === 'critical' ||\n   (result.metrics && Object.keys(result.metrics).length > 0)\n );\n}\n\nfunction prepareJiraTicketData(result, alertData, jiraTicketInfo) {\n // Use the pre-formatted title and description from analysis\n const title = jiraTicketInfo.title || \n              `[${result.alert || alertData.alertContext?.alertName}] ${result.deployment || 'Service'} - ${result.identifiedIssue || 'Investigation Required'}`;\n \n const description = jiraTicketInfo.description || \n                    result.markdownReport || \n                    createBasicDescription(result, alertData);\n \n // Combine labels from analysis and alert data\n const labels = [\n   ...(jiraTicketInfo.labels || []),\n   `alert-${alertData.source || 'kubernetes'}`,\n   `confidence-${Math.round((result.confidence || 0.5) * 100)}`,\n   result.contextId ? `context-${result.contextId}` : null,\n   'k8s-analysis',\n   'auto-generated'\n ].filter(Boolean);\n \n // Map components\n const components = jiraTicketInfo.components || [];\n if (result.deployment && result.deployment !== 'unknown') {\n   components.push(result.deployment);\n }\n \n return {\n   project: 'INCIDENT',\n   issueType: jiraTicketInfo.issueType || 'Incident',\n   summary: title,\n   description: description,\n   priority: mapSeverityToJiraPriority(result.severity || alertData.priority),\n   labels: [...new Set(labels)], // Remove duplicates\n   components: [...new Set(components)], // Remove duplicates\n   customFields: {\n     // Add any custom field mappings your Jira instance needs\n     ...(jiraTicketInfo.customFields || {}),\n     'customfield_10001': result.contextId, // Context ID\n     'customfield_10002': result.confidence, // Confidence level\n     'customfield_10003': result.namespace, // Kubernetes namespace\n     'customfield_10004': result.pod, // Pod name\n     'customfield_10005': result.identifiedIssue, // Root cause\n     'customfield_10006': result.actions?.[0]?.command || '', // Remediation command\n     'customfield_10007': result.timeline?.length || 0, // Analysis stages\n     'customfield_10008': new Date().toISOString(), // Analysis timestamp\n   },\n   // Additional fields for remediation tracking\n   duedate: calculateDueDate(result.severity),\n   environment: result.namespace?.includes('production') ? 'Production' : \n               result.namespace?.includes('staging') ? 'Staging' : 'Development',\n   // Attachments - remediation commands as text file\n   attachments: createAttachments(result)\n };\n}\n\nfunction mapSeverityToJiraPriority(severity) {\n const mapping = {\n   'critical': 'Highest',\n   'high': 'High',\n   'medium': 'Medium',\n   'low': 'Low',\n   'warning': 'Low'\n };\n return mapping[severity] || 'Medium';\n}\n\nfunction calculateDueDate(severity) {\n const now = new Date();\n const hoursToAdd = {\n   'critical': 4,\n   'high': 24,\n   'medium': 72,\n   'low': 168 // 1 week\n };\n \n now.setHours(now.getHours() + (hoursToAdd[severity] || 72));\n return now.toISOString().split('T')[0]; // YYYY-MM-DD format\n}\n\nfunction createBasicDescription(result, alertData) {\n return `\n# Kubernetes Incident Report\n\n## Alert Information\n- **Alert**: ${result.alert || alertData.alertContext?.alertName}\n- **Severity**: ${result.severity}\n- **Confidence**: ${(result.confidence * 100).toFixed(0)}%\n- **Issue**: ${result.identifiedIssue || 'Under investigation'}\n\n## Impact\n${result.impact || 'Service degradation detected'}\n\n## Evidence\n${typeof result.evidence === 'string' ? result.evidence : JSON.stringify(result.evidence, null, 2)}\n\n## Recommended Actions\n${result.actions?.map((action, idx) => \n `${idx + 1}. ${action.action}\\n   Command: ${action.command}\\n   Risk: ${action.risk}`\n).join('\\n\\n') || 'No automated actions available'}\n\n## Timeline\n${result.timeline?.map(entry => \n `- ${entry.time}: ${entry.stage} - ${entry.finding}`\n).join('\\n') || 'No timeline available'}\n\n---\nGenerated: ${new Date().toISOString()}\nContext ID: ${result.contextId || 'N/A'}\n`;\n}\n\nfunction createUpdateComment(result) {\n return `\n## 🔄 Incident Update\n\n**Analysis Re-run at**: ${new Date().toISOString()}\n**Context ID**: ${result.contextId}\n\n### Current Status\n- **Issue**: ${result.identifiedIssue}\n- **Confidence**: ${(result.confidence * 100).toFixed(0)}%\n- **Severity**: ${result.severity}\n\n### Latest Metrics\n${Object.entries(result.metrics || {}).slice(0, 5).map(([key, value]) => \n `- ${key}: ${value}`\n).join('\\n')}\n\n### Recommended Action\n${result.actions?.[0] ? \n `${result.actions[0].action}\\nCommand: \\`${result.actions[0].command}\\`` : \n 'Continue monitoring'}\n`;\n}\n\nfunction createAttachments(result) {\n const attachments = [];\n \n // Create remediation commands file\n if (result.actions && result.actions.length > 0) {\n   const commandsContent = result.actions.map(action => \n     `# ${action.action}\\n${action.command}\\n\\n# Expected outcome: ${action.expected_outcome || 'N/A'}\\n# Risk: ${action.risk || 'Unknown'}\\n# ETA: ${action.estimated_time || 'Unknown'}\\n\\n`\n   ).join('---\\n\\n');\n   \n   attachments.push({\n     filename: 'remediation-commands.sh',\n     content: commandsContent,\n     mimeType: 'text/plain'\n   });\n }\n \n // Create monitoring commands file if quickActions exist\n if (result.executiveSummary?.quickActions) {\n   const monitoringContent = Object.entries(result.executiveSummary.quickActions)\n     .map(([action, command]) => `# ${action}\\n${command}\\n\\n`)\n     .join('');\n   \n   attachments.push({\n     filename: 'monitoring-commands.sh',\n     content: monitoringContent,\n     mimeType: 'text/plain'\n   });\n }\n \n // Create full analysis report\n if (result.markdownReport) {\n   attachments.push({\n     filename: 'full-analysis-report.md',\n     content: result.markdownReport,\n     mimeType: 'text/markdown'\n   });\n }\n \n return attachments;\n}\n\nreturn { json: output };"
+      },
+      "id": "bba73c0e-af87-46b2-ab17-a5fa51469214",
+      "name": "Process Results & Decision",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1024,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.needsJiraTicket }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "id": "dbfe5a8a-a7ad-47e5-903a-6d1caa197fc6"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "92dbdbc5-a159-4982-a1d1-30d69dc13474",
+      "name": "Create Jira Ticket?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        320,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "jiraVersion": "server",
+        "project": {
+          "__rl": true,
+          "value": "13601",
+          "mode": "list",
+          "cachedResultName": "Etiya Mobile MVNO"
+        },
+        "issueType": {
+          "__rl": true,
+          "value": "10200",
+          "mode": "list",
+          "cachedResultName": "Task"
+        },
+        "summary": "={{ $json.jiraTicketData.summary }}",
+        "additionalFields": {
+          "assignee": {
+            "__rl": true,
+            "value": "platform_support@etiya.com",
+            "mode": "list",
+            "cachedResultName": "Platform_Support"
+          },
+          "description": "={{ $json.jiraTicketData.description }}",
+          "customFieldsUi": {
+            "customFieldsValues": [
+              {
+                "fieldId": {
+                  "__rl": true,
+                  "value": "customfield_10100",
+                  "mode": "list",
+                  "cachedResultName": "Epic Link"
+                },
+                "fieldValue": "EM-5364"
+              }
+            ]
+          },
+          "serverLabels": [],
+          "priority": {
+            "__rl": true,
+            "value": "2",
+            "mode": "list",
+            "cachedResultName": "High"
+          }
+        }
+      },
+      "id": "f4941a45-e1d3-4e7f-9c7f-58880a9eb6ef",
+      "name": "Create Jira Incident",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        688,
+        368
+      ],
+      "credentials": {
+        "jiraSoftwareServerApi": {
+          "id": "27SbpnxVPL6hEv6G",
+          "name": "Jira SW Cloud account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## 🚨 Multi-Channel Alert Analysis System with Phone Calls\n\n### Features:\n1. **Multi-Source Alert Ingestion:**\n   - Email monitoring (IMAP)\n   - Microsoft Teams channels\n   - Direct webhook endpoint\n\n2. **Intelligent Alert Analysis:**\n   - AI-powered alert parsing\n   - Time range detection\n   - Service impact assessment\n   - Severity evaluation\n   - Pattern recognition\n\n3. **Orchestrator Integration:**\n   - Triggers multi-agent analysis\n   - Prometheus, Tempo, Loki integration\n   - Comprehensive observability\n\n4. **Smart Incident Management:**\n   - Auto-creates Jira tickets for critical alerts\n   - Includes full analysis report\n   - Priority-based escalation\n\n5. **🆕 Retell AI Phone Calls:**\n   - Auto-calls for critical/high alerts\n   - Voice notification with alert details\n   - Jira ticket info included in call\n   - Call status tracked in Jira\n\n6. **Multi-Channel Notifications:**\n   - Teams notifications\n   - Email summaries\n   - Webhook responses\n   - Voice calls for urgent alerts\n\n### Configuration Required:\n- Email IMAP credentials\n- Microsoft Teams OAuth\n- Jira server credentials\n- SMTP for email sending\n- **Retell AI API key**\n- **From phone number (verified in Retell)**\n- **Emergency contact numbers**\n- Update TEAM_ID and CHANNEL_IDs\n- Set JIRA project key",
+        "height": 700,
+        "width": 350,
+        "color": 5
+      },
+      "id": "2961d944-a73a-4ee0-8abd-6a575d801dcd",
+      "name": "Alert System Architecture",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3008,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.alert.dedupStatus }}",
+                    "rightValue": "=new",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "4694ce54-6cbd-4af4-b9ec-640958fb4cb8"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4aafca4d-6f28-4609-97dc-8a5967c99d29",
+                    "leftValue": "={{ $json.alert.dedupStatus }}",
+                    "rightValue": "=existing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        32,
+        560
+      ],
+      "id": "a991edd5-8954-4843-84e3-a27081e73899",
+      "name": "Decision Router"
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json.key }}",
+        "value": "={{ $json.value }}",
+        "expire": true,
+        "ttl": "={{ $json.ttl }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        576
+      ],
+      "id": "ca99ae91-e9d2-49e2-ac80-768b51d70b98",
+      "name": "Redis Set",
+      "credentials": {
+        "redis": {
+          "id": "dyi5hTOGDoKR3RN1",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare Jira Update\nconst alert = $json.alert;\n\nconst updateComment = `## 🔄 Alert Recurrence Update\n\n**Occurrence #${alert.existingTicket.occurrences}**\n**Time Since Last:** ${Math.round(alert.metrics.timeSinceLastSeen / 60)} minutes\n\n### Status\n- Pattern: Recurring (${alert.existingTicket.occurrences} times)\n- Severity: ${alert.priority}\n\n${alert.existingTicket.occurrences > 5 ? \n  '⚠️ **HIGH RECURRENCE**: Consider root cause analysis.' : ''}\n\n${alert.actions.escalate ? \n  '🔺 **ESCALATION REQUIRED**: Increasing priority.' : ''}\n\n### Latest Alert\n${alert.body}\n\n---\n*Alert Deduplication System*`;\n\nreturn {\n  json: {\n    ticketKey: alert.existingTicket.key,\n    comment: updateComment,\n    escalate: alert.actions.escalate,\n    alert: alert\n  }\n};"
+      },
+      "id": "a160d782-cfef-407e-bf7c-f3c52d114dc3",
+      "name": "Update Jira Comment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        736
+      ]
+    },
+    {
+      "parameters": {
+        "jiraVersion": "server",
+        "resource": "issueComment",
+        "issueKey": "={{ $json.ticketKey }}",
+        "comment": "={{ $json.comment }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        592,
+        752
+      ],
+      "id": "d4bbd4bc-ea5a-4c84-9a8a-ec0998c972af",
+      "name": "Add a comment",
+      "credentials": {
+        "jiraSoftwareServerApi": {
+          "id": "27SbpnxVPL6hEv6G",
+          "name": "Jira SW Cloud account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "ysMD5nc5K6RCPF0Q",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/ysMD5nc5K6RCPF0Q"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true,
+          "values": {
+            "value1": {
+              "key": "requestId",
+              "type": "String",
+              "value": "={{ $json.orchestratorInput.requestId }}"
+            },
+            "value2": {
+              "key": "orchestratorId",
+              "type": "String",
+              "value": "={{ $json.orchestratorInput.orchestratorId }}"
+            },
+            "value3": {
+              "key": "timestamp",
+              "type": "String",
+              "value": "={{ $json.orchestratorInput.timestamp }}"
+            },
+            "value4": {
+              "key": "requestType",
+              "type": "String",
+              "value": "={{ $json.orchestratorInput.requestType }}"
+            },
+            "value5": {
+              "key": "timeRange",
+              "type": "String",
+              "value": "={{ JSON.stringify($json.orchestratorInput.timeRange) }}"
+            },
+            "value6": {
+              "key": "context",
+              "type": "String",
+              "value": "={{ JSON.stringify($json.orchestratorInput.context) }}"
+            },
+            "value7": {
+              "key": "metadata",
+              "type": "String",
+              "value": "={{ JSON.stringify($json.orchestratorInput.metadata) }}"
+            },
+            "value8": {
+              "key": "priority",
+              "type": "String",
+              "value": "={{ $json.orchestratorInput.priority }}"
+            }
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "736578f7-f026-4770-bba2-77adda59a2f1",
+      "name": "Execute Prometheus Analysis",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        -1264,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Prepare Notification - YENİ FORMAT İÇİN\nconst orchestratorData = $node[\"Process Results & Decision\"]?.json;\n//const callData = $node[\"Process Call Response\"]?.json || null;  --call düzelince açılcak\n\n// Orchestrator'dan gelen yeni format data'yı al\nconst orchestratorResult = $node[\"Execute Prometheus Analysis\"].json;\nlet incidentData = null;\nif (Array.isArray(orchestratorResult) && orchestratorResult.length > 0) {\n  incidentData = orchestratorResult[0];\n}\n\n// Jira ticket bilgisini al\nlet jiraTicket = null;\ntry {\n  const jiraNode = $node[\"Create Jira Incident\"]?.json;\n  if (jiraNode && jiraNode.key) {\n    jiraTicket = jiraNode;\n  }\n} catch (e) {\n  jiraTicket = null;\n}\n\n// Slack format'ı hazır olarak kullan\nconst slackNotification = incidentData?.formats?.slack || null;\n\n// Chat summary'yi kullan\nconst chatSummary = incidentData?.formats?.chatSummary || null;\n\nconst notification = {\n  timestamp: new Date().toISOString(),\n  status: 'completed',\n  \n  // Alert bilgileri\n  alert: {\n  id: orchestratorData?.alertSummary?.alertId ?? \"unknown\",\n  source: orchestratorData?.alertSummary?.source ?? \"unknown\",\n  title: orchestratorData?.alertSummary?.title ?? \"unknown\",\n  severity: orchestratorData?.alertSummary?.severity ?? \"unknown\"\n},\n  \n  // Incident report bilgileri\n  incidentReport: {\n    reportId: incidentData?.quickInfo?.reportId || 'N/A',\n    title: incidentData?.quickInfo?.title || orchestratorData.alertSummary.title,\n    severity: incidentData?.quickInfo?.severity || orchestratorData.alertSummary.severity,\n    rootCause: incidentData?.quickInfo?.rootCause || 'Under investigation',\n    affectedServicesCount: incidentData?.quickInfo?.affectedServicesCount || 0,\n    hasImmediateActions: incidentData?.quickInfo?.hasImmediateActions || false\n  },\n  \n  // Jira ticket bilgileri\n  jiraTicket: jiraTicket ? {\n    created: true,\n    key: jiraTicket.key,\n    url: `https://your-jira.atlassian.net/browse/${jiraTicket.key}`,\n    id: jiraTicket.id\n  } : {\n    created: false,\n    reason: orchestratorData.needsJiraTicket ? 'Failed to create ticket' : 'Severity threshold not met'\n  },\n  \n  // Phone call bilgileri -- call düzelince geri açılcak\n // phoneCall: callData ? {\n  //  attempted: true,\n  //  success: callData.callStatus.success,\n  //  callId: callData.callStatus.callId,\n  //  error: callData.callStatus.error\n // } : {\n //   attempted: false,\n//    reason: 'Not critical/high severity'\n // },\n  \n  // Formatted notifications\n  formats: {\n    slack: slackNotification,\n    chatSummary: chatSummary,\n    markdown: incidentData?.formats?.markdown || null\n  },\n  \n  // Summary\n    summary: generateSummary(orchestratorData, jiraTicket, incidentData)\n  //summary: generateSummary(orchestratorData, jiraTicket, callData, incidentData) --call düzelince açılcak\n};\n\nfunction generateSummary(orchestratorData, jiraTicket, callData, incidentData) {\n  let summary = `Alert ${orchestratorData.alertSummary.alertId} analyzed. `;\n  \n  if (incidentData?.quickInfo) {\n    summary += `Incident Report ${incidentData.quickInfo.reportId} generated. `;\n    summary += `Severity: ${incidentData.quickInfo.severity}. `;\n    summary += `${incidentData.quickInfo.affectedServicesCount} services affected. `;\n  }\n  \n  if (jiraTicket) {\n    summary += `Jira ticket ${jiraTicket.key} created. `;\n  }\n  \n  if (callData) {\n    if (callData.callStatus.success) {\n      summary += `Emergency call placed successfully. `;\n    } else {\n      summary += `Emergency call failed - manual escalation required. `;\n    }\n  }\n  \n  return summary;\n}\n\nreturn { json: notification };"
+      },
+      "id": "940e4582-f86c-4c7b-b125-7cc38a82068c",
+      "name": "Prepare Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1184,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 15
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1488,
+        576
+      ],
+      "id": "5fa38435-dac4-4e63-9d18-2c28ebfd8942",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Prepare Redis Data Node - FIXED VERSION\nconst alert = $input.item.json;\nconst now = Date.now();\n\n// Fingerprint'in var olduğundan emin ol\nif (!alert.fingerprint) {\n  throw new Error('Fingerprint is missing! Check Alert Deduplication node.');\n}\n\nconst redisData = {\n  alert_fingerprint: alert.fingerprint,\n  first_seen: alert.dedupStatus === 'new' ? now.toString() : (alert.existingTicket?.firstSeen || now.toString()),\n  last_seen: now.toString(),\n  occurrence_count: alert.dedupStatus === 'new' ? '1' : (alert.existingTicket?.occurrences || 1).toString(),\n  status: 'active',\n  severity: alert.priority,\n  title: alert.title,\n  source: alert.source,\n  jira_ticket_id: alert.existingTicket?.id || '',\n  jira_ticket_key: alert.existingTicket?.key || '',\n  call_count: (alert.existingTicket?.callCount || 0).toString(),\n  updated_at: new Date().toISOString()\n};\n\nreturn {\n  json: {\n    key: `alert:${alert.fingerprint}`,\n    value: JSON.stringify(redisData),\n    ttl: 604800, // 7 days in seconds\n    alert: alert, // Pass through the alert data\n    fingerprint: alert.fingerprint // Explicitly pass fingerprint\n  }\n};"
+      },
+      "id": "50248a7e-9476-403b-a029-d8f7611f8c55",
+      "name": "Prepare Redis Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Redis State Check Node - FIXED VERSION\n// Alert Deduplication node'undan orijinal alert'i al\nconst originalAlert = $node[\"Alert Deduplication\"].json;\nconst fingerprint = originalAlert.fingerprint;\n\n// Redis GET node'undan gelen value'yu al\nlet redisValue = null;\ntry {\n  // Redis Get node'undan gelen data\n  const redisData = $input.item.json;\n  redisValue = redisData.value || redisData.fingerprint || null;\n} catch (e) {\n  redisValue = null;\n}\n\n// Redis'ten gelen data'yı parse et\nlet existingData = null;\nif (redisValue !== undefined && redisValue !== null && redisValue !== '') {\n  try {\n    existingData = JSON.parse(redisValue);\n  } catch (e) {\n    // JSON parse edilemezse null bırak\n    existingData = null;\n  }\n}\n\nif (existingData) {\n  // Alert daha önce görülmüş\n  const now = Date.now();\n  const lastSeen = parseInt(existingData.last_seen || '0');\n  const timeSinceLastSeen = (now - lastSeen) / 1000; // saniye\n  const occurrenceCount = parseInt(existingData.occurrence_count || '0') + 1;\n  const callCount = parseInt(existingData.call_count || '0');\n  const lastCallTime = parseInt(existingData.last_call_time || '0');\n  const timeSinceLastCall = (now - lastCallTime) / 1000;\n  \n  // Karar verme\n  const shouldSkipAnalysis = timeSinceLastSeen < 600; // 10 dakika\n  const shouldEscalate = occurrenceCount > 5 && existingData.severity !== 'critical';\n  const shouldCallAgain = callCount < 3 && timeSinceLastCall > 1800 && originalAlert.priority === 'critical';\n  \n  return {\n    json: {\n      ...originalAlert,  // Orijinal alert verilerini koru\n      fingerprint: fingerprint,  // Fingerprint'i ekle\n      dedupStatus: 'existing',\n      existingTicket: {\n        id: existingData.jira_ticket_id || null,\n        key: existingData.jira_ticket_key || null,\n        occurrences: occurrenceCount,\n        firstSeen: existingData.first_seen,\n        lastCallTime: existingData.last_call_time || null,\n        callCount: callCount\n      },\n      metrics: {\n        timeSinceLastSeen,\n        timeSinceLastCall,\n        totalOccurrences: occurrenceCount\n      },\n      actions: {\n        skipAnalysis: shouldSkipAnalysis,\n        updateTicket: true,\n        escalate: shouldEscalate,\n        makeCall: shouldCallAgain\n      }\n    }\n  };\n} else {\n  // Yeni alert - Redis'te bulunamadı\n  return {\n    json: {\n      ...originalAlert,  // Orijinal alert verilerini koru\n      fingerprint: fingerprint,  // Fingerprint'i ekle\n      dedupStatus: 'new',\n      actions: {\n        skipAnalysis: false,\n        updateTicket: false,\n        escalate: false,\n        makeCall: originalAlert.priority === 'critical'\n      }\n    }\n  };\n}"
+      },
+      "id": "476ec5fd-1cef-4254-b729-7919786b6c0f",
+      "name": "Redis State Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -576,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "fingerprint",
+        "key": "=alert:{{ $node[\"Alert Deduplication\"].json.fingerprint }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        576
+      ],
+      "id": "2011c4bf-f5c3-4631-9c23-babd78edea8c",
+      "name": "Redis Get",
+      "credentials": {
+        "redis": {
+          "id": "dyi5hTOGDoKR3RN1",
+          "name": "Redis account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Test Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute Prometheus Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Results & Decision": {
+      "main": [
+        [
+          {
+            "node": "Redis Get",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Jira Ticket?": {
+      "main": [
+        [
+          {
+            "node": "Create Jira Incident",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Jira Incident": {
+      "main": [
+        [
+          {
+            "node": "Prepare Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Set": {
+      "main": [
+        [
+          {
+            "node": "Decision Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision Router": {
+      "main": [
+        [
+          {
+            "node": "Create Jira Ticket?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Jira Comment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Jira Comment": {
+      "main": [
+        [
+          {
+            "node": "Add a comment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add a comment": {
+      "main": [
+        [
+          {
+            "node": "Prepare Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Prometheus Analysis": {
+      "main": [
+        [
+          {
+            "node": "Process Results & Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Redis Data": {
+      "main": [
+        [
+          {
+            "node": "Redis Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis State Check": {
+      "main": [
+        [
+          {
+            "node": "Prepare Redis Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Get": {
+      "main": [
+        [
+          {
+            "node": "Redis State Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Execute Prometheus Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9b2ad058-a36d-4064-b1e6-4ba656df168f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c12c7bb55b80ebd9de9957d4bb20d1c257c60ff78d5439f6278d6225d0d15a7b"
+  },
+  "id": "fcgnB5bUITWI4g0d",
+  "tags": []
+}

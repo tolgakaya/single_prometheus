@@ -1,0 +1,1136 @@
+[
+  {
+    "timestamp": "2025-12-17T14:46:53.638Z",
+    "duration": "NaNs",
+    "cluster": "unknown",
+    "contextTracking": {
+      "contextId": "ctx-1765982719062-luzpp5pgd",
+      "contextPreserved": true,
+      "contextJourney": {
+        "end": "2025-12-17T14:46:53.638Z",
+        "durationMs": null,
+        "stagesCompleted": [
+          "stage3",
+          "stage4",
+          "stage5",
+          "stage1",
+          "stage2"
+        ]
+      }
+    },
+    "trigger": {
+      "source": {
+        "type": "unknown"
+      },
+      "priority": "normal",
+      "forceDeepAnalysis": false
+    },
+    "executiveSummary": {
+      "overallHealth": "degraded",
+      "issuesFound": 1,
+      "alertsActive": 6,
+      "alertsCritical": 0,
+      "actionsToken": 1,
+      "preventionImplemented": 0,
+      "stagesExecuted": 7
+    },
+    "stage1Results": {
+      "status": "degraded",
+      "scores": {
+        "cluster_health": 5,
+        "node_availability": 5,
+        "pod_stability": 5,
+        "api_reliability": 1
+      },
+      "alerts": {
+        "total": 6,
+        "critical": 0,
+        "warning": 2,
+        "top_alerts": [
+          "KubeHpaMaxedOut",
+          "KubeCPUOvercommit"
+        ]
+      },
+      "quickFindings": [
+        "Active alerts detected: KubeHpaMaxedOut, KubeCPUOvercommit"
+      ],
+      "proceedToStage2": false,
+      "urgency": "normal",
+      "decision_reason": ""
+    },
+    "findings": {
+      "rootCause": {
+        "identified": true,
+        "component": "bss-mc-crm-search-integrator",
+        "issue": "Memory pressure causing pod restarts",
+        "evidence": [
+          "High memory usage detected",
+          "Pod restarts observed",
+          "HPA scaling limited"
+        ],
+        "confidence": 0.8
+      },
+      "affectedServices": [
+        "bss-mc-crm-search-integrator"
+      ],
+      "alertCorrelations": [
+        {
+          "root_alert": "KubeHpaMaxedOut",
+          "related_alerts": [
+            "KubeCPUOvercommit"
+          ],
+          "correlation_score": 0.1,
+          "shared_labels": {}
+        }
+      ],
+      "diagnosticEvidence": [
+        {
+          "issue": "Pod experiencing OOMKilled due to memory pressure",
+          "evidence": [
+            "Pod restart count: 5",
+            "Last termination reason: OOMKilled",
+            "Memory used: 1.2Gi, Memory limit: 1Gi"
+          ],
+          "severity": "critical",
+          "impact": "Pod restarts causing service instability",
+          "namespace": "bstp-cms-global-production"
+        }
+      ],
+      "sloImpact": {
+        "availability_slo": {
+          "target": "99.9%",
+          "current": "100%",
+          "error_budget_used": "0%",
+          "time_remaining": "30d",
+          "status": "green",
+          "components": {
+            "deployment_health": "100%"
+          }
+        },
+        "affected_slis": []
+      }
+    },
+    "actions": {
+      "immediate": [
+        {
+          "action": "Rollback deployment to previous version",
+          "command": "kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production",
+          "risk": "low",
+          "estimated_time": "2-5 minutes",
+          "expected_outcome": "Restore service to previous stable version"
+        }
+      ],
+      "shortTerm": [
+        {
+          "action": "Increase memory limits temporarily",
+          "timeline": "1-2 days",
+          "details": "Set memory limit to 2Gi while investigating root cause"
+        }
+      ],
+      "longTerm": [
+        {
+          "action": "Fix issues in bss-mc-crm-search-integrator",
+          "timeline": "1-2 weeks",
+          "details": "Review and fix the root cause in bss-mc-crm-search-integrator component"
+        }
+      ],
+      "preventive": []
+    },
+    "metrics": {
+      "stagesExecuted": 7,
+      "toolsUsed": 21,
+      "alertsResolved": 0,
+      "executionTime": null,
+      "contextPreserved": true,
+      "decisionsTracked": 0
+    },
+    "nextSteps": [],
+    "detailedResults": {
+      "stage1_health": {
+        "overall_status": "degraded",
+        "alerts": {
+          "total": 6,
+          "critical": 0,
+          "warning": 2,
+          "top_alerts": [
+            "KubeHpaMaxedOut",
+            "KubeCPUOvercommit"
+          ]
+        },
+        "scores": {
+          "cluster_health": 5,
+          "node_availability": 5,
+          "pod_stability": 5,
+          "api_reliability": 1
+        },
+        "quick_findings": [
+          "Active alerts detected: KubeHpaMaxedOut, KubeCPUOvercommit"
+        ],
+        "services_analyzed": [],
+        "services_count": 0,
+        "namespaces_analyzed": []
+      },
+      "stage2_analysis": {
+        "investigation_id": "ctx-1765982719062-luzpp5pgd-stage2",
+        "root_cause": {
+          "identified": true,
+          "component": "bss-mc-crm-search-integrator",
+          "issue": "Memory pressure causing pod restarts",
+          "evidence": [
+            "High memory usage detected",
+            "Pod restarts observed",
+            "HPA scaling limited"
+          ],
+          "confidence": 0.8
+        },
+        "correlation_matrix": {
+          "primary_chain": "Memory pressure leading to pod restarts",
+          "affected_services": [
+            "bss-mc-crm-search-integrator"
+          ],
+          "blast_radius": "Limited to specific pods",
+          "kubernetes_impact": {
+            "evicted_pods": 0,
+            "pending_pods": 0,
+            "failed_schedules": 0
+          }
+        },
+        "critical_pods": [
+          "bss-mc-crm-search-integrator-59df468bb5-kf6vt",
+          "bss-mc-crm-search-integrator-5988656446-89cmq"
+        ],
+        "affected_services": [
+          "bss-mc-crm-search-integrator"
+        ],
+        "proceed_to_stage3": false,
+        "alert_correlation_needed": false,
+        "confidence": 0.8
+      },
+      "stage3_alerts": {
+        "active_alerts": [
+          {
+            "name": "KubeHpaMaxedOut",
+            "severity": "warning",
+            "count": 1,
+            "duration": "unknown",
+            "labels": {
+              "__name__": "ALERTS",
+              "alertname": "KubeHpaMaxedOut",
+              "alertstate": "firing",
+              "container": "kube-state-metrics",
+              "endpoint": "http",
+              "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+              "instance": "10.94.145.151:8080",
+              "job": "kube-state-metrics",
+              "namespace": "em-control-plane-prod",
+              "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+              "service": "kube-prometheus-stack-kube-state-metrics",
+              "severity": "warning"
+            },
+            "annotations": {},
+            "kb_enriched": false,
+            "severity_score": 30,
+            "impact_score": 50
+          },
+          {
+            "name": "KubeCPUOvercommit",
+            "severity": "warning",
+            "count": 1,
+            "duration": "unknown",
+            "labels": {
+              "__name__": "ALERTS",
+              "alertname": "KubeCPUOvercommit",
+              "alertstate": "firing",
+              "severity": "warning"
+            },
+            "annotations": {},
+            "kb_enriched": false,
+            "severity_score": 30,
+            "impact_score": 50
+          }
+        ],
+        "alert_groups": [
+          {
+            "root_alert": "KubeHpaMaxedOut",
+            "related_alerts": [
+              "KubeCPUOvercommit"
+            ],
+            "correlation_score": 0.1,
+            "shared_labels": {}
+          }
+        ],
+        "knowledge_base_matches": [],
+        "slo_impact": {
+          "availability_slo": {
+            "target": "99.9%",
+            "current": "100%",
+            "error_budget_used": "0%",
+            "time_remaining": "30d",
+            "status": "green",
+            "components": {
+              "deployment_health": "100%"
+            }
+          },
+          "affected_slis": []
+        },
+        "recommended_actions": [
+          {
+            "alert": "KubeHpaMaxedOut",
+            "action": "Monitor",
+            "confidence": 0.5,
+            "risk": "medium",
+            "command": null
+          },
+          {
+            "alert": "KubeCPUOvercommit",
+            "action": "Monitor",
+            "confidence": 0.5,
+            "risk": "medium",
+            "command": null
+          }
+        ],
+        "correlation_confidence": 0.7,
+        "auto_remediation_approved": false,
+        "proceed_to_stage4": true,
+        "kb_enriched_count": 0
+      },
+      "stage4_diagnosis": {
+        "diagnostics_executed": [
+          {
+            "target": "pod-12345",
+            "type": "pod",
+            "commands_run": [
+              "kubectl describe pod pod-12345",
+              "kubectl logs pod-12345 --previous"
+            ],
+            "findings": {
+              "pod_status": {
+                "phase": "Running",
+                "restart_count": 5,
+                "last_termination": {
+                  "reason": "OOMKilled",
+                  "exit_code": 137,
+                  "finished_at": "2025-12-17T14:30:00.000Z"
+                }
+              },
+              "error_logs": [
+                {
+                  "timestamp": "2025-12-17T14:25:00.000Z",
+                  "level": "ERROR",
+                  "message": "Out of memory error",
+                  "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
+                }
+              ],
+              "events": [
+                {
+                  "type": "Warning",
+                  "reason": "OOMKilled",
+                  "message": "Pod was killed due to memory pressure",
+                  "timestamp": "2025-12-17T14:30:00.000Z"
+                }
+              ],
+              "resource_usage": {
+                "memory_request": "512Mi",
+                "memory_limit": "1Gi",
+                "memory_used": "1.2Gi",
+                "cpu_used": "500m"
+              }
+            }
+          }
+        ],
+        "enriched_context": {
+          "deployment_info": {
+            "name": "example-deployment",
+            "version": "v1.2.3",
+            "replicas": "3/3",
+            "last_update": "2025-12-17T13:00:00.000Z",
+            "update_strategy": "RollingUpdate"
+          },
+          "recent_changes": [
+            {
+              "type": "deployment",
+              "time": "2025-12-17T13:00:00.000Z",
+              "change": "Scaled up replicas from 2 to 3",
+              "user": "admin"
+            }
+          ],
+          "dependencies": {
+            "upstream": [
+              "service-a"
+            ],
+            "downstream": [
+              "service-b"
+            ],
+            "databases": [
+              "db1"
+            ],
+            "external": [
+              "external-service"
+            ]
+          },
+          "kb_analysis": {
+            "alerts_matched": [],
+            "diagnostic_coverage": 0,
+            "remediation_available": 0,
+            "highest_severity": "Low"
+          }
+        },
+        "diagnostic_summary": {
+          "confirmed_issues": [
+            {
+              "issue": "Pod experiencing OOMKilled due to memory pressure",
+              "evidence": [
+                "Pod restart count: 5",
+                "Last termination reason: OOMKilled",
+                "Memory used: 1.2Gi, Memory limit: 1Gi"
+              ],
+              "severity": "critical",
+              "impact": "Pod restarts causing service instability",
+              "namespace": "bstp-cms-global-production"
+            }
+          ],
+          "secondary_issues": []
+        },
+        "confirmed_issues": [
+          {
+            "issue": "Pod experiencing OOMKilled due to memory pressure",
+            "evidence": [
+              "Pod restart count: 5",
+              "Last termination reason: OOMKilled",
+              "Memory used: 1.2Gi, Memory limit: 1Gi"
+            ],
+            "severity": "critical",
+            "impact": "Pod restarts causing service instability",
+            "namespace": "bstp-cms-global-production"
+          }
+        ],
+        "secondary_issues": [],
+        "remediation_confidence": 1,
+        "proceed_to_stage5": true,
+        "kb_enhanced": false,
+        "primary_diagnosis": {
+          "issue": "Pod experiencing OOMKilled due to memory pressure",
+          "evidence": [
+            "Pod restart count: 5",
+            "Last termination reason: OOMKilled",
+            "Memory used: 1.2Gi, Memory limit: 1Gi"
+          ],
+          "severity": "critical",
+          "impact": "Pod restarts causing service instability",
+          "namespace": "bstp-cms-global-production"
+        }
+      },
+      "stage5_remediation": {
+        "analysis_id": "ctx-1765982719062-luzpp5pgd-stage5",
+        "remediation_plan": {
+          "immediate_actions": [
+            {
+              "action": "Rollback deployment to previous version",
+              "command": "kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production",
+              "risk": "low",
+              "estimated_time": "2-5 minutes",
+              "expected_outcome": "Restore service to previous stable version"
+            }
+          ],
+          "short_term_fixes": [
+            {
+              "action": "Increase memory limits temporarily",
+              "timeline": "1-2 days",
+              "details": "Set memory limit to 2Gi while investigating root cause"
+            }
+          ],
+          "long_term_solutions": [
+            {
+              "action": "Fix issues in bss-mc-crm-search-integrator",
+              "timeline": "1-2 weeks",
+              "details": "Review and fix the root cause in bss-mc-crm-search-integrator component"
+            }
+          ],
+          "preventive_measures": [
+            "Implement memory profiling in CI/CD",
+            "Add memory leak detection tests",
+            "Set up gradual rollout strategy"
+          ]
+        },
+        "risk_assessment": {
+          "overall_risk": "medium",
+          "factors": [
+            "bss-mc-crm-search-integrator is critical",
+            "Rollback is tested and safe",
+            "Memory issue is contained to specific pods"
+          ],
+          "mitigation_steps": [
+            "Monitor closely after rollback",
+            "Keep team on standby",
+            "Prepare hotfix if needed"
+          ]
+        },
+        "implementation_order": [
+          {
+            "step": 1,
+            "action": "Execute rollback",
+            "dependencies": [],
+            "validation": "Check pod status and memory usage"
+          },
+          {
+            "step": 2,
+            "action": "Verify service health",
+            "dependencies": [
+              "step_1"
+            ],
+            "validation": "Check error rates and response times"
+          },
+          {
+            "step": 3,
+            "action": "Update monitoring alerts",
+            "dependencies": [
+              "step_2"
+            ],
+            "validation": "Ensure alerts are firing correctly"
+          }
+        ],
+        "success_metrics": {
+          "immediate": [
+            "Pod restart count = 0",
+            "Memory usage < 80% of limit",
+            "Error rate < 0.1%"
+          ],
+          "short_term": [
+            "No OOMKilled events in 24h",
+            "SLO compliance > 99.9%"
+          ],
+          "long_term": [
+            "Memory leak fixed in code",
+            "Automated memory testing in place"
+          ]
+        },
+        "rollback_plan": {
+          "trigger_conditions": [
+            "Error rate > 5%",
+            "Multiple pod failures",
+            "Memory usage continues to spike"
+          ],
+          "steps": [
+            "Revert to current version",
+            "Scale up replicas",
+            "Enable circuit breaker"
+          ],
+          "validation": "Verify previous version number before rollback"
+        },
+        "primary_action": {
+          "action": "Rollback deployment to previous version",
+          "command": "kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production",
+          "risk": "low",
+          "estimated_time": "2-5 minutes",
+          "expected_outcome": "Restore service to previous stable version"
+        },
+        "overall_risk": "medium"
+      },
+      "stage6_prevention": null
+    },
+    "consolidatedFindings": {
+      "healthStatus": "degraded",
+      "alertCount": 6,
+      "rootCause": {
+        "identified": true,
+        "component": "bss-mc-crm-search-integrator",
+        "issue": "Memory pressure causing pod restarts",
+        "evidence": [
+          "High memory usage detected",
+          "Pod restarts observed",
+          "HPA scaling limited"
+        ],
+        "confidence": 0.8
+      },
+      "affectedServices": [
+        "bss-mc-crm-search-integrator"
+      ],
+      "activeAlerts": [
+        {
+          "name": "KubeHpaMaxedOut",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeHpaMaxedOut",
+            "alertstate": "firing",
+            "container": "kube-state-metrics",
+            "endpoint": "http",
+            "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+            "instance": "10.94.145.151:8080",
+            "job": "kube-state-metrics",
+            "namespace": "em-control-plane-prod",
+            "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+            "service": "kube-prometheus-stack-kube-state-metrics",
+            "severity": "warning"
+          },
+          "annotations": {},
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50
+        },
+        {
+          "name": "KubeCPUOvercommit",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeCPUOvercommit",
+            "alertstate": "firing",
+            "severity": "warning"
+          },
+          "annotations": {},
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50
+        }
+      ],
+      "confirmedIssues": [
+        {
+          "issue": "Pod experiencing OOMKilled due to memory pressure",
+          "evidence": [
+            "Pod restart count: 5",
+            "Last termination reason: OOMKilled",
+            "Memory used: 1.2Gi, Memory limit: 1Gi"
+          ],
+          "severity": "critical",
+          "impact": "Pod restarts causing service instability",
+          "namespace": "bstp-cms-global-production"
+        }
+      ],
+      "primaryDiagnosis": {
+        "issue": "Pod experiencing OOMKilled due to memory pressure",
+        "evidence": [
+          "Pod restart count: 5",
+          "Last termination reason: OOMKilled",
+          "Memory used: 1.2Gi, Memory limit: 1Gi"
+        ],
+        "severity": "critical",
+        "impact": "Pod restarts causing service instability",
+        "namespace": "bstp-cms-global-production"
+      },
+      "remediationConfidence": 1
+    },
+    "primaryDiagnosis": {
+      "issue": "Pod experiencing OOMKilled due to memory pressure",
+      "evidence": [
+        "Pod restart count: 5",
+        "Last termination reason: OOMKilled",
+        "Memory used: 1.2Gi, Memory limit: 1Gi"
+      ],
+      "severity": "critical",
+      "impact": "Pod restarts causing service instability",
+      "namespace": "bstp-cms-global-production",
+      "stage": "Stage 4",
+      "timestamp": "2025-12-17T14:46:24.732Z"
+    },
+    "preservedContext": {
+      "contextId": "ctx-1765982719062-luzpp5pgd",
+      "initialParams": {
+        "startTime": 1765979119,
+        "endTime": 1765982719
+      },
+      "stageResults": {
+        "stage3": {
+          "output": {
+            "active_alerts": [
+              {
+                "name": "KubeHpaMaxedOut",
+                "severity": "warning",
+                "count": 1,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "KubeHpaMaxedOut",
+                  "alertstate": "firing",
+                  "container": "kube-state-metrics",
+                  "endpoint": "http",
+                  "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+                  "instance": "10.94.145.151:8080",
+                  "job": "kube-state-metrics",
+                  "namespace": "em-control-plane-prod",
+                  "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+                  "service": "kube-prometheus-stack-kube-state-metrics",
+                  "severity": "warning"
+                },
+                "annotations": {},
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50
+              },
+              {
+                "name": "KubeCPUOvercommit",
+                "severity": "warning",
+                "count": 1,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "KubeCPUOvercommit",
+                  "alertstate": "firing",
+                  "severity": "warning"
+                },
+                "annotations": {},
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50
+              }
+            ],
+            "alert_groups": [
+              {
+                "root_alert": "KubeHpaMaxedOut",
+                "related_alerts": [
+                  "KubeCPUOvercommit"
+                ],
+                "correlation_score": 0.1,
+                "shared_labels": {}
+              }
+            ],
+            "knowledge_base_matches": [],
+            "alert_patterns": {
+              "recurring": [],
+              "storm_detection": {
+                "detected": false,
+                "alert_count": 2,
+                "time_window": "5m",
+                "likely_root": null
+              }
+            },
+            "slo_impact": {
+              "availability_slo": {
+                "target": "99.9%",
+                "current": "100%",
+                "error_budget_used": "0%",
+                "time_remaining": "30d",
+                "status": "green",
+                "components": {
+                  "deployment_health": "100%"
+                }
+              },
+              "affected_slis": []
+            },
+            "recommended_alert_actions": [
+              {
+                "alert": "KubeHpaMaxedOut",
+                "action": "Monitor",
+                "confidence": 0.5,
+                "risk": "medium",
+                "command": null
+              },
+              {
+                "alert": "KubeCPUOvercommit",
+                "action": "Monitor",
+                "confidence": 0.5,
+                "risk": "medium",
+                "command": null
+              }
+            ],
+            "correlation_confidence": 0.7,
+            "proceed_to_stage4": true,
+            "auto_remediation_approved": false
+          },
+          "completedAt": "2025-12-17T14:46:10.634Z",
+          "decision": true
+        },
+        "stage4": {
+          "output": {
+            "diagnostics_executed": [
+              {
+                "target": "pod-12345",
+                "type": "pod",
+                "commands_run": [
+                  "kubectl describe pod pod-12345",
+                  "kubectl logs pod-12345 --previous"
+                ],
+                "findings": {
+                  "pod_status": {
+                    "phase": "Running",
+                    "restart_count": 5,
+                    "last_termination": {
+                      "reason": "OOMKilled",
+                      "exit_code": 137,
+                      "finished_at": "2025-12-17T14:30:00.000Z"
+                    }
+                  },
+                  "error_logs": [
+                    {
+                      "timestamp": "2025-12-17T14:25:00.000Z",
+                      "level": "ERROR",
+                      "message": "Out of memory error",
+                      "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
+                    }
+                  ],
+                  "events": [
+                    {
+                      "type": "Warning",
+                      "reason": "OOMKilled",
+                      "message": "Pod was killed due to memory pressure",
+                      "timestamp": "2025-12-17T14:30:00.000Z"
+                    }
+                  ],
+                  "resource_usage": {
+                    "memory_request": "512Mi",
+                    "memory_limit": "1Gi",
+                    "memory_used": "1.2Gi",
+                    "cpu_used": "500m"
+                  }
+                }
+              }
+            ],
+            "enriched_context": {
+              "deployment_info": {
+                "name": "example-deployment",
+                "version": "v1.2.3",
+                "replicas": "3/3",
+                "last_update": "2025-12-17T13:00:00.000Z",
+                "update_strategy": "RollingUpdate"
+              },
+              "recent_changes": [
+                {
+                  "type": "deployment",
+                  "time": "2025-12-17T13:00:00.000Z",
+                  "change": "Scaled up replicas from 2 to 3",
+                  "user": "admin"
+                }
+              ],
+              "dependencies": {
+                "upstream": [
+                  "service-a"
+                ],
+                "downstream": [
+                  "service-b"
+                ],
+                "databases": [
+                  "db1"
+                ],
+                "external": [
+                  "external-service"
+                ]
+              },
+              "kb_analysis": {
+                "alerts_matched": [],
+                "diagnostic_coverage": 0,
+                "remediation_available": 0,
+                "highest_severity": "Low"
+              }
+            },
+            "diagnostic_summary": {
+              "confirmed_issues": [
+                {
+                  "issue": "Pod experiencing OOMKilled due to memory pressure",
+                  "evidence": [
+                    "Pod restart count: 5",
+                    "Last termination reason: OOMKilled",
+                    "Memory used: 1.2Gi, Memory limit: 1Gi"
+                  ],
+                  "severity": "critical",
+                  "impact": "Pod restarts causing service instability",
+                  "namespace": "bstp-cms-global-production"
+                }
+              ],
+              "secondary_issues": []
+            },
+            "proceed_to_stage5": true,
+            "remediation_confidence": 1
+          },
+          "completedAt": "2025-12-17T14:46:24.729Z",
+          "decision": true,
+          "primaryIssue": "Pod experiencing OOMKilled due to memory pressure"
+        },
+        "stage5": {
+          "output": {
+            "analysis_id": "ctx-1765982719062-luzpp5pgd-stage5",
+            "remediation_plan": {
+              "immediate_actions": [
+                {
+                  "action": "Rollback deployment to previous version",
+                  "command": "kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production",
+                  "risk": "low",
+                  "estimated_time": "2-5 minutes",
+                  "expected_outcome": "Restore service to previous stable version"
+                }
+              ],
+              "short_term_fixes": [
+                {
+                  "action": "Increase memory limits temporarily",
+                  "timeline": "1-2 days",
+                  "details": "Set memory limit to 2Gi while investigating root cause"
+                }
+              ],
+              "long_term_solutions": [
+                {
+                  "action": "Fix issues in bss-mc-crm-search-integrator",
+                  "timeline": "1-2 weeks",
+                  "details": "Review and fix the root cause in bss-mc-crm-search-integrator component"
+                }
+              ],
+              "preventive_measures": [
+                "Implement memory profiling in CI/CD",
+                "Add memory leak detection tests",
+                "Set up gradual rollout strategy"
+              ]
+            },
+            "risk_assessment": {
+              "overall_risk": "medium",
+              "factors": [
+                "bss-mc-crm-search-integrator is critical",
+                "Rollback is tested and safe",
+                "Memory issue is contained to specific pods"
+              ],
+              "mitigation_steps": [
+                "Monitor closely after rollback",
+                "Keep team on standby",
+                "Prepare hotfix if needed"
+              ]
+            },
+            "implementation_order": [
+              {
+                "step": 1,
+                "action": "Execute rollback",
+                "dependencies": [],
+                "validation": "Check pod status and memory usage"
+              },
+              {
+                "step": 2,
+                "action": "Verify service health",
+                "dependencies": [
+                  "step_1"
+                ],
+                "validation": "Check error rates and response times"
+              },
+              {
+                "step": 3,
+                "action": "Update monitoring alerts",
+                "dependencies": [
+                  "step_2"
+                ],
+                "validation": "Ensure alerts are firing correctly"
+              }
+            ],
+            "success_metrics": {
+              "immediate": [
+                "Pod restart count = 0",
+                "Memory usage < 80% of limit",
+                "Error rate < 0.1%"
+              ],
+              "short_term": [
+                "No OOMKilled events in 24h",
+                "SLO compliance > 99.9%"
+              ],
+              "long_term": [
+                "Memory leak fixed in code",
+                "Automated memory testing in place"
+              ]
+            },
+            "rollback_plan": {
+              "trigger_conditions": [
+                "Error rate > 5%",
+                "Multiple pod failures",
+                "Memory usage continues to spike"
+              ],
+              "steps": [
+                "Revert to current version",
+                "Scale up replicas",
+                "Enable circuit breaker"
+              ],
+              "validation": "Verify previous version number before rollback"
+            }
+          },
+          "completedAt": "2025-12-17T14:46:47.345Z"
+        },
+        "stage1": {
+          "output": {
+            "overall_status": "degraded",
+            "alerts": {
+              "total": 6,
+              "critical": 0,
+              "warning": 2,
+              "top_alerts": [
+                "KubeHpaMaxedOut",
+                "KubeCPUOvercommit"
+              ]
+            },
+            "scores": {
+              "cluster_health": 5,
+              "node_availability": 5,
+              "pod_stability": 5,
+              "api_reliability": 1
+            },
+            "quick_findings": [
+              "Active alerts detected: KubeHpaMaxedOut, KubeCPUOvercommit"
+            ],
+            "services_analyzed": [],
+            "services_count": 0,
+            "namespaces_analyzed": []
+          },
+          "completedAt": "2025-12-17T14:46:53.638Z",
+          "status": "degraded"
+        },
+        "stage2": {
+          "output": {
+            "investigation_id": "ctx-1765982719062-luzpp5pgd-stage2",
+            "root_cause": {
+              "identified": true,
+              "component": "bss-mc-crm-search-integrator",
+              "issue": "Memory pressure causing pod restarts",
+              "evidence": [
+                "High memory usage detected",
+                "Pod restarts observed",
+                "HPA scaling limited"
+              ],
+              "confidence": 0.8
+            },
+            "correlation_matrix": {
+              "primary_chain": "Memory pressure leading to pod restarts",
+              "affected_services": [
+                "bss-mc-crm-search-integrator"
+              ],
+              "blast_radius": "Limited to specific pods",
+              "kubernetes_impact": {
+                "evicted_pods": 0,
+                "pending_pods": 0,
+                "failed_schedules": 0
+              }
+            },
+            "critical_pods": [
+              "bss-mc-crm-search-integrator-59df468bb5-kf6vt",
+              "bss-mc-crm-search-integrator-5988656446-89cmq"
+            ],
+            "affected_services": [
+              "bss-mc-crm-search-integrator"
+            ],
+            "proceed_to_stage3": false,
+            "alert_correlation_needed": false,
+            "confidence": 0.8
+          },
+          "completedAt": "2025-12-17T14:46:53.638Z",
+          "decision": false,
+          "rootCauseIdentified": true
+        }
+      }
+    },
+    "executiveInsights": {
+      "stage1_health_snapshot": {
+        "overall_status": "degraded",
+        "critical_alerts": 0,
+        "urgency": "normal",
+        "key_finding": "Active alerts detected: KubeHpaMaxedOut, KubeCPUOvercommit"
+      },
+      "stage2_root_cause": {
+        "identified": true,
+        "issue": "Memory pressure causing pod restarts",
+        "component": "bss-mc-crm-search-integrator",
+        "confidence": 0.8,
+        "affected_services": [
+          "bss-mc-crm-search-integrator"
+        ]
+      },
+      "stage3_alert_correlation": {
+        "active_alerts": 2,
+        "alert_groups": 1,
+        "kb_matches": 0,
+        "correlation_confidence": 0.7,
+        "slo_status": "green"
+      },
+      "stage4_diagnostics": {
+        "diagnostics_executed": 1,
+        "confirmed_issues": 1,
+        "remediation_confidence": 1,
+        "primary_issue": "Pod experiencing OOMKilled due to memory pressure"
+      },
+      "stage5_remediation": {
+        "plan_created": true,
+        "immediate_actions": 1,
+        "overall_risk": "medium",
+        "primary_action": "Rollback deployment to previous version"
+      },
+      "stage6_prevention": {
+        "prevention_implemented": false,
+        "prevention_actions": 0,
+        "kb_updated": false,
+        "prevention_quality_score": 0
+      }
+    },
+    "decisionJourney": {
+      "stage1_decision": {
+        "field": "proceed_to_stage2",
+        "value": false,
+        "reason": "",
+        "timestamp": "2025-12-17T14:46:53.638Z"
+      },
+      "stage2_decision": {
+        "field": "proceed_to_stage3",
+        "value": false,
+        "confidence": 0.8,
+        "timestamp": "2025-12-17T14:46:53.638Z"
+      },
+      "stage3_decision": {
+        "field": "proceed_to_stage4",
+        "value": true,
+        "correlation_confidence": 0.7,
+        "timestamp": "2025-12-17T14:46:10.634Z"
+      },
+      "stage4_decision": {
+        "field": "proceed_to_stage5",
+        "value": true,
+        "remediation_confidence": 1,
+        "timestamp": "2025-12-17T14:46:24.729Z"
+      },
+      "stage5_completion": {
+        "remediation_plan_created": true,
+        "timestamp": "2025-12-17T14:46:47.345Z"
+      },
+      "stage6_completion": {
+        "prevention_implemented": false,
+        "prevention_quality_score": 0
+      }
+    },
+    "confidenceProgression": {
+      "stage2_root_cause_confidence": 0.8,
+      "stage3_correlation_confidence": 0.7,
+      "stage4_remediation_confidence": 1,
+      "stage6_prevention_quality": 0,
+      "overall_confidence": 0.625
+    },
+    "learningSummary": {
+      "what_happened": {
+        "root_cause": "Memory pressure causing pod restarts",
+        "affected_services": [
+          "bss-mc-crm-search-integrator"
+        ],
+        "alert_count": 2,
+        "severity": "critical",
+        "duration": "NaNs"
+      },
+      "what_worked": [
+        "Stage 2 successfully identified root cause with high confidence",
+        "Stage 3 strongly correlated alerts to root cause",
+        "Stage 5 generated 1 actionable remediation steps"
+      ],
+      "what_didnt_work": [],
+      "key_insights": [
+        "Primary issue: Memory pressure causing pod restarts"
+      ]
+    },
+    "recommendationPriority": {
+      "critical_immediate": [],
+      "high_short_term": [
+        {
+          "action": "Increase memory limits temporarily",
+          "timeline": "1-2 days",
+          "details": "Set memory limit to 2Gi while investigating root cause"
+        }
+      ],
+      "medium_long_term": [
+        {
+          "action": "Fix issues in bss-mc-crm-search-integrator",
+          "timeline": "1-2 weeks",
+          "details": "Review and fix the root cause in bss-mc-crm-search-integrator component"
+        }
+      ],
+      "preventive_ongoing": []
+    },
+    "summary": "🔍 **Kubernetes Cluster Analizi**\n\n📊 **Cluster:** unknown\n🆔 **Context ID:** ctx-1765982719062-luzpp5pgd\n⏱️ **Süre:** NaNs\n\n**📈 Genel Durum:**\n- Sağlık Durumu: degraded\n- Aktif Alert: 6 (0 kritik)\n- Çalışan Stage: 7/6\n\n**🎯 Kök Neden Analizi:**\n- Sorun: Memory pressure causing pod restarts\n- Bileşen: bss-mc-crm-search-integrator\n- Güven: 80%\n- Etkilenen Servisler: bss-mc-crm-search-integrator\n\n**🔧 Önerilen Aksiyonlar:**\n1. Rollback deployment to previous version\n   - Risk: low\n   - Süre: 2-5 minutes\n   - Komut: `kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production`\n\n**📊 SLO Durumu:**\n- Mevcut: 100%\n- Hedef: 99.9%\n- Durum: green\n\n**📈 Güven Skoru İlerlemesi:**\n- Stage 2 (Kök Neden): 80%\n- Stage 3 (Alert Korelasyon): 70%\n- Stage 4 (Remediation): 100%\n- Stage 6 (Prevention Kalitesi): 0%\n- **Genel Güven: 63%**\n\n**🔄 Karar Yolculuğu:**\n- Stage 1→2: ❌ Dur\n- Stage 2→3: ❌ Dur\n- Stage 3→4: ✅ Devam\n- Stage 4→5: ✅ Devam\n\n**💡 Önemli Bulgular:**\n- Primary issue: Memory pressure causing pod restarts\n\n**✅ İşe Yarayan:**\n- Stage 2 successfully identified root cause with high confidence\n- Stage 3 strongly correlated alerts to root cause\n- Stage 5 generated 1 actionable remediation steps\n\n**📋 Özet:**\n7 aşama tamamlandı, 0 karar takip edildi.\n"
+  }
+]
