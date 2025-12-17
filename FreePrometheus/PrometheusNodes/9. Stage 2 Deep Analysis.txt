@@ -59,22 +59,136 @@ Example tool call:
   "query": "{{ $json.queryHelpers?.exampleQueries?.podCount }}"
 }
 
+## 🎯 DECISION LOGIC - HOW TO SET proceed_to_stage3:
+
+**Set proceed_to_stage3 = true IF ANY OF THESE CONDITIONS:**
+1. root_cause.identified = false (still need alert correlation to find root cause)
+   - You found symptoms but unclear what's causing them
+2. Active alerts > 0 AND no clear single root cause from metrics alone
+   - Metrics show issues but need alert context to understand full picture
+3. Multiple symptoms detected but unclear relationship between them
+   - Example: High memory + restarts + network errors, but which is the cause?
+4. Stage 1 + Stage 2 findings show issues but you're uncertain about root cause
+   - When confidence < 0.7 even after deep analysis
+
+**Set proceed_to_stage3 = false ONLY IF ALL CONDITIONS MET:**
+1. root_cause.identified = true with confidence > 0.7
+   - Clear evidence from multiple tools pointing to same root cause
+   AND
+2. Blast radius well understood (clear affected_services list)
+   AND
+3. Either:
+   - No active alerts AND no issues found in metrics
+   - OR: Root cause clearly identified without needing alert correlation
+
+**CRITICAL**: Default to true if uncertain. Better to correlate alerts than miss root cause.
+
+## 📊 CONFIDENCE CALCULATION - HOW TO CALCULATE root_cause.confidence:
+
+Root cause confidence score (0.0 - 1.0) is calculated as SUM of these factors:
+
+**1. Multiple Tools Agreement (+0.3):**
+- 3+ tools show same issue (e.g., all point to memory pressure) = +0.3
+- 2 tools agree = +0.2
+- Only 1 tool shows issue = +0.1
+- No tools show clear issue = 0.0
+
+**2. Evidence Depth (+0.2):**
+- Evidence from 3+ different metric types (e.g., restarts + memory + CPU) = +0.2
+- Evidence from 2 metric types = +0.1
+- Evidence from 1 metric type = +0.05
+
+**3. Stage 1 Correlation (+0.2):**
+- Stage 2 findings MATCH Stage 1 quick_findings (validates Stage 1 suspicions) = +0.2
+- Partial match = +0.1
+- No match (found different issues) = 0.0
+
+**4. Historical Pattern (+0.2):**
+- Historical Comparison 24h shows clear trend (growing problem) = +0.2
+- Some historical data but unclear trend = +0.1
+- No historical data or contradicts current findings = 0.0
+
+**5. Blast Radius Clarity (+0.1):**
+- Clear affected_services list with 1+ services identified = +0.1
+- AND clear kubernetes_impact numbers (evicted_pods, pending_pods, etc.)
+- Unclear blast radius = 0.0
+
+**EXAMPLES:**
+- 4 tools show memory issue (+0.3) + Memory+CPU+restart evidence (+0.2) + Matches Stage 1 memory_pressure (+0.2) + 24h shows growing memory (+0.2) + 5 affected services (+0.1) = **Confidence: 1.0** (very confident)
+- 2 tools show restarts (+0.2) + Only restart evidence (+0.05) + Matches Stage 1 (+0.2) + No historical data (+0.0) + Services unclear (+0.0) = **Confidence: 0.45** (uncertain, need Stage 3)
+
 ## 🎯 ANALYSIS PHASES:
 
-### Phase 1: INSTANT (0-10s)
-Execute based on Stage 1 findings:
-- If pods failing: Use `Pod Status Check`, `Container Restarts`, `Pod Resource Usage`
-- If node issues: Use `Node Status Check`, `Node Resource Usage`
-- If network issues: Use `Service Endpoints Health`, `Ingress Status`
+### Phase 1: INSTANT (0-10s) - Execute based on Stage 1 findings:
 
-### Phase 2: TREND (10-20s)
-Historical analysis:
-- Use `Historical Comparison 24h` with actual timestamps
-- Look for patterns in the time range
+**Available Tools**: Node Resource Status, Node Conditions, Pod Status Check, Node Network Health, Container Restarts, Application Metrics, HTTP Error Rates, Pod Resource Usage, Resource Exhaustion Prediction, Kubernetes PVC Status, Kubernetes HPA Status
 
-### Phase 3: ANOMALY (20-30s)
-- Use `Resource Exhaustion Prediction`
-- Use `Anomaly Patterns`
+**IF Stage 1 scores.restart_rate is LOW** (pod restart issues detected):
+1. Call "Pod Status Check" → Get current pod phases + waiting reasons
+2. Call "Container Restarts" → Get restart counts + last terminated reasons
+3. Call "Pod Resource Usage" → Check if hitting resource limits (memory/CPU)
+
+**IF Stage 1 scores.node_availability is LOW** (node issues detected):
+1. Call "Node Resource Status" → Get memory/CPU/disk usage per node
+2. Call "Node Conditions" → Get Ready/MemoryPressure/DiskPressure/PIDPressure status
+3. Call "Node Network Health" → Check network errors and packet drops
+
+**IF Stage 1 scores.cluster_health is LOW** (general cluster issues):
+1. Call "Pod Status Check" → Overall pod health across namespaces
+2. Call "Kubernetes HPA Status" → Check if autoscaling is working/maxed out
+3. Call "Kubernetes PVC Status" → Check storage issues (>80% usage, unbound PVCs)
+
+**IF Stage 1 scores.api_reliability is LOW** (API/service issues):
+1. Call "HTTP Error Rates" → Pod failures as proxy for service errors
+2. Call "Application Metrics" → Container network metrics (traffic patterns)
+3. Call "Pod Resource Usage" → Check if resource constraints affecting API
+
+**CRITICAL**: Call 3-5 tools in Phase 1 based on Stage 1 findings, not all 12 tools.
+
+### Phase 2: TREND (10-20s) - Historical analysis:
+
+**Use "Historical Comparison 24h" tool for trend analysis:**
+
+This tool requires you to pass a `metric_query` parameter. Call it MULTIPLE TIMES with different queries based on Phase 1 findings:
+
+**1. For restart trends** (if Phase 1 found pod restarts):
+```
+Tool: Historical Comparison 24h
+Parameters: {
+  "metric_query": "kube_pod_container_status_restarts_total{namespace=~\"{{ $json.namespaceRegex }}\", pod=~\".*<pod_name_from_phase1>.*\"}"
+}
+```
+
+**2. For memory growth** (if Phase 1 found high memory):
+```
+Tool: Historical Comparison 24h
+Parameters: {
+  "metric_query": "container_memory_working_set_bytes{namespace=~\"{{ $json.namespaceRegex }}\", pod=~\".*<pod_name_from_phase1>.*\"}"
+}
+```
+
+**3. For CPU trends** (if Phase 1 found high CPU):
+```
+Tool: Historical Comparison 24h
+Parameters: {
+  "metric_query": "rate(container_cpu_usage_seconds_total{namespace=~\"{{ $json.namespaceRegex }}\", pod=~\".*<pod_name_from_phase1>.*\"}[5m])"
+}
+```
+
+**Compare current values vs 24h ago to identify:**
+- memory_growth: "Memory increased 40% in 24h" or "Stable"
+- restart_pattern: "Restarting every 2 hours" or "No pattern"
+- peak_times: ["2024-06-01T14:00:00Z", "2024-06-01T16:00:00Z"] (when issues occurred)
+
+### Phase 3: ANOMALY (20-30s) - Predictive analysis:
+**Use "Resource Exhaustion Prediction" tool:**
+- Predicts if resources will be exhausted in next 4 hours
+- Uses predict_linear to forecast disk/memory/PVC exhaustion
+
+**Look for anomalies in Phase 1 data:**
+- Sudden spikes in metrics (not gradual growth)
+- Unusual patterns (e.g., restarts only at specific times)
+- Cascading failures (one failure triggering others)
 
 ## 🔧 JSON FORMAT VALIDATION RULES:
 

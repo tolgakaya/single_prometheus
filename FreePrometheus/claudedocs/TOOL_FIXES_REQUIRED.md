@@ -46,122 +46,91 @@ Bu değişiklik yapıldıktan sonra Stage 1 çalıştırıldığında:
 
 ---
 
-# STAGE 2 TOOL FIXES
+# STAGE 2 IMPROVEMENTS
 
-## 2. Historical Comparison 24h Tool - MISSING TOOL
+## 2. Stage 2 Prompt - COMPLETED IMPROVEMENTS ✅
 
-**Status**: ❌ TOOL DOES NOT EXIST IN FLOW
-**Severity**: HIGH
-**Location**: Should be added to FreePrometheusFlow.json
+**Status**: ✅ IMPROVEMENTS APPLIED
+**Location**: FreePrometheus/PrometheusNodes/9. Stage 2 Deep Analysis.txt
 
-### Problem:
-- General_flow_infos.md satır 163-178'de "Historical Comparison 24h" tool belirtilmiş
-- Bu tool Stage 2'nin 12 tool'undan biri
-- Flow'da sadece 11 tool var, bu tool eksik
-- Stage 2 prompt'ta Phase 2 (Trend Analysis) bu tool'a referans veriyor
+### Changes Made:
 
-### Required Tool Configuration:
-```json
-{
-  "parameters": {
-    "url": "https://prometheus.saas.etycloudbss.com/api/v1/query",
-    "sendQuery": true,
-    "queryParameters": {
-      "parameters": [
-        {
-          "name": "query",
-          "value": "={{ (() => { let metricQuery = $json.metric_query || 'up{job=\"kubernetes-nodes\"}'; const svc = $json.service || ''; if (svc && metricQuery === 'up{job=\"kubernetes-nodes\"}') { metricQuery = `kube_pod_container_status_restarts_total{pod=~\".*${svc}.*\"}`; } return metricQuery; })() }}"
-        }
-      ]
-    },
-    "options": {
-      "timeout": 5000
-    }
-  },
-  "name": "Historical Comparison 24h",
-  "type": "n8n-nodes-base.httpRequestTool"
-}
-```
+#### A. Added Decision Logic (lines 62-84):
+- Explicit conditions for when to set `proceed_to_stage3 = true`
+- Explicit conditions for when to set `proceed_to_stage3 = false`
+- Default to true if uncertain (better to correlate alerts than miss issues)
 
-### Manuel Uygulama Adımları:
-1. n8n flow editöründe "Stage 2: Deep Analysis" Agent node'unu aç
-2. Tools bölümüne yeni HTTP Request Tool ekle
-3. Tool adı: "Historical Comparison 24h"
-4. URL: `https://prometheus.saas.etycloudbss.com/api/v1/query`
-5. Query parameter yukarıdaki dynamic query'yi ekle
-6. Timeout: 5000ms
-7. Save/Deploy
+#### B. Added Confidence Calculation (lines 86-118):
+- Formula for calculating root_cause.confidence (0.0 - 1.0)
+- 5 factors with specific weights:
+  - Multiple tools agreement (+0.3)
+  - Evidence depth (+0.2)
+  - Stage 1 correlation (+0.2)
+  - Historical pattern (+0.2)
+  - Blast radius clarity (+0.1)
+- Concrete examples showing confidence calculation
 
-### Etki:
-- Stage 2 AI Agent artık trend analysis yapabilecek
-- Phase 2 (10-20s) tamamlanabilecek
-- "memory_growth", "restart_pattern", "peak_times" findings üretilebilecek
+#### C. Fixed Tool Name Mismatches (lines 120-146):
+- Changed "Node Status Check" → "Node Resource Status"
+- Changed "Node Resource Usage" → "Node Conditions" + "Node Resource Status"
+- Removed non-existent tools: "Service Endpoints Health", "Ingress Status"
+- Added explicit tool selection based on Stage 1 scores
+
+#### D. Added Historical Comparison 24h Usage Instructions (lines 148-181):
+- Explained that tool requires `metric_query` parameter
+- Provided 3 concrete examples:
+  - For restart trends
+  - For memory growth
+  - For CPU trends
+- Showed how to use `{{ $json.namespaceRegex }}` in queries
+
+### Impact:
+- ✅ AI will make consistent decisions about `proceed_to_stage3`
+- ✅ AI will calculate objective confidence scores (not guessing)
+- ✅ AI will call correct tools that exist in flow
+- ✅ AI will properly use Historical Comparison 24h for trend analysis
 
 ---
 
-## 3. Stage 2 Tools - Namespace Filtering Issues
+## 3. Stage 2 Tools - Namespace Filtering (LOW PRIORITY - Optional Optimization)
 
-**Affected Tools**: 9 tools (tüm dinamik namespace kullanan tool'lar)
-**Severity**: MEDIUM
-**Issue**: Tools use single namespace default instead of all production namespaces
+**Status**: ⚠️ OPTIONAL IMPROVEMENT (Not Critical)
+**Affected Tools**: 9 tools (Pod Status Check, Container Restarts, Application Metrics, HTTP Error Rates, Pod Resource Usage, Resource Exhaustion Prediction, Kubernetes PVC Status, Kubernetes HPA Status)
+**Current Behavior**: Tools use `$json.namespace || 'etiyamobile-production'` as fallback
 
-### Tools Requiring Update:
+### Current Analysis:
 
-#### 3a. Pod Status Check
-**Current**: `const ns = $json.namespace || 'etiyamobile-production';`
-**Should Be**: Multi-namespace support or use all 12 production namespaces
+**✅ Dynamic Approach is WORKING CORRECTLY:**
+- Force Deep Analysis Override passes `namespaceRegex` to Stage 2 prompt
+- Stage 2 prompt instructs AI to use `{{ $json.namespaceRegex }}` in queries
+- Tools receive namespace from AI's tool call parameters
+- Fallback to 'etiyamobile-production' only happens if AI doesn't pass namespace
 
-#### 3b. Node Network Health
-**Current**: `const ns = $json.namespace || 'etiyamobile-production';`
-**Note**: Node metrics don't support namespace filtering (cluster-wide)
+**⚠️ Potential Minor Issue:**
+- Single namespace fallback ('etiyamobile-production') vs all 12 namespaces
+- Only matters if AI Agent forgets to pass namespace parameter
 
-#### 3c. Container Restarts
-**Current**: `const ns = $json.namespace || 'etiyamobile-production';`
-**Should Be**: Multi-namespace support
+### Recommendation: KEEP CURRENT APPROACH ✅
 
-#### 3d. Application Metrics
-**Current**: `const ns = $json.namespace || 'etiyamobile-production';`
-**Should Be**: Multi-namespace support
+**Reasons**:
+1. **Flexibility**: Dynamic approach allows targeted analysis per namespace
+2. **Force Override Works**: `namespaceRegex` is already prepared and passed
+3. **Prompt Instructs Correctly**: Stage 2 prompt has clear namespace usage instructions
+4. **Fallback is Acceptable**: Single namespace fallback is reasonable default
 
-#### 3e. HTTP Error Rates
-**Current**: `const ns = $json.namespace || 'etiyamobile-production';`
-**Should Be**: Multi-namespace support
+### Optional Future Improvement (LOW PRIORITY):
 
-#### 3f. Pod Resource Usage
-**Current**: `const ns = $json.namespace || 'etiyamobile-production';`
-**Should Be**: Multi-namespace support
-
-#### 3g. Resource Exhaustion Prediction
-**Current**: `const ns = $json.namespace || 'etiyamobile-production';`
-**Should Be**: Multi-namespace support
-
-#### 3h. Kubernetes PVC Status
-**Current**: `const ns = $json.namespace || 'etiyamobile-production';`
-**Should Be**: Multi-namespace support
-
-#### 3i. Kubernetes HPA Status
-**Current**: `const ns = $json.namespace || 'etiyamobile-production';`
-**Should Be**: Multi-namespace support
-
-### Note on Namespace Handling:
-Bu tool'ların hepsi dokümanda dynamic namespace kullanıyor: `$json.namespace || 'etiyamobile-production'`
-
-**İki yaklaşım**:
-1. **Dynamic approach** (Current): Force Deep Analysis Override'dan gelen namespace'i kullan
-2. **Hardcoded approach** (Stage 1 style): Tüm 12 production namespace'i hardcode et
-
-**Recommendation**: Dynamic approach kalsın çünkü:
-- Force Deep Analysis Override zaten `namespaceRegex` hazırlıyor
-- Farklı namespace'ler için farklı analizler yapılabilir
-- Daha flexible
-
-**Ancak validation gerekli**: `$json.namespace` boş gelirse fallback olarak tüm namespace'leri kullanmalı, sadece 'etiyamobile-production' değil.
-
-### Suggested Fix Pattern:
+IF you want to improve fallback behavior, change tool queries from:
 ```javascript
-const namespaces = $json.namespaces || ['bstp-cms-global-production', 'bstp-cms-prod-v3', 'em-global-prod-3pp', 'em-global-prod-eom', 'em-global-prod-flowe', 'em-global-prod', 'em-prod-3pp', 'em-prod-eom', 'em-prod-flowe', 'em-prod', 'etiyamobile-production', 'etiyamobile-prod'];
-const namespaceRegex = namespaces.join('|');
+const ns = $json.namespace || 'etiyamobile-production';
+```
+
+TO:
+```javascript
+const DEFAULT_NAMESPACES = ['bstp-cms-global-production', 'bstp-cms-prod-v3', 'em-global-prod-3pp', 'em-global-prod-eom', 'em-global-prod-flowe', 'em-global-prod', 'em-prod-3pp', 'em-prod-eom', 'em-prod-flowe', 'em-prod', 'etiyamobile-production', 'etiyamobile-prod'];
+const namespaceRegex = $json.namespaceRegex || DEFAULT_NAMESPACES.join('|');
 // Then use: namespace=~"${namespaceRegex}"
 ```
 
-**Decision**: Bu değişiklik Stage 2 prompt optimization ile birlikte yapılabilir (LOW priority)
+**Impact**: Minimal. Only affects cases where AI doesn't pass namespace parameter.
+**Decision**: Can be done later as optimization. Not critical for functionality.
