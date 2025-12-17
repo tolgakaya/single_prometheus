@@ -272,7 +272,7 @@ Calculate prevention_quality_score (0.0 - 1.0) as SUM of these factors:
     "stageSequence": {{ JSON.stringify($json._debug.stageSequence ? [...$json._debug.stageSequence, 'Stage 6: Prevention & Learning'] : ['Stage 6: Prevention & Learning']) }},
     "totalStagesExecuted": 6,
     "workflowComplete": true,
-    "priorityLevel": "{{ $json._context.priority }}",
+    "priorityLevel": "{{ $json._debug?.priority || 'normal' }}",
     "contextJourneyComplete": "{{ $json._context.contextId }} - Full lifecycle tracked"
   }
 }
