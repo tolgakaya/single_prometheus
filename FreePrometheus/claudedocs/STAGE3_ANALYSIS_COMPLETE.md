@@ -87,25 +87,37 @@ Calculate overall alert correlation quality (0.0 - 1.0) as SUM of these factors:
 - No SLO data (all NaN/empty) = 0.0
 ```
 
-#### C. Fixed Context Reference in Tool Parameters:
+#### C. Fixed Tool Parameter Documentation:
 
-**BEFORE (YANLIŞ):**
+**BEFORE (YANLIŞ - Multiple Issues):**
 ```javascript
+// Prompt told AI to pass these parameters:
 {
   "namespace": "{{ $json._context.initialParams.namespaces[0] || 'etiyamobile-production' }}",
   "service": "{{ $json.output.correlation_matrix.affected_services && $json.output.correlation_matrix.affected_services[0] || '' }}"
 }
 ```
 
+**Problems:**
+1. ❌ Instructs AI to pass `namespace` parameter (but tools handle multi-namespace internally)
+2. ❌ Uses `namespaces[0]` - only first namespace instead of all 12
+3. ❌ Wrong context path: `$json.output.correlation_matrix` (doesn't exist)
+
 **AFTER (DOĞRU):**
-```javascript
-{
-  "namespace": "{{ $json._context.initialParams.namespaces[0] || 'etiyamobile-production' }}",
-  "service": "{{ $json.stage2Data.correlation_matrix.affected_services && $json.stage2Data.correlation_matrix.affected_services[0] || '' }}"
-}
+```markdown
+**IMPORTANT**: SLO tools automatically use multi-namespace filtering via `$json.namespaceRegex`.
+You do NOT need to pass namespace parameters when calling tools.
+
+Tools will automatically query across ALL 12 production namespaces.
+
+Service filtering (optional) comes from Stage 2 data:
+- Service name: {{ $json.stage2Data?.correlation_matrix?.affected_services?.[0] || 'none detected' }}
 ```
 
-**Why**: `$json.output` doesn't exist in Stage 3 context. Stage 2 data is in `$json.stage2Data.correlation_matrix`.
+**Why**: 
+- Tools already use `namespaceRegex` internally (via n8n flow after fixes applied)
+- AI doesn't need to pass namespace - it's automatic
+- Stage 2 data is in `$json.stage2Data.correlation_matrix`, not `$json.output`
 
 #### D. Added `correlation_confidence` to Output Schema:
 

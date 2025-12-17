@@ -188,11 +188,26 @@ Calculate overall alert correlation quality (0.0 - 1.0) as SUM of these factors:
 - 2 alerts, 1 KB match (+0.1) + Different namespace than Stage 2 (+0.0) + No grouping (+0.0) + Single SLO (+0.05) = **Confidence: 0.15** (weak correlation, proceed to Stage 4)
 
 ## 🔧 TOOL PARAMETERS:
-When calling SLO tools, use these parameters:
-{
-  "namespace": "{{ $json._context.initialParams.namespaces[0] || 'etiyamobile-production' }}",
-  "service": "{{ $json.stage2Data.correlation_matrix.affected_services && $json.stage2Data.correlation_matrix.affected_services[0] || '' }}"
-}
+
+**IMPORTANT**: SLO tools automatically use multi-namespace filtering via `$json.namespaceRegex`.
+You do NOT need to pass namespace parameters when calling tools.
+
+**Optional service filtering**: If Stage 2 identified specific affected services, tools can filter by service name.
+
+Tools will automatically query across ALL 12 production namespaces:
+- bstp-cms-global-production, bstp-cms-prod-v3
+- em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod
+- em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod
+- etiyamobile-production, etiyamobile-prod
+
+When calling SLO tools, simply call them - no namespace parameter needed:
+- Pod Ready SLO → Checks all namespaces automatically
+- Container Running SLO → Checks all namespaces automatically
+- Pod Restart Rate SLO → Checks all namespaces automatically
+- Deployment Replica Health → Checks all namespaces automatically
+
+Service filtering (optional) comes from Stage 2 data:
+- Service name: {{ $json.stage2Data?.correlation_matrix?.affected_services?.[0] || 'none detected' }}
 
 🚨 CRITICAL OUTPUT REQUIREMENT:
 RETURN ONLY VALID JSON - NO MARKDOWN, NO CODE BLOCKS

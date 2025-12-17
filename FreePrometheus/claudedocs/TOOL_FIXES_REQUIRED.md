@@ -493,13 +493,17 @@ const namespaceRegex = $json.namespaceRegex || 'bstp-cms-global-production|bstp-
 
 **C. Tool Parameter Issue (lines after "TOOL PARAMETERS"):**
 ```javascript
+// YANLIŞ (Eski prompt):
 {
   "namespace": "{{ $json._context.initialParams.namespaces[0] || 'etiyamobile-production' }}",
   "service": "{{ $json.output.correlation_matrix.affected_services && $json.output.correlation_matrix.affected_services[0] || '' }}"
 }
 ```
-**Problem**: Uses `namespaces[0]` (only first namespace) instead of multi-namespace support
-**Should be**: Should reference Stage 2 data correctly and use namespaceRegex
+**Problem 1**: Instructs AI to pass namespace parameter, but tools already handle namespaceRegex internally
+**Problem 2**: Uses `namespaces[0]` (only first namespace) instead of all namespaces
+**Problem 3**: References wrong context path `$json.output.correlation_matrix` (doesn't exist)
+
+**FIXED**: Removed namespace parameter instruction, clarified tools use multi-namespace automatically, fixed context reference to `$json.stage2Data.correlation_matrix`
 
 ### Recommended Improvements:
 
@@ -554,8 +558,9 @@ Calculate overall correlation quality (0.0 - 1.0) as SUM of:
 - No SLO data (NaN/empty) (+0.0)
 ```
 
-#### 3. Fix Tool Parameter Documentation:
-Should reference `$json.stage2Data.correlation_matrix.affected_services` not `$json.output.correlation_matrix...`
+#### 3. Fixed Tool Parameter Documentation ✅:
+**BEFORE**: Incorrectly told AI to pass namespace parameter + wrong context reference
+**AFTER**: Clarified tools handle multi-namespace automatically, no namespace parameter needed, service filtering comes from `$json.stage2Data.correlation_matrix.affected_services`
 
 ---
 
