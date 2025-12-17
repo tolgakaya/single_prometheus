@@ -100,31 +100,31 @@ Bu değişiklik yapıldıktan sonra Stage 1 çalıştırıldığında:
 
 ---
 
-## 3. Stage 2 Tools - Query Parameters for Copy-Paste
+## 3. Stage 2 Tools - Multi-Namespace Support Fix
 
-**Status**: 📋 READY FOR n8n FLOW EDITS
-**Source**: General_flow_infos.md (lines 48-208)
+**Status**: 🔴 CRITICAL - REQUIRES n8n FLOW EDITS
+**Problem**: All Stage 2 tools use single namespace fallback instead of multi-namespace regex
+**Impact**: Tools only query 1 namespace instead of all 12 production namespaces
 
-**NOT**: Her tool için n8n flow editöründe "Query Parameters" alanına yapıştırılacak EXACT query veriliyor.
+### Required Fix Pattern:
+
+**YANLIŞ (Mevcut):**
+```javascript
+const ns = $json.namespace || 'etiyamobile-production';
+// Query: namespace="${ns}"
+```
+
+**DOĞRU (Olması Gereken):**
+```javascript
+const namespaceRegex = $json.namespaceRegex || 'bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod';
+// Query: namespace=~"${namespaceRegex}"
+```
 
 ---
 
-### a. Node Resource Status
-```
-topk(10, (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100) or topk(10, 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) or topk(10, (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100)
-```
-
----
-
-### b. Node Conditions
-```
-kube_node_status_condition{condition=~"Ready|MemoryPressure|DiskPressure|PIDPressure|NetworkUnavailable"} == 1
-```
-
----
-
-### c. Pod Status Check
-```
+### c. Pod Status Check - Multi-Namespace Fix
+**Mevcut Query (YANLIŞ):**
+```javascript
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -139,10 +139,29 @@ kube_node_status_condition{condition=~"Ready|MemoryPressure|DiskPressure|PIDPres
 }}
 ```
 
+**Düzeltilmiş Query (DOĞRU):**
+```javascript
+{{
+(() => {
+  const namespaceRegex = $json.namespaceRegex || 'bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod';
+  const svc = $json.service || '';
+
+  if (svc) {
+    return `kube_pod_container_status_restarts_total{namespace=~"${namespaceRegex}", pod=~".*${svc}.*"} or kube_pod_container_status_waiting_reason{namespace=~"${namespaceRegex}", pod=~".*${svc}.*"} or kube_pod_status_phase{namespace=~"${namespaceRegex}", pod=~".*${svc}.*"}`;
+  } else {
+    return `topk(20, kube_pod_container_status_restarts_total{namespace=~"${namespaceRegex}"} > 0) or topk(20, kube_pod_container_status_waiting_reason{namespace=~"${namespaceRegex}", reason!='ContainerCreating'}) or topk(20, kube_pod_status_phase{namespace=~"${namespaceRegex}", phase=~'Failed|Unknown|Pending'} == 1)`;
+  }
+})()
+}}
+```
+
 ---
 
-### d. Node Network Health
-```
+### d. Node Network Health - Multi-Namespace Fix
+**NOT**: Node metrikleri namespace kullanmaz, bu tool için değişiklik GEREKMEZ.
+
+**Mevcut Query (DOĞRU - değiştirme):**
+```javascript
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -154,8 +173,9 @@ kube_node_status_condition{condition=~"Ready|MemoryPressure|DiskPressure|PIDPres
 
 ---
 
-### e. Container Restarts
-```
+### e. Container Restarts - Multi-Namespace Fix
+**Mevcut Query (YANLIŞ):**
+```javascript
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -170,10 +190,27 @@ kube_node_status_condition{condition=~"Ready|MemoryPressure|DiskPressure|PIDPres
 }}
 ```
 
+**Düzeltilmiş Query (DOĞRU):**
+```javascript
+{{
+(() => {
+  const namespaceRegex = $json.namespaceRegex || 'bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod';
+  const svc = $json.service || '';
+
+  if (svc) {
+    return `topk(10, sum by (namespace, pod, container) (kube_pod_container_status_restarts_total{namespace=~"${namespaceRegex}", pod=~".*${svc}.*"})) or topk(10, sum by (namespace, pod, container, reason) (kube_pod_container_status_last_terminated_reason{namespace=~"${namespaceRegex}", pod=~".*${svc}.*", reason!="Completed"}))`;
+  } else {
+    return `topk(10, sum by (namespace, pod, container) (kube_pod_container_status_restarts_total{namespace=~"${namespaceRegex}"})) or topk(10, sum by (namespace, pod, container, reason) (kube_pod_container_status_last_terminated_reason{namespace=~"${namespaceRegex}", reason!="Completed"}))`;
+  }
+})()
+}}
+```
+
 ---
 
-### f. Application Metrics
-```
+### f. Application Metrics - Multi-Namespace Fix
+**Mevcut Query (YANLIŞ):**
+```javascript
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -188,10 +225,27 @@ kube_node_status_condition{condition=~"Ready|MemoryPressure|DiskPressure|PIDPres
 }}
 ```
 
+**Düzeltilmiş Query (DOĞRU):**
+```javascript
+{{
+(() => {
+  const namespaceRegex = $json.namespaceRegex || 'bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod';
+  const svc = $json.service || '';
+
+  if (svc) {
+    return `topk(10, sum by (namespace, pod) (rate(container_network_receive_bytes_total{namespace=~"${namespaceRegex}", pod=~".*${svc}.*"}[5m]))) or topk(10, sum by (namespace, pod) (rate(container_network_transmit_bytes_total{namespace=~"${namespaceRegex}", pod=~".*${svc}.*"}[5m])))`;
+  } else {
+    return `topk(10, sum by (namespace, pod) (rate(container_network_receive_bytes_total{namespace=~"${namespaceRegex}"}[5m]))) or topk(10, sum by (namespace, pod) (rate(container_network_transmit_bytes_total{namespace=~"${namespaceRegex}"}[5m])))`;
+  }
+})()
+}}
+```
+
 ---
 
-### g. HTTP Error Rates
-```
+### g. HTTP Error Rates - Multi-Namespace Fix
+**Mevcut Query (YANLIŞ):**
+```javascript
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -206,10 +260,27 @@ kube_node_status_condition{condition=~"Ready|MemoryPressure|DiskPressure|PIDPres
 }}
 ```
 
+**Düzeltilmiş Query (DOĞRU):**
+```javascript
+{{
+(() => {
+  const namespaceRegex = $json.namespaceRegex || 'bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod';
+  const svc = $json.service || '';
+
+  if (svc) {
+    return `topk(10, sum by (namespace, pod) (kube_pod_status_phase{namespace=~"${namespaceRegex}", pod=~".*${svc}.*", phase=~"Failed|Unknown"} == 1)) or topk(10, sum by (namespace, pod, reason) (kube_pod_container_status_waiting_reason{namespace=~"${namespaceRegex}", pod=~".*${svc}.*", reason!="ContainerCreating"}))`;
+  } else {
+    return `topk(10, sum by (namespace, pod) (kube_pod_status_phase{namespace=~"${namespaceRegex}", phase=~"Failed|Unknown"} == 1)) or topk(10, sum by (namespace, pod, reason) (kube_pod_container_status_waiting_reason{namespace=~"${namespaceRegex}", reason!="ContainerCreating"}))`;
+  }
+})()
+}}
+```
+
 ---
 
-### h. Pod Resource Usage
-```
+### h. Pod Resource Usage - Multi-Namespace Fix
+**Mevcut Query (YANLIŞ):**
+```javascript
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -224,10 +295,27 @@ kube_node_status_condition{condition=~"Ready|MemoryPressure|DiskPressure|PIDPres
 }}
 ```
 
+**Düzeltilmiş Query (DOĞRU):**
+```javascript
+{{
+(() => {
+  const namespaceRegex = $json.namespaceRegex || 'bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod';
+  const svc = $json.service || '';
+
+  if (svc) {
+    return `topk(10, container_memory_working_set_bytes{namespace=~"${namespaceRegex}", pod=~".*${svc}.*", container!=""}) or topk(10, rate(container_cpu_usage_seconds_total{namespace=~"${namespaceRegex}", pod=~".*${svc}.*", container!=""}[5m]))`;
+  } else {
+    return `topk(10, container_memory_working_set_bytes{namespace=~"${namespaceRegex}", container!=""}) or topk(10, rate(container_cpu_usage_seconds_total{namespace=~"${namespaceRegex}", container!=""}[5m]))`;
+  }
+})()
+}}
+```
+
 ---
 
-### i. Resource Exhaustion Prediction
-```
+### i. Resource Exhaustion Prediction - Multi-Namespace Fix
+**Mevcut Query (YANLIŞ):**
+```javascript
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -242,10 +330,29 @@ kube_node_status_condition{condition=~"Ready|MemoryPressure|DiskPressure|PIDPres
 }}
 ```
 
+**Düzeltilmiş Query (DOĞRU):**
+```javascript
+{{
+(() => {
+  const namespaceRegex = $json.namespaceRegex || 'bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod';
+  const svc = $json.service || '';
+
+  if (svc) {
+    return `predict_linear(node_filesystem_avail_bytes{mountpoint="/"}[1h], 4*3600) < 0 or predict_linear(container_memory_working_set_bytes{namespace=~"${namespaceRegex}", pod=~".*${svc}.*"}[1h], 4*3600) > container_spec_memory_limit_bytes{namespace=~"${namespaceRegex}", pod=~".*${svc}.*"} or predict_linear(kubelet_volume_stats_available_bytes{namespace=~"${namespaceRegex}", persistentvolumeclaim=~".*${svc}.*"}[1h], 4*3600) < 1073741824`;
+  } else {
+    return `predict_linear(node_filesystem_avail_bytes{mountpoint="/"}[1h], 4*3600) < 0 or predict_linear(node_memory_MemAvailable_bytes[1h], 4*3600) < 1073741824 or predict_linear(kubelet_volume_stats_available_bytes{namespace=~"${namespaceRegex}"}[1h], 4*3600) < 1073741824 or (kubelet_volume_stats_used_bytes{namespace=~"${namespaceRegex}"} / kubelet_volume_stats_capacity_bytes{namespace=~"${namespaceRegex}"}) > 0.85`;
+  }
+})()
+}}
+```
+
 ---
 
-### j. Historical Comparison 24h
-```
+### j. Historical Comparison 24h - No Fix Needed
+**NOT**: Bu tool AI tarafından dinamik metric_query alır, namespace filtering AI'ın sorumluluğunda.
+
+**Mevcut Query (DOĞRU - değiştirme):**
+```javascript
 {{
 (() => {
   let metricQuery = $json.metric_query || 'up{job="kubernetes-nodes"}';
@@ -262,8 +369,9 @@ kube_node_status_condition{condition=~"Ready|MemoryPressure|DiskPressure|PIDPres
 
 ---
 
-### k. Kubernetes PVC Status
-```
+### k. Kubernetes PVC Status - Multi-Namespace Fix
+**Mevcut Query (YANLIŞ):**
+```javascript
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -278,10 +386,27 @@ kube_node_status_condition{condition=~"Ready|MemoryPressure|DiskPressure|PIDPres
 }}
 ```
 
+**Düzeltilmiş Query (DOĞRU):**
+```javascript
+{{
+(() => {
+  const namespaceRegex = $json.namespaceRegex || 'bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod';
+  const svc = $json.service || '';
+
+  if (svc) {
+    return `(kubelet_volume_stats_used_bytes{namespace=~"${namespaceRegex}", persistentvolumeclaim=~".*${svc}.*"} / kubelet_volume_stats_capacity_bytes{namespace=~"${namespaceRegex}", persistentvolumeclaim=~".*${svc}.*"} > 0.8) * on(namespace, persistentvolumeclaim) group_left(storageclass, volumename) kube_persistentvolumeclaim_info{namespace=~"${namespaceRegex}", persistentvolumeclaim=~".*${svc}.*"} or kube_persistentvolumeclaim_status_phase{namespace=~"${namespaceRegex}", persistentvolumeclaim=~".*${svc}.*", phase!="Bound"} == 1`;
+  } else {
+    return `(kubelet_volume_stats_used_bytes{namespace=~"${namespaceRegex}"} / kubelet_volume_stats_capacity_bytes{namespace=~"${namespaceRegex}"} > 0.8) * on(namespace, persistentvolumeclaim) group_left(storageclass, volumename) kube_persistentvolumeclaim_info{namespace=~"${namespaceRegex}"} or kube_persistentvolumeclaim_status_phase{namespace=~"${namespaceRegex}", phase!="Bound"} == 1`;
+  }
+})()
+}}
+```
+
 ---
 
-### l. Kubernetes HPA Status
-```
+### l. Kubernetes HPA Status - Multi-Namespace Fix
+**Mevcut Query (YANLIŞ):**
+```javascript
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -296,4 +421,43 @@ kube_node_status_condition{condition=~"Ready|MemoryPressure|DiskPressure|PIDPres
 }}
 ```
 
+**Düzeltilmiş Query (DOĞRU):**
+```javascript
+{{
+(() => {
+  const namespaceRegex = $json.namespaceRegex || 'bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod';
+  const svc = $json.service || '';
+
+  if (svc) {
+    return `(kube_horizontalpodautoscaler_status_current_replicas{namespace=~"${namespaceRegex}", horizontalpodautoscaler=~".*${svc}.*"} / kube_horizontalpodautoscaler_spec_max_replicas{namespace=~"${namespaceRegex}", horizontalpodautoscaler=~".*${svc}.*"}) > 0.9 or kube_horizontalpodautoscaler_status_condition{namespace=~"${namespaceRegex}", horizontalpodautoscaler=~".*${svc}.*", condition="ScalingLimited", status="true"} == 1`;
+  } else {
+    return `(kube_horizontalpodautoscaler_status_current_replicas{namespace=~"${namespaceRegex}"} / kube_horizontalpodautoscaler_spec_max_replicas{namespace=~"${namespaceRegex}"}) > 0.9 or (kube_horizontalpodautoscaler_status_current_replicas{namespace=~"${namespaceRegex}"} == kube_horizontalpodautoscaler_spec_max_replicas{namespace=~"${namespaceRegex}"}) or kube_horizontalpodautoscaler_status_condition{namespace=~"${namespaceRegex}", condition="ScalingLimited", status="true"} == 1`;
+  }
+})()
+}}
+```
+
 ---
+
+## Summary: Tools Requiring Multi-Namespace Fix
+
+**9 tools need fixes** (namespace filtering):
+1. ✅ c. Pod Status Check
+2. ❌ d. Node Network Health (node metrics - no namespace)
+3. ✅ e. Container Restarts
+4. ✅ f. Application Metrics
+5. ✅ g. HTTP Error Rates
+6. ✅ h. Pod Resource Usage
+7. ✅ i. Resource Exhaustion Prediction
+8. ❌ j. Historical Comparison 24h (AI controlled)
+9. ✅ k. Kubernetes PVC Status
+10. ✅ l. Kubernetes HPA Status
+
+**Key Changes:**
+- `const ns = $json.namespace || 'etiyamobile-production'` → `const namespaceRegex = $json.namespaceRegex || 'bstp-cms-global-production|bstp-cms-prod-v3|...'`
+- `namespace="${ns}"` → `namespace=~"${namespaceRegex}"`
+
+**Impact:**
+- Tools will now query ALL 12 production namespaces instead of just 1
+- Stage 2 analysis will have complete cluster visibility
+- No more missed issues in other namespaces
