@@ -1,0 +1,26 @@
+[
+  {
+    "fingerprint": null,
+    "dedupStatus": "new",
+    "existingTicket": null,
+    "metrics": {
+      "timeSinceLastSeen": 0,
+      "timeSinceFirstSeen": 0,
+      "timeSinceLastCall": null,
+      "totalOccurrences": 1,
+      "averageOccurrenceInterval": null,
+      "frequencyPerHour": 0
+    },
+    "actions": {
+      "skipAnalysis": false,
+      "updateTicket": false,
+      "escalate": false,
+      "makeCall": false
+    },
+    "alert": {
+      "dedupStatus": "new",
+      "fingerprint": null,
+      "existingTicket": null
+    }
+  }
+]
