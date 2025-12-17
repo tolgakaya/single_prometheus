@@ -1,15 +1,14 @@
 {
   "permissions": {
     "allow": [
-      "Bash(git checkout:*)",
+      "Bash(git revert:*)",
+      "Bash(jq:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git push)",
-      "Bash(git push:*)",
+      "Bash(git checkout:*)",
       "Bash(cat:*)",
-      "Bash(ns2)",
-      "Bash(...)",
-      "Bash(ns12\" (all 12 namespaces)\n\nFiles changed:\n- FreePrometheus/PrometheusNodes/4. Prepare Stage 1 Input.js\n- FreePrometheus/PrometheusNodes/5. Stage 1 Health Snapshot.txt\n- FreePrometheus/PrometheusNodes/8. Force Deep Analysis Override.js\n- FreePrometheus/PrometheusNodes/9. Stage 2 Deep Analysis.txt\n- FreePrometheus/claudedocs/FREE_PROMETHEUS_NAMESPACE_FIX.md (new)\n\nFixes: Issue #5 (template evaluation), partial fix for Issue #1-2\nRelated: Stage 1 \"unknown\" status root cause investigation\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")"
+      "Bash(\"C:\\Users\\Asus\\Desktop\\OKR_AI\\FreePrometheus\\claudedocs\\STAGE2_ANALYSIS_COMPLETE.md\")"
     ],
     "deny": [],
     "ask": []

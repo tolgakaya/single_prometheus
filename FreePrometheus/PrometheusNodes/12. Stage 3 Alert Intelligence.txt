@@ -132,11 +132,66 @@ severity: "warning"
 }
 };
 
+## 🎯 DECISION LOGIC - HOW TO SET proceed_to_stage4:
+
+**Set proceed_to_stage4 = true IF ANY OF THESE CONDITIONS:**
+1. Active alerts count > 0 (any firing alerts need automated diagnosis)
+2. SLO violation detected (availability_slo.status = "red" OR current < 99.0%)
+3. High-severity alerts present (Critical or Blocker severity from KB enrichment)
+4. Alert storm detected (alert_patterns.storm_detection.detected = true)
+5. Stage 2 identified issues but root_cause.confidence < 0.7
+6. Multiple alert groups indicating complex cascading failures
+
+**Set proceed_to_stage4 = false ONLY IF ALL CONDITIONS MET:**
+1. No active alerts (active_alerts = [] OR all alerts resolved)
+   AND
+2. SLO status = "green" (availability_slo.current >= 99.9%)
+   AND
+3. No recurring alert patterns (alert_patterns.recurring = [])
+   AND
+4. auto_remediation_approved = true (all Low/Medium severity KB matches)
+   AND
+5. Stage 2 found no issues OR Stage 2 root_cause.confidence >= 0.8
+
+**CRITICAL**: Default to true if uncertain. Better to run diagnosis than miss critical issues.
+
+## 📊 ALERT CORRELATION CONFIDENCE CALCULATION:
+
+Calculate overall alert correlation quality (0.0 - 1.0) as SUM of these factors:
+
+**1. Alert-to-Stage2 Correlation (+0.3):**
+- Alert labels match Stage 2 root_cause.component (e.g., same pod/namespace) = +0.3
+- Alerts in same namespace as Stage 2 affected_services = +0.2
+- Alerts related to Stage 2 findings but different component = +0.1
+- No correlation with Stage 2 findings = 0.0
+
+**2. Knowledge Base Coverage (+0.3):**
+- All active alerts have KB matches (100% coverage) = +0.3
+- 75%-99% alerts have KB matches = +0.2
+- 50%-74% alerts have KB matches = +0.1
+- <50% KB coverage = +0.05
+- No KB matches = 0.0
+
+**3. Alert Group Quality (+0.2):**
+- Clear root alert identified with 3+ related alerts (strong correlation) = +0.2
+- Root alert with 1-2 related alerts (moderate correlation) = +0.1
+- No alert grouping possible (isolated alerts) = 0.0
+
+**4. SLO Impact Clarity (+0.2):**
+- Composite SLO available with 4+ components = +0.2
+- Composite SLO with 2-3 components = +0.1
+- Single SLO component = +0.05
+- No SLO data (all NaN/empty) = 0.0
+
+**EXAMPLES:**
+- 5 alerts, all have KB matches (+0.3) + Alerts match Stage 2 pod (+0.3) + Root alert with 4 related (+0.2) + Composite SLO with 5 components (+0.2) = **Confidence: 1.0** (perfect correlation)
+- 2 alerts, 1 KB match (+0.1) + Different namespace than Stage 2 (+0.0) + No grouping (+0.0) + Single SLO (+0.05) = **Confidence: 0.15** (weak correlation, proceed to Stage 4)
+
 ## 🔧 TOOL PARAMETERS:
 When calling SLO tools, use these parameters:
 {
   "namespace": "{{ $json._context.initialParams.namespaces[0] || 'etiyamobile-production' }}",
-  "service": "{{ $json.output.correlation_matrix.affected_services && $json.output.correlation_matrix.affected_services[0] || '' }}"
+  "service": "{{ $json.stage2Data.correlation_matrix.affected_services && $json.stage2Data.correlation_matrix.affected_services[0] || '' }}"
 }
 
 🚨 CRITICAL OUTPUT REQUIREMENT:
@@ -207,6 +262,7 @@ Return ONLY this JSON structure:
 "command": "<kubectl or other command or null>"
 }
 ],
+"correlation_confidence": <calculate 0.0-1.0 using formula above>,
 "proceed_to_stage4": <true if alerts need investigation, false otherwise>,
 "auto_remediation_approved": <true only for low-risk known issues>,
 "_context": <copy the exact _context object from input>,
