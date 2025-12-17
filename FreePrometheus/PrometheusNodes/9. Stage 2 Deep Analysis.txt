@@ -123,7 +123,7 @@ Root cause confidence score (0.0 - 1.0) is calculated as SUM of these factors:
 
 **Available Tools**: Node Resource Status, Node Conditions, Pod Status Check, Node Network Health, Container Restarts, Application Metrics, HTTP Error Rates, Pod Resource Usage, Resource Exhaustion Prediction, Kubernetes PVC Status, Kubernetes HPA Status
 
-**IF Stage 1 scores.restart_rate is LOW** (pod restart issues detected):
+**IF Stage 1 scores.pod_stability is LOW** (pod restart issues detected):
 1. Call "Pod Status Check" → Get current pod phases + waiting reasons
 2. Call "Container Restarts" → Get restart counts + last terminated reasons
 3. Call "Pod Resource Usage" → Check if hitting resource limits (memory/CPU)

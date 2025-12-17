@@ -84,11 +84,19 @@ Bu değişiklik yapıldıktan sonra Stage 1 çalıştırıldığında:
   - For CPU trends
 - Showed how to use `{{ $json.namespaceRegex }}` in queries
 
+#### E. CRITICAL FIX - Score Name Mismatch (line 126):
+- Changed `scores.restart_rate` → `scores.pod_stability`
+- **Problem**: Stage 2 referenced non-existent score name (`restart_rate` doesn't exist in Stage 1)
+- **Impact**: Pod restart tools were NEVER triggered (critical functionality broken)
+- **Solution**: Use correct Stage 1 score name `pod_stability` which contains pod restart data
+- **Stage 1 scores**: cluster_health, node_availability, pod_stability, api_reliability
+
 ### Impact:
 - ✅ AI will make consistent decisions about `proceed_to_stage3`
 - ✅ AI will calculate objective confidence scores (not guessing)
 - ✅ AI will call correct tools that exist in flow
 - ✅ AI will properly use Historical Comparison 24h for trend analysis
+- ✅ Pod restart detection now WORKING (was completely broken)
 
 ---
 
