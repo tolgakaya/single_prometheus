@@ -45,6 +45,66 @@ Based on the full journey through all 6 stages, generate:
 - Preventive monitoring rules
 - Team training recommendations
 
+## 🎯 PREVENTION DECISION LOGIC:
+
+**Set final_status.incident_resolved = true IF ALL CONDITIONS MET:**
+1. Stage 5 remediation plan was created AND executed (or ready for execution)
+2. Root cause clearly identified in Stage 2 (root_cause.identified = true)
+3. No critical unresolved issues remain in Stage 4 diagnostics
+4. Remediation confidence from Stage 4 >= 0.6 (confident in fix)
+
+**Set final_status.incident_resolved = false IF ANY CONDITION:**
+1. Root cause not identified (Stage 2 root_cause.identified = false)
+2. No remediation plan created (Stage 5 failed or skipped)
+3. Critical diagnostic issues remain unaddressed
+4. Remediation confidence < 0.5 (too uncertain to claim resolution)
+
+**Set final_status.prevention_implemented = true IF:**
+1. Prevention actions defined for all confirmed_issues from Stage 4
+2. KB updates created for new alert patterns
+3. Monitoring improvements recommended based on Stage 3 SLO gaps
+4. Runbook entries created for critical issues
+
+**Set final_status.prevention_implemented = false IF:**
+1. No prevention actions defined (prevention_actions = [])
+2. No KB updates (knowledge_base_update.kb_updated = false)
+3. No monitoring improvements recommended
+4. System too healthy to require prevention (Stage 1 overall_status = "green")
+
+**Set final_status.ready_for_next = true ALWAYS** (workflow complete regardless of findings)
+
+## 📊 PREVENTION QUALITY SCORE CALCULATION:
+
+Calculate prevention_quality_score (0.0 - 1.0) as SUM of these factors:
+
+**1. KB Learning Completeness (+0.3):**
+- New KB entries created for ALL unmatched alerts from Stage 3 = +0.3
+- New KB entries for 50%-99% of unmatched alerts = +0.2
+- New KB entries for 1%-49% of unmatched alerts = +0.1
+- No new KB entries (all alerts already in KB OR no alerts) = 0.0
+
+**2. Prevention Action Coverage (+0.3):**
+- Prevention actions defined for ALL confirmed_issues from Stage 4 = +0.3
+- Prevention actions for 50%-99% of confirmed issues = +0.2
+- Prevention actions for 1%-49% of confirmed issues = +0.1
+- No prevention actions defined = 0.0
+
+**3. Team Alignment (+0.2):**
+- Team recommendations for ALL affected services from Stage 2 = +0.2
+- Team recommendations for 50%-99% of affected services = +0.1
+- Partial team alignment (<50% coverage) = +0.05
+- No team recommendations = 0.0
+
+**4. Follow-up Planning (+0.2):**
+- Follow-up schedule with specific owners, timelines, and metrics = +0.2
+- Follow-up schedule with partial details (missing owners OR timelines) = +0.1
+- Generic follow-up without details = +0.05
+- No follow-up plan = 0.0
+
+**EXAMPLES:**
+- All alerts added to KB (+0.3) + Prevention for all issues (+0.3) + All teams aligned (+0.2) + Detailed follow-up (+0.2) = **Quality: 1.0** (comprehensive prevention)
+- Partial KB entries (+0.1) + Some prevention actions (+0.2) + Partial team alignment (+0.05) + Generic follow-up (+0.05) = **Quality: 0.4** (incomplete prevention)
+
 ## 🔧 PREVENTION TOOLS:
 
 1. `Update Alert Rules` - Tune thresholds
@@ -195,9 +255,10 @@ Based on the full journey through all 6 stages, generate:
     "process_improvements": {{ $json._context.priority === 'critical' ? 4 : 2 }},
     "estimated_future_prevention": "{{ $json._context.priority === 'critical' ? '95%' : '75%' }}"
   },
+  "prevention_quality_score": <0.0-1.0 calculated using 4-factor formula>,
   "final_status": {
-    "incident_resolved": true,
-    "prevention_implemented": {{ $json._context.priority === 'critical' }},
+    "incident_resolved": <true/false based on decision logic>,
+    "prevention_implemented": <true/false based on decision logic>,
     "learning_captured": true,
     "ready_for_next": true
   },

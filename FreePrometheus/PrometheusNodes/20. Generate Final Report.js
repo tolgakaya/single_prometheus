@@ -342,7 +342,7 @@ function calculateToolsUsed() {
   return toolCount;
 }
 
-// Chat/Summary response oluştur
+// Enhanced chat/summary response with beautiful formatting
 function generateResponse(report) {
   const health = report.stage1Results.status;
   const alerts = report.stage1Results.alerts.total;
@@ -392,10 +392,155 @@ function generateResponse(report) {
     response += `${report.overrideInfo.message}\n\n`;
   }
   
+  // NEW: Confidence Progression
+  if (report.confidenceProgression) {
+    response += `**📈 Güven Skoru İlerlemesi:**\n`;
+    response += `- Stage 2 (Kök Neden): ${(report.confidenceProgression.stage2_root_cause_confidence * 100).toFixed(0)}%\n`;
+    response += `- Stage 3 (Alert Korelasyon): ${(report.confidenceProgression.stage3_correlation_confidence * 100).toFixed(0)}%\n`;
+    response += `- Stage 4 (Remediation): ${(report.confidenceProgression.stage4_remediation_confidence * 100).toFixed(0)}%\n`;
+    response += `- Stage 6 (Prevention Kalitesi): ${(report.confidenceProgression.stage6_prevention_quality * 100).toFixed(0)}%\n`;
+    response += `- **Genel Güven: ${(report.confidenceProgression.overall_confidence * 100).toFixed(0)}%**\n\n`;
+  }
+  
+  // NEW: Decision Journey Summary
+  if (report.decisionJourney) {
+    response += `**🔄 Karar Yolculuğu:**\n`;
+    response += `- Stage 1→2: ${report.decisionJourney.stage1_decision.value ? '✅ Devam' : '❌ Dur'}\n`;
+    response += `- Stage 2→3: ${report.decisionJourney.stage2_decision.value ? '✅ Devam' : '❌ Dur'}\n`;
+    response += `- Stage 3→4: ${report.decisionJourney.stage3_decision.value ? '✅ Devam' : '❌ Dur'}\n`;
+    response += `- Stage 4→5: ${report.decisionJourney.stage4_decision.value ? '✅ Devam' : '❌ Dur'}\n\n`;
+  }
+  
+  // NEW: Learning Summary
+  if (report.learningSummary?.key_insights?.length > 0) {
+    response += `**💡 Önemli Bulgular:**\n`;
+    report.learningSummary.key_insights.forEach(insight => {
+      response += `- ${insight}\n`;
+    });
+    response += `\n`;
+  }
+  
+  if (report.learningSummary?.what_worked?.length > 0) {
+    response += `**✅ İşe Yarayan:**\n`;
+    report.learningSummary.what_worked.forEach(item => {
+      response += `- ${item}\n`;
+    });
+    response += `\n`;
+  }
+  
   response += `**📋 Özet:**\n`;
   response += `${executedStages} aşama tamamlandı, ${report.metrics.decisionsTracked} karar takip edildi.\n`;
   
   return response;
+}
+
+// Helper function to calculate confidence progression
+function getConfidenceProgression() {
+  return {
+    stage2_root_cause_confidence: allStageData.stage2?.root_cause?.confidence || 0,
+    stage3_correlation_confidence: allStageData.stage3?.correlation_confidence || 0,
+    stage4_remediation_confidence: allStageData.stage4?.remediation_confidence || 0,
+    stage6_prevention_quality: allStageData.stage6?.prevention_quality_score || 0,
+    overall_confidence: (
+      (allStageData.stage2?.root_cause?.confidence || 0) +
+      (allStageData.stage3?.correlation_confidence || 0) +
+      (allStageData.stage4?.remediation_confidence || 0) +
+      (allStageData.stage6?.prevention_quality_score || 0)
+    ) / 4
+  };
+}
+
+// Helper function to create decision journey
+function getDecisionJourney() {
+  return {
+    stage1_decision: {
+      field: 'proceed_to_stage2',
+      value: allStageData.stage1?.proceed_to_stage2 || false,
+      reason: allStageData.stage1?.reason || '',
+      timestamp: masterContext.stageResults?.stage1?.completedAt
+    },
+    stage2_decision: {
+      field: 'proceed_to_stage3',
+      value: allStageData.stage2?.proceed_to_stage3 || false,
+      confidence: allStageData.stage2?.root_cause?.confidence || 0,
+      timestamp: masterContext.stageResults?.stage2?.completedAt
+    },
+    stage3_decision: {
+      field: 'proceed_to_stage4',
+      value: allStageData.stage3?.proceed_to_stage4 || false,
+      correlation_confidence: allStageData.stage3?.correlation_confidence || 0,
+      timestamp: masterContext.stageResults?.stage3?.completedAt
+    },
+    stage4_decision: {
+      field: 'proceed_to_stage5',
+      value: allStageData.stage4?.proceed_to_stage5 || false,
+      remediation_confidence: allStageData.stage4?.remediation_confidence || 0,
+      timestamp: masterContext.stageResults?.stage4?.completedAt
+    },
+    stage5_completion: {
+      remediation_plan_created: !!allStageData.stage5?.remediation_plan,
+      timestamp: masterContext.stageResults?.stage5?.completedAt
+    },
+    stage6_completion: {
+      prevention_implemented: allStageData.stage6?.final_status?.prevention_implemented || false,
+      prevention_quality_score: allStageData.stage6?.prevention_quality_score || 0,
+      timestamp: masterContext.stageResults?.stage6?.completedAt
+    }
+  };
+}
+
+// Helper function for learning summary
+function getLearningSummary() {
+  const summary = {
+    what_happened: {
+      root_cause: allStageData.stage2?.root_cause?.issue || 'Not identified',
+      affected_services: allStageData.stage2?.affected_services || [],
+      alert_count: allStageData.stage3?.active_alerts?.length || 0,
+      severity: allStageData.primaryDiagnosis?.severity || 'unknown',
+      duration: durationSeconds + 's'
+    },
+    what_worked: [],
+    what_didnt_work: [],
+    key_insights: []
+  };
+  
+  // What worked
+  if (allStageData.stage2?.root_cause?.confidence >= 0.7) {
+    summary.what_worked.push('Stage 2 successfully identified root cause with high confidence');
+  }
+  if (allStageData.stage3?.correlation_confidence >= 0.7) {
+    summary.what_worked.push('Stage 3 strongly correlated alerts to root cause');
+  }
+  if (allStageData.stage5?.remediation_plan?.immediate_actions?.length > 0) {
+    summary.what_worked.push(`Stage 5 generated ${allStageData.stage5.remediation_plan.immediate_actions.length} actionable remediation steps`);
+  }
+  if (allStageData.stage6?.knowledge_base_update?.kb_updated) {
+    summary.what_worked.push('Knowledge base updated with learnings for future incidents');
+  }
+  
+  // What didn't work
+  if (allStageData.stage2?.root_cause?.confidence < 0.5) {
+    summary.what_didnt_work.push('Low confidence in root cause identification - need more diagnostic depth');
+  }
+  if (allStageData.stage3?.correlation_confidence < 0.5) {
+    summary.what_didnt_work.push('Weak alert correlation - alerts may not match root cause well');
+  }
+  if (!allStageData.stage5?.remediation_plan) {
+    summary.what_didnt_work.push('No remediation plan generated - insufficient diagnostic clarity');
+  }
+  
+  // Key insights
+  if (allStageData.stage2?.root_cause?.issue) {
+    summary.key_insights.push(`Primary issue: ${allStageData.stage2.root_cause.issue}`);
+  }
+  if (allStageData.stage3?.slo_impact?.availability_slo?.status === 'red') {
+    summary.key_insights.push('SLO violation detected - customer impact likely');
+  }
+  if (allStageData.stage6?.prevention_quality_score >= 0.7) {
+    summary.key_insights.push('Comprehensive prevention plan created - future recurrence risk reduced');
+  }
+  
+  return summary;
 }
 
 // Final raporu oluştur
@@ -498,7 +643,74 @@ const finalReport = {
   primaryDiagnosis: allStageData.primaryDiagnosis || {},
   
   // Preserved context (güncellenmiş stageResults ile)
-  preservedContext: masterContext
+  preservedContext: masterContext,
+  
+  // NEW: Executive Insights - Key insights from all 6 stages in one place
+  executiveInsights: {
+    stage1_health_snapshot: {
+      overall_status: allStageData.stage1?.overall_status || 'unknown',
+      critical_alerts: allStageData.stage1?.alerts?.critical || 0,
+      urgency: allStageData.stage1?.urgency || 'normal',
+      key_finding: allStageData.stage1?.quick_findings?.[0] || 'No immediate issues detected'
+    },
+    stage2_root_cause: {
+      identified: allStageData.stage2?.root_cause?.identified || false,
+      issue: allStageData.stage2?.root_cause?.issue || 'Not identified',
+      component: allStageData.stage2?.root_cause?.component || 'Unknown',
+      confidence: allStageData.stage2?.root_cause?.confidence || 0,
+      affected_services: allStageData.stage2?.affected_services || []
+    },
+    stage3_alert_correlation: {
+      active_alerts: allStageData.stage3?.active_alerts?.length || 0,
+      alert_groups: allStageData.stage3?.alert_groups?.length || 0,
+      kb_matches: allStageData.stage3?.knowledge_base_matches?.length || 0,
+      correlation_confidence: allStageData.stage3?.correlation_confidence || 0,
+      slo_status: allStageData.stage3?.slo_impact?.availability_slo?.status || 'unknown'
+    },
+    stage4_diagnostics: {
+      diagnostics_executed: allStageData.stage4?.diagnostics_executed?.length || 0,
+      confirmed_issues: allStageData.stage4?.diagnostic_summary?.confirmed_issues?.length || 0,
+      remediation_confidence: allStageData.stage4?.remediation_confidence || 0,
+      primary_issue: allStageData.stage4?.diagnostic_summary?.confirmed_issues?.[0]?.issue || 'None'
+    },
+    stage5_remediation: {
+      plan_created: !!allStageData.stage5?.remediation_plan,
+      immediate_actions: allStageData.stage5?.remediation_plan?.immediate_actions?.length || 0,
+      overall_risk: allStageData.stage5?.risk_assessment?.overall_risk || 'unknown',
+      primary_action: allStageData.stage5?.remediation_plan?.immediate_actions?.[0]?.action || 'None'
+    },
+    stage6_prevention: {
+      prevention_implemented: allStageData.stage6?.final_status?.prevention_implemented || false,
+      prevention_actions: allStageData.stage6?.prevention_actions?.length || 0,
+      kb_updated: allStageData.stage6?.knowledge_base_update?.kb_updated || false,
+      prevention_quality_score: allStageData.stage6?.prevention_quality_score || 0
+    }
+  },
+  
+  // NEW: Decision Journey - Show all proceed_to_stageX decisions
+  decisionJourney: getDecisionJourney(),
+  
+  // NEW: Confidence Progression - Track confidence across stages
+  confidenceProgression: getConfidenceProgression(),
+  
+  // NEW: Learning Summary - What worked, what didn't, key insights
+  learningSummary: getLearningSummary(),
+  
+  // NEW: Recommendation Priority Matrix
+  recommendationPriority: {
+    critical_immediate: allStageData.stage5?.remediation_plan?.immediate_actions?.filter(a => 
+      a.risk === 'low' && (a.action?.toLowerCase().includes('critical') || a.action?.toLowerCase().includes('restart'))
+    ) || [],
+    high_short_term: allStageData.stage5?.remediation_plan?.short_term_fixes?.filter(f => 
+      f.priority === 'high' || f.action?.toLowerCase().includes('increase')
+    ) || [],
+    medium_long_term: allStageData.stage5?.remediation_plan?.long_term_solutions?.filter(s => 
+      s.priority === 'medium' || s.action?.toLowerCase().includes('fix')
+    ) || [],
+    preventive_ongoing: allStageData.stage6?.prevention_actions?.filter(a => 
+      a.type === 'monitoring' || a.type === 'process'
+    ) || []
+  }
 };
 
 // Override bilgisi ekle

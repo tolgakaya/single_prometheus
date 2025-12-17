@@ -904,3 +904,401 @@ Calculate remediation_confidence (0.0 - 1.0) as SUM of:
 - Ensures Stage 4 always provides valid remediation confidence scores
 - Intelligent fallback prevents missing critical issues
 - Consistent confidence scoring pattern across all stages (Stage 2, 3, 4)
+
+---
+
+## 8. Stage 6: Prevention & Learning Improvements ✅
+
+**File**: [19. Stage 6 Prevention & Learning.txt](../PrometheusNodes/19. Stage 6 Prevention & Learning.txt)
+
+**Issues Fixed**:
+1. Missing decision logic for `final_status` fields
+2. Missing `prevention_quality_score` calculation
+3. No KB entry quality validation criteria
+
+### 8.A. Decision Logic for Final Status
+
+**Added to Stage 6 Prompt** (after LEARNING OBJECTIVES section):
+
+```markdown
+## 🎯 PREVENTION DECISION LOGIC:
+
+**Set final_status.incident_resolved = true IF ALL CONDITIONS MET:**
+1. Stage 5 remediation plan was created AND executed (or ready for execution)
+2. Root cause clearly identified in Stage 2 (root_cause.identified = true)
+3. No critical unresolved issues remain in Stage 4 diagnostics
+4. Remediation confidence from Stage 4 >= 0.6 (confident in fix)
+
+**Set final_status.incident_resolved = false IF ANY CONDITION:**
+1. Root cause not identified (Stage 2 root_cause.identified = false)
+2. No remediation plan created (Stage 5 failed or skipped)
+3. Critical diagnostic issues remain unaddressed
+4. Remediation confidence < 0.5 (too uncertain to claim resolution)
+
+**Set final_status.prevention_implemented = true IF:**
+1. Prevention actions defined for all confirmed_issues from Stage 4
+2. KB updates created for new alert patterns
+3. Monitoring improvements recommended based on Stage 3 SLO gaps
+4. Runbook entries created for critical issues
+
+**Set final_status.prevention_implemented = false IF:**
+1. No prevention actions defined (prevention_actions = [])
+2. No KB updates (knowledge_base_update.kb_updated = false)
+3. No monitoring improvements recommended
+4. System too healthy to require prevention (Stage 1 overall_status = "green")
+
+**Set final_status.ready_for_next = true ALWAYS** (workflow complete regardless of findings)
+```
+
+### 8.B. Prevention Quality Score Calculation
+
+**Added to Stage 6 Prompt** (after Decision Logic):
+
+```markdown
+## 📊 PREVENTION QUALITY SCORE CALCULATION:
+
+Calculate prevention_quality_score (0.0 - 1.0) as SUM of these factors:
+
+**1. KB Learning Completeness (+0.3):**
+- New KB entries created for ALL unmatched alerts from Stage 3 = +0.3
+- New KB entries for 50%-99% of unmatched alerts = +0.2
+- New KB entries for 1%-49% of unmatched alerts = +0.1
+- No new KB entries (all alerts already in KB OR no alerts) = 0.0
+
+**2. Prevention Action Coverage (+0.3):**
+- Prevention actions defined for ALL confirmed_issues from Stage 4 = +0.3
+- Prevention actions for 50%-99% of confirmed issues = +0.2
+- Prevention actions for 1%-49% of confirmed issues = +0.1
+- No prevention actions defined = 0.0
+
+**3. Team Alignment (+0.2):**
+- Team recommendations for ALL affected services from Stage 2 = +0.2
+- Team recommendations for 50%-99% of affected services = +0.1
+- Partial team alignment (<50% coverage) = +0.05
+- No team recommendations = 0.0
+
+**4. Follow-up Planning (+0.2):**
+- Follow-up schedule with specific owners, timelines, and metrics = +0.2
+- Follow-up schedule with partial details (missing owners OR timelines) = +0.1
+- Generic follow-up without details = +0.05
+- No follow-up plan = 0.0
+
+**EXAMPLES:**
+- All alerts added to KB (+0.3) + Prevention for all issues (+0.3) + All teams aligned (+0.2) + Detailed follow-up (+0.2) = **Quality: 1.0** (comprehensive prevention)
+- Partial KB entries (+0.1) + Some prevention actions (+0.2) + Partial team alignment (+0.05) + Generic follow-up (+0.05) = **Quality: 0.4** (incomplete prevention)
+```
+
+### 8.C. Updated Output Schema
+
+**Updated in Stage 6 Prompt** (final_status section):
+
+**BEFORE**:
+```json
+{
+  "final_status": {
+    "incident_resolved": true,
+    "prevention_implemented": true,
+    "learning_captured": true,
+    "ready_for_next": true
+  }
+}
+```
+
+**AFTER**:
+```json
+{
+  "prevention_quality_score": <0.0-1.0 calculated using 4-factor formula>,
+  "final_status": {
+    "incident_resolved": <true/false based on decision logic>,
+    "prevention_implemented": <true/false based on decision logic>,
+    "learning_captured": true,
+    "ready_for_next": true
+  }
+}
+```
+
+**Impact**:
+- AI makes consistent, objective decisions about incident resolution
+- Prevention quality measured objectively (0.0-1.0 score)
+- Complete pattern consistency with Stages 2, 3, 4 (all have decision logic + confidence scoring)
+
+---
+
+## 9. Generate Final Report Enhancements ✅
+
+**File**: [20. Generate Final Report.js](../PrometheusNodes/20. Generate Final Report.js)
+
+**Issues Fixed**:
+1. Report didn't provide "very detailed" consolidated view of all stages
+2. No "beautiful" formatting for final output
+3. Missing decision journey visualization
+4. Missing confidence progression tracking
+5. Missing learning summary
+
+### 9.A. New Helper Functions Added
+
+**Added before `// Final raporu oluştur`**:
+
+```javascript
+// Helper function to calculate confidence progression
+function getConfidenceProgression() {
+  return {
+    stage2_root_cause_confidence: allStageData.stage2?.root_cause?.confidence || 0,
+    stage3_correlation_confidence: allStageData.stage3?.correlation_confidence || 0,
+    stage4_remediation_confidence: allStageData.stage4?.remediation_confidence || 0,
+    stage6_prevention_quality: allStageData.stage6?.prevention_quality_score || 0,
+    overall_confidence: (
+      (allStageData.stage2?.root_cause?.confidence || 0) +
+      (allStageData.stage3?.correlation_confidence || 0) +
+      (allStageData.stage4?.remediation_confidence || 0) +
+      (allStageData.stage6?.prevention_quality_score || 0)
+    ) / 4
+  };
+}
+
+// Helper function to create decision journey
+function getDecisionJourney() {
+  return {
+    stage1_decision: {
+      field: 'proceed_to_stage2',
+      value: allStageData.stage1?.proceed_to_stage2 || false,
+      reason: allStageData.stage1?.reason || '',
+      timestamp: masterContext.stageResults?.stage1?.completedAt
+    },
+    stage2_decision: {
+      field: 'proceed_to_stage3',
+      value: allStageData.stage2?.proceed_to_stage3 || false,
+      confidence: allStageData.stage2?.root_cause?.confidence || 0,
+      timestamp: masterContext.stageResults?.stage2?.completedAt
+    },
+    stage3_decision: {
+      field: 'proceed_to_stage4',
+      value: allStageData.stage3?.proceed_to_stage4 || false,
+      correlation_confidence: allStageData.stage3?.correlation_confidence || 0,
+      timestamp: masterContext.stageResults?.stage3?.completedAt
+    },
+    stage4_decision: {
+      field: 'proceed_to_stage5',
+      value: allStageData.stage4?.proceed_to_stage5 || false,
+      remediation_confidence: allStageData.stage4?.remediation_confidence || 0,
+      timestamp: masterContext.stageResults?.stage4?.completedAt
+    },
+    stage5_completion: {
+      remediation_plan_created: !!allStageData.stage5?.remediation_plan,
+      timestamp: masterContext.stageResults?.stage5?.completedAt
+    },
+    stage6_completion: {
+      prevention_implemented: allStageData.stage6?.final_status?.prevention_implemented || false,
+      prevention_quality_score: allStageData.stage6?.prevention_quality_score || 0,
+      timestamp: masterContext.stageResults?.stage6?.completedAt
+    }
+  };
+}
+
+// Helper function for learning summary
+function getLearningSummary() {
+  const summary = {
+    what_happened: {
+      root_cause: allStageData.stage2?.root_cause?.issue || 'Not identified',
+      affected_services: allStageData.stage2?.affected_services || [],
+      alert_count: allStageData.stage3?.active_alerts?.length || 0,
+      severity: allStageData.primaryDiagnosis?.severity || 'unknown',
+      duration: durationSeconds + 's'
+    },
+    what_worked: [],
+    what_didnt_work: [],
+    key_insights: []
+  };
+  
+  // What worked
+  if (allStageData.stage2?.root_cause?.confidence >= 0.7) {
+    summary.what_worked.push('Stage 2 successfully identified root cause with high confidence');
+  }
+  if (allStageData.stage3?.correlation_confidence >= 0.7) {
+    summary.what_worked.push('Stage 3 strongly correlated alerts to root cause');
+  }
+  if (allStageData.stage5?.remediation_plan?.immediate_actions?.length > 0) {
+    summary.what_worked.push(`Stage 5 generated ${allStageData.stage5.remediation_plan.immediate_actions.length} actionable remediation steps`);
+  }
+  if (allStageData.stage6?.knowledge_base_update?.kb_updated) {
+    summary.what_worked.push('Knowledge base updated with learnings for future incidents');
+  }
+  
+  // What didn't work
+  if (allStageData.stage2?.root_cause?.confidence < 0.5) {
+    summary.what_didnt_work.push('Low confidence in root cause identification - need more diagnostic depth');
+  }
+  if (allStageData.stage3?.correlation_confidence < 0.5) {
+    summary.what_didnt_work.push('Weak alert correlation - alerts may not match root cause well');
+  }
+  if (!allStageData.stage5?.remediation_plan) {
+    summary.what_didnt_work.push('No remediation plan generated - insufficient diagnostic clarity');
+  }
+  
+  // Key insights
+  if (allStageData.stage2?.root_cause?.issue) {
+    summary.key_insights.push(`Primary issue: ${allStageData.stage2.root_cause.issue}`);
+  }
+  if (allStageData.stage3?.slo_impact?.availability_slo?.status === 'red') {
+    summary.key_insights.push('SLO violation detected - customer impact likely');
+  }
+  if (allStageData.stage6?.prevention_quality_score >= 0.7) {
+    summary.key_insights.push('Comprehensive prevention plan created - future recurrence risk reduced');
+  }
+  
+  return summary;
+}
+```
+
+### 9.B. New Report Sections Added
+
+**Added to finalReport object** (before `preservedContext`):
+
+```javascript
+// NEW: Executive Insights - Key insights from all 6 stages in one place
+executiveInsights: {
+  stage1_health_snapshot: {
+    overall_status: allStageData.stage1?.overall_status || 'unknown',
+    critical_alerts: allStageData.stage1?.alerts?.critical || 0,
+    urgency: allStageData.stage1?.urgency || 'normal',
+    key_finding: allStageData.stage1?.quick_findings?.[0] || 'No immediate issues detected'
+  },
+  stage2_root_cause: {
+    identified: allStageData.stage2?.root_cause?.identified || false,
+    issue: allStageData.stage2?.root_cause?.issue || 'Not identified',
+    component: allStageData.stage2?.root_cause?.component || 'Unknown',
+    confidence: allStageData.stage2?.root_cause?.confidence || 0,
+    affected_services: allStageData.stage2?.affected_services || []
+  },
+  stage3_alert_correlation: {
+    active_alerts: allStageData.stage3?.active_alerts?.length || 0,
+    alert_groups: allStageData.stage3?.alert_groups?.length || 0,
+    kb_matches: allStageData.stage3?.knowledge_base_matches?.length || 0,
+    correlation_confidence: allStageData.stage3?.correlation_confidence || 0,
+    slo_status: allStageData.stage3?.slo_impact?.availability_slo?.status || 'unknown'
+  },
+  stage4_diagnostics: {
+    diagnostics_executed: allStageData.stage4?.diagnostics_executed?.length || 0,
+    confirmed_issues: allStageData.stage4?.diagnostic_summary?.confirmed_issues?.length || 0,
+    remediation_confidence: allStageData.stage4?.remediation_confidence || 0,
+    primary_issue: allStageData.stage4?.diagnostic_summary?.confirmed_issues?.[0]?.issue || 'None'
+  },
+  stage5_remediation: {
+    plan_created: !!allStageData.stage5?.remediation_plan,
+    immediate_actions: allStageData.stage5?.remediation_plan?.immediate_actions?.length || 0,
+    overall_risk: allStageData.stage5?.risk_assessment?.overall_risk || 'unknown',
+    primary_action: allStageData.stage5?.remediation_plan?.immediate_actions?.[0]?.action || 'None'
+  },
+  stage6_prevention: {
+    prevention_implemented: allStageData.stage6?.final_status?.prevention_implemented || false,
+    prevention_actions: allStageData.stage6?.prevention_actions?.length || 0,
+    kb_updated: allStageData.stage6?.knowledge_base_update?.kb_updated || false,
+    prevention_quality_score: allStageData.stage6?.prevention_quality_score || 0
+  }
+},
+
+// NEW: Decision Journey - Show all proceed_to_stageX decisions
+decisionJourney: getDecisionJourney(),
+
+// NEW: Confidence Progression - Track confidence across stages
+confidenceProgression: getConfidenceProgression(),
+
+// NEW: Learning Summary - What worked, what didn't, key insights
+learningSummary: getLearningSummary(),
+
+// NEW: Recommendation Priority Matrix
+recommendationPriority: {
+  critical_immediate: allStageData.stage5?.remediation_plan?.immediate_actions?.filter(a => 
+    a.risk === 'low' && (a.action?.toLowerCase().includes('critical') || a.action?.toLowerCase().includes('restart'))
+  ) || [],
+  high_short_term: allStageData.stage5?.remediation_plan?.short_term_fixes?.filter(f => 
+    f.priority === 'high' || f.action?.toLowerCase().includes('increase')
+  ) || [],
+  medium_long_term: allStageData.stage5?.remediation_plan?.long_term_solutions?.filter(s => 
+    s.priority === 'medium' || s.action?.toLowerCase().includes('fix')
+  ) || [],
+  preventive_ongoing: allStageData.stage6?.prevention_actions?.filter(a => 
+    a.type === 'monitoring' || a.type === 'process'
+  ) || []
+}
+```
+
+### 9.C. Enhanced Chat Response Formatting
+
+**Updated in generateResponse function** (before `**📋 Özet:**`):
+
+```javascript
+// NEW: Confidence Progression
+if (report.confidenceProgression) {
+  response += `**📈 Güven Skoru İlerlemesi:**\n`;
+  response += `- Stage 2 (Kök Neden): ${(report.confidenceProgression.stage2_root_cause_confidence * 100).toFixed(0)}%\n`;
+  response += `- Stage 3 (Alert Korelasyon): ${(report.confidenceProgression.stage3_correlation_confidence * 100).toFixed(0)}%\n`;
+  response += `- Stage 4 (Remediation): ${(report.confidenceProgression.stage4_remediation_confidence * 100).toFixed(0)}%\n`;
+  response += `- Stage 6 (Prevention Kalitesi): ${(report.confidenceProgression.stage6_prevention_quality * 100).toFixed(0)}%\n`;
+  response += `- **Genel Güven: ${(report.confidenceProgression.overall_confidence * 100).toFixed(0)}%**\n\n`;
+}
+
+// NEW: Decision Journey Summary
+if (report.decisionJourney) {
+  response += `**🔄 Karar Yolculuğu:**\n`;
+  response += `- Stage 1→2: ${report.decisionJourney.stage1_decision.value ? '✅ Devam' : '❌ Dur'}\n`;
+  response += `- Stage 2→3: ${report.decisionJourney.stage2_decision.value ? '✅ Devam' : '❌ Dur'}\n`;
+  response += `- Stage 3→4: ${report.decisionJourney.stage3_decision.value ? '✅ Devam' : '❌ Dur'}\n`;
+  response += `- Stage 4→5: ${report.decisionJourney.stage4_decision.value ? '✅ Devam' : '❌ Dur'}\n\n`;
+}
+
+// NEW: Learning Summary
+if (report.learningSummary?.key_insights?.length > 0) {
+  response += `**💡 Önemli Bulgular:**\n`;
+  report.learningSummary.key_insights.forEach(insight => {
+    response += `- ${insight}\n`;
+  });
+  response += `\n`;
+}
+
+if (report.learningSummary?.what_worked?.length > 0) {
+  response += `**✅ İşe Yarayan:**\n`;
+  report.learningSummary.what_worked.forEach(item => {
+    response += `- ${item}\n`;
+  });
+  response += `\n`;
+}
+```
+
+**Impact**:
+- Final report now "very detailed" with 5 new comprehensive sections
+- Final report now "beautiful" with markdown emojis, formatted sections, confidence percentages
+- Executive insights consolidate all 6 stages in one glance
+- Decision journey visualizes complete workflow progression
+- Confidence progression tracks quality improvement
+- Learning summary captures what worked, what didn't, key insights
+- Recommendation priority matrix organizes actions by urgency × impact
+
+---
+
+## Summary of All Improvements
+
+### Stage-by-Stage Pattern:
+
+| Stage | File | Decision Logic | Confidence/Quality Field | Context Fixer |
+|-------|------|----------------|-------------------------|---------------|
+| **Stage 2** | 12. Stage 2 Deep Analysis.txt | `proceed_to_stage3` | `root_cause.confidence` | Fix Stage 2 Context.js ✅ |
+| **Stage 3** | 12. Stage 3 Alert Intelligence.txt | `proceed_to_stage4` | `correlation_confidence` | Fix Stage 3 Context1.js ✅ |
+| **Stage 4** | 14. Stage 4 Automated Diagnosis.txt | `proceed_to_stage5` | `remediation_confidence` | Fix Stage 4 Json.js ✅ |
+| **Stage 6** | 19. Stage 6 Prevention & Learning.txt | `final_status.*` | `prevention_quality_score` | N/A (Stage 6 is last) |
+| **Final Report** | 20. Generate Final Report.js | N/A | `overall_confidence` | N/A (Standalone reporter) |
+
+### Key Improvements:
+1. ✅ **Decision Logic**: All stages have explicit IF/THEN conditions for proceed/final decisions
+2. ✅ **Confidence Scoring**: Objective 0.0-1.0 scores with weighted factor formulas
+3. ✅ **Context Fixers**: Validation + fallback calculations for Stages 2, 3, 4
+4. ✅ **Final Report**: Comprehensive, beautiful output incorporating all 6 stages
+5. ✅ **Documentation**: STAGE2/3/4/6_ANALYSIS_COMPLETE.md + TOOL_FIXES_REQUIRED.md
+
+### No n8n Flow Changes Needed:
+- Stage 4: No tools (AI synthesis only)
+- Stage 6: No tools (AI synthesis only)
+- Final Report: Standalone JavaScript node
+
+### Manual n8n Edits Required:
+- **Stage 3 only**: 4 SLO tools need multi-namespace fixes (documented in Section 5)
