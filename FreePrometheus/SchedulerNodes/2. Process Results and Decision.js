@@ -5,7 +5,16 @@
 // 3. Prepare Jira ticket data
 // 4. Decide if Jira ticket should be created
 
-const crypto = require('crypto');
+// Simple hash function for n8n compatibility (no crypto module needed)
+function simpleHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  return Math.abs(hash).toString(16).padStart(16, '0').substring(0, 16);
+}
 
 // Get FreePrometheus analysis result
 const analysisResult = $input.item.json;
@@ -30,11 +39,8 @@ const fingerprintData = {
   severity: executiveSummary.overallHealth || 'unknown'
 };
 
-const fingerprint = crypto
-  .createHash('sha256')
-  .update(JSON.stringify(fingerprintData))
-  .digest('hex')
-  .substring(0, 16);
+// Generate fingerprint using simple hash (n8n compatible)
+const fingerprint = simpleHash(JSON.stringify(fingerprintData));
 
 // ============= ALERT SUMMARY =============
 const alertSummary = {
