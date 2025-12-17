@@ -100,39 +100,31 @@ Bu değişiklik yapıldıktan sonra Stage 1 çalıştırıldığında:
 
 ---
 
-## 3. Stage 2 Tools - Namespace Filtering Query Details
+## 3. Stage 2 Tools - Query Parameters for Copy-Paste
 
-**Status**: 📋 DOCUMENTATION - Manual n8n Flow Edits Required
+**Status**: 📋 READY FOR n8n FLOW EDITS
 **Source**: General_flow_infos.md (lines 48-208)
-**Affected Tools**: 9 tools with namespace filtering
 
-**IMPORTANT**: Bu değişiklikler n8n flow editöründe MANUEL olarak yapılmalıdır.
+**NOT**: Her tool için n8n flow editöründe "Query Parameters" alanına yapıştırılacak EXACT query veriliyor.
 
 ---
 
-### Tool Query Patterns (from General_flow_infos.md)
-
-#### Dynamic Namespace Handling Pattern:
-Tüm toollar şu pattern'i kullanıyor:
-```javascript
-const ns = $json.namespace || 'etiyamobile-production';  // ← FALLBACK: Single namespace
+### a. Node Resource Status
 ```
-
-**ALTERNATIVE (Optional Optimization)**:
-```javascript
-const DEFAULT_NAMESPACES = ['bstp-cms-global-production', 'bstp-cms-prod-v3', 'em-global-prod-3pp', 'em-global-prod-eom', 'em-global-prod-flowe', 'em-global-prod', 'em-prod-3pp', 'em-prod-eom', 'em-prod-flowe', 'em-prod', 'etiyamobile-production', 'etiyamobile-prod'];
-const namespaceRegex = $json.namespaceRegex || DEFAULT_NAMESPACES.join('|');
-// Then use in query: namespace=~"${namespaceRegex}"
+topk(10, (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100) or topk(10, 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) or topk(10, (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100)
 ```
 
 ---
 
-### Detailed Tool Query Specifications
+### b. Node Conditions
+```
+kube_node_status_condition{condition=~"Ready|MemoryPressure|DiskPressure|PIDPressure|NetworkUnavailable"} == 1
+```
 
-#### c. Pod Status Check
-**Location**: FreePrometheusFlow.json (Stage 2 Deep Analysis tools)
-**Current Query** (from General_flow_infos.md line 60-72):
-```javascript
+---
+
+### c. Pod Status Check
+```
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -141,41 +133,29 @@ const namespaceRegex = $json.namespaceRegex || DEFAULT_NAMESPACES.join('|');
   if (svc) {
     return `kube_pod_container_status_restarts_total{namespace="${ns}", pod=~".*${svc}.*"} or kube_pod_container_status_waiting_reason{namespace="${ns}", pod=~".*${svc}.*"} or kube_pod_status_phase{namespace="${ns}", pod=~".*${svc}.*"}`;
   } else {
-    // Rate filtresi yerine, restart count > 0 olan pod'ları göster
     return `topk(20, kube_pod_container_status_restarts_total{namespace="${ns}"} > 0) or topk(20, kube_pod_container_status_waiting_reason{namespace="${ns}", reason!='ContainerCreating'}) or topk(20, kube_pod_status_phase{namespace="${ns}", phase=~'Failed|Unknown|Pending'} == 1)`;
   }
 })()
 }}
 ```
 
-**Optional Change** (if improving fallback):
-- Line 2: Replace `'etiyamobile-production'` with `DEFAULT_NAMESPACES.join('|')`
-- Use `namespace=~"${namespaceRegex}"` pattern in query
-
 ---
 
-#### d. Node Network Health
-**Location**: FreePrometheusFlow.json (Stage 2 Deep Analysis tools)
-**Current Query** (from General_flow_infos.md line 74-82):
-```javascript
+### d. Node Network Health
+```
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
 
-  // Node metriklerine namespace filtresi ekleyemeyiz, sadece genel node network health
   return `sum by (node, device) (rate(node_network_receive_errs_total{device!~"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*"}[5m])) > 0 or sum by (node, device) (rate(node_network_transmit_errs_total{device!~"lo|veth.*|docker.*|flannel.*|cali.*|cbr.*"}[5m])) > 0 or sum by (node) (rate(node_network_receive_drop_total[5m])) > 0`;
 })()
 }}
 ```
 
-**Note**: Node metrics are cluster-level, namespace filtering not applicable.
-
 ---
 
-#### e. Container Restarts
-**Location**: FreePrometheusFlow.json (Stage 2 Deep Analysis tools)
-**Current Query** (from General_flow_infos.md line 85-96):
-```javascript
+### e. Container Restarts
+```
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -190,50 +170,34 @@ const namespaceRegex = $json.namespaceRegex || DEFAULT_NAMESPACES.join('|');
 }}
 ```
 
-**Optional Change** (if improving fallback):
-- Line 2: Replace `'etiyamobile-production'` with `DEFAULT_NAMESPACES.join('|')`
-- Line 9 (else branch): Add namespace filter `namespace=~"${namespaceRegex}"` to both queries
-
 ---
 
-#### f. Application Metrics
-**Location**: FreePrometheusFlow.json (Stage 2 Deep Analysis tools)
-**Current Query** (from General_flow_infos.md line 100-114):
-```javascript
+### f. Application Metrics
+```
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
   const svc = $json.service || '';
 
-  // Farklı metrik kombinasyonları deneyelim
   if (svc) {
-    // Service-specific metrics - container network metrikleri kullanarak
     return `topk(10, sum by (namespace, pod) (rate(container_network_receive_bytes_total{namespace="${ns}", pod=~".*${svc}.*"}[5m]))) or topk(10, sum by (namespace, pod) (rate(container_network_transmit_bytes_total{namespace="${ns}", pod=~".*${svc}.*"}[5m])))`;
   } else {
-    // Genel namespace metrikleri
     return `topk(10, sum by (namespace, pod) (rate(container_network_receive_bytes_total{namespace="${ns}"}[5m]))) or topk(10, sum by (namespace, pod) (rate(container_network_transmit_bytes_total{namespace="${ns}"}[5m])))`;
   }
 })()
-}} 100)
+}}
 ```
-
-**Optional Change** (if improving fallback):
-- Line 3: Replace `'etiyamobile-production'` with `DEFAULT_NAMESPACES.join('|')`
-- Use `namespace=~"${namespaceRegex}"` pattern in both branches
 
 ---
 
-#### g. HTTP Error Rates
-**Location**: FreePrometheusFlow.json (Stage 2 Deep Analysis tools)
-**Current Query** (from General_flow_infos.md line 118-130):
-```javascript
+### g. HTTP Error Rates
+```
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
   const svc = $json.service || '';
 
   if (svc) {
-    // Pod failure rate as proxy for errors
     return `topk(10, sum by (namespace, pod) (kube_pod_status_phase{namespace="${ns}", pod=~".*${svc}.*", phase=~"Failed|Unknown"} == 1)) or topk(10, sum by (namespace, pod, reason) (kube_pod_container_status_waiting_reason{namespace="${ns}", pod=~".*${svc}.*", reason!="ContainerCreating"}))`;
   } else {
     return `topk(10, sum by (namespace, pod) (kube_pod_status_phase{namespace="${ns}", phase=~"Failed|Unknown"} == 1)) or topk(10, sum by (namespace, pod, reason) (kube_pod_container_status_waiting_reason{namespace="${ns}", reason!="ContainerCreating"}))`;
@@ -242,23 +206,16 @@ const namespaceRegex = $json.namespaceRegex || DEFAULT_NAMESPACES.join('|');
 }}
 ```
 
-**Optional Change** (if improving fallback):
-- Line 3: Replace `'etiyamobile-production'` with `DEFAULT_NAMESPACES.join('|')`
-- Use `namespace=~"${namespaceRegex}"` pattern
-
 ---
 
-#### h. Pod Resource Usage
-**Location**: FreePrometheusFlow.json (Stage 2 Deep Analysis tools)
-**Current Query** (from General_flow_infos.md line 134-146):
-```javascript
+### h. Pod Resource Usage
+```
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
   const svc = $json.service || '';
 
   if (svc) {
-    // Limit olmasa bile memory usage göster
     return `topk(10, container_memory_working_set_bytes{namespace="${ns}", pod=~".*${svc}.*", container!=""}) or topk(10, rate(container_cpu_usage_seconds_total{namespace="${ns}", pod=~".*${svc}.*", container!=""}[5m]))`;
   } else {
     return `topk(10, container_memory_working_set_bytes{namespace="${ns}", container!=""}) or topk(10, rate(container_cpu_usage_seconds_total{namespace="${ns}", container!=""}[5m]))`;
@@ -267,16 +224,10 @@ const namespaceRegex = $json.namespaceRegex || DEFAULT_NAMESPACES.join('|');
 }}
 ```
 
-**Optional Change** (if improving fallback):
-- Line 3: Replace `'etiyamobile-production'` with `DEFAULT_NAMESPACES.join('|')`
-- Use `namespace=~"${namespaceRegex}"` pattern
-
 ---
 
-#### i. Resource Exhaustion Prediction
-**Location**: FreePrometheusFlow.json (Stage 2 Deep Analysis tools)
-**Current Query** (from General_flow_infos.md line 150-161):
-```javascript
+### i. Resource Exhaustion Prediction
+```
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -291,23 +242,15 @@ const namespaceRegex = $json.namespaceRegex || DEFAULT_NAMESPACES.join('|');
 }}
 ```
 
-**Optional Change** (if improving fallback):
-- Line 3: Replace `'etiyamobile-production'` with `DEFAULT_NAMESPACES.join('|')`
-- Line 8 (else branch): Add `namespace=~"${namespaceRegex}"` to kubelet_volume_stats queries
-
 ---
 
-#### j. Historical Comparison 24h
-**Location**: FreePrometheusFlow.json (Stage 2 Deep Analysis tools)
-**Current Query** (from General_flow_infos.md line 165-178):
-```javascript
+### j. Historical Comparison 24h
+```
 {{
 (() => {
-  // Default metric query
   let metricQuery = $json.metric_query || 'up{job="kubernetes-nodes"}';
   const svc = $json.service || '';
 
-  // Eğer service varsa ve default metric ise, pod metric'e çevir
   if (svc && metricQuery === 'up{job="kubernetes-nodes"}') {
     metricQuery = `kube_pod_container_status_restarts_total{pod=~".*${svc}.*"}`;
   }
@@ -317,15 +260,10 @@ const namespaceRegex = $json.namespaceRegex || DEFAULT_NAMESPACES.join('|');
 }}
 ```
 
-**Note**: This tool uses `metric_query` parameter passed by AI Agent. No namespace fallback needed.
-**Stage 2 Prompt** already instructs AI to use `{{ $json.namespaceRegex }}` in metric_query.
-
 ---
 
-#### k. Kubernetes PVC Status
-**Location**: FreePrometheusFlow.json (Stage 2 Deep Analysis tools)
-**Current Query** (from General_flow_infos.md line 182-193):
-```javascript
+### k. Kubernetes PVC Status
+```
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -340,16 +278,10 @@ const namespaceRegex = $json.namespaceRegex || DEFAULT_NAMESPACES.join('|');
 }}
 ```
 
-**Optional Change** (if improving fallback):
-- Line 3: Replace `'etiyamobile-production'` with `DEFAULT_NAMESPACES.join('|')`
-- Use `namespace=~"${namespaceRegex}"` pattern
-
 ---
 
-#### l. Kubernetes HPA Status
-**Location**: FreePrometheusFlow.json (Stage 2 Deep Analysis tools)
-**Current Query** (from General_flow_infos.md line 197-208):
-```javascript
+### l. Kubernetes HPA Status
+```
 {{
 (() => {
   const ns = $json.namespace || 'etiyamobile-production';
@@ -364,58 +296,4 @@ const namespaceRegex = $json.namespaceRegex || DEFAULT_NAMESPACES.join('|');
 }}
 ```
 
-**Optional Change** (if improving fallback):
-- Line 3: Replace `'etiyamobile-production'` with `DEFAULT_NAMESPACES.join('|')`
-- Use `namespace=~"${namespaceRegex}"` pattern
-
 ---
-
-### Node-Level Tools (No Namespace Filtering)
-
-#### a. Node Resource Status
-**Location**: FreePrometheusFlow.json (Stage 2 Deep Analysis tools)
-**Query** (from General_flow_infos.md line 51-52):
-```
-topk(10, (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100) or topk(10, 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) or topk(10, (1 - (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"})) * 100)
-```
-**Note**: Node metrics are cluster-level. No namespace filtering applicable.
-
----
-
-#### b. Node Conditions
-**Location**: FreePrometheusFlow.json (Stage 2 Deep Analysis tools)
-**Query** (from General_flow_infos.md line 55-56):
-```
-kube_node_status_condition{condition=~"Ready|MemoryPressure|DiskPressure|PIDPressure|NetworkUnavailable"} == 1
-```
-**Note**: Node metrics are cluster-level. No namespace filtering applicable.
-
----
-
-### Summary
-
-**Current Approach**: ✅ Dynamic namespace handling with AI Agent passing namespace parameter
-- Stage 2 prompt instructs AI to use `{{ $json.namespaceRegex }}`
-- Tools fallback to `'etiyamobile-production'` if AI doesn't pass namespace
-
-**Optional Optimization**: Replace single namespace fallback with full namespace list
-- Only affects cases where AI Agent forgets to pass namespace parameter
-- **Priority**: LOW (not critical for functionality)
-
-**Tools Requiring Manual n8n Edits** (if optimization desired):
-1. Pod Status Check (c)
-2. Container Restarts (e)
-3. Application Metrics (f)
-4. HTTP Error Rates (g)
-5. Pod Resource Usage (h)
-6. Resource Exhaustion Prediction (i)
-7. Kubernetes PVC Status (k)
-8. Kubernetes HPA Status (l)
-
-**Tools Without Namespace Filtering** (cluster-level):
-1. Node Resource Status (a)
-2. Node Conditions (b)
-3. Node Network Health (d)
-
-**Tools With Dynamic Query** (AI-controlled):
-1. Historical Comparison 24h (j) - Uses `metric_query` parameter from AI
