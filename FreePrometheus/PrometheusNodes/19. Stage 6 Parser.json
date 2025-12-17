@@ -1,0 +1,124 @@
+{
+  "type": "object",
+  "properties": {
+    "stage": { "type": "string" },
+    "incident_summary": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "duration": { "type": "string" },
+        "severity": { "type": "string" },
+        "services_affected": { "type": "array", "items": { "type": "string" } },
+        "customer_impact": { "type": "string" },
+        "root_cause": { "type": "string" },
+        "resolution": { "type": "string" }
+      }
+    },
+    "prevention_actions": { 
+      "type": "array", 
+      "items": { 
+        "type": "object",
+        "properties": {
+          "type": { "type": "string" },
+          "action": { "type": "string" },
+          "implementation": { "type": "object" },
+          "status": { "type": "string" }
+        }
+      } 
+    },
+    "knowledge_base_update": { 
+      "type": "object",
+      "properties": {
+        "alert_name": { "type": "string" },
+        "new_entry": { "type": "object" },
+        "kb_updated": { "type": "boolean" },
+        "entry_id": { "type": "string" }
+      }
+    },
+    "runbook_updates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "runbook": { "type": "string" },
+          "section": { "type": "string" },
+          "addition": { "type": "string" },
+          "url": { "type": "string" }
+        }
+      }
+    },
+    "team_recommendations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "team": { "type": "string" },
+          "action": { "type": "string" },
+          "priority": { "type": "string" }
+        }
+      }
+    },
+    "follow_up_schedule": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "action": { "type": "string" },
+          "when": { "type": "string" },
+          "owner": { "type": "string" },
+          "attendees": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "metrics_improvements": {
+      "type": "object",
+      "properties": {
+        "new_alerts": { "type": "number" },
+        "runbook_updates": { "type": "number" },
+        "kb_entries": { "type": "number" },
+        "process_improvements": { "type": "number" },
+        "estimated_future_prevention": { "type": "string" }
+      }
+    },
+    "final_status": { 
+      "type": "object",
+      "properties": {
+        "incident_resolved": { "type": "boolean" },
+        "prevention_implemented": { "type": "boolean" },
+        "learning_captured": { "type": "boolean" },
+        "ready_for_next": { "type": "boolean" }
+      }
+    },
+    "_context": { 
+      "type": "object",
+      "properties": {
+        "contextId": { "type": "string" },
+        "createdAt": { "type": "string" },
+        "source": { "type": "object" },
+        "initialParams": { "type": "object" },
+        "stageConfig": { "type": "object" },
+        "priority": { "type": "string" },
+        "forceDeepAnalysis": { "type": "boolean" },
+        "workflowMetadata": { "type": "object" },
+        "stageResults": { "type": "object" },
+        "decisions": { "type": "object" },
+        "debug": { "type": "object" }
+      }
+    },
+    "_debug": {
+      "type": "object",
+      "properties": {
+        "nodeType": { "type": "string" },
+        "processedAt": { "type": "string" },
+        "contextId": { "type": "string" },
+        "contextPreserved": { "type": "boolean" },
+        "receivedFromStage": { "type": "string" },
+        "stageSequence": { "type": "array", "items": { "type": "string" } },
+        "totalStagesExecuted": { "type": "number" },
+        "workflowComplete": { "type": "boolean" }
+      }
+    }
+  },
+  "required": ["stage", "prevention_actions", "knowledge_base_update", "final_status"]
+}
