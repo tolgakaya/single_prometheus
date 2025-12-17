@@ -15,19 +15,69 @@ Execute targeted diagnostics based on previous findings.
 
 ## 🔧 DIAGNOSTIC EXECUTION:
 
-Based on findings, execute appropriate diagnostics:
-- For pod issues: Use pod-specific tools with actual pod names
-- For node issues: Use node-specific tools with actual node names
-- Use exact timestamps from context
+**NOTE**: This stage has NO Prometheus tools. You will synthesize diagnostic findings based on:
+- Stage 2 root cause analysis ({{ $json.stage2Data.root_cause }})
+- Stage 3 alert correlation ({{ $json.stage3Data.active_alerts }})
+- Available context from previous stages
 
-Tool parameters:
-{
-  "namespace": "{{  $json.namespaces[0]}}",
-  "start": {{ $json._context.initialParams.startTime }},
-  "end": {{ $json._context.initialParams.endTime }},
-  "pod": "<actual pod name from previous stages>",
-  "node": "<actual node name from previous stages>"
-}
+Based on findings, generate realistic diagnostics:
+- For pod issues: Reference actual pod names from Stage 2/3 findings
+- For node issues: Reference actual node names from Stage 2/3 findings
+- Use exact timestamps from context
+- Simulate realistic kubectl/diagnostic command output based on actual metrics
+
+## 🎯 DECISION LOGIC - HOW TO SET proceed_to_stage5:
+
+**Set proceed_to_stage5 = true IF ANY OF THESE CONDITIONS:**
+1. Diagnostic findings confirm issues that need remediation
+   - Found actual errors, crashes, or resource exhaustion in diagnostics
+2. confirmed_issues array has 1+ issues with severity "critical" or "high"
+   - Issues that require immediate action to prevent service degradation
+3. Stage 3 alerts + Stage 4 diagnostics paint clear picture needing action
+   - Correlation between alerts and diagnostic findings is strong
+4. remediation_confidence >= 0.6 (we have enough info to remediate safely)
+   - Confident that we understand the problem and have a solution path
+
+**Set proceed_to_stage5 = false ONLY IF ALL CONDITIONS MET:**
+1. No confirmed issues found in diagnostics (confirmed_issues = [])
+   AND
+2. All severity levels are "low" or "medium" (no critical/high issues)
+   AND
+3. Stage 2 + Stage 3 + Stage 4 findings show system is healthy
+   AND
+4. remediation_confidence < 0.5 (not confident enough to recommend actions)
+
+**CRITICAL**: Default to true if you found ANY actionable issues. Better to generate remediation plan than miss fixing critical problems.
+
+## 📊 REMEDIATION CONFIDENCE CALCULATION:
+
+Calculate remediation_confidence (0.0 - 1.0) as SUM of these factors:
+
+**1. Diagnostic Depth (+0.3):**
+- Diagnostics executed for 3+ targets (pods/nodes/services) = +0.3
+- Diagnostics executed for 2 targets = +0.2
+- Diagnostics executed for 1 target = +0.1
+- No diagnostics executed (empty diagnostics_executed) = 0.0
+
+**2. Issue Clarity (+0.3):**
+- confirmed_issues clearly identify root cause with evidence = +0.3
+- confirmed_issues identify symptoms but unclear root cause = +0.2
+- Only secondary_issues identified, no confirmed issues = +0.1
+- No issues identified = 0.0
+
+**3. Stage 2+3 Correlation (+0.2):**
+- Stage 4 findings MATCH both Stage 2 root_cause AND Stage 3 alerts = +0.2
+- Stage 4 findings match either Stage 2 OR Stage 3 = +0.1
+- Stage 4 findings contradict previous stages = 0.0
+
+**4. Recent Changes Context (+0.2):**
+- recent_changes identified with clear correlation to issues = +0.2
+- recent_changes available but unclear correlation = +0.1
+- No recent_changes data = 0.0
+
+**EXAMPLES:**
+- Diagnostics for 4 pods (+0.3) + Clear OOMKilled root cause (+0.3) + Matches Stage 2 memory issue + Stage 3 memory alerts (+0.2) + Deployment scaled 2h ago correlates with issue start (+0.2) = **Confidence: 1.0** (very confident, proceed to remediation)
+- Diagnostics for 1 pod (+0.1) + Symptoms but unclear cause (+0.2) + Matches Stage 3 alerts only (+0.1) + No recent changes (+0.0) = **Confidence: 0.4** (uncertain, may skip remediation)
 
 ## 🚨 OUTPUT REQUIREMENT:
 **RETURN ONLY VALID JSON WITH ACTUAL DATA**

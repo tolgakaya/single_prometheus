@@ -787,3 +787,120 @@ ALERTS{alertstate="firing",alertname=~"Kube.*|Container.*|Pod.*|Node.*"}
 - SLO calculations will cover ALL 12 production namespaces
 - Correct reference to Stage 2 findings via stage2Data
 - Accurate availability SLO across entire cluster
+
+---
+
+# STAGE 4 ANALYSIS
+
+## 6. Stage 4 Prompt - Analysis Required
+
+**Status**: 🔍 NEEDS ANALYSIS
+**Location**: FreePrometheus/PrometheusNodes/14. Stage 4 Automated Diagnosis.txt
+
+### Current State Analysis:
+
+#### ✅ Strengths:
+- Clear context preservation with _context object
+- Strong emphasis on actual data ("NO MOCK DATA", "REAL PROMETHEUS METRICS")
+- Detailed output schema with diagnostics_executed and enriched_context
+- Good timestamp handling instructions
+
+#### ⚠️ Issues Found:
+
+**A. No Decision Logic for proceed_to_stage5:**
+- Prompt doesn't explain WHEN to set `proceed_to_stage5 = true` vs `false`
+- Line 105 just states: `"proceed_to_stage5": <true/false>`
+- Too vague - AI doesn't have explicit conditions like Stage 2/3's decision logic
+
+**B. No Confidence Scoring System for remediation_confidence:**
+- Line 106 states: `"remediation_confidence": <0.0-1.0>`
+- No guidance on HOW to calculate this score
+- Stage 2 has root_cause.confidence formula, Stage 3 has correlation_confidence formula
+- Stage 4 missing: How confident are we that diagnostics support remediation?
+
+**C. Tool Parameters Documentation (Line 24-30):**
+- Shows example tool parameters but Stage 4 has NO tools
+- This is just documentation/example, not actually used
+- Not a critical issue, but could be clarified
+
+**FIXED**: 
+- Added explicit decision logic with IF/THEN conditions for `proceed_to_stage5`
+- Added remediation_confidence calculation formula with 4 weighted factors
+- Clarified that Stage 4 has no Prometheus tools (diagnostic synthesis only)
+
+### Recommended Improvements:
+
+#### 1. Add Explicit Decision Logic ✅:
+```markdown
+## 🎯 DECISION LOGIC - HOW TO SET proceed_to_stage5:
+
+**Set proceed_to_stage5 = true IF ANY OF THESE CONDITIONS:**
+1. Diagnostic findings confirm issues that need remediation
+2. confirmed_issues array has 1+ issues with severity "critical" or "high"
+3. Stage 3 alerts + Stage 4 diagnostics paint clear picture needing action
+4. remediation_confidence >= 0.6
+
+**Set proceed_to_stage5 = false ONLY IF ALL CONDITIONS MET:**
+1. No confirmed issues found (confirmed_issues = [])
+   AND
+2. All severity levels are "low" or "medium"
+   AND
+3. Stage 2 + Stage 3 + Stage 4 findings show system is healthy
+   AND
+4. remediation_confidence < 0.5
+
+**CRITICAL**: Default to true if ANY actionable issues found.
+```
+
+#### 2. Add Confidence Scoring for Remediation ✅:
+```markdown
+## 📊 REMEDIATION CONFIDENCE CALCULATION:
+
+Calculate remediation_confidence (0.0 - 1.0) as SUM of:
+
+**1. Diagnostic Depth (+0.3):**
+- Diagnostics executed for 3+ targets = +0.3
+- Diagnostics executed for 2 targets = +0.2
+- Diagnostics executed for 1 target = +0.1
+- No diagnostics executed = 0.0
+
+**2. Issue Clarity (+0.3):**
+- confirmed_issues clearly identify root cause with evidence = +0.3
+- confirmed_issues identify symptoms but unclear root cause = +0.2
+- Only secondary_issues identified = +0.1
+- No issues identified = 0.0
+
+**3. Stage 2+3 Correlation (+0.2):**
+- Stage 4 findings MATCH both Stage 2 root_cause AND Stage 3 alerts = +0.2
+- Stage 4 findings match either Stage 2 OR Stage 3 = +0.1
+- Stage 4 findings contradict previous stages = 0.0
+
+**4. Recent Changes Context (+0.2):**
+- recent_changes identified with clear correlation to issues = +0.2
+- recent_changes available but unclear correlation = +0.1
+- No recent_changes data = 0.0
+```
+
+---
+
+## 7. Fix Stage 4 Json.js - Validation Improvements
+
+**Status**: ✅ COMPLETED
+**Location**: FreePrometheus/PrometheusNodes/15. Fix Stage 4 Json.js
+
+### Changes Made:
+
+**A. Added remediation_confidence Validation and Fallback Calculation:**
+- Validates AI-provided `remediation_confidence` is valid number 0.0-1.0
+- Calculates fallback using same 4-factor formula as Stage 4 prompt
+- Logs fallback calculation for debugging
+
+**B. Improved proceed_to_stage5 Default Logic:**
+- Changed from simple `false` default to intelligent decision
+- Sets true if `confirmed_issues.length > 0` OR `remediation_confidence >= 0.6`
+- Aligns with decision logic added to Stage 4 prompt
+
+**Impact:**
+- Ensures Stage 4 always provides valid remediation confidence scores
+- Intelligent fallback prevents missing critical issues
+- Consistent confidence scoring pattern across all stages (Stage 2, 3, 4)

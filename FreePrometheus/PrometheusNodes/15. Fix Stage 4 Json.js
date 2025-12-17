@@ -60,14 +60,48 @@ for (const item of items) {
       };
     }
     
-    // Boolean alanları kontrol et
-    if (outputData.proceed_to_stage5 === undefined) {
-      outputData.proceed_to_stage5 = false;
+    // ============= REMEDIATION CONFIDENCE VALIDATION =============
+    // Validate remediation_confidence field (added in Stage 4 prompt improvements)
+    if (typeof outputData.remediation_confidence !== 'number' || 
+        outputData.remediation_confidence < 0 || 
+        outputData.remediation_confidence > 1) {
+      
+      // Calculate fallback remediation_confidence if AI didn't provide it
+      let confidence = 0;
+      
+      // Factor 1: Diagnostic Depth (+0.3)
+      const diagnosticsCount = outputData.diagnostics_executed?.length || 0;
+      if (diagnosticsCount >= 3) confidence += 0.3;
+      else if (diagnosticsCount === 2) confidence += 0.2;
+      else if (diagnosticsCount === 1) confidence += 0.1;
+      
+      // Factor 2: Issue Clarity (+0.3)
+      const confirmedIssues = outputData.diagnostic_summary?.confirmed_issues || [];
+      const hasEvidence = confirmedIssues.some(i => i.evidence && i.evidence.length > 0);
+      if (confirmedIssues.length > 0 && hasEvidence) confidence += 0.3;
+      else if (confirmedIssues.length > 0) confidence += 0.2;
+      else if (outputData.diagnostic_summary?.secondary_issues?.length > 0) confidence += 0.1;
+      
+      // Factor 3: Stage 2+3 Correlation (+0.2)
+      // This would require access to previous stage data via item.json context
+      // For now, give partial credit if we have diagnostics
+      if (diagnosticsCount > 0 && confirmedIssues.length > 0) confidence += 0.1;
+      
+      // Factor 4: Recent Changes Context (+0.2)
+      const recentChanges = outputData.enriched_context?.recent_changes || [];
+      if (recentChanges.length > 0 && confirmedIssues.length > 0) confidence += 0.2;
+      else if (recentChanges.length > 0) confidence += 0.1;
+      
+      outputData.remediation_confidence = Math.min(1.0, Math.max(0.0, confidence));
+      console.log("⚠️ remediation_confidence calculated as fallback:", outputData.remediation_confidence);
     }
     
-    // remediation_confidence kontrolü
-    if (outputData.remediation_confidence === undefined) {
-      outputData.remediation_confidence = 0;
+    // Boolean alanları kontrol et
+    if (typeof outputData.proceed_to_stage5 !== 'boolean') {
+      // Default to true if we have confirmed issues or high remediation confidence
+      outputData.proceed_to_stage5 = 
+        (outputData.diagnostic_summary?.confirmed_issues?.length > 0) ||
+        (outputData.remediation_confidence >= 0.6);
     }
     
     // _context kontrolü ve düzeltmesi
