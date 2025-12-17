@@ -5,20 +5,29 @@
 // 3. Calculate deduplication metrics
 // 4. Decide on actions (create ticket, update ticket, escalate, etc.)
 
-// Get data from previous nodes
-const processedData = $input.item.json; // From "Process Results & Decision"
+// IMPORTANT: This node receives data from TWO sources:
+// 1. "Process Results & Decision" node (has fingerprint, alertSummary, etc.)
+// 2. "Redis Get" node (has Redis value or empty)
+
+// Get Process Results data - this contains the fingerprint and alert data
+// In n8n, we reference other nodes' data like this: $node["Node Name"].json
+const processedData = $node["Process Results & Decision"].json;
 const fingerprint = processedData.fingerprint;
 
-// Redis GET node returns value in different possible formats
+// Get Redis GET result - this is the current node's input
 let redisValue = null;
 try {
-  // Try to get value from Redis response
-  redisValue = $input.item.json.value || $input.item.json.fingerprint || null;
+  // Redis GET node returns value in $input.item.json
+  const redisResult = $input.item.json;
   
-  // If redisValue is the whole object, extract the value
-  if (typeof redisValue === 'object' && redisValue !== null && !Array.isArray(redisValue)) {
-    redisValue = redisValue.value || null;
+  // Try to extract value from various Redis response formats
+  if (redisResult && redisResult.value !== undefined) {
+    redisValue = redisResult.value;
+  } else if (typeof redisResult === 'string') {
+    redisValue = redisResult;
   }
+  
+  console.log('Redis value retrieved:', redisValue !== null && redisValue !== '' ? 'Found' : 'Empty');
 } catch (e) {
   console.log('Error getting Redis value:', e.message);
   redisValue = null;
