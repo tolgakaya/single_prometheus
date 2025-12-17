@@ -74,7 +74,7 @@ if (existingData) {
   // Should we make a phone call? (for critical alerts)
   const shouldCallAgain = (
     callCount < 3 && 
-    processedData.alertSummary.severity === 'critical' &&
+    processedData.alertSummary?.severity === 'critical' &&
     (timeSinceLastCall === null || timeSinceLastCall > 1800) // Last call was >30 min ago
   );
   
@@ -120,7 +120,7 @@ if (existingData) {
       },
       
       alert: {
-        ...processedData.alertSummary,
+        ...(processedData.alertSummary || {}),
         dedupStatus: 'existing',
         fingerprint: fingerprint,
         existingTicket: {
@@ -158,12 +158,12 @@ else {
         skipAnalysis: false,
         updateTicket: false,
         escalate: false,
-        makeCall: processedData.alertSummary.severity === 'critical',
+        makeCall: processedData.alertSummary?.severity === 'critical',
         createNewTicket: processedData.needsJiraTicket // Use decision from Process Results
       },
       
       alert: {
-        ...processedData.alertSummary,
+        ...(processedData.alertSummary || {}),
         dedupStatus: 'new',
         fingerprint: fingerprint,
         existingTicket: null
