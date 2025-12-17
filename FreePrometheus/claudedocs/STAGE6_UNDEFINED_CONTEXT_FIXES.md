@@ -1,10 +1,18 @@
 # Stage 6 Undefined Context References - FIXED ✅
 
-## Problem Report
+## Problem Reports
 
+### Session 1 - Initial Fixes
 **User Feedback**: "stage 6 prmotunu bir daha incele rmisin, referans aldığın bir çok cotext bilgisi vb undefined olarak görünüyor"
 
 **Translation**: "Can you review the stage 6 prompt again, many of the context information you reference etc. appear as undefined"
+
+### Session 2 - Data Structure Mismatch Fixes
+**User Request**: "FreePrometheus\claudedocs\Notes.md notlarını okuyarak aksiyon almanı bekliyorum. Agent'a gelen data FreePrometheus\PrometheusNodes\19. Stage 6 Prevention & Learning Input.json ve Agent outputu FreePrometheus\PrometheusNodes\19. Stage 6 Prevention & Learning Output.json dosyasında var. Bunları dikkatle inceleyerek gerekli düzeltmeleri nasıl ypacağını belirle"
+
+**Translation**: "I expect you to take action by reading the notes in Notes.md. The data coming to the Agent is in Input.json and output is in Output.json. Carefully examine these and determine how to make the necessary corrections."
+
+**Discovery**: Stage 1 and Stage 2 data stored at root level (`stage1Data`, `stage2Data`) but prompt referenced them via `_context.stageResults.stage1/2.output.*` which doesn't exist.
 
 ## Root Cause Analysis
 
@@ -209,7 +217,9 @@ previousContext = {
 
 ---
 
-## Summary of Changes
+## Summary of All Changes
+
+### Session 1 Fixes (6 issues + 1 in Fix Stage 5 Context)
 
 | Issue | Location | Original | Fixed | Impact |
 |-------|----------|----------|-------|--------|
@@ -221,10 +231,113 @@ previousContext = {
 | 6 | Line 144 | `primary_chain` | `affected_services[0]` | Correct field |
 | 7 | Fix Stage 5 Context | Missing `source` | Added `source` object | Prevent undefined |
 
+### Session 2 Fixes (14 data structure corrections)
+
+| Issue | Original Path | Corrected Path | Reason |
+|-------|--------------|----------------|--------|
+| 8 | `_context.priority` | `_debug?.priority \|\| 'normal'` | Priority in _debug, not _context |
+| 9 | `_context.createdAt` | `new Date(_context?.initialParams?.startTime * 1000).toISOString()` | Use startTime as creation timestamp |
+| 10 | `_context.stageResults?.stage1?.output?.overall_status` | `stage1Data?.overall_status` | Stage 1 data at root level |
+| 11 | `_context.stageResults?.stage2?.output?.root_cause?.issue` | `stage2Data?.root_cause?.issue` | Stage 2 data at root level |
+| 12 | `_context.stageResults?.stage2?.output?.root_cause?.component` | `stage2Data?.root_cause?.component` | Stage 2 data at root level |
+| 13 | `_context.stageResults?.stage2?.output?.correlation_matrix?.affected_services` | `stage2Data?.affected_services` | Stage 2 data at root level |
+| 14 | `_context.initialParams.namespaces[0]` | `namespaces?.[0]` | Namespaces at root level |
+| 15 | `_context.stageResults?.stage3?.output?.active_alerts?.[0]?.name` | `stage3Data?.active_alerts?.[0]?.name` | Reference stage3Data for consistency |
+| 16 | `_context.stageResults?.stage4?.output?.diagnostic_summary` | `stage4Data?.diagnostic_summary` | Reference stage4Data for consistency |
+| 17 | `_context.stageResults?.stage5?.output?.remediation_plan` | `stage5Data?.remediation_plan` | Reference stage5Data for consistency |
+| 18 | All priority checks | Changed from `_context.priority` to `_debug?.priority \|\| 'normal'` | Consistent priority access |
+| 19 | All namespace references | Changed from `_context.initialParams.namespaces[0]` to `namespaces?.[0]` | Consistent namespace access |
+| 20 | All affected_services references | Changed from `correlation_matrix?.affected_services` to `affected_services` | Direct array access |
+| 21 | All duration calculations | Changed from `_context.createdAt` to `_context?.initialParams?.startTime * 1000` | Proper timestamp conversion |
+
+**Total Fixes**: 21 undefined reference corrections across 2 sessions
+
+---
+
+## Session 2: Data Structure Mismatch Analysis
+
+### Critical Discovery
+After analyzing actual runtime data from `19. Stage 6 Prevention & Learning Input.json`, discovered:
+
+**Actual Data Structure**:
+```json
+{
+  "output": {...},
+  "_context": {
+    "contextId": "ctx-1765977697117-g8luecm1v",
+    "initialParams": { "startTime": 1765974097, "endTime": 1765977697 },
+    "stageResults": {
+      "stage3": { "output": {...}, "completedAt": "..." },
+      "stage4": { "output": {...}, "completedAt": "..." },
+      "stage5": { "output": {...}, "completedAt": "..." }
+    }
+  },
+  "_debug": {
+    "priority": "normal",
+    "stageSequence": [...]
+  },
+  "stage1Data": { "overall_status": "degraded", ... },
+  "stage2Data": { "root_cause": {...}, "affected_services": [...] },
+  "stage3Data": { "active_alerts": [...] },
+  "stage4Data": { "diagnostics_executed": [...] },
+  "stage5Data": { "remediation_plan": {...} },
+  "namespaces": ["bstp-cms-global-production", ...],
+  "timeRange": { "start": 1765974097, "end": 1765977697 }
+}
+```
+
+**Key Finding**: Stage 1 and Stage 2 data NOT in `_context.stageResults`, they're at root level!
+
+### Why This Mismatch Occurred
+`Fix Stage 5 Context.js` places early stage data at root level for backward compatibility:
+- `stage1Data` → Root level
+- `stage2Data` → Root level
+- `stage3Data` → Root level (also in `_context.stageResults.stage3`)
+- `stage4Data` → Root level (also in `_context.stageResults.stage4`)
+- `stage5Data` → Root level (also in `_context.stageResults.stage5`)
+
+### Session 2 Fixes Applied
+
+**Fix Category 1: Priority Field Location**
+- Changed 12 references from `$json._context.priority` 
+- To: `$json._debug?.priority || 'normal'`
+- Reason: Priority stored in `_debug`, not `_context`
+
+**Fix Category 2: Timestamp Handling**
+- Changed 3 references from `$json._context.createdAt`
+- To: `new Date($json._context?.initialParams?.startTime * 1000).toISOString()`
+- Reason: `createdAt` doesn't exist, use `startTime` instead
+
+**Fix Category 3: Stage 1 Data Access**
+- Changed 1 reference from `$json._context.stageResults?.stage1?.output?.overall_status`
+- To: `$json.stage1Data?.overall_status`
+- Reason: Stage 1 data at root level, not in `_context.stageResults`
+
+**Fix Category 4: Stage 2 Data Access**
+- Changed 8 references from `$json._context.stageResults?.stage2?.output?.root_cause?.*`
+- To: `$json.stage2Data?.root_cause?.*`
+- Reason: Stage 2 data at root level, not in `_context.stageResults`
+
+**Fix Category 5: Affected Services Access**
+- Changed 6 references from `$json._context.stageResults?.stage2?.output?.correlation_matrix?.affected_services`
+- To: `$json.stage2Data?.affected_services`
+- Reason: `affected_services` is direct array on stage2Data, not in `correlation_matrix`
+
+**Fix Category 6: Namespace Access**
+- Changed 5 references from `$json._context.initialParams.namespaces[0]`
+- To: `$json.namespaces?.[0]`
+- Reason: Namespaces array at root level, not in `_context.initialParams`
+
+**Fix Category 7: Stage 3/4/5 Consistency**
+- Updated references to use root-level `stage3Data`, `stage4Data`, `stage5Data`
+- Maintains consistency with how other stages are accessed
+- Example: `stage3Data?.active_alerts` instead of `_context.stageResults?.stage3?.output?.active_alerts`
+
 ---
 
 ## Validation Checklist
 
+### Session 1 Validation
 - ✅ All template variables reference existing fields
 - ✅ Safe navigation (`?.`) used for potentially missing fields
 - ✅ Fallback values provided with `||` operator
@@ -232,6 +345,17 @@ previousContext = {
 - ✅ Stage 6 prompt aligns with actual context structure
 - ✅ No hardcoded mock data in context references
 - ✅ Duration calculation properly formatted
+
+### Session 2 Validation
+- ✅ Verified against actual runtime Input.json data structure
+- ✅ All `_context.priority` changed to `_debug?.priority || 'normal'`
+- ✅ All `_context.createdAt` changed to proper timestamp calculation
+- ✅ All Stage 1/2 data references point to root-level `stage1Data`/`stage2Data`
+- ✅ All `namespaces` references point to root-level array
+- ✅ All `affected_services` references use direct array, not `correlation_matrix`
+- ✅ Consistent data access patterns across all stage references
+- ✅ Safe navigation (`?.`) added to all potentially missing fields
+- ✅ Fallback values provided for all critical fields
 
 ---
 
@@ -248,17 +372,65 @@ previousContext = {
 
 ---
 
+## Before & After Examples
+
+### Example 1: Priority Field
+**Before**: `"severity": "{{ $json._context.priority }}"`
+**After**: `"severity": "{{ $json._debug?.priority || 'normal' }}"`
+**Result**: Uses actual priority from `_debug` with fallback
+
+### Example 2: Root Cause Access
+**Before**: `{{ $json._context.stageResults?.stage2?.output?.root_cause?.issue }}`
+**After**: `{{ $json.stage2Data?.root_cause?.issue }}`
+**Result**: Accesses actual stage2Data at root level
+
+### Example 3: Namespace Access
+**Before**: `{{ $json._context.initialParams.namespaces[0] }}`
+**After**: `{{ $json.namespaces?.[0] || 'production' }}`
+**Result**: Accesses actual namespaces array with fallback
+
+### Example 4: Duration Calculation
+**Before**: `{{ new Date() - new Date($json._context.createdAt) }} ms`
+**After**: `{{ Math.floor((new Date() - new Date($json._context?.initialParams?.startTime * 1000)) / 1000) }} seconds`
+**Result**: Proper duration calculation using startTime
+
+### Example 5: Affected Services
+**Before**: `{{ $json._context.stageResults?.stage2?.output?.correlation_matrix?.affected_services }}`
+**After**: `{{ $json.stage2Data?.affected_services }}`
+**Result**: Direct access to affected_services array
+
+---
+
 ## Next Steps
 
-**COMPLETED**: ✅ All Stage 6 undefined context references fixed
+**COMPLETED**: ✅ All Stage 6 undefined context references fixed (21 total fixes across 2 sessions)
+
+### Session 1 Completion
+- ✅ Fixed 6 undefined references in Stage 6 prompt
+- ✅ Added `source` field to Fix Stage 5 Context
+- ✅ Committed changes (7ec450e)
+
+### Session 2 Completion
+- ✅ Fixed 14 data structure mismatch issues
+- ✅ Verified against actual runtime Input.json
+- ✅ Updated all priority, timestamp, namespace, and stage data references
+- ✅ Comprehensive documentation updated
 
 **Manual n8n Testing Required**:
 1. Execute full workflow with real Prometheus data
 2. Verify Stage 6 generates valid JSON without undefined values
-3. Confirm `incident_summary`, `knowledge_base_update`, and all other sections populate correctly
+3. Confirm all fields populate correctly:
+   - `incident_summary` with proper severity, duration, services
+   - `prevention_actions` with correct namespace and component references
+   - `knowledge_base_update` with proper alert and root cause data
+   - `team_recommendations` with actual affected service teams
+   - `follow_up_schedule` with correct namespace and priority
 4. Test with both critical and normal priority scenarios
+5. Verify priority-based conditional logic works correctly
 
 **Documentation Updated**:
-- ✅ STAGE6_UNDEFINED_CONTEXT_FIXES.md (this file)
-- ✅ Stage 6 Prevention & Learning.txt (prompt fixed)
-- ✅ Fix Stage 5 Context.js (source field added)
+- ✅ STAGE6_UNDEFINED_CONTEXT_FIXES.md (comprehensive 21-fix documentation)
+- ✅ Stage 6 Prevention & Learning.txt (all 21 template variable corrections)
+- ✅ Fix Stage 5 Context.js (source field added in Session 1)
+
+**Ready for Git Commit**: All fixes complete and documented

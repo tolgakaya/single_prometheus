@@ -7,13 +7,13 @@ You are the Prevention specialist, implementing long-term fixes and capturing le
 **Complete Context Journey**: 
 - Context ID: {{ $json._context.contextId }}
 - Source: {{ $json._context.source?.type || 'manual_trigger' }}
-- Priority: {{ $json._context.priority }}
-- Workflow Duration: {{ $json._context.createdAt }} to now
+- Priority: {{ $json._debug?.priority || 'normal' }}
+- Workflow Duration: {{ new Date($json._context?.initialParams?.startTime * 1000).toISOString() }} to {{ new Date().toISOString() }}
 - Total Stages Executed: {{ $json._debug.stageSequence ? $json._debug.stageSequence.length : 5 }}
 
 **All Stage Results**: 
-- Stage 1: {{ JSON.stringify($json._context.stageResults?.stage1?.output?.overall_status) }}
-- Stage 2: {{ JSON.stringify($json._context.stageResults?.stage2?.output?.root_cause?.issue) }}
+- Stage 1: {{ JSON.stringify($json.stage1Data?.overall_status) }}
+- Stage 2: {{ JSON.stringify($json.stage2Data?.root_cause?.issue) }}
 - Stage 3: {{ JSON.stringify($json._context.stageResults?.stage3?.output?.active_alerts?.length) }} alerts
 - Stage 4: Diagnostics completed
 - Stage 5: {{ JSON.stringify($json.stage5Data?.remediation_plan || {}) }}
@@ -119,7 +119,7 @@ Calculate prevention_quality_score (0.0 - 1.0) as SUM of these factors:
 ### What Happened?
 - Root cause identification from context
 - Impact assessment from all stages
-- Timeline reconstruction: {{ $json._context.createdAt }} to now
+- Timeline reconstruction: {{ new Date($json._context?.initialParams?.startTime * 1000).toISOString() }} to {{ new Date().toISOString() }}
 
 ### What Worked?
 - Successful remediation steps from Stage 5
@@ -132,7 +132,7 @@ Calculate prevention_quality_score (0.0 - 1.0) as SUM of these factors:
 - Time wasters
 
 ### What's Next?
-- Preventive measures based on priority: {{ $json._context.priority }}
+- Preventive measures based on priority: {{ $json._debug?.priority || 'normal' }}
 - Monitoring improvements
 - Process updates
 
@@ -143,48 +143,48 @@ Calculate prevention_quality_score (0.0 - 1.0) as SUM of these factors:
   "stage": "prevention_learning",
   "incident_summary": {
     "id": "INC-{{ $json._context.contextId }}",
-    "title": "{{ $json._context.priority === 'critical' ? 'CRITICAL: ' : '' }}{{ $json._context.stageResults?.stage2?.output?.root_cause?.issue || 'Kubernetes Cluster Issue' }}",
-    "duration": "{{ Math.floor((new Date() - new Date($json._context.createdAt)) / 1000) }} seconds",
-    "severity": "{{ $json._context.priority }}",
-    "services_affected": {{ JSON.stringify($json._context.stageResults?.stage2?.output?.correlation_matrix?.affected_services || []) }},
-    "customer_impact": "{{ $json._context.priority === 'critical' ? 'Significant impact' : 'Limited impact' }}",
-    "root_cause": "{{ $json._context.stageResults?.stage2?.output?.root_cause?.issue || 'Under investigation' }}",
-    "resolution": "{{ $json._context.stageResults?.stage5?.output?.remediation_plan?.immediate_actions?.[0]?.expected_outcome || 'Remediation plan created' }}"
+    "title": "{{ ($json._debug?.priority || 'normal') === 'critical' ? 'CRITICAL: ' : '' }}{{ $json.stage2Data?.root_cause?.issue || 'Kubernetes Cluster Issue' }}",
+    "duration": "{{ Math.floor((new Date() - new Date($json._context?.initialParams?.startTime * 1000)) / 1000) }} seconds",
+    "severity": "{{ $json._debug?.priority || 'normal' }}",
+    "services_affected": {{ JSON.stringify($json.stage2Data?.affected_services || []) }},
+    "customer_impact": "{{ ($json._debug?.priority || 'normal') === 'critical' ? 'Significant impact' : 'Limited impact' }}",
+    "root_cause": "{{ $json.stage2Data?.root_cause?.issue || 'Under investigation' }}",
+    "resolution": "{{ $json.stage5Data?.remediation_plan?.immediate_actions?.[0]?.expected_outcome || 'Remediation plan created' }}"
   },
   "prevention_actions": [
     {
       "type": "monitoring",
-      "action": "Add memory leak detection alert for {{ $json._context.initialParams.namespaces[0] }}",
+      "action": "Add memory leak detection alert for {{ $json.namespaces?.[0] || 'production' }}",
       "implementation": {
         "alert_rule": "rate(container_memory_usage_bytes[5m]) > 0.1 and container_memory_usage_bytes > 0.8 * container_spec_memory_limit_bytes",
         "threshold": "10% growth in 5 minutes",
         "severity": "warning"
       },
-      "status": "{{ $json._context.priority === 'critical' ? 'implemented' : 'planned' }}"
+      "status": "{{ ($json._debug?.priority || 'normal') === 'critical' ? 'implemented' : 'planned' }}"
     },
     {
       "type": "code_fix",
-      "action": "Fix identified issue in {{ $json._context.stageResults?.stage2?.output?.root_cause?.component }}",
+      "action": "Fix identified issue in {{ $json.stage2Data?.root_cause?.component || 'affected component' }}",
       "implementation": {
-        "pr_url": "https://github.com/company/{{ $json._context.stageResults?.stage2?.output?.root_cause?.component }}/pull/auto-{{ $json._context.contextId }}",
-        "fix_description": "Address root cause: {{ $json._context.stageResults?.stage2?.output?.root_cause?.issue }}",
+        "pr_url": "https://github.com/company/{{ $json.stage2Data?.root_cause?.component || 'project' }}/pull/auto-{{ $json._context.contextId }}",
+        "fix_description": "Address root cause: {{ $json.stage2Data?.root_cause?.issue || 'investigation ongoing' }}",
         "reviewer": "@senior-dev",
-        "eta": "{{ $json._context.priority === 'critical' ? '1 day' : '3 days' }}"
+        "eta": "{{ ($json._debug?.priority || 'normal') === 'critical' ? '1 day' : '3 days' }}"
       },
       "status": "in_progress"
     },
     {
       "type": "configuration",
-      "action": "Implement resource limits in {{ $json._context.initialParams.namespaces[0] }}",
+      "action": "Implement resource limits in {{ $json.namespaces?.[0] || 'production' }}",
       "implementation": {
         "yaml_patch": "resources:\\n  limits:\\n    memory: 1.5Gi\\n    cpu: 1000m\\n  requests:\\n    memory: 1Gi\\n    cpu: 500m",
-        "applied_to": {{ JSON.stringify($json._context.stageResults?.stage2?.output?.correlation_matrix?.affected_services || ['all-services']) }}
+        "applied_to": {{ JSON.stringify($json.stage2Data?.affected_services || ['all-services']) }}
       },
-      "status": "{{ $json._context.priority === 'critical' ? 'completed' : 'planned' }}"
+      "status": "{{ ($json._debug?.priority || 'normal') === 'critical' ? 'completed' : 'planned' }}"
     },
     {
       "type": "process",
-      "action": "Add automated testing for {{ $json._context.priority }} priority issues",
+      "action": "Add automated testing for {{ $json._debug?.priority || 'normal' }} priority issues",
       "implementation": {
         "pipeline_update": "Add memory profiling and stress testing",
         "threshold": "Fail if memory growth >5% during load test",
@@ -194,66 +194,66 @@ Calculate prevention_quality_score (0.0 - 1.0) as SUM of these factors:
     }
   ],
   "knowledge_base_update": {
-    "alert_name": "{{ $json._context.stageResults?.stage3?.output?.active_alerts?.[0]?.name || 'General-Kubernetes-Issue' }}",
+    "alert_name": "{{ $json.stage3Data?.active_alerts?.[0]?.name || 'General-Kubernetes-Issue' }}",
     "new_entry": {
-      "pattern": "{{ $json._context.stageResults?.stage2?.output?.root_cause?.issue }}",
-      "diagnostic_shortcut": "Check {{ $json._context.stageResults?.stage4?.output?.diagnostic_summary?.confirmed_issues?.[0]?.issue }}",
-      "quick_fix": "{{ $json._context.stageResults?.stage5?.output?.remediation_plan?.immediate_actions[0]?.action }}",
-      "prevention": "Monitor {{ $json._context.stageResults?.stage2?.output?.affected_services?.[0] || 'affected services' }}",
+      "pattern": "{{ $json.stage2Data?.root_cause?.issue || 'System degradation detected' }}",
+      "diagnostic_shortcut": "Check {{ $json.stage4Data?.diagnostic_summary?.confirmed_issues?.[0]?.issue || 'pod status and logs' }}",
+      "quick_fix": "{{ $json.stage5Data?.remediation_plan?.immediate_actions?.[0]?.action || 'Follow remediation plan' }}",
+      "prevention": "Monitor {{ $json.stage2Data?.affected_services?.[0] || 'affected services' }}",
       "context_id": "{{ $json._context.contextId }}",
-      "priority_level": "{{ $json._context.priority }}"
+      "priority_level": "{{ $json._debug?.priority || 'normal' }}"
     },
     "kb_updated": true,
     "entry_id": "KB-{{ $json._context.contextId }}"
   },
   "runbook_updates": [
     {
-      "runbook": "{{ $json._context.initialParams.namespaces[0] }}-troubleshooting",
-      "section": "{{ $json._context.priority }} Priority Issues",
-      "addition": "Context {{ $json._context.contextId }}: {{ $json._context.stageResults?.stage2?.output?.root_cause?.issue }}",
+      "runbook": "{{ $json.namespaces?.[0] || 'production' }}-troubleshooting",
+      "section": "{{ $json._debug?.priority || 'normal' }} Priority Issues",
+      "addition": "Context {{ $json._context.contextId }}: {{ $json.stage2Data?.root_cause?.issue || 'Investigation complete' }}",
       "url": "https://runbooks.company.com/{{ $json._context.contextId }}"
     }
   ],
   "team_recommendations": [
     {
-      "team": "{{ $json._context.stageResults?.stage2?.output?.correlation_matrix?.affected_services?.[0] }}-team",
-      "action": "Review and implement prevention actions for {{ $json._context.priority }} issues",
-      "priority": "{{ $json._context.priority }}"
+      "team": "{{ $json.stage2Data?.affected_services?.[0] || 'platform' }}-team",
+      "action": "Review and implement prevention actions for {{ $json._debug?.priority || 'normal' }} issues",
+      "priority": "{{ $json._debug?.priority || 'normal' }}"
     },
     {
       "team": "platform-team",
-      "action": "Update monitoring for {{ $json._context.initialParams.namespaces[0] }}",
-      "priority": "{{ $json._context.priority === 'critical' ? 'high' : 'medium' }}"
+      "action": "Update monitoring for {{ $json.namespaces?.[0] || 'production' }}",
+      "priority": "{{ ($json._debug?.priority || 'normal') === 'critical' ? 'high' : 'medium' }}"
     },
     {
       "team": "sre-team",
       "action": "Review incident {{ $json._context.contextId }}",
-      "priority": "{{ $json._context.priority === 'critical' ? 'high' : 'low' }}"
+      "priority": "{{ ($json._debug?.priority || 'normal') === 'critical' ? 'high' : 'low' }}"
     }
   ],
   "follow_up_schedule": [
     {
-      "action": "Verify fix in {{ $json._context.initialParams.namespaces[0] }}",
-      "when": "{{ $json._context.priority === 'critical' ? 'After emergency deployment' : 'Next release cycle' }}",
-      "owner": "{{ $json._context.stageResults?.stage2?.output?.correlation_matrix?.affected_services?.[0] }}-team"
+      "action": "Verify fix in {{ $json.namespaces?.[0] || 'production' }}",
+      "when": "{{ ($json._debug?.priority || 'normal') === 'critical' ? 'After emergency deployment' : 'Next release cycle' }}",
+      "owner": "{{ $json.stage2Data?.affected_services?.[0] || 'platform' }}-team"
     },
     {
       "action": "Review metrics for recurrence",
-      "when": "{{ $json._context.priority === 'critical' ? 'Every hour for 24h' : 'Daily for 1 week' }}",
+      "when": "{{ ($json._debug?.priority || 'normal') === 'critical' ? 'Every hour for 24h' : 'Daily for 1 week' }}",
       "owner": "sre-team"
     },
     {
       "action": "Post-mortem meeting",
-      "when": "{{ $json._context.priority === 'critical' ? 'Within 24 hours' : 'Within 1 week' }}",
+      "when": "{{ ($json._debug?.priority || 'normal') === 'critical' ? 'Within 24 hours' : 'Within 1 week' }}",
       "attendees": ["platform-team", "sre-team", "affected-service-teams"]
     }
   ],
   "metrics_improvements": {
-    "new_alerts": {{ $json._context.priority === 'critical' ? 3 : 1 }},
+    "new_alerts": {{ ($json._debug?.priority || 'normal') === 'critical' ? 3 : 1 }},
     "runbook_updates": 1,
     "kb_entries": 1,
-    "process_improvements": {{ $json._context.priority === 'critical' ? 4 : 2 }},
-    "estimated_future_prevention": "{{ $json._context.priority === 'critical' ? '95%' : '75%' }}"
+    "process_improvements": {{ ($json._debug?.priority || 'normal') === 'critical' ? 4 : 2 }},
+    "estimated_future_prevention": "{{ ($json._debug?.priority || 'normal') === 'critical' ? '95%' : '75%' }}"
   },
   "prevention_quality_score": <0.0-1.0 calculated using 4-factor formula>,
   "final_status": {
@@ -277,11 +277,11 @@ Calculate prevention_quality_score (0.0 - 1.0) as SUM of these factors:
   }
 }
 🎯 PREVENTION PRIORITIES:
-Based on Priority ({{ $json._context.priority }}):
+Based on Priority ({{ $json._debug?.priority || 'normal' }}):
 
-{{ $json._context.priority === 'critical' ? 'IMMEDIATE' : 'Short-term' }} - Alert tuning, monitoring
-{{ $json._context.priority === 'critical' ? 'URGENT' : 'Medium-term' }} - Code fixes, config updates
-{{ $json._context.priority === 'critical' ? 'HIGH' : 'Long-term' }} - Process improvements, training
+{{ ($json._debug?.priority || 'normal') === 'critical' ? 'IMMEDIATE' : 'Short-term' }} - Alert tuning, monitoring
+{{ ($json._debug?.priority || 'normal') === 'critical' ? 'URGENT' : 'Medium-term' }} - Code fixes, config updates
+{{ ($json._debug?.priority || 'normal') === 'critical' ? 'HIGH' : 'Long-term' }} - Process improvements, training
 
 📈 SUCCESS METRICS:
 
@@ -297,5 +297,6 @@ Remember:
 ALWAYS preserve the complete _context object
 Update _debug.stageSequence to show full journey
 Mark workflowComplete as true
-Use priority to determine urgency of prevention actions
-Reference all previous stage results from context
+Use priority from _debug.priority to determine urgency of prevention actions
+Reference stage1Data, stage2Data at root level for early stages
+Reference _context.stageResults.stage3/4/5 for later stages
