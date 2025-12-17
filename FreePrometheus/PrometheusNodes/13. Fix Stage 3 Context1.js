@@ -87,13 +87,19 @@ try {
   const alertKBNode = $node["Load Alert Knowledge Base"];
   if (alertKBNode?.json?._alertKBData) {
     alertKB = alertKBNode.json._alertKBData;
+    // CRITICAL FIX: Ensure alertKB is always an array
+    if (!Array.isArray(alertKB)) {
+      console.log("⚠️ alertKB is not an array, converting to array:", typeof alertKB);
+      alertKB = [];
+    }
     if (alertKBNode.json._severityScores) {
       severityScores = alertKBNode.json._severityScores;
     }
     console.log("Alert KB loaded:", alertKB.length, "entries");
   }
 } catch (e) {
-  console.log("Alert KB not available, using empty KB");
+  console.log("Alert KB not available, using empty KB:", e.message);
+  alertKB = []; // CRITICAL FIX: Ensure alertKB is always an array even on error
 }
 
 // Helper functions
@@ -214,6 +220,49 @@ if (!Array.isArray(actualOutput.recommended_alert_actions)) {
   actualOutput.recommended_alert_actions = [];
 }
 
+// ============= CORRELATION CONFIDENCE VALIDATION =============
+// Validate correlation_confidence field (added in Stage 3 prompt improvements)
+if (typeof actualOutput.correlation_confidence !== 'number' || 
+    actualOutput.correlation_confidence < 0 || 
+    actualOutput.correlation_confidence > 1) {
+  
+  // Calculate fallback correlation_confidence if AI didn't provide it
+  let confidence = 0;
+  
+  // Factor 1: Alert-to-Stage2 Correlation (+0.3)
+  if (stage2Data?.stage2Data?.root_cause?.component) {
+    const stage2Component = stage2Data.stage2Data.root_cause.component;
+    const alertsMatchStage2 = actualOutput.active_alerts?.some(alert => 
+      alert.labels?.pod?.includes(stage2Component) || 
+      alert.labels?.namespace === stage2Data._context?.initialParams?.namespaces?.[0]
+    );
+    confidence += alertsMatchStage2 ? 0.3 : 0.1;
+  }
+  
+  // Factor 2: Knowledge Base Coverage (+0.3)
+  const kbCoverage = actualOutput.active_alerts?.length > 0 
+    ? actualOutput.active_alerts.filter(a => a.kb_enriched).length / actualOutput.active_alerts.length 
+    : 0;
+  if (kbCoverage === 1.0) confidence += 0.3;
+  else if (kbCoverage >= 0.75) confidence += 0.2;
+  else if (kbCoverage >= 0.5) confidence += 0.1;
+  else if (kbCoverage > 0) confidence += 0.05;
+  
+  // Factor 3: Alert Group Quality (+0.2)
+  const hasRootAlert = actualOutput.alert_groups?.some(g => g.root_alert && g.related_alerts?.length >= 3);
+  if (hasRootAlert) confidence += 0.2;
+  else if (actualOutput.alert_groups?.some(g => g.related_alerts?.length >= 1)) confidence += 0.1;
+  
+  // Factor 4: SLO Impact Clarity (+0.2)
+  const sloComponents = actualOutput.slo_impact?.availability_slo?.components;
+  if (sloComponents && Object.keys(sloComponents).length >= 4) confidence += 0.2;
+  else if (sloComponents && Object.keys(sloComponents).length >= 2) confidence += 0.1;
+  else if (sloComponents && Object.keys(sloComponents).length === 1) confidence += 0.05;
+  
+  actualOutput.correlation_confidence = Math.min(1.0, Math.max(0.0, confidence));
+  console.log("⚠️ correlation_confidence calculated as fallback:", actualOutput.correlation_confidence);
+}
+
 // Boolean fields
 if (typeof actualOutput.proceed_to_stage4 !== 'boolean') {
   actualOutput.proceed_to_stage4 = actualOutput.active_alerts?.length > 0 ||
@@ -268,6 +317,7 @@ actualOutput._context.stageResults.stage3 = {
     alert_patterns: JSON.parse(JSON.stringify(actualOutput.alert_patterns)),
     slo_impact: JSON.parse(JSON.stringify(actualOutput.slo_impact)),
     recommended_alert_actions: JSON.parse(JSON.stringify(actualOutput.recommended_alert_actions)),
+    correlation_confidence: actualOutput.correlation_confidence,
     proceed_to_stage4: actualOutput.proceed_to_stage4,
     auto_remediation_approved: actualOutput.auto_remediation_approved
   },
@@ -313,6 +363,7 @@ fixedOutput.stage3Data = {
   knowledge_base_matches: JSON.parse(JSON.stringify(actualOutput.knowledge_base_matches || [])),
   slo_impact: JSON.parse(JSON.stringify(actualOutput.slo_impact || {})),
   recommended_actions: JSON.parse(JSON.stringify(actualOutput.recommended_alert_actions || [])),
+  correlation_confidence: actualOutput.correlation_confidence || 0.0,
   auto_remediation_approved: actualOutput.auto_remediation_approved || false,
   proceed_to_stage4: actualOutput.proceed_to_stage4 || false,
   kb_enriched_count: actualOutput.active_alerts?.filter(a => a.kb_enriched).length || 0
