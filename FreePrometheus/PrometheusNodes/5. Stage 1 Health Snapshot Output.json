@@ -2,11 +2,11 @@
   {
     "output": {
       "stage": "health_snapshot",
-      "timestamp": "2023-11-15T04:32:07.047Z",
+      "timestamp": "2023-11-16T09:53:44.321Z",
       "overall_status": "unknown",
-      "proceed_to_stage2": false,
-      "urgency": "low",
-      "reason": "Cluster health data is unavailable, but alerts indicate minor issues.",
+      "proceed_to_stage2": true,
+      "urgency": "medium",
+      "reason": "Cluster health data is unavailable, but multiple alerts are active, indicating potential issues.",
       "alerts": {
         "total": 6,
         "critical": 0,
@@ -23,16 +23,15 @@
         "api_reliability": 3
       },
       "quick_findings": [
-        "No critical alerts detected.",
-        "Minor warnings related to CPU overcommit and HPA maxed out."
+        "Multiple alerts active, including warnings for KubeHpaMaxedOut and KubeCPUOvercommit."
       ],
       "forceDeepAnalysis": false,
       "overridden": false,
       "_context": {},
       "_debug": {
         "nodeType": "Stage 1: Health Snapshot",
-        "processedAt": "2023-11-15T04:32:07.047Z",
-        "contextId": "ctx-1765910727047-tj2ba2gdv"
+        "processedAt": "2023-11-16T09:53:44.321Z",
+        "contextId": "ctx-1765950352039-izsx2rs4a"
       }
     }
   }

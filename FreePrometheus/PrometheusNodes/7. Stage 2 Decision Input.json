@@ -2,11 +2,11 @@
   {
     "output": {
       "stage": "health_snapshot",
-      "timestamp": "2023-11-15T04:32:07.047Z",
+      "timestamp": "2023-11-16T09:53:44.321Z",
       "overall_status": "unknown",
-      "proceed_to_stage2": false,
-      "urgency": "low",
-      "reason": "Cluster health data is unavailable, but alerts indicate minor issues.",
+      "proceed_to_stage2": true,
+      "urgency": "medium",
+      "reason": "Cluster health data is unavailable, but multiple alerts are active, indicating potential issues.",
       "alerts": {
         "total": 6,
         "critical": 0,
@@ -23,21 +23,20 @@
         "api_reliability": 3
       },
       "quick_findings": [
-        "No critical alerts detected.",
-        "Minor warnings related to CPU overcommit and HPA maxed out."
+        "Multiple alerts active, including warnings for KubeHpaMaxedOut and KubeCPUOvercommit."
       ],
       "forceDeepAnalysis": false,
       "overridden": false,
       "_context": {
-        "contextId": "ctx-1765910727047-tj2ba2gdv",
-        "createdAt": "2025-12-16T18:45:27.048Z",
+        "contextId": "ctx-1765950352039-izsx2rs4a",
+        "createdAt": "2025-12-17T05:45:52.039Z",
         "source": {
           "type": "manual",
           "priority": "normal"
         },
         "initialParams": {
-          "startTime": 1765907127,
-          "endTime": 1765910727,
+          "startTime": 1765946752,
+          "endTime": 1765950352,
           "namespaces": [
             "bstp-cms-global-production",
             "bstp-cms-prod-v3",
@@ -122,9 +121,9 @@
         "forceDeepAnalysis": false,
         "workflowMetadata": {
           "workflowId": "ysMD5nc5K6RCPF0Q",
-          "executionId": "6480",
+          "executionId": "6662",
           "orchestratorId": null,
-          "requestId": "req-1765910727048"
+          "requestId": "req-1765950352039"
         },
         "stageResults": {
           "stage1": {
@@ -146,17 +145,16 @@
                 "api_reliability": 3
               },
               "quick_findings": [
-                "No critical alerts detected.",
-                "Minor warnings related to CPU overcommit and HPA maxed out."
+                "Multiple alerts active, including warnings for KubeHpaMaxedOut and KubeCPUOvercommit."
               ],
-              "proceed_to_stage2": false,
-              "urgency": "low",
-              "reason": "Cluster health data is unavailable, but alerts indicate minor issues.",
+              "proceed_to_stage2": true,
+              "urgency": "medium",
+              "reason": "Cluster health data is unavailable, but multiple alerts are active, indicating potential issues.",
               "forceDeepAnalysis": false,
               "overridden": false
             },
-            "completedAt": "2023-11-15T04:32:07.047Z",
-            "decision": false,
+            "completedAt": "2023-11-16T09:53:44.321Z",
+            "decision": true,
             "status": "unknown",
             "alerts": 6
           }
@@ -169,20 +167,20 @@
       },
       "_debug": {
         "nodeType": "Stage 1: Health Snapshot",
-        "processedAt": "2023-11-15T04:32:07.047Z",
-        "contextId": "ctx-1765910727047-tj2ba2gdv"
+        "processedAt": "2023-11-16T09:53:44.321Z",
+        "contextId": "ctx-1765950352039-izsx2rs4a"
       }
     },
     "_context": {
-      "contextId": "ctx-1765910727047-tj2ba2gdv",
-      "createdAt": "2025-12-16T18:45:27.048Z",
+      "contextId": "ctx-1765950352039-izsx2rs4a",
+      "createdAt": "2025-12-17T05:45:52.039Z",
       "source": {
         "type": "manual",
         "priority": "normal"
       },
       "initialParams": {
-        "startTime": 1765907127,
-        "endTime": 1765910727,
+        "startTime": 1765946752,
+        "endTime": 1765950352,
         "namespaces": [
           "bstp-cms-global-production",
           "bstp-cms-prod-v3",
@@ -267,9 +265,9 @@
       "forceDeepAnalysis": false,
       "workflowMetadata": {
         "workflowId": "ysMD5nc5K6RCPF0Q",
-        "executionId": "6480",
+        "executionId": "6662",
         "orchestratorId": null,
-        "requestId": "req-1765910727048"
+        "requestId": "req-1765950352039"
       },
       "stageResults": {
         "stage1": {
@@ -291,17 +289,16 @@
               "api_reliability": 3
             },
             "quick_findings": [
-              "No critical alerts detected.",
-              "Minor warnings related to CPU overcommit and HPA maxed out."
+              "Multiple alerts active, including warnings for KubeHpaMaxedOut and KubeCPUOvercommit."
             ],
-            "proceed_to_stage2": false,
-            "urgency": "low",
-            "reason": "Cluster health data is unavailable, but alerts indicate minor issues.",
+            "proceed_to_stage2": true,
+            "urgency": "medium",
+            "reason": "Cluster health data is unavailable, but multiple alerts are active, indicating potential issues.",
             "forceDeepAnalysis": false,
             "overridden": false
           },
-          "completedAt": "2023-11-15T04:32:07.047Z",
-          "decision": false,
+          "completedAt": "2023-11-16T09:53:44.321Z",
+          "decision": true,
           "status": "unknown",
           "alerts": 6
         }
@@ -312,9 +309,9 @@
         "createdBy": "Unified Entry Point"
       }
     },
-    "contextId": "ctx-1765910727047-tj2ba2gdv",
+    "contextId": "ctx-1765950352039-izsx2rs4a",
     "_contextFixed": true,
-    "_fixedAt": "2025-12-16T18:45:34.779Z",
+    "_fixedAt": "2025-12-17T05:45:59.822Z",
     "stage1Data": {
       "overall_status": "unknown",
       "alerts": {
@@ -333,24 +330,23 @@
         "api_reliability": 3
       },
       "quick_findings": [
-        "No critical alerts detected.",
-        "Minor warnings related to CPU overcommit and HPA maxed out."
+        "Multiple alerts active, including warnings for KubeHpaMaxedOut and KubeCPUOvercommit."
       ],
       "services_analyzed": [],
       "services_count": 0,
       "namespaces_analyzed": [],
-      "proceed_to_stage2": false,
-      "urgency": "low",
-      "reason": "Cluster health data is unavailable, but alerts indicate minor issues."
+      "proceed_to_stage2": true,
+      "urgency": "medium",
+      "reason": "Cluster health data is unavailable, but multiple alerts are active, indicating potential issues."
     },
     "_debugInfo": {
       "fromNode": "Fix Stage 1 Context",
       "contextFixed": true,
       "originalHadTemplates": false,
-      "stage1Decision": false,
+      "stage1Decision": true,
       "stage1Status": "unknown",
       "stage1Alerts": 6,
-      "timestamp": "2025-12-16T18:45:34.779Z"
+      "timestamp": "2025-12-17T05:45:59.822Z"
     }
   }
 ]
