@@ -1,0 +1,102 @@
+[
+  {
+    "output": {
+      "stage": "health_snapshot",
+      "execution_time": "2025-12-18T22:25:13.163Z",
+      "analysis_period": {
+        "start": "2025-12-18T21:25:13.000Z",
+        "end": "2025-12-18T22:25:13.000Z",
+        "duration_minutes": 60
+      },
+      "status": "normal",
+      "metrics": {
+        "total_logs": 376526,
+        "error_count": 3344,
+        "error_rate": "0.89%",
+        "log_levels": {
+          "debug": 0,
+          "info": 0,
+          "warn": 0,
+          "error": 3344,
+          "fatal": 0
+        },
+        "top_error_services": [
+          "bstp-common-outbox-message-relay",
+          "bstp-cpq-batch",
+          "bstp-id-service",
+          "cpq-ntf-integrator-service",
+          "cpq-ordercapture",
+          "ntf-batch-service",
+          "ntf-engine-service",
+          "ntf-history-service",
+          "ui-authz-mc-backend"
+        ]
+      },
+      "anomalies": {
+        "sudden_spike": false,
+        "new_error_types": false,
+        "service_degradation": [],
+        "anomaly_scores": {
+          "moving_average": 0,
+          "std_deviation": 0,
+          "rate_change": 0,
+          "spike_ratio": 0
+        },
+        "anomaly_period": null
+      },
+      "proceed_to_stage2": false,
+      "reason": "based on tool results",
+      "quick_summary": "The error rate is at 0.89%, which is within the normal range. No sudden spikes or new error types detected.",
+      "forceDeepAnalysis": false,
+      "priority": "normal",
+      "overridden": false,
+      "tools_executed": [
+        "Error Rate Check",
+        "Service Health Check"
+      ],
+      "context_preserved": {
+        "analysisId": "actual analysis ID",
+        "source": "actual source",
+        "priority": "actual priority"
+      }
+    },
+    "stageResults": {
+      "stage1": {
+        "stage": "health_snapshot",
+        "execution_time": "2025-12-18T22:25:13.163Z",
+        "status": "normal",
+        "metrics": {
+          "total_logs": 376526,
+          "error_count": 3344,
+          "error_rate": "0.89%",
+          "log_levels": {
+            "debug": 0,
+            "info": 0,
+            "warn": 0,
+            "error": 3344,
+            "fatal": 0
+          },
+          "top_error_services": [
+            "bstp-common-outbox-message-relay",
+            "bstp-cpq-batch",
+            "bstp-id-service",
+            "cpq-ntf-integrator-service",
+            "cpq-ordercapture",
+            "ntf-batch-service",
+            "ntf-engine-service",
+            "ntf-history-service",
+            "ui-authz-mc-backend"
+          ]
+        },
+        "critical_errors": [],
+        "affected_services": [],
+        "tools_executed": [
+          "Error Rate Check",
+          "Service Health Check"
+        ],
+        "quick_summary": "The error rate is at 0.89%, which is within the normal range. No sudden spikes or new error types detected.",
+        "proceed_to_anomaly": false
+      }
+    }
+  }
+]
