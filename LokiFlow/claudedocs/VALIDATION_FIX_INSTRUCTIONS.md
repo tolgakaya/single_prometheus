@@ -23,86 +23,76 @@ Stage 1 AI Agent ile Validasyon node'u arasına **yeni bir node** eklemeli ki AI
 
 ## n8n'de Adım Adım Düzeltme
 
-### Adım 1: Yeni Node Oluştur
+### Adım 1: Yeni Code Node Oluştur
 
-1. n8n workflow editor'ü aç
-2. "Stage 1 Quick Health Check" ile "Validate After Stage 1" arasına **yeni bir Code node** ekle
-3. Node'a şu ismi ver: **"5.1 Set Stage 1 Result"**
-4. Aşağıdaki kodu yapıştır:
+1. **Stage 1 AI Agent** ile **5.5 Validate** arasına **yeni bir Code node** ekle
+2. Node'a şu ismi ver: **"5.1 Set Stage 1 Result"**
+3. Aşağıdaki kodu yapıştır:
 
 ```javascript
-// Set Stage 1 Result - Write AI output to stageResults.stage1
-const input = $input.first().json;
+// Kod 5.1 Set Stage 1 Result.js dosyasından kopyala
+// Veya GitHub'dan indir: LokiFlow/LokiNodes/5.1 Set Stage 1 Result.js
+```
 
-console.log("=== SET STAGE 1 RESULT ===");
+**Kod çok uzun, dosyadan kopyalayın**: [5.1 Set Stage 1 Result.js](../LokiNodes/5.1%20Set%20Stage%201%20Result.js)
 
-// Stage 1 AI Agent returns output in 'output' field
-const stage1Output = input.output || input;
-
-console.log("Stage 1 output exists?", stage1Output.stage ? "YES" : "NO");
-console.log("Stage 1 stage value:", stage1Output.stage);
-
-// CRITICAL: Write Stage 1 result to standardized structure
-return [{
-  json: {
-    // Preserve entire standardized structure from previous nodes
-    ...input,
-
-    // Write Stage 1 result to stageResults.stage1
-    stageResults: {
-      ...(input.stageResults || {}),
-      stage1: {
-        stage: stage1Output.stage || "health_snapshot",
-        execution_time: stage1Output.execution_time || new Date().toISOString(),
-        status: stage1Output.status || "unknown",
-        metrics: stage1Output.metrics || {},
-        critical_errors: stage1Output.critical_errors || [],
-        affected_services: stage1Output.affected_services || [],
-        tools_executed: stage1Output.tools_executed || [],
-        quick_summary: stage1Output.quick_summary || "",
-        proceed_to_anomaly: stage1Output.proceed_to_anomaly !== undefined ? stage1Output.proceed_to_anomaly : false
-      }
-    },
-
-    // Legacy compatibility - keep output field
-    output: stage1Output
-  }
-}];
+**Önemli**: Kod, n8n'in doğru syntax'ını kullanır:
+```javascript
+const contextData = $('Service Dependency Loader').first().json;
 ```
 
 ### Adım 2: Bağlantıları Düzenle
 
-**Eski Workflow**:
+**Eski Workflow** (YANLIŞ):
 ```
-5. Stage 1 Quick Health Check
+4. Service Dependency Loader
   ↓
-5.5 Validate After Stage 1 ❌ (stage1 henüz yok)
+5. Stage 1 AI Agent
+  ↓
+5.5 Validate ❌ (metadata/context kayboldu!)
 ```
 
-**Yeni Workflow**:
+**Yeni Workflow** (DOĞRU):
 ```
-5. Stage 1 Quick Health Check
+4. Service Dependency Loader
   ↓
-5.1 Set Stage 1 Result ✅ (yeni node)
+5. Stage 1 AI Agent
   ↓
-5.5 Validate After Stage 1 ✅ (artık stage1 var!)
+5.1 Set Stage 1 Result (Node 4'ten context alır, AI output ile birleştirir)
+  ↓
+5.5 Validate After Stage 1 ✅
 ```
 
-**Adımlar**:
-1. "5. Stage 1 Quick Health Check" → "5.5 Validate" bağlantısını **KES**
-2. "5. Stage 1 Quick Health Check" → **"5.1 Set Stage 1 Result"** bağla
-3. **"5.1 Set Stage 1 Result"** → "5.5 Validate After Stage 1" bağla
+**Adım Adım**:
+
+1. **Stage 1 AI → Node 5.1** bağlantısı:
+   - Stage 1 AI Agent çıktısını
+   - "5.1 Set Stage 1 Result" girişine bağla
+
+2. **Node 5.1 → Validation** bağlantısı:
+   - "5.1 Set Stage 1 Result" çıktısını
+   - "5.5 Validate After Stage 1" girişine bağla
+
+**Not**: Merge node'a gerek yok! Node 5.1 otomatik olarak Node 4'ü `$('Service Dependency Loader').first().json` ile erişir.
 
 ### Adım 3: Test Et
 
 1. Workflow'u test modunda çalıştır
-2. "5.1 Set Stage 1 Result" node'unun çıktısını kontrol et:
+
+2. **"5.1 Set Stage 1 Result"** console log'unu kontrol et:
+   ```
+   === SET STAGE 1 RESULT ===
+   Stage 1 AI output exists? YES
+   Context from Node 4 exists? YES
+   ```
+
+3. **"5.1 Set Stage 1 Result"** çıktısını kontrol et:
    ```json
    {
-     "metadata": { ... },
-     "context": { ... },
+     "metadata": { ... },  ← Node 4'ten geldi ✅
+     "context": { ... },   ← Node 4'ten geldi ✅
      "stageResults": {
-       "stage1": {  ← Bu alan artık VAR!
+       "stage1": {         ← Stage 1 AI'dan geldi ✅
          "stage": "health_snapshot",
          "status": "normal",
          "metrics": { ... }
@@ -110,10 +100,14 @@ return [{
      }
    }
    ```
-3. "5.5 Validate After Stage 1" console log'unu kontrol et:
+
+4. **"5.5 Validate After Stage 1"** console log'unu kontrol et:
    ```
    === VALIDATE AFTER STAGE 1 ===
    Stage 1 result exists: true ✅
+   Validation Results:
+   - Errors: 0 ✅
+   - Warnings: 0 ✅
    ✅ Stage 1 Validation PASSED
    ```
 
