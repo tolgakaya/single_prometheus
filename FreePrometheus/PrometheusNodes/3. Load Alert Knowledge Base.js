@@ -1655,4 +1655,8 @@ output._kbStats = {
   loadedAt: new Date().toISOString()
 };
 
+// CRITICAL: Add full KB dictionary for downstream nodes (File 20)
+// This field contains all 42 alert definitions needed for KB-enhanced analysis
+output._alertKBData = alertKnowledgeBase;
+
 return [output];
