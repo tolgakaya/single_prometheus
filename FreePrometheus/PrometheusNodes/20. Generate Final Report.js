@@ -678,8 +678,9 @@ function generateEnhancedJiraDescription(allStageData, masterContext, analysisTi
   const affectedServices = safeGet(allStageData, 'stage2.affected_services', []);
 
   // Extract pod/deployment info
-  const criticalPod = safeGet(allStageData, 'stage2.critical_pods.0', {});
-  const podName = criticalPod.pod_name || safeGet(allStageData, 'stage4.diagnostics_executed.0.target', 'unknown');
+  const podName = safeGet(allStageData, 'stage4.diagnostics_executed.0.target', null) ||
+                  safeGet(allStageData, 'stage2.critical_pods.0', null) ||
+                  safeGet(allStageData, 'stage1.alerts.firing.0.labels.pod', 'unknown');
   const deployment = component;
 
   // Time calculations
@@ -1405,6 +1406,7 @@ const alertName = safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname
 const podName = safeGet(allStageData, 'stage4.diagnostics_executed.0.target', null) ||
                 safeGet(allStageData, 'stage2.critical_pods.0', null) ||
                 safeGet(allStageData, 'stage1.alerts.firing.0.labels.pod', 'Unknown Pod');
+const hasKBEntry = !!(alertName && alertKnowledgeBase[alertName]);
 const kbStatus = kbEntriesLoaded > 0 ? (hasKBEntry ? 'KB: Found' : 'KB: None') : 'KB: Disabled';
 
 analysisTimeline.push({
