@@ -503,7 +503,7 @@ function getLearningSummary() {
     what_didnt_work: [],
     key_insights: []
   };
-  
+
   // What worked
   if (allStageData.stage2?.root_cause?.confidence >= 0.7) {
     summary.what_worked.push('Stage 2 successfully identified root cause with high confidence');
@@ -517,7 +517,7 @@ function getLearningSummary() {
   if (allStageData.stage6?.knowledge_base_update?.kb_updated) {
     summary.what_worked.push('Knowledge base updated with learnings for future incidents');
   }
-  
+
   // What didn't work
   if (allStageData.stage2?.root_cause?.confidence < 0.5) {
     summary.what_didnt_work.push('Low confidence in root cause identification - need more diagnostic depth');
@@ -528,7 +528,7 @@ function getLearningSummary() {
   if (!allStageData.stage5?.remediation_plan) {
     summary.what_didnt_work.push('No remediation plan generated - insufficient diagnostic clarity');
   }
-  
+
   // Key insights
   if (allStageData.stage2?.root_cause?.issue) {
     summary.key_insights.push(`Primary issue: ${allStageData.stage2.root_cause.issue}`);
@@ -539,8 +539,300 @@ function getLearningSummary() {
   if (allStageData.stage6?.prevention_quality_score >= 0.7) {
     summary.key_insights.push('Comprehensive prevention plan created - future recurrence risk reduced');
   }
-  
+
   return summary;
+}
+
+// ============================================================================
+// NEW HELPER FUNCTIONS FOR FLOW 1 OUTPUT FORMAT
+// ============================================================================
+
+// Severity to color mapping
+const SEVERITY_COLORS = {
+  critical: { border: '#d32f2f', bg: '#ffebee', icon: '🔴', text: '#d32f2f' },
+  high: { border: '#ff9800', bg: '#fff3e0', icon: '🟠', text: '#ff9800' },
+  degraded: { border: '#ff9800', bg: '#fff3e0', icon: '🟠', text: '#ff9800' },
+  warning: { border: '#ffc107', bg: '#fffde7', icon: '🟡', text: '#ffc107' },
+  medium: { border: '#ffc107', bg: '#fffde7', icon: '🟡', text: '#ffc107' },
+  low: { border: '#4caf50', bg: '#e8f5e9', icon: '🟢', text: '#4caf50' },
+  info: { border: '#2196f3', bg: '#e3f2fd', icon: '🔵', text: '#2196f3' },
+  unknown: { border: '#9e9e9e', bg: '#f5f5f5', icon: '⚪', text: '#9e9e9e' }
+};
+
+// Get severity style
+function getSeverityStyle(severity) {
+  const normalizedSeverity = (severity || 'unknown').toLowerCase();
+  return SEVERITY_COLORS[normalizedSeverity] || SEVERITY_COLORS.unknown;
+}
+
+// Map severity to priority
+function mapSeverityToPriority(severity) {
+  const normalizedSeverity = (severity || 'unknown').toLowerCase();
+  const priorityMap = {
+    critical: 'Critical',
+    high: 'High',
+    degraded: 'High',
+    warning: 'Medium',
+    medium: 'Medium',
+    low: 'Low',
+    info: 'Low',
+    unknown: 'Medium'
+  };
+  return priorityMap[normalizedSeverity] || 'Medium';
+}
+
+// Generate Markdown Report with HTML/CSS formatting
+function generateMarkdownReport(allStageData, masterContext, config) {
+  const severity = safeGet(allStageData, 'primaryDiagnosis.severity', 'unknown');
+  const style = getSeverityStyle(severity);
+
+  const alertName = safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', 'Unknown Alert');
+  const component = safeGet(allStageData, 'stage2.root_cause.component', 'unknown-component');
+  const issue = safeGet(allStageData, 'stage2.root_cause.issue', 'Issue not identified');
+  const namespace = safeGet(allStageData, 'stage2.affected_services.0', 'unknown-namespace');
+  const confidence = safeGet(allStageData, 'stage2.root_cause.confidence', 0);
+  const affectedServices = safeGet(allStageData, 'stage2.affected_services', []);
+
+  // Immediate actions
+  const immediateActions = safeGet(allStageData, 'stage5.remediation_plan.immediate_actions', []);
+
+  // SLO Impact
+  const sloStatus = safeGet(allStageData, 'stage3.slo_impact.availability_slo.status', 'unknown');
+  const sloCurrent = safeGet(allStageData, 'stage3.slo_impact.availability_slo.current', 'N/A');
+  const sloTarget = safeGet(allStageData, 'stage3.slo_impact.availability_slo.target', 'N/A');
+
+  let html = `<div style="border: 2px solid ${style.border}; border-radius: 8px; padding: 20px; background-color: ${style.bg}; font-family: Arial, sans-serif; max-width: 800px;">`;
+
+  // Header
+  html += `<h2 style="color: ${style.text}; margin-top: 0;">${style.icon} ${alertName}</h2>`;
+  html += `<p style="font-size: 14px; color: #666;"><strong>Context ID:</strong> ${masterContext.contextId || 'unknown'}</p>`;
+  html += `<hr style="border: none; border-top: 1px solid #ddd; margin: 15px 0;">`;
+
+  // Issue Summary
+  html += `<h3 style="color: #333;">🎯 Issue Summary</h3>`;
+  html += `<p><strong>Component:</strong> ${component}</p>`;
+  html += `<p><strong>Issue:</strong> ${issue}</p>`;
+  html += `<p><strong>Confidence:</strong> ${(confidence * 100).toFixed(0)}%</p>`;
+  html += `<p><strong>Severity:</strong> <span style="color: ${style.text}; font-weight: bold;">${severity.toUpperCase()}</span></p>`;
+
+  if (affectedServices.length > 0) {
+    html += `<p><strong>Affected Services:</strong> ${affectedServices.join(', ')}</p>`;
+  }
+
+  // SLO Impact
+  if (sloStatus !== 'unknown') {
+    html += `<h3 style="color: #333;">📊 SLO Impact</h3>`;
+    html += `<p><strong>Availability SLO:</strong> ${sloCurrent} (Target: ${sloTarget}) - Status: <strong>${sloStatus.toUpperCase()}</strong></p>`;
+  }
+
+  // Immediate Actions
+  if (immediateActions.length > 0) {
+    html += `<h3 style="color: #333;">🔧 Recommended Actions</h3>`;
+    html += `<ol style="margin: 10px 0; padding-left: 20px;">`;
+    immediateActions.forEach(action => {
+      html += `<li style="margin-bottom: 10px;">`;
+      html += `<strong>${safeGet(action, 'action', 'No action description')}</strong>`;
+      html += `<br><span style="font-size: 12px; color: #666;">Risk: ${safeGet(action, 'risk', 'unknown')} | Time: ${safeGet(action, 'estimated_time', 'unknown')}</span>`;
+      if (action.command) {
+        html += `<br><code style="background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 12px;">${action.command}</code>`;
+      }
+      html += `</li>`;
+    });
+    html += `</ol>`;
+  }
+
+  // Footer
+  html += `<hr style="border: none; border-top: 1px solid #ddd; margin: 15px 0;">`;
+  html += `<p style="font-size: 12px; color: #999;">Generated at ${new Date().toISOString()}</p>`;
+  html += `</div>`;
+
+  return html;
+}
+
+// Generate Oncall Ticket
+function generateOncallTicket(allStageData, masterContext) {
+  const severity = safeGet(allStageData, 'primaryDiagnosis.severity', 'unknown');
+  const style = getSeverityStyle(severity);
+
+  const alertName = safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', 'Unknown Alert');
+  const component = safeGet(allStageData, 'stage2.root_cause.component', 'unknown-component');
+  const issue = safeGet(allStageData, 'stage2.root_cause.issue', 'Issue not identified');
+  const namespace = safeGet(allStageData, 'stage2.affected_services.0', 'unknown-namespace');
+  const affectedServices = safeGet(allStageData, 'stage2.affected_services', []);
+
+  const immediateActions = safeGet(allStageData, 'stage5.remediation_plan.immediate_actions', []);
+
+  // Symptoms count
+  const symptomsCount = safeGet(allStageData, 'stage1.alerts.total', 0);
+
+  let description = `<div style="font-family: Arial, sans-serif; max-width: 700px;">`;
+  description += `<h3 style="color: ${style.text};">${style.icon} Alert: ${alertName}</h3>`;
+  description += `<p><strong>Component:</strong> ${component}</p>`;
+  description += `<p><strong>Namespace:</strong> ${namespace}</p>`;
+  description += `<p><strong>Root Cause:</strong> ${issue}</p>`;
+
+  if (affectedServices.length > 0) {
+    description += `<p><strong>Affected Services:</strong> ${affectedServices.join(', ')}</p>`;
+  }
+
+  if (immediateActions.length > 0) {
+    description += `<h4>Recommended Actions:</h4><ul>`;
+    immediateActions.forEach(action => {
+      description += `<li><strong>${safeGet(action, 'action', 'No action')}</strong> (Risk: ${safeGet(action, 'risk', 'unknown')})</li>`;
+    });
+    description += `</ul>`;
+  }
+
+  description += `<p style="font-size: 12px; color: #999;">Context ID: ${masterContext.contextId || 'unknown'}</p>`;
+  description += `</div>`;
+
+  return {
+    title: `${style.icon} ${mapSeverityToPriority(severity).toUpperCase()} ${alertName}: ${component}`,
+    description: description,
+    priority: mapSeverityToPriority(severity),
+    customFields: {
+      contextId: masterContext.contextId || 'unknown',
+      oncallFriendly: true,
+      symptoms: symptomsCount,
+      rootCause: `Diagnosis: ${issue}`
+    }
+  };
+}
+
+// Generate Jira Ticket
+function generateJiraTicket(allStageData, masterContext) {
+  const severity = safeGet(allStageData, 'primaryDiagnosis.severity', 'unknown');
+  const alertName = safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', 'Unknown Alert');
+  const component = safeGet(allStageData, 'stage2.root_cause.component', 'unknown-component');
+  const issue = safeGet(allStageData, 'stage2.root_cause.issue', 'Issue not identified');
+
+  // Use the same markdown report for Jira description
+  const description = generateMarkdownReport(allStageData, masterContext, {});
+
+  return {
+    title: `[${alertName}] ${component} - ${issue}`,
+    description: description,
+    priority: mapSeverityToPriority(severity)
+  };
+}
+
+// Generate Knowledge Base Insights (placeholder without KB nodes)
+function generateKnowledgeBaseInsights(allStageData) {
+  const severity = safeGet(allStageData, 'primaryDiagnosis.severity', 'medium');
+
+  // Derive urgency from severity
+  const urgencyMap = {
+    critical: 'CRITICAL',
+    high: 'HIGH',
+    degraded: 'HIGH',
+    warning: 'MEDIUM',
+    medium: 'MEDIUM',
+    low: 'LOW',
+    info: 'LOW',
+    unknown: 'MEDIUM'
+  };
+  const urgencyLevel = urgencyMap[(severity || 'medium').toLowerCase()] || 'MEDIUM';
+
+  // Derive alert category from alert name or component
+  const alertName = safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', '');
+  let alertCategory = 'UNKNOWN';
+  if (alertName.toLowerCase().includes('pod')) {
+    alertCategory = 'APPLICATION';
+  } else if (alertName.toLowerCase().includes('node')) {
+    alertCategory = 'INFRASTRUCTURE';
+  } else if (alertName.toLowerCase().includes('disk') || alertName.toLowerCase().includes('memory')) {
+    alertCategory = 'RESOURCE';
+  } else if (alertName.toLowerCase().includes('network')) {
+    alertCategory = 'NETWORK';
+  }
+
+  // Cascade risk estimation
+  const affectedServicesCount = safeGet(allStageData, 'stage2.affected_services.length', 0);
+  let cascadeRisk = 'LOW';
+  if (affectedServicesCount > 5) {
+    cascadeRisk = 'HIGH';
+  } else if (affectedServicesCount > 2) {
+    cascadeRisk = 'MEDIUM';
+  }
+
+  return {
+    kbIntegrationEnabled: false, // No KB nodes in Flow 2
+    kbEnhanced: false,
+    alertCategory: alertCategory,
+    urgencyLevel: urgencyLevel,
+    cascadeRisk: cascadeRisk,
+    kbUtilization: {
+      utilizationRate: '0%',
+      matchedEntries: 0,
+      totalEntries: 0,
+      lastUpdated: null
+    },
+    categoryAnalysis: {
+      category: alertCategory,
+      typicalResolutionTime: 'Unknown',
+      commonCauses: [],
+      recommendedRunbooks: []
+    }
+  };
+}
+
+// Generate Debug Info
+function generateDebugInfo(allStageData, masterContext) {
+  return {
+    contextId: masterContext.contextId || 'unknown',
+    executionFlow: {
+      stagesExecuted: Object.keys(allStageData).filter(k => allStageData[k] !== null).length,
+      stageCompletions: {
+        stage1: !!allStageData.stage1,
+        stage2: !!allStageData.stage2,
+        stage3: !!allStageData.stage3,
+        stage4: !!allStageData.stage4,
+        stage5: !!allStageData.stage5,
+        stage6: !!allStageData.stage6
+      }
+    },
+    kbAwareCorrelation: {
+      engine: 'KB-Aware Universal Correlation Engine',
+      version: '1.0-HYBRID',
+      kbIntegration: false, // No KB nodes in Flow 2
+      fallbackMode: 'NATIVE_ANALYSIS'
+    },
+    dataQuality: {
+      mockDataDetected: false,
+      contextPreserved: true,
+      allStagesHaveData: Object.keys(allStageData).filter(k => allStageData[k] !== null).length >= 1
+    },
+    timestamp: new Date().toISOString()
+  };
+}
+
+// Generate Quick Actions (kubectl commands)
+function generateQuickActions(allStageData, masterContext) {
+  const component = safeGet(allStageData, 'stage2.root_cause.component', 'unknown-component');
+  const namespace = safeGet(allStageData, 'stage2.affected_services.0', 'unknown-namespace');
+
+  // Try to extract actual namespace from service name (format: namespace-servicename)
+  let actualNamespace = namespace;
+  if (namespace.includes('-')) {
+    const parts = namespace.split('-');
+    if (DEFAULT_NAMESPACES.includes(parts[0])) {
+      actualNamespace = parts[0];
+    }
+  }
+
+  // If still unknown, use first production namespace
+  if (actualNamespace === 'unknown-namespace' || !actualNamespace) {
+    actualNamespace = DEFAULT_NAMESPACES[0];
+  }
+
+  return {
+    rollback: `kubectl rollout undo deployment/${component} -n ${actualNamespace}`,
+    monitor: `watch kubectl get pods -n ${actualNamespace} | grep ${component}`,
+    logs: `kubectl logs -f deployment/${component} -n ${actualNamespace}`,
+    scale: `kubectl scale deployment/${component} --replicas=3 -n ${actualNamespace}`,
+    describe: `kubectl describe pod -l app=${component} -n ${actualNamespace}`,
+    events: `kubectl get events -n ${actualNamespace} --sort-by='.lastTimestamp' | grep ${component}`
+  };
 }
 
 // Final raporu oluştur
@@ -728,6 +1020,30 @@ if (masterContext.source?.type === 'chat') {
   finalReport.chatResponse = generateResponse(finalReport);
 } else {
   finalReport.summary = generateResponse(finalReport);
+}
+
+// ============================================================================
+// ADD NEW FIELDS FROM FLOW 1 (Hybrid Approach)
+// ============================================================================
+
+// Add markdownReport (HTML/CSS formatted visual report)
+finalReport.markdownReport = generateMarkdownReport(allStageData, masterContext, config);
+
+// Add oncallTicket (oncall-friendly ticket)
+finalReport.oncallTicket = generateOncallTicket(allStageData, masterContext);
+
+// Add jiraTicket (Jira-ready ticket)
+finalReport.jiraTicket = generateJiraTicket(allStageData, masterContext);
+
+// Add knowledgeBaseInsights (placeholder without KB nodes)
+finalReport.knowledgeBaseInsights = generateKnowledgeBaseInsights(allStageData);
+
+// Add _debug (debug information)
+finalReport._debug = generateDebugInfo(allStageData, masterContext);
+
+// Add quickActions to executiveSummary if not present
+if (!finalReport.executiveSummary.quickActions) {
+  finalReport.executiveSummary.quickActions = generateQuickActions(allStageData, masterContext);
 }
 
 // Direkt raporu döndür
