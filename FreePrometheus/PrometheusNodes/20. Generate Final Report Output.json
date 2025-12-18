@@ -1,30 +1,26 @@
 [
   {
-    "executionId": "7264",
-    "timestamp": "2025-12-18T14:37:40.099Z",
-    "duration": "128s",
-    "cluster": "bstp-cms-global-production",
+    "timestamp": "2025-12-18T16:53:43.084Z",
+    "duration": "NaNs",
+    "cluster": "unknown",
     "contextTracking": {
-      "contextId": "ctx-1766068532290-28u86f5qf",
-      "contextCreated": "2025-12-18T14:35:32.291Z",
+      "contextId": "ctx-1766076687180-o6nlz1opk",
       "contextPreserved": true,
       "contextJourney": {
-        "start": "2025-12-18T14:35:32.291Z",
-        "end": "2025-12-18T14:37:40.099Z",
-        "durationMs": 127808,
+        "end": "2025-12-18T16:53:43.084Z",
+        "durationMs": null,
         "stagesCompleted": [
-          "stage1",
-          "stage2",
           "stage3",
           "stage4",
-          "stage5"
+          "stage5",
+          "stage1",
+          "stage2"
         ]
       }
     },
     "trigger": {
       "source": {
-        "type": "manual",
-        "priority": "normal"
+        "type": "unknown"
       },
       "priority": "normal",
       "forceDeepAnalysis": false
@@ -74,12 +70,12 @@
       "rootCause": {
         "identified": false,
         "component": "bss-mc-pcm-product-offer-detail",
-        "issue": "Pod restarts and memory usage",
+        "issue": "Pod restarts and memory pressure",
         "evidence": [
-          "Pod restarts in bss-mc-pcm-product-offer-detail",
-          "High memory usage in elasticsearch-data-0"
+          "Pod restarts observed in bss-mc-pcm-product-offer-detail",
+          "Memory pressure in elasticsearch-data-0"
         ],
-        "confidence": 0.45
+        "confidence": 0.5
       },
       "affectedServices": [
         "bss-mc-pcm-product-offer-detail",
@@ -97,14 +93,15 @@
       ],
       "diagnosticEvidence": [
         {
-          "issue": "Pods experiencing OOMKilled due to high memory usage",
+          "issue": "Pod OOMKilled due to memory limit exceeded",
           "evidence": [
-            "Pod restarts in bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
-            "High memory usage in elasticsearch-data-0"
+            "Pod restart count: 5",
+            "Last termination reason: OOMKilled",
+            "Memory used: 1.2Gi, Memory limit: 1Gi"
           ],
-          "severity": "high",
-          "impact": "Service degradation due to pod restarts and memory exhaustion",
-          "namespace": "bstp-cms-global-production"
+          "severity": "critical",
+          "impact": "Pod instability affecting metrics collection",
+          "namespace": "em-control-plane-prod"
         }
       ],
       "sloImpact": {
@@ -124,25 +121,25 @@
     "actions": {
       "immediate": [
         {
-          "action": "Rollback deployment to previous version",
-          "command": "kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production",
-          "risk": "low",
-          "estimated_time": "2-5 minutes",
-          "expected_outcome": "Restore service to previous stable version"
+          "action": "Increase memory limits for the deployment to prevent OOMKilled events.",
+          "command": "kubectl set resources deployment/kube-prometheus-stack --limits=memory=2Gi -n em-control-plane-prod",
+          "risk": "medium",
+          "estimated_time": "5-10 min",
+          "expected_outcome": "Pod should stabilize with increased memory limits, reducing OOMKilled events."
         }
       ],
       "shortTerm": [
         {
-          "action": "Increase memory limits temporarily",
+          "action": "Analyze memory usage patterns to identify potential memory leaks.",
           "timeline": "1-2 days",
-          "details": "Set memory limit to 2Gi while investigating root cause"
+          "details": "Review application logs and memory profiling data to detect abnormal memory consumption."
         }
       ],
       "longTerm": [
         {
-          "action": "Fix issues in bss-mc-pcm-product-offer-detail",
+          "action": "Fix memory leak in the application code and optimize memory usage.",
           "timeline": "1-2 weeks",
-          "details": "Review and fix the root cause in bss-mc-pcm-product-offer-detail component"
+          "details": "Conduct a thorough code review and implement memory management best practices."
         }
       ],
       "preventive": []
@@ -151,9 +148,9 @@
       "stagesExecuted": 7,
       "toolsUsed": 21,
       "alertsResolved": 0,
-      "executionTime": 128,
+      "executionTime": null,
       "contextPreserved": true,
-      "decisionsTracked": 3
+      "decisionsTracked": 0
     },
     "nextSteps": [],
     "detailedResults": {
@@ -182,19 +179,19 @@
         "namespaces_analyzed": []
       },
       "stage2_analysis": {
-        "investigation_id": "ctx-1766068532290-28u86f5qf-stage2",
+        "investigation_id": "ctx-1766076687180-o6nlz1opk-stage2",
         "root_cause": {
           "identified": false,
           "component": "bss-mc-pcm-product-offer-detail",
-          "issue": "Pod restarts and memory usage",
+          "issue": "Pod restarts and memory pressure",
           "evidence": [
-            "Pod restarts in bss-mc-pcm-product-offer-detail",
-            "High memory usage in elasticsearch-data-0"
+            "Pod restarts observed in bss-mc-pcm-product-offer-detail",
+            "Memory pressure in elasticsearch-data-0"
           ],
-          "confidence": 0.45
+          "confidence": 0.5
         },
         "correlation_matrix": {
-          "primary_chain": "Pod restarts and memory usage",
+          "primary_chain": "Pod restarts and memory pressure observed in critical pods",
           "affected_services": [
             "bss-mc-pcm-product-offer-detail",
             "bss-mc-asset-management"
@@ -216,7 +213,7 @@
         ],
         "proceed_to_stage3": true,
         "alert_correlation_needed": true,
-        "confidence": 0.45
+        "confidence": 0.5
       },
       "stage3_alerts": {
         "active_alerts": [
@@ -288,17 +285,17 @@
         "recommended_actions": [
           {
             "alert": "KubeHpaMaxedOut",
-            "action": "Monitor",
-            "confidence": 0.5,
+            "action": "Check pod status",
+            "confidence": 0.8,
             "risk": "medium",
-            "command": null
+            "command": "kubectl describe pod kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf"
           },
           {
             "alert": "KubeCPUOvercommit",
-            "action": "Monitor",
-            "confidence": 0.5,
+            "action": "Review resource limits",
+            "confidence": 0.8,
             "risk": "medium",
-            "command": null
+            "command": "kubectl describe node"
           }
         ],
         "correlation_confidence": 0.8,
@@ -309,26 +306,26 @@
       "stage4_diagnosis": {
         "diagnostics_executed": [
           {
-            "target": "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+            "target": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
             "type": "pod",
             "commands_run": [
-              "kubectl describe pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
-              "kubectl logs bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 --previous"
+              "kubectl describe pod kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+              "kubectl logs kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf --previous"
             ],
             "findings": {
               "pod_status": {
                 "phase": "Running",
-                "restart_count": 3,
+                "restart_count": 5,
                 "last_termination": {
                   "reason": "OOMKilled",
                   "exit_code": 137,
-                  "finished_at": "2025-12-18T14:30:00.000Z"
+                  "finished_at": "2025-12-18T16:45:00.000Z"
                 }
               },
               "error_logs": [
                 {
-                  "timestamp": "2025-12-18T14:29:50.000Z",
-                  "level": "ERROR",
+                  "timestamp": "2025-12-18T16:44:30.000Z",
+                  "level": "error",
                   "message": "Out of memory error",
                   "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
                 }
@@ -338,89 +335,46 @@
                   "type": "Warning",
                   "reason": "OOMKilled",
                   "message": "Pod was killed due to out of memory",
-                  "timestamp": "2025-12-18T14:30:00.000Z"
+                  "timestamp": "2025-12-18T16:45:00.000Z"
                 }
               ],
               "resource_usage": {
-                "memory_request": "512Mi",
+                "memory_request": "500Mi",
                 "memory_limit": "1Gi",
                 "memory_used": "1.2Gi",
                 "cpu_used": "250m"
-              }
-            }
-          },
-          {
-            "target": "elasticsearch-data-0",
-            "type": "pod",
-            "commands_run": [
-              "kubectl describe pod elasticsearch-data-0",
-              "kubectl logs elasticsearch-data-0 --previous"
-            ],
-            "findings": {
-              "pod_status": {
-                "phase": "Running",
-                "restart_count": 2,
-                "last_termination": {
-                  "reason": "OOMKilled",
-                  "exit_code": 137,
-                  "finished_at": "2025-12-18T14:15:00.000Z"
-                }
-              },
-              "error_logs": [
-                {
-                  "timestamp": "2025-12-18T14:14:50.000Z",
-                  "level": "ERROR",
-                  "message": "Out of memory error",
-                  "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
-                }
-              ],
-              "events": [
-                {
-                  "type": "Warning",
-                  "reason": "OOMKilled",
-                  "message": "Pod was killed due to out of memory",
-                  "timestamp": "2025-12-18T14:15:00.000Z"
-                }
-              ],
-              "resource_usage": {
-                "memory_request": "2Gi",
-                "memory_limit": "4Gi",
-                "memory_used": "4.5Gi",
-                "cpu_used": "500m"
               }
             }
           }
         ],
         "enriched_context": {
           "deployment_info": {
-            "name": "bss-mc-pcm-product-offer-detail",
-            "version": "v1.2.3",
-            "replicas": "2/2",
-            "last_update": "2025-12-18T12:00:00.000Z",
+            "name": "kube-prometheus-stack",
+            "version": "v0.56.0",
+            "replicas": "1/1",
+            "last_update": "2025-12-18T15:00:00.000Z",
             "update_strategy": "RollingUpdate"
           },
           "recent_changes": [
             {
               "type": "deployment",
-              "time": "2025-12-18T12:00:00.000Z",
-              "change": "Scaled replicas from 1 to 2",
+              "time": "2025-12-18T15:00:00.000Z",
+              "change": "Increased memory limit from 512Mi to 1Gi",
               "user": "admin"
             }
           ],
           "dependencies": {
             "upstream": [
-              "service-a",
-              "service-b"
+              "kube-apiserver"
             ],
             "downstream": [
-              "service-c"
+              "kube-scheduler"
             ],
             "databases": [
-              "db1",
-              "db2"
+              "prometheus-db"
             ],
             "external": [
-              "external-service-1"
+              "external-metrics-service"
             ]
           },
           "kb_analysis": {
@@ -433,150 +387,143 @@
         "diagnostic_summary": {
           "confirmed_issues": [
             {
-              "issue": "Pods experiencing OOMKilled due to high memory usage",
+              "issue": "Pod OOMKilled due to memory limit exceeded",
               "evidence": [
-                "Pod restarts in bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
-                "High memory usage in elasticsearch-data-0"
+                "Pod restart count: 5",
+                "Last termination reason: OOMKilled",
+                "Memory used: 1.2Gi, Memory limit: 1Gi"
               ],
-              "severity": "high",
-              "impact": "Service degradation due to pod restarts and memory exhaustion",
-              "namespace": "bstp-cms-global-production"
+              "severity": "critical",
+              "impact": "Pod instability affecting metrics collection",
+              "namespace": "em-control-plane-prod"
             }
           ],
           "secondary_issues": []
         },
         "confirmed_issues": [
           {
-            "issue": "Pods experiencing OOMKilled due to high memory usage",
+            "issue": "Pod OOMKilled due to memory limit exceeded",
             "evidence": [
-              "Pod restarts in bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
-              "High memory usage in elasticsearch-data-0"
+              "Pod restart count: 5",
+              "Last termination reason: OOMKilled",
+              "Memory used: 1.2Gi, Memory limit: 1Gi"
             ],
-            "severity": "high",
-            "impact": "Service degradation due to pod restarts and memory exhaustion",
-            "namespace": "bstp-cms-global-production"
+            "severity": "critical",
+            "impact": "Pod instability affecting metrics collection",
+            "namespace": "em-control-plane-prod"
           }
         ],
         "secondary_issues": [],
-        "remediation_confidence": 0.9,
+        "remediation_confidence": 1,
         "proceed_to_stage5": true,
         "kb_enhanced": false,
         "primary_diagnosis": {
-          "issue": "Pods experiencing OOMKilled due to high memory usage",
+          "issue": "Pod OOMKilled due to memory limit exceeded",
           "evidence": [
-            "Pod restarts in bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
-            "High memory usage in elasticsearch-data-0"
+            "Pod restart count: 5",
+            "Last termination reason: OOMKilled",
+            "Memory used: 1.2Gi, Memory limit: 1Gi"
           ],
-          "severity": "high",
-          "impact": "Service degradation due to pod restarts and memory exhaustion",
-          "namespace": "bstp-cms-global-production"
+          "severity": "critical",
+          "impact": "Pod instability affecting metrics collection",
+          "namespace": "em-control-plane-prod"
         }
       },
       "stage5_remediation": {
-        "analysis_id": "ctx-1766068532290-28u86f5qf-stage5",
+        "analysis_id": "ctx-1766076687180-o6nlz1opk-stage5",
         "remediation_plan": {
           "immediate_actions": [
             {
-              "action": "Rollback deployment to previous version",
-              "command": "kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production",
-              "risk": "low",
-              "estimated_time": "2-5 minutes",
-              "expected_outcome": "Restore service to previous stable version"
+              "action": "Increase memory limits for the deployment to prevent OOMKilled events.",
+              "command": "kubectl set resources deployment/kube-prometheus-stack --limits=memory=2Gi -n em-control-plane-prod",
+              "risk": "medium",
+              "estimated_time": "5-10 min",
+              "expected_outcome": "Pod should stabilize with increased memory limits, reducing OOMKilled events."
             }
           ],
           "short_term_fixes": [
             {
-              "action": "Increase memory limits temporarily",
+              "action": "Analyze memory usage patterns to identify potential memory leaks.",
               "timeline": "1-2 days",
-              "details": "Set memory limit to 2Gi while investigating root cause"
+              "details": "Review application logs and memory profiling data to detect abnormal memory consumption."
             }
           ],
           "long_term_solutions": [
             {
-              "action": "Fix issues in bss-mc-pcm-product-offer-detail",
+              "action": "Fix memory leak in the application code and optimize memory usage.",
               "timeline": "1-2 weeks",
-              "details": "Review and fix the root cause in bss-mc-pcm-product-offer-detail component"
+              "details": "Conduct a thorough code review and implement memory management best practices."
             }
           ],
           "preventive_measures": [
-            "Implement memory profiling in CI/CD",
-            "Add memory leak detection tests",
-            "Set up gradual rollout strategy"
+            "Implement CI/CD improvements to include memory profiling in testing.",
+            "Enhance monitoring with alerts for memory usage thresholds.",
+            "Develop runbooks for handling OOMKilled events."
           ]
         },
         "risk_assessment": {
-          "overall_risk": "medium",
+          "overall_risk": "high",
           "factors": [
-            "bss-mc-pcm-product-offer-detail is critical",
-            "Rollback is tested and safe",
-            "Memory issue is contained to specific pods"
+            "Service criticality: High impact on metrics collection.",
+            "Remediation safety: Medium risk due to resource changes.",
+            "Issue containment: Limited to specific deployment."
           ],
           "mitigation_steps": [
-            "Monitor closely after rollback",
-            "Keep team on standby",
-            "Prepare hotfix if needed"
+            "Monitor pod status and memory usage during remediation.",
+            "Coordinate with the development team for code fixes.",
+            "Prepare rollback procedures if memory increase does not resolve the issue."
           ]
         },
         "implementation_order": [
           {
             "step": 1,
-            "action": "Execute rollback",
+            "action": "Increase memory limits for the deployment.",
             "dependencies": [],
-            "validation": "Check pod status and memory usage"
+            "validation": "Verify pod stability and absence of OOMKilled events."
           },
           {
             "step": 2,
-            "action": "Verify service health",
+            "action": "Monitor memory usage and application logs.",
             "dependencies": [
               "step_1"
             ],
-            "validation": "Check error rates and response times"
-          },
-          {
-            "step": 3,
-            "action": "Update monitoring alerts",
-            "dependencies": [
-              "step_2"
-            ],
-            "validation": "Ensure alerts are firing correctly"
+            "validation": "Ensure memory usage remains within new limits and no further OOMKilled events occur."
           }
         ],
         "success_metrics": {
           "immediate": [
-            "Pod restart count = 0",
-            "Memory usage < 80% of limit",
-            "Error rate < 0.1%"
+            "Pod status remains Running without restarts.",
+            "Memory usage stays below 2Gi.",
+            "No new OOMKilled events in logs."
           ],
           "short_term": [
-            "No OOMKilled events in 24h",
-            "SLO compliance > 99.9%"
+            "Memory usage patterns identified and addressed.",
+            "SLO compliance maintained at 99.9%."
           ],
           "long_term": [
-            "Memory leak fixed in code",
-            "Automated memory testing in place"
+            "Memory leak fixes validated through testing.",
+            "Improved memory management processes in place."
           ]
         },
         "rollback_plan": {
           "trigger_conditions": [
-            "Error rate > 5%",
-            "Multiple pod failures",
-            "Memory usage continues to spike"
+            "Pod continues to experience OOMKilled events after memory increase.",
+            "Memory usage exceeds new limits without resolution."
           ],
           "steps": [
-            "Revert to current version",
-            "Scale up replicas",
-            "Enable circuit breaker"
+            "Revert memory limits to previous configuration.",
+            "Escalate to engineering team for further investigation."
           ],
-          "validation": "Verify previous version number before rollback"
+          "validation": "Pod returns to stable state with no OOMKilled events."
         },
         "primary_action": {
-          "action": "Rollback deployment to previous version",
-          "command": "kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production",
-          "risk": "low",
-          "estimated_time": "2-5 minutes",
-          "expected_outcome": "Restore service to previous stable version"
+          "action": "Increase memory limits for the deployment to prevent OOMKilled events.",
+          "command": "kubectl set resources deployment/kube-prometheus-stack --limits=memory=2Gi -n em-control-plane-prod",
+          "risk": "medium",
+          "estimated_time": "5-10 min",
+          "expected_outcome": "Pod should stabilize with increased memory limits, reducing OOMKilled events."
         },
-        "overall_risk": "medium"
+        "overall_risk": "high"
       },
       "stage6_prevention": null
     },
@@ -586,12 +533,12 @@
       "rootCause": {
         "identified": false,
         "component": "bss-mc-pcm-product-offer-detail",
-        "issue": "Pod restarts and memory usage",
+        "issue": "Pod restarts and memory pressure",
         "evidence": [
-          "Pod restarts in bss-mc-pcm-product-offer-detail",
-          "High memory usage in elasticsearch-data-0"
+          "Pod restarts observed in bss-mc-pcm-product-offer-detail",
+          "Memory pressure in elasticsearch-data-0"
         ],
-        "confidence": 0.45
+        "confidence": 0.5
       },
       "affectedServices": [
         "bss-mc-pcm-product-offer-detail",
@@ -641,205 +588,50 @@
       ],
       "confirmedIssues": [
         {
-          "issue": "Pods experiencing OOMKilled due to high memory usage",
+          "issue": "Pod OOMKilled due to memory limit exceeded",
           "evidence": [
-            "Pod restarts in bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
-            "High memory usage in elasticsearch-data-0"
+            "Pod restart count: 5",
+            "Last termination reason: OOMKilled",
+            "Memory used: 1.2Gi, Memory limit: 1Gi"
           ],
-          "severity": "high",
-          "impact": "Service degradation due to pod restarts and memory exhaustion",
-          "namespace": "bstp-cms-global-production"
+          "severity": "critical",
+          "impact": "Pod instability affecting metrics collection",
+          "namespace": "em-control-plane-prod"
         }
       ],
       "primaryDiagnosis": {
-        "issue": "Pods experiencing OOMKilled due to high memory usage",
+        "issue": "Pod OOMKilled due to memory limit exceeded",
         "evidence": [
-          "Pod restarts in bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
-          "High memory usage in elasticsearch-data-0"
+          "Pod restart count: 5",
+          "Last termination reason: OOMKilled",
+          "Memory used: 1.2Gi, Memory limit: 1Gi"
         ],
-        "severity": "high",
-        "impact": "Service degradation due to pod restarts and memory exhaustion",
-        "namespace": "bstp-cms-global-production"
+        "severity": "critical",
+        "impact": "Pod instability affecting metrics collection",
+        "namespace": "em-control-plane-prod"
       },
-      "remediationConfidence": 0.9
+      "remediationConfidence": 1
     },
     "primaryDiagnosis": {
-      "issue": "Pods experiencing OOMKilled due to high memory usage",
+      "issue": "Pod OOMKilled due to memory limit exceeded",
       "evidence": [
-        "Pod restarts in bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
-        "High memory usage in elasticsearch-data-0"
+        "Pod restart count: 5",
+        "Last termination reason: OOMKilled",
+        "Memory used: 1.2Gi, Memory limit: 1Gi"
       ],
-      "severity": "high",
-      "impact": "Service degradation due to pod restarts and memory exhaustion",
-      "namespace": "bstp-cms-global-production",
+      "severity": "critical",
+      "impact": "Pod instability affecting metrics collection",
+      "namespace": "em-control-plane-prod",
       "stage": "Stage 4",
-      "timestamp": "2025-12-18T14:36:47.019Z"
+      "timestamp": "2025-12-18T16:53:05.919Z"
     },
     "preservedContext": {
-      "contextId": "ctx-1766068532290-28u86f5qf",
-      "createdAt": "2025-12-18T14:35:32.291Z",
-      "source": {
-        "type": "manual",
-        "priority": "normal"
-      },
+      "contextId": "ctx-1766076687180-o6nlz1opk",
       "initialParams": {
-        "startTime": 1766064932,
-        "endTime": 1766068532,
-        "namespaces": [
-          "bstp-cms-global-production",
-          "bstp-cms-prod-v3",
-          "em-global-prod-3pp",
-          "em-global-prod-eom",
-          "em-global-prod-flowe",
-          "em-global-prod",
-          "em-prod-3pp",
-          "em-prod-eom",
-          "em-prod-flowe",
-          "em-prod",
-          "etiyamobile-production",
-          "etiyamobile-prod"
-        ],
-        "services": [],
-        "focusAreas": [],
-        "analysisType": "general",
-        "context": {
-          "otherAgents": [],
-          "userIntent": "",
-          "expectedOutputFormat": "detailed"
-        }
-      },
-      "stageConfig": {
-        "maxStages": 1,
-        "enablePatternAnalysis": false,
-        "enableAnomalyDetection": false,
-        "enablePredictiveAnalysis": false,
-        "forceDeepAnalysis": false
-      },
-      "priority": "normal",
-      "forceDeepAnalysis": false,
-      "workflowMetadata": {
-        "workflowId": "ysMD5nc5K6RCPF0Q",
-        "executionId": "7264",
-        "orchestratorId": null,
-        "requestId": "req-1766068532291"
+        "startTime": 1766073087,
+        "endTime": 1766076687
       },
       "stageResults": {
-        "stage1": {
-          "output": {
-            "overall_status": "degraded",
-            "alerts": {
-              "total": 6,
-              "critical": 0,
-              "warning": 2,
-              "top_alerts": [
-                "KubeHpaMaxedOut",
-                "KubeCPUOvercommit"
-              ]
-            },
-            "scores": {
-              "cluster_health": 5,
-              "node_availability": 5,
-              "pod_stability": 5,
-              "api_reliability": 1
-            },
-            "quick_findings": [
-              "Active alerts detected: KubeHpaMaxedOut, KubeCPUOvercommit"
-            ],
-            "proceed_to_stage2": true
-          },
-          "completedAt": "2025-12-18T14:35:40.140Z",
-          "decision": true
-        },
-        "stage2": {
-          "output": {
-            "investigation_id": "ctx-1766068532290-28u86f5qf-stage2",
-            "triggered_by": "Stage 1: 6 alerts",
-            "execution_phases": {
-              "instant": {
-                "tools_used": [
-                  "Pod_Status_Check",
-                  "Container_Restarts",
-                  "Pod_Resource_Usage",
-                  "Node_Resource_Status",
-                  "Node_Conditions",
-                  "Node_Network_Health",
-                  "Kubernetes_HPA_Status",
-                  "Kubernetes_PVC_Status",
-                  "HTTP_Error_Rates",
-                  "Application_Metrics"
-                ],
-                "duration": "<actual duration>",
-                "findings": {
-                  "critical_pods": [
-                    "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
-                    "bss-mc-asset-management-7f48bd88d-6k94j"
-                  ],
-                  "resource_pressure": [
-                    "elasticsearch-data-0",
-                    "elasticsearch-data-1"
-                  ],
-                  "workload_issues": [
-                    "bss-mc-cpq",
-                    "wso2am-control-plane"
-                  ],
-                  "scaling_issues": [
-                    "bss-mc-cpq",
-                    "bss-mc-crm-ntf-integrator"
-                  ]
-                }
-              },
-              "trend": {
-                "tools_used": [
-                  "Historical_Comparison_24h"
-                ],
-                "findings": {
-                  "memory_growth": "Stable",
-                  "restart_pattern": "No pattern",
-                  "peak_times": [],
-                  "pvc_growth": "Stable"
-                }
-              },
-              "anomaly": {
-                "tools_used": [
-                  "Resource_Exhaustion_Prediction"
-                ],
-                "findings": {
-                  "predictions": [],
-                  "anomalies": []
-                }
-              }
-            },
-            "correlation_matrix": {
-              "primary_chain": "Pod restarts and memory usage",
-              "affected_services": [
-                "bss-mc-pcm-product-offer-detail",
-                "bss-mc-asset-management"
-              ],
-              "blast_radius": "Limited to specific pods",
-              "kubernetes_impact": {
-                "evicted_pods": 0,
-                "pending_pods": 0,
-                "failed_schedules": 0
-              }
-            },
-            "root_cause": {
-              "identified": false,
-              "component": "bss-mc-pcm-product-offer-detail",
-              "issue": "Pod restarts and memory usage",
-              "evidence": [
-                "Pod restarts in bss-mc-pcm-product-offer-detail",
-                "High memory usage in elasticsearch-data-0"
-              ],
-              "confidence": 0.45
-            },
-            "proceed_to_stage3": true,
-            "alert_correlation_needed": true
-          },
-          "completedAt": "2025-12-18T14:36:07.845Z",
-          "decision": true,
-          "rootCauseIdentified": false,
-          "confidence": 0.45
-        },
         "stage3": {
           "output": {
             "active_alerts": [
@@ -920,50 +712,50 @@
             "recommended_alert_actions": [
               {
                 "alert": "KubeHpaMaxedOut",
-                "action": "Monitor",
-                "confidence": 0.5,
+                "action": "Check pod status",
+                "confidence": 0.8,
                 "risk": "medium",
-                "command": null
+                "command": "kubectl describe pod kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf"
               },
               {
                 "alert": "KubeCPUOvercommit",
-                "action": "Monitor",
-                "confidence": 0.5,
+                "action": "Review resource limits",
+                "confidence": 0.8,
                 "risk": "medium",
-                "command": null
+                "command": "kubectl describe node"
               }
             ],
             "correlation_confidence": 0.8,
             "proceed_to_stage4": true,
             "auto_remediation_approved": false
           },
-          "completedAt": "2025-12-18T14:36:16.985Z",
+          "completedAt": "2025-12-18T16:52:37.415Z",
           "decision": true
         },
         "stage4": {
           "output": {
             "diagnostics_executed": [
               {
-                "target": "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+                "target": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
                 "type": "pod",
                 "commands_run": [
-                  "kubectl describe pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
-                  "kubectl logs bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 --previous"
+                  "kubectl describe pod kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+                  "kubectl logs kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf --previous"
                 ],
                 "findings": {
                   "pod_status": {
                     "phase": "Running",
-                    "restart_count": 3,
+                    "restart_count": 5,
                     "last_termination": {
                       "reason": "OOMKilled",
                       "exit_code": 137,
-                      "finished_at": "2025-12-18T14:30:00.000Z"
+                      "finished_at": "2025-12-18T16:45:00.000Z"
                     }
                   },
                   "error_logs": [
                     {
-                      "timestamp": "2025-12-18T14:29:50.000Z",
-                      "level": "ERROR",
+                      "timestamp": "2025-12-18T16:44:30.000Z",
+                      "level": "error",
                       "message": "Out of memory error",
                       "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
                     }
@@ -973,89 +765,46 @@
                       "type": "Warning",
                       "reason": "OOMKilled",
                       "message": "Pod was killed due to out of memory",
-                      "timestamp": "2025-12-18T14:30:00.000Z"
+                      "timestamp": "2025-12-18T16:45:00.000Z"
                     }
                   ],
                   "resource_usage": {
-                    "memory_request": "512Mi",
+                    "memory_request": "500Mi",
                     "memory_limit": "1Gi",
                     "memory_used": "1.2Gi",
                     "cpu_used": "250m"
-                  }
-                }
-              },
-              {
-                "target": "elasticsearch-data-0",
-                "type": "pod",
-                "commands_run": [
-                  "kubectl describe pod elasticsearch-data-0",
-                  "kubectl logs elasticsearch-data-0 --previous"
-                ],
-                "findings": {
-                  "pod_status": {
-                    "phase": "Running",
-                    "restart_count": 2,
-                    "last_termination": {
-                      "reason": "OOMKilled",
-                      "exit_code": 137,
-                      "finished_at": "2025-12-18T14:15:00.000Z"
-                    }
-                  },
-                  "error_logs": [
-                    {
-                      "timestamp": "2025-12-18T14:14:50.000Z",
-                      "level": "ERROR",
-                      "message": "Out of memory error",
-                      "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
-                    }
-                  ],
-                  "events": [
-                    {
-                      "type": "Warning",
-                      "reason": "OOMKilled",
-                      "message": "Pod was killed due to out of memory",
-                      "timestamp": "2025-12-18T14:15:00.000Z"
-                    }
-                  ],
-                  "resource_usage": {
-                    "memory_request": "2Gi",
-                    "memory_limit": "4Gi",
-                    "memory_used": "4.5Gi",
-                    "cpu_used": "500m"
                   }
                 }
               }
             ],
             "enriched_context": {
               "deployment_info": {
-                "name": "bss-mc-pcm-product-offer-detail",
-                "version": "v1.2.3",
-                "replicas": "2/2",
-                "last_update": "2025-12-18T12:00:00.000Z",
+                "name": "kube-prometheus-stack",
+                "version": "v0.56.0",
+                "replicas": "1/1",
+                "last_update": "2025-12-18T15:00:00.000Z",
                 "update_strategy": "RollingUpdate"
               },
               "recent_changes": [
                 {
                   "type": "deployment",
-                  "time": "2025-12-18T12:00:00.000Z",
-                  "change": "Scaled replicas from 1 to 2",
+                  "time": "2025-12-18T15:00:00.000Z",
+                  "change": "Increased memory limit from 512Mi to 1Gi",
                   "user": "admin"
                 }
               ],
               "dependencies": {
                 "upstream": [
-                  "service-a",
-                  "service-b"
+                  "kube-apiserver"
                 ],
                 "downstream": [
-                  "service-c"
+                  "kube-scheduler"
                 ],
                 "databases": [
-                  "db1",
-                  "db2"
+                  "prometheus-db"
                 ],
                 "external": [
-                  "external-service-1"
+                  "external-metrics-service"
                 ]
               },
               "kb_analysis": {
@@ -1068,154 +817,187 @@
             "diagnostic_summary": {
               "confirmed_issues": [
                 {
-                  "issue": "Pods experiencing OOMKilled due to high memory usage",
+                  "issue": "Pod OOMKilled due to memory limit exceeded",
                   "evidence": [
-                    "Pod restarts in bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
-                    "High memory usage in elasticsearch-data-0"
+                    "Pod restart count: 5",
+                    "Last termination reason: OOMKilled",
+                    "Memory used: 1.2Gi, Memory limit: 1Gi"
                   ],
-                  "severity": "high",
-                  "impact": "Service degradation due to pod restarts and memory exhaustion",
-                  "namespace": "bstp-cms-global-production"
+                  "severity": "critical",
+                  "impact": "Pod instability affecting metrics collection",
+                  "namespace": "em-control-plane-prod"
                 }
               ],
               "secondary_issues": []
             },
             "proceed_to_stage5": true,
-            "remediation_confidence": 0.9
+            "remediation_confidence": 1
           },
-          "completedAt": "2025-12-18T14:36:47.016Z",
+          "completedAt": "2025-12-18T16:53:05.916Z",
           "decision": true,
-          "primaryIssue": "Pods experiencing OOMKilled due to high memory usage"
+          "primaryIssue": "Pod OOMKilled due to memory limit exceeded"
         },
         "stage5": {
           "output": {
-            "analysis_id": "ctx-1766068532290-28u86f5qf-stage5",
+            "analysis_id": "ctx-1766076687180-o6nlz1opk-stage5",
             "remediation_plan": {
               "immediate_actions": [
                 {
-                  "action": "Rollback deployment to previous version",
-                  "command": "kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production",
-                  "risk": "low",
-                  "estimated_time": "2-5 minutes",
-                  "expected_outcome": "Restore service to previous stable version"
+                  "action": "Increase memory limits for the deployment to prevent OOMKilled events.",
+                  "command": "kubectl set resources deployment/kube-prometheus-stack --limits=memory=2Gi -n em-control-plane-prod",
+                  "risk": "medium",
+                  "estimated_time": "5-10 min",
+                  "expected_outcome": "Pod should stabilize with increased memory limits, reducing OOMKilled events."
                 }
               ],
               "short_term_fixes": [
                 {
-                  "action": "Increase memory limits temporarily",
+                  "action": "Analyze memory usage patterns to identify potential memory leaks.",
                   "timeline": "1-2 days",
-                  "details": "Set memory limit to 2Gi while investigating root cause"
+                  "details": "Review application logs and memory profiling data to detect abnormal memory consumption."
                 }
               ],
               "long_term_solutions": [
                 {
-                  "action": "Fix issues in bss-mc-pcm-product-offer-detail",
+                  "action": "Fix memory leak in the application code and optimize memory usage.",
                   "timeline": "1-2 weeks",
-                  "details": "Review and fix the root cause in bss-mc-pcm-product-offer-detail component"
+                  "details": "Conduct a thorough code review and implement memory management best practices."
                 }
               ],
               "preventive_measures": [
-                "Implement memory profiling in CI/CD",
-                "Add memory leak detection tests",
-                "Set up gradual rollout strategy"
+                "Implement CI/CD improvements to include memory profiling in testing.",
+                "Enhance monitoring with alerts for memory usage thresholds.",
+                "Develop runbooks for handling OOMKilled events."
               ]
             },
             "risk_assessment": {
-              "overall_risk": "medium",
+              "overall_risk": "high",
               "factors": [
-                "bss-mc-pcm-product-offer-detail is critical",
-                "Rollback is tested and safe",
-                "Memory issue is contained to specific pods"
+                "Service criticality: High impact on metrics collection.",
+                "Remediation safety: Medium risk due to resource changes.",
+                "Issue containment: Limited to specific deployment."
               ],
               "mitigation_steps": [
-                "Monitor closely after rollback",
-                "Keep team on standby",
-                "Prepare hotfix if needed"
+                "Monitor pod status and memory usage during remediation.",
+                "Coordinate with the development team for code fixes.",
+                "Prepare rollback procedures if memory increase does not resolve the issue."
               ]
             },
             "implementation_order": [
               {
                 "step": 1,
-                "action": "Execute rollback",
+                "action": "Increase memory limits for the deployment.",
                 "dependencies": [],
-                "validation": "Check pod status and memory usage"
+                "validation": "Verify pod stability and absence of OOMKilled events."
               },
               {
                 "step": 2,
-                "action": "Verify service health",
+                "action": "Monitor memory usage and application logs.",
                 "dependencies": [
                   "step_1"
                 ],
-                "validation": "Check error rates and response times"
-              },
-              {
-                "step": 3,
-                "action": "Update monitoring alerts",
-                "dependencies": [
-                  "step_2"
-                ],
-                "validation": "Ensure alerts are firing correctly"
+                "validation": "Ensure memory usage remains within new limits and no further OOMKilled events occur."
               }
             ],
             "success_metrics": {
               "immediate": [
-                "Pod restart count = 0",
-                "Memory usage < 80% of limit",
-                "Error rate < 0.1%"
+                "Pod status remains Running without restarts.",
+                "Memory usage stays below 2Gi.",
+                "No new OOMKilled events in logs."
               ],
               "short_term": [
-                "No OOMKilled events in 24h",
-                "SLO compliance > 99.9%"
+                "Memory usage patterns identified and addressed.",
+                "SLO compliance maintained at 99.9%."
               ],
               "long_term": [
-                "Memory leak fixed in code",
-                "Automated memory testing in place"
+                "Memory leak fixes validated through testing.",
+                "Improved memory management processes in place."
               ]
             },
             "rollback_plan": {
               "trigger_conditions": [
-                "Error rate > 5%",
-                "Multiple pod failures",
-                "Memory usage continues to spike"
+                "Pod continues to experience OOMKilled events after memory increase.",
+                "Memory usage exceeds new limits without resolution."
               ],
               "steps": [
-                "Revert to current version",
-                "Scale up replicas",
-                "Enable circuit breaker"
+                "Revert memory limits to previous configuration.",
+                "Escalate to engineering team for further investigation."
               ],
-              "validation": "Verify previous version number before rollback"
+              "validation": "Pod returns to stable state with no OOMKilled events."
             }
           },
-          "completedAt": "2025-12-18T14:37:26.494Z"
-        }
-      },
-      "decisions": {
-        "stage2Decision": {
-          "timestamp": "2025-12-18T14:35:40.140Z",
-          "shouldProceed": true,
-          "stage1Said": true,
-          "forcedDeep": false,
-          "forceSource": "none",
-          "reason": "Active alerts detected, indicating potential issues in the cluster."
+          "completedAt": "2025-12-18T16:53:30.965Z"
         },
-        "forceDeepAnalysisOverride": {
-          "timestamp": "2025-12-18T14:35:40.149Z",
-          "originalDecision": true,
-          "forceDeepAnalysis": false,
-          "overrideApplied": false,
-          "reason": null
+        "stage1": {
+          "output": {
+            "overall_status": "degraded",
+            "alerts": {
+              "total": 6,
+              "critical": 0,
+              "warning": 2,
+              "top_alerts": [
+                "KubeHpaMaxedOut",
+                "KubeCPUOvercommit"
+              ]
+            },
+            "scores": {
+              "cluster_health": 5,
+              "node_availability": 5,
+              "pod_stability": 5,
+              "api_reliability": 1
+            },
+            "quick_findings": [
+              "Active alerts detected: KubeHpaMaxedOut, KubeCPUOvercommit"
+            ],
+            "services_analyzed": [],
+            "services_count": 0,
+            "namespaces_analyzed": []
+          },
+          "completedAt": "2025-12-18T16:53:43.084Z",
+          "status": "degraded"
         },
-        "stage3Proceed": {
-          "timestamp": "2025-12-18T14:36:07.845Z",
-          "shouldProceed": true,
-          "alertCorrelationNeeded": true,
-          "rootCauseIdentified": false,
-          "confidence": 0.45
+        "stage2": {
+          "output": {
+            "investigation_id": "ctx-1766076687180-o6nlz1opk-stage2",
+            "root_cause": {
+              "identified": false,
+              "component": "bss-mc-pcm-product-offer-detail",
+              "issue": "Pod restarts and memory pressure",
+              "evidence": [
+                "Pod restarts observed in bss-mc-pcm-product-offer-detail",
+                "Memory pressure in elasticsearch-data-0"
+              ],
+              "confidence": 0.5
+            },
+            "correlation_matrix": {
+              "primary_chain": "Pod restarts and memory pressure observed in critical pods",
+              "affected_services": [
+                "bss-mc-pcm-product-offer-detail",
+                "bss-mc-asset-management"
+              ],
+              "blast_radius": "Limited to specific pods",
+              "kubernetes_impact": {
+                "evicted_pods": 0,
+                "pending_pods": 0,
+                "failed_schedules": 0
+              }
+            },
+            "critical_pods": [
+              "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+              "bss-mc-asset-management-7f48bd88d-6k94j"
+            ],
+            "affected_services": [
+              "bss-mc-pcm-product-offer-detail",
+              "bss-mc-asset-management"
+            ],
+            "proceed_to_stage3": true,
+            "alert_correlation_needed": true,
+            "confidence": 0.5
+          },
+          "completedAt": "2025-12-18T16:53:43.084Z",
+          "decision": true,
+          "rootCauseIdentified": false
         }
-      },
-      "debug": {
-        "contextVersion": "1.0",
-        "createdBy": "Unified Entry Point"
       }
     },
     "executiveInsights": {
@@ -1227,9 +1009,9 @@
       },
       "stage2_root_cause": {
         "identified": false,
-        "issue": "Pod restarts and memory usage",
+        "issue": "Pod restarts and memory pressure",
         "component": "bss-mc-pcm-product-offer-detail",
-        "confidence": 0.45,
+        "confidence": 0.5,
         "affected_services": [
           "bss-mc-pcm-product-offer-detail",
           "bss-mc-asset-management"
@@ -1243,16 +1025,16 @@
         "slo_status": "green"
       },
       "stage4_diagnostics": {
-        "diagnostics_executed": 2,
+        "diagnostics_executed": 1,
         "confirmed_issues": 1,
-        "remediation_confidence": 0.9,
-        "primary_issue": "Pods experiencing OOMKilled due to high memory usage"
+        "remediation_confidence": 1,
+        "primary_issue": "Pod OOMKilled due to memory limit exceeded"
       },
       "stage5_remediation": {
         "plan_created": true,
         "immediate_actions": 1,
-        "overall_risk": "medium",
-        "primary_action": "Rollback deployment to previous version"
+        "overall_risk": "high",
+        "primary_action": "Increase memory limits for the deployment to prevent OOMKilled events."
       },
       "stage6_prevention": {
         "prevention_implemented": false,
@@ -1266,29 +1048,29 @@
         "field": "proceed_to_stage2",
         "value": false,
         "reason": "",
-        "timestamp": "2025-12-18T14:35:40.140Z"
+        "timestamp": "2025-12-18T16:53:43.084Z"
       },
       "stage2_decision": {
         "field": "proceed_to_stage3",
         "value": true,
-        "confidence": 0.45,
-        "timestamp": "2025-12-18T14:36:07.845Z"
+        "confidence": 0.5,
+        "timestamp": "2025-12-18T16:53:43.084Z"
       },
       "stage3_decision": {
         "field": "proceed_to_stage4",
         "value": true,
         "correlation_confidence": 0.8,
-        "timestamp": "2025-12-18T14:36:16.985Z"
+        "timestamp": "2025-12-18T16:52:37.415Z"
       },
       "stage4_decision": {
         "field": "proceed_to_stage5",
         "value": true,
-        "remediation_confidence": 0.9,
-        "timestamp": "2025-12-18T14:36:47.016Z"
+        "remediation_confidence": 1,
+        "timestamp": "2025-12-18T16:53:05.916Z"
       },
       "stage5_completion": {
         "remediation_plan_created": true,
-        "timestamp": "2025-12-18T14:37:26.494Z"
+        "timestamp": "2025-12-18T16:53:30.965Z"
       },
       "stage6_completion": {
         "prevention_implemented": false,
@@ -1296,72 +1078,64 @@
       }
     },
     "confidenceProgression": {
-      "stage2_root_cause_confidence": 0.45,
+      "stage2_root_cause_confidence": 0.5,
       "stage3_correlation_confidence": 0.8,
-      "stage4_remediation_confidence": 0.9,
+      "stage4_remediation_confidence": 1,
       "stage6_prevention_quality": 0,
-      "overall_confidence": 0.5375
+      "overall_confidence": 0.575
     },
     "learningSummary": {
       "what_happened": {
-        "root_cause": "Pod restarts and memory usage",
+        "root_cause": "Pod restarts and memory pressure",
         "affected_services": [
           "bss-mc-pcm-product-offer-detail",
           "bss-mc-asset-management"
         ],
         "alert_count": 2,
-        "severity": "high",
-        "duration": "128s"
+        "severity": "critical",
+        "duration": "NaNs"
       },
       "what_worked": [
         "Stage 3 strongly correlated alerts to root cause",
         "Stage 5 generated 1 actionable remediation steps"
       ],
-      "what_didnt_work": [
-        "Low confidence in root cause identification - need more diagnostic depth"
-      ],
+      "what_didnt_work": [],
       "key_insights": [
-        "Primary issue: Pod restarts and memory usage"
+        "Primary issue: Pod restarts and memory pressure"
       ]
     },
     "recommendationPriority": {
       "critical_immediate": [],
-      "high_short_term": [
-        {
-          "action": "Increase memory limits temporarily",
-          "timeline": "1-2 days",
-          "details": "Set memory limit to 2Gi while investigating root cause"
-        }
-      ],
+      "high_short_term": [],
       "medium_long_term": [
         {
-          "action": "Fix issues in bss-mc-pcm-product-offer-detail",
+          "action": "Fix memory leak in the application code and optimize memory usage.",
           "timeline": "1-2 weeks",
-          "details": "Review and fix the root cause in bss-mc-pcm-product-offer-detail component"
+          "details": "Conduct a thorough code review and implement memory management best practices."
         }
       ],
       "preventive_ongoing": []
     },
-    "summary": "🔍 **Kubernetes Cluster Analizi**\n\n📊 **Cluster:** bstp-cms-global-production\n🆔 **Context ID:** ctx-1766068532290-28u86f5qf\n⏱️ **Süre:** 128s\n\n**📈 Genel Durum:**\n- Sağlık Durumu: degraded\n- Aktif Alert: 6 (0 kritik)\n- Çalışan Stage: 7/6\n\n**🔧 Önerilen Aksiyonlar:**\n1. Rollback deployment to previous version\n   - Risk: low\n   - Süre: 2-5 minutes\n   - Komut: `kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production`\n\n**📊 SLO Durumu:**\n- Mevcut: 100%\n- Hedef: 99.9%\n- Durum: green\n\n**📈 Güven Skoru İlerlemesi:**\n- Stage 2 (Kök Neden): 45%\n- Stage 3 (Alert Korelasyon): 80%\n- Stage 4 (Remediation): 90%\n- Stage 6 (Prevention Kalitesi): 0%\n- **Genel Güven: 54%**\n\n**🔄 Karar Yolculuğu:**\n- Stage 1→2: ❌ Dur\n- Stage 2→3: ✅ Devam\n- Stage 3→4: ✅ Devam\n- Stage 4→5: ✅ Devam\n\n**💡 Önemli Bulgular:**\n- Primary issue: Pod restarts and memory usage\n\n**✅ İşe Yarayan:**\n- Stage 3 strongly correlated alerts to root cause\n- Stage 5 generated 1 actionable remediation steps\n\n**📋 Özet:**\n7 aşama tamamlandı, 3 karar takip edildi.\n",
-    "markdownReport": "<div style=\"border: 2px solid #ff9800; border-radius: 8px; padding: 20px; background-color: #fff3e0; font-family: Arial, sans-serif; max-width: 800px;\"><h2 style=\"color: #ff9800; margin-top: 0;\">🟠 Unknown Alert</h2><p style=\"font-size: 14px; color: #666;\"><strong>Context ID:</strong> ctx-1766068532290-28u86f5qf</p><hr style=\"border: none; border-top: 1px solid #ddd; margin: 15px 0;\"><h3 style=\"color: #333;\">🎯 Issue Summary</h3><p><strong>Component:</strong> bss-mc-pcm-product-offer-detail</p><p><strong>Issue:</strong> Pod restarts and memory usage</p><p><strong>Confidence:</strong> 45%</p><p><strong>Severity:</strong> <span style=\"color: #ff9800; font-weight: bold;\">HIGH</span></p><p><strong>Affected Services:</strong> bss-mc-pcm-product-offer-detail, bss-mc-asset-management</p><h3 style=\"color: #333;\">📊 SLO Impact</h3><p><strong>Availability SLO:</strong> 100% (Target: 99.9%) - Status: <strong>GREEN</strong></p><h3 style=\"color: #333;\">🔧 Recommended Actions</h3><ol style=\"margin: 10px 0; padding-left: 20px;\"><li style=\"margin-bottom: 10px;\"><strong>Rollback deployment to previous version</strong><br><span style=\"font-size: 12px; color: #666;\">Risk: low | Time: 2-5 minutes</span><br><code style=\"background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 12px;\">kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production</code></li></ol><hr style=\"border: none; border-top: 1px solid #ddd; margin: 15px 0;\"><p style=\"font-size: 12px; color: #999;\">Generated at 2025-12-18T14:37:40.102Z</p></div>",
+    "summary": "🔍 **Kubernetes Cluster Analizi**\n\n📊 **Cluster:** unknown\n🆔 **Context ID:** ctx-1766076687180-o6nlz1opk\n⏱️ **Süre:** NaNs\n\n**📈 Genel Durum:**\n- Sağlık Durumu: degraded\n- Aktif Alert: 6 (0 kritik)\n- Çalışan Stage: 7/6\n\n**🔧 Önerilen Aksiyonlar:**\n1. Increase memory limits for the deployment to prevent OOMKilled events.\n   - Risk: medium\n   - Süre: 5-10 min\n   - Komut: `kubectl set resources deployment/kube-prometheus-stack --limits=memory=2Gi -n em-control-plane-prod`\n\n**📊 SLO Durumu:**\n- Mevcut: 100%\n- Hedef: 99.9%\n- Durum: green\n\n**📈 Güven Skoru İlerlemesi:**\n- Stage 2 (Kök Neden): 50%\n- Stage 3 (Alert Korelasyon): 80%\n- Stage 4 (Remediation): 100%\n- Stage 6 (Prevention Kalitesi): 0%\n- **Genel Güven: 57%**\n\n**🔄 Karar Yolculuğu:**\n- Stage 1→2: ❌ Dur\n- Stage 2→3: ✅ Devam\n- Stage 3→4: ✅ Devam\n- Stage 4→5: ✅ Devam\n\n**💡 Önemli Bulgular:**\n- Primary issue: Pod restarts and memory pressure\n\n**✅ İşe Yarayan:**\n- Stage 3 strongly correlated alerts to root cause\n- Stage 5 generated 1 actionable remediation steps\n\n**📋 Özet:**\n7 aşama tamamlandı, 0 karar takip edildi.\n",
+    "markdownReport": "<div style=\"border: 2px solid #d32f2f; border-radius: 8px; padding: 20px; background-color: #ffebee; font-family: Arial, sans-serif; max-width: 800px;\"><h2 style=\"color: #d32f2f; margin-top: 0;\">🔴 Unknown Alert</h2><p style=\"font-size: 14px; color: #666;\"><strong>Context ID:</strong> ctx-1766076687180-o6nlz1opk</p><hr style=\"border: none; border-top: 1px solid #ddd; margin: 15px 0;\"><h3 style=\"color: #333;\">🎯 Issue Summary</h3><p><strong>Component:</strong> bss-mc-pcm-product-offer-detail</p><p><strong>Issue:</strong> Pod restarts and memory pressure</p><p><strong>Confidence:</strong> 50%</p><p><strong>Severity:</strong> <span style=\"color: #d32f2f; font-weight: bold;\">CRITICAL</span></p><p><strong>Affected Services:</strong> bss-mc-pcm-product-offer-detail, bss-mc-asset-management</p><h3 style=\"color: #333;\">📊 SLO Impact</h3><p><strong>Availability SLO:</strong> 100% (Target: 99.9%) - Status: <strong>GREEN</strong></p><h3 style=\"color: #333;\">🔧 Recommended Actions</h3><ol style=\"margin: 10px 0; padding-left: 20px;\"><li style=\"margin-bottom: 10px;\"><strong>Increase memory limits for the deployment to prevent OOMKilled events.</strong><br><span style=\"font-size: 12px; color: #666;\">Risk: medium | Time: 5-10 min</span><br><code style=\"background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 12px;\">kubectl set resources deployment/kube-prometheus-stack --limits=memory=2Gi -n em-control-plane-prod</code></li></ol><hr style=\"border: none; border-top: 1px solid #ddd; margin: 15px 0;\"><p style=\"font-size: 12px; color: #999;\">Generated at 2025-12-18T16:53:43.087Z</p></div>",
     "oncallTicket": {
-      "title": "🟠 HIGH Unknown Alert: bss-mc-pcm-product-offer-detail",
-      "description": "<div style=\"font-family: Arial, sans-serif; max-width: 700px;\"><h3 style=\"color: #ff9800;\">🟠 Alert: Unknown Alert</h3><p><strong>Component:</strong> bss-mc-pcm-product-offer-detail</p><p><strong>Namespace:</strong> bss-mc-pcm-product-offer-detail</p><p><strong>Root Cause:</strong> Pod restarts and memory usage</p><p><strong>Affected Services:</strong> bss-mc-pcm-product-offer-detail, bss-mc-asset-management</p><h4>Recommended Actions:</h4><ul><li><strong>Rollback deployment to previous version</strong> (Risk: low)</li></ul><p style=\"font-size: 12px; color: #999;\">Context ID: ctx-1766068532290-28u86f5qf</p></div>",
-      "priority": "High",
+      "title": "🔴 CRITICAL Unknown Alert: bss-mc-pcm-product-offer-detail",
+      "description": "<div style=\"font-family: Arial, sans-serif; max-width: 700px;\"><h3 style=\"color: #d32f2f;\">🔴 Alert: Unknown Alert</h3><p><strong>Component:</strong> bss-mc-pcm-product-offer-detail</p><p><strong>Namespace:</strong> bss-mc-pcm-product-offer-detail</p><p><strong>Root Cause:</strong> Pod restarts and memory pressure</p><p><strong>Affected Services:</strong> bss-mc-pcm-product-offer-detail, bss-mc-asset-management</p><h4>Recommended Actions:</h4><ul><li><strong>Increase memory limits for the deployment to prevent OOMKilled events.</strong> (Risk: medium)</li></ul><p style=\"font-size: 12px; color: #999;\">Context ID: ctx-1766076687180-o6nlz1opk</p></div>",
+      "priority": "Critical",
       "customFields": {
-        "contextId": "ctx-1766068532290-28u86f5qf",
+        "contextId": "ctx-1766076687180-o6nlz1opk",
         "oncallFriendly": true,
         "symptoms": 6,
-        "rootCause": "Diagnosis: Pod restarts and memory usage"
+        "rootCause": "Diagnosis: Pod restarts and memory pressure"
       }
     },
     "jiraTicket": {
-      "title": "[Unknown Alert] bss-mc-pcm-product-offer-detail - Pod restarts and memory usage (KB-Available)",
-      "description": "\n<div style=\"font-family: Arial, sans-serif; max-width: 800px;\">\n  <div style=\"background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;\">\n    <h1 style=\"margin: 0; font-size: 24px;\">🟠 HIGH: Pod restarts and memory usage</h1>\n  </div>\n\n  <div style=\"border: 2px solid #0288d1; border-radius: 8px; margin: 15px 0; background: #e1f5fe;\">\n    <div style=\"background: #0288d1; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      ⚡ QUICK FINDINGS\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <div style=\"margin: 8px 0; padding-left: 10px;\">• Active alerts detected: KubeHpaMaxedOut, KubeCPUOvercommit</div>\n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #d32f2f; border-radius: 8px; margin: 15px 0; background: #ffebee;\">\n    <div style=\"background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🔥 SYMPTOMS (What's Happening)\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <div style=\"margin: 8px 0; padding-left: 10px;\">• bss-mc-pcm-product-offer-detail service experiencing issues</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Pod status: Running</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Pod restarting (Restart count: 3)</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Memory: 1.2Gi/1Gi</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Latest event: Pod was killed due to out of memory (Warning)</div>\n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #ff9800; border-radius: 8px; margin: 15px 0; background: #fff3e0;\">\n    <div style=\"background: #ff9800; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🔍 ROOT CAUSE (Why It's Happening)\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <p style=\"margin: 0 0 10px 0;\"><strong>Root Cause:</strong> Pod restarts and memory usage</p>\n\n      <div style=\"background: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 10px;\">\n        <strong>Evidence:</strong>\n        <div style=\"margin-top: 8px;\">\n          • <strong>Pod Status:</strong> <code>Running</code><br/>\n          • <strong>Last Termination:</strong> OOMKilled (Exit Code: 137)<br/>\n          • <strong>Memory Usage:</strong> 1.2Gi / 1Gi<br/>\n          • <strong>CPU Usage:</strong> 250m<br/>\n          • <strong>Latest Error:</strong> Out of memory error<br/>\n          • <strong>Latest Event:</strong> Pod was killed due to out of memory (Warning)<br/>\n        </div>\n        \n      </div>\n\n      \n        <div style=\"margin-top: 15px; padding: 12px; background: #fff3e0; border-radius: 6px; border-left: 4px solid #ff9800;\">\n          <strong>📊 Impact Analysis:</strong>\n          <div style=\"margin-top: 8px;\">\n            • <strong>Primary Issue Chain:</strong> Pod restarts and memory usage<br/>\n            • <strong>Blast Radius:</strong> Limited to specific pods<br/>\n            • <strong>Affected Services:</strong> bss-mc-pcm-product-offer-detail, bss-mc-asset-management<br/>\n            • <strong>SLO Status:</strong> green (Current: 100%, Target: 99.9%, Error Budget Used: 0%)<br/>\n          </div>\n        </div>\n      \n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #4caf50; border-radius: 8px; margin: 15px 0; background: #e8f5e8;\">\n    <div style=\"background: #4caf50; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      ✅ SOLUTION (What To Do)\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <h3 style=\"margin: 10px 0 15px 0; color: #d32f2f; font-size: 18px;\">🚨 IMMEDIATE ACTIONS</h3>\n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 15px 0; padding: 15px; background: #fafafa;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #d32f2f;\">1. Rollback deployment to previous version</h4>\n          <p style=\"margin: 10px 0;\"><strong>Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production</code>\n          </div>\n          <div style=\"margin-top: 10px;\">\n            <span style=\"margin-right: 15px;\">⏱️ <strong>Duration:</strong> 2-5 minutes</span>\n            <span style=\"margin-right: 15px;\">⚠️ <strong>Risk:</strong> low</span>\n            <div style=\"margin-top: 5px;\">🎯 <strong>Expected Result:</strong> Restore service to previous stable version</div>\n          </div>\n        </div>\n      \n\n      \n        <h3 style=\"margin: 25px 0 15px 0; color: #ff9800; font-size: 18px;\">⏱️ SHORT-TERM FIXES (1-2 days)</h3>\n        \n          <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 12px; background: #fffaf0;\">\n            <p style=\"margin: 0;\"><strong>1. Increase memory limits temporarily</strong></p>\n            <p style=\"margin: 8px 0 0 0; color: #666;\">Set memory limit to 2Gi while investigating root cause</p>\n          </div>\n        \n      \n\n      \n        <h3 style=\"margin: 25px 0 15px 0; color: #2196f3; font-size: 18px;\">🔧 LONG-TERM SOLUTIONS (1-2 weeks)</h3>\n        \n          <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 12px; background: #f0f8ff;\">\n            <p style=\"margin: 0;\"><strong>1. Fix issues in bss-mc-pcm-product-offer-detail</strong></p>\n            <p style=\"margin: 8px 0 0 0; color: #666;\">Review and fix the root cause in bss-mc-pcm-product-offer-detail component</p>\n          </div>\n        \n      \n\n      \n        <h3 style=\"margin: 25px 0 15px 0; color: #4caf50; font-size: 18px;\">🛡️ PREVENTIVE MEASURES</h3>\n        <div style=\"border: 1px solid #4caf50; border-radius: 6px; padding: 12px; background: #f1f8e9;\">\n          <div style=\"margin: 6px 0; padding-left: 10px;\">• Implement memory profiling in CI/CD</div><div style=\"margin: 6px 0; padding-left: 10px;\">• Add memory leak detection tests</div><div style=\"margin: 6px 0; padding-left: 10px;\">• Set up gradual rollout strategy</div>\n        </div>\n      \n\n      \n        <div style=\"margin-top: 20px; border: 1px solid #ff9800; border-radius: 6px; padding: 12px; background: #fff3e0;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #ff9800;\">⚠️ RISK ASSESSMENT</h4>\n          <p style=\"margin: 5px 0;\"><strong>Overall Risk:</strong> MEDIUM</p>\n          \n            <p style=\"margin: 10px 0 5px 0;\"><strong>Risk Factors:</strong></p>\n            <div style=\"margin: 4px 0; padding-left: 10px;\">• bss-mc-pcm-product-offer-detail is critical</div><div style=\"margin: 4px 0; padding-left: 10px;\">• Rollback is tested and safe</div><div style=\"margin: 4px 0; padding-left: 10px;\">• Memory issue is contained to specific pods</div>\n          \n          \n            <p style=\"margin: 10px 0 5px 0;\"><strong>Mitigation Steps:</strong></p>\n            <div style=\"margin: 4px 0; padding-left: 10px;\">• Monitor closely after rollback</div><div style=\"margin: 4px 0; padding-left: 10px;\">• Keep team on standby</div><div style=\"margin: 4px 0; padding-left: 10px;\">• Prepare hotfix if needed</div>\n          \n        </div>\n      \n\n      \n        <div style=\"margin-top: 20px; border: 1px solid #2196f3; border-radius: 6px; padding: 12px; background: #e3f2fd;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">🔢 IMPLEMENTATION ORDER</h4>\n          \n            <div style=\"margin: 8px 0; padding: 10px; background: white; border-radius: 4px;\">\n              <strong>Step 1:</strong> Execute rollback\n              <div style=\"margin-top: 5px; color: #666; font-size: 13px;\">✓ Validation: Check pod status and memory usage</div>\n            </div>\n          \n            <div style=\"margin: 8px 0; padding: 10px; background: white; border-radius: 4px;\">\n              <strong>Step 2:</strong> Verify service health\n              <div style=\"margin-top: 5px; color: #666; font-size: 13px;\">✓ Validation: Check error rates and response times</div>\n            </div>\n          \n            <div style=\"margin: 8px 0; padding: 10px; background: white; border-radius: 4px;\">\n              <strong>Step 3:</strong> Update monitoring alerts\n              <div style=\"margin-top: 5px; color: #666; font-size: 13px;\">✓ Validation: Ensure alerts are firing correctly</div>\n            </div>\n          \n        </div>\n      \n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #2196f3; border-radius: 8px; margin: 15px 0; background: #e3f2fd;\">\n    <div style=\"background: #2196f3; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      📋 VERIFY SOLUTION EFFECTIVENESS\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: #f9f9f9;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">1. Check pod status</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl get pods -n bss-mc-pcm-product-offer-detail | grep bss-mc-pcm-product-offer-detail</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> STATUS: Running (all pods in running state)</p>\n        </div>\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: white;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">2. Check service response</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl get svc -n bss-mc-pcm-product-offer-detail | grep bss-mc-pcm-product-offer-detail</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> Service available and responding</p>\n        </div>\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: #f9f9f9;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">3. Check for restarts</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl describe pod -l app=bss-mc-pcm-product-offer-detail -n bss-mc-pcm-product-offer-detail | grep \"Restart Count\"</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> Restart Count: 0 (should not increase, no new restarts)</p>\n        </div>\n      \n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #607d8b; border-radius: 8px; margin: 15px 0; background: #eceff1;\">\n    <div style=\"background: #607d8b; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🔧 SUPPORT INFORMATION\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n        <tr><td style=\"font-weight: bold; width: 150px; padding: 5px;\">Incident ID:</td><td style=\"padding: 5px; font-family: monospace;\">ctx-1766068532290-28u86f5qf</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Timestamp:</td><td style=\"padding: 5px;\">12/18/2025, 5:37:40 PM</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Namespace:</td><td style=\"padding: 5px; font-family: monospace;\">bss-mc-pcm-product-offer-detail</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Pod:</td><td style=\"padding: 5px; font-family: monospace;\">bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Deployment:</td><td style=\"padding: 5px; font-family: monospace;\">bss-mc-pcm-product-offer-detail</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Cluster Status:</td><td style=\"padding: 5px;\">degraded</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Total Alerts:</td><td style=\"padding: 5px;\">6 (0 critical)</td></tr>\n      </table>\n      <div style=\"margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 4px; border-left: 4px solid #ff9800;\">\n        <strong>If issue persists:</strong> Escalate to Development Team\n      </div>\n    </div>\n  </div>\n\n  <div style=\"text-align: center; margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666;\">\n    <div>This report was auto-generated by FreePrometheus | 12/18/2025, 5:37:40 PM</div>\n    <div>KB Integration: 42 alerts loaded | Generic Analysis</div>\n  </div>\n</div>\n",
-      "priority": "High",
+      "title": "bss-mc-pcm-product-offer-detail - Pod restarts and memory pressure (KB-Available)",
+      "description": "\n<div style=\"font-family: Arial, sans-serif; max-width: 800px;\">\n  <div style=\"background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;\">\n    <h1 style=\"margin: 0; font-size: 24px;\">🔴 CRITICAL: Pod restarts and memory pressure</h1>\n  </div>\n\n  <div style=\"border: 2px solid #0288d1; border-radius: 8px; margin: 15px 0; background: #e1f5fe;\">\n    <div style=\"background: #0288d1; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      ⚡ QUICK FINDINGS\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <div style=\"margin: 8px 0; padding-left: 10px;\">• Active alerts detected: KubeHpaMaxedOut, KubeCPUOvercommit</div>\n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #d32f2f; border-radius: 8px; margin: 15px 0; background: #ffebee;\">\n    <div style=\"background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🔥 SYMPTOMS (What's Happening)\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <div style=\"margin: 8px 0; padding-left: 10px;\">• kube-prometheus-stack service experiencing issues</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Pod status: Running</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Pod restarting (Restart count: 5)</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Memory: 1.2Gi/1Gi</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Latest event: Pod was killed due to out of memory (Warning)</div>\n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #ff9800; border-radius: 8px; margin: 15px 0; background: #fff3e0;\">\n    <div style=\"background: #ff9800; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🔍 ROOT CAUSE (Why It's Happening)\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <p style=\"margin: 0 0 10px 0;\"><strong>Root Cause:</strong> Pod restarts and memory pressure</p>\n\n      <div style=\"background: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 10px;\">\n        <strong>Evidence:</strong>\n        <div style=\"margin-top: 8px;\">\n          • <strong>Pod Status:</strong> <code>Running</code><br/>\n          • <strong>Last Termination:</strong> OOMKilled (Exit Code: 137)<br/>\n          • <strong>Memory Usage:</strong> 1.2Gi / 1Gi<br/>\n          • <strong>CPU Usage:</strong> 250m<br/>\n          • <strong>Latest Error:</strong> Out of memory error<br/>\n          • <strong>Latest Event:</strong> Pod was killed due to out of memory (Warning)<br/>\n        </div>\n        \n      </div>\n\n      \n        <div style=\"margin-top: 15px; padding: 12px; background: #fff3e0; border-radius: 6px; border-left: 4px solid #ff9800;\">\n          <strong>📊 Impact Analysis:</strong>\n          <div style=\"margin-top: 8px;\">\n            • <strong>Primary Issue Chain:</strong> Pod restarts and memory pressure observed in critical pods<br/>\n            • <strong>Blast Radius:</strong> Limited to specific pods<br/>\n            • <strong>Affected Services:</strong> bss-mc-pcm-product-offer-detail, bss-mc-asset-management<br/>\n            • <strong>SLO Status:</strong> green (Current: 100%, Target: 99.9%, Error Budget Used: 0%)<br/>\n          </div>\n        </div>\n      \n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #4caf50; border-radius: 8px; margin: 15px 0; background: #e8f5e8;\">\n    <div style=\"background: #4caf50; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      ✅ SOLUTION (What To Do)\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <h3 style=\"margin: 10px 0 15px 0; color: #d32f2f; font-size: 18px;\">🚨 IMMEDIATE ACTIONS</h3>\n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 15px 0; padding: 15px; background: #fafafa;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #d32f2f;\">1. Increase memory limits for the deployment to prevent OOMKilled events.</h4>\n          <p style=\"margin: 10px 0;\"><strong>Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl set resources deployment/kube-prometheus-stack --limits=memory=2Gi -n em-control-plane-prod</code>\n          </div>\n          <div style=\"margin-top: 10px;\">\n            <span style=\"margin-right: 15px;\">⏱️ <strong>Duration:</strong> 5-10 min</span>\n            <span style=\"margin-right: 15px;\">⚠️ <strong>Risk:</strong> medium</span>\n            <div style=\"margin-top: 5px;\">🎯 <strong>Expected Result:</strong> Pod should stabilize with increased memory limits, reducing OOMKilled events.</div>\n          </div>\n        </div>\n      \n\n      \n        <h3 style=\"margin: 25px 0 15px 0; color: #ff9800; font-size: 18px;\">⏱️ SHORT-TERM FIXES (1-2 days)</h3>\n        \n          <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 12px; background: #fffaf0;\">\n            <p style=\"margin: 0;\"><strong>1. Analyze memory usage patterns to identify potential memory leaks.</strong></p>\n            <p style=\"margin: 8px 0 0 0; color: #666;\">Review application logs and memory profiling data to detect abnormal memory consumption.</p>\n          </div>\n        \n      \n\n      \n        <h3 style=\"margin: 25px 0 15px 0; color: #2196f3; font-size: 18px;\">🔧 LONG-TERM SOLUTIONS (1-2 weeks)</h3>\n        \n          <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 12px; background: #f0f8ff;\">\n            <p style=\"margin: 0;\"><strong>1. Fix memory leak in the application code and optimize memory usage.</strong></p>\n            <p style=\"margin: 8px 0 0 0; color: #666;\">Conduct a thorough code review and implement memory management best practices.</p>\n          </div>\n        \n      \n\n      \n        <h3 style=\"margin: 25px 0 15px 0; color: #4caf50; font-size: 18px;\">🛡️ PREVENTIVE MEASURES</h3>\n        <div style=\"border: 1px solid #4caf50; border-radius: 6px; padding: 12px; background: #f1f8e9;\">\n          <div style=\"margin: 6px 0; padding-left: 10px;\">• Implement CI/CD improvements to include memory profiling in testing.</div><div style=\"margin: 6px 0; padding-left: 10px;\">• Enhance monitoring with alerts for memory usage thresholds.</div><div style=\"margin: 6px 0; padding-left: 10px;\">• Develop runbooks for handling OOMKilled events.</div>\n        </div>\n      \n\n      \n        <div style=\"margin-top: 20px; border: 1px solid #ff9800; border-radius: 6px; padding: 12px; background: #fff3e0;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #ff9800;\">⚠️ RISK ASSESSMENT</h4>\n          <p style=\"margin: 5px 0;\"><strong>Overall Risk:</strong> HIGH</p>\n          \n            <p style=\"margin: 10px 0 5px 0;\"><strong>Risk Factors:</strong></p>\n            <div style=\"margin: 4px 0; padding-left: 10px;\">• Service criticality: High impact on metrics collection.</div><div style=\"margin: 4px 0; padding-left: 10px;\">• Remediation safety: Medium risk due to resource changes.</div><div style=\"margin: 4px 0; padding-left: 10px;\">• Issue containment: Limited to specific deployment.</div>\n          \n          \n            <p style=\"margin: 10px 0 5px 0;\"><strong>Mitigation Steps:</strong></p>\n            <div style=\"margin: 4px 0; padding-left: 10px;\">• Monitor pod status and memory usage during remediation.</div><div style=\"margin: 4px 0; padding-left: 10px;\">• Coordinate with the development team for code fixes.</div><div style=\"margin: 4px 0; padding-left: 10px;\">• Prepare rollback procedures if memory increase does not resolve the issue.</div>\n          \n        </div>\n      \n\n      \n        <div style=\"margin-top: 20px; border: 1px solid #2196f3; border-radius: 6px; padding: 12px; background: #e3f2fd;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">🔢 IMPLEMENTATION ORDER</h4>\n          \n            <div style=\"margin: 8px 0; padding: 10px; background: white; border-radius: 4px;\">\n              <strong>Step 1:</strong> Increase memory limits for the deployment.\n              <div style=\"margin-top: 5px; color: #666; font-size: 13px;\">✓ Validation: Verify pod stability and absence of OOMKilled events.</div>\n            </div>\n          \n            <div style=\"margin: 8px 0; padding: 10px; background: white; border-radius: 4px;\">\n              <strong>Step 2:</strong> Monitor memory usage and application logs.\n              <div style=\"margin-top: 5px; color: #666; font-size: 13px;\">✓ Validation: Ensure memory usage remains within new limits and no further OOMKilled events occur.</div>\n            </div>\n          \n        </div>\n      \n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #2196f3; border-radius: 8px; margin: 15px 0; background: #e3f2fd;\">\n    <div style=\"background: #2196f3; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      📋 VERIFY SOLUTION EFFECTIVENESS\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: #f9f9f9;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">1. Check pod status</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl get pods -n bss-mc-pcm-product-offer-detail | grep kube-prometheus-stack</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> STATUS: Running (all pods in running state)</p>\n        </div>\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: white;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">2. Check service response</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl get svc -n bss-mc-pcm-product-offer-detail | grep kube-prometheus-stack</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> Service available and responding</p>\n        </div>\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: #f9f9f9;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">3. Check for restarts</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl describe pod -l app=kube-prometheus-stack -n bss-mc-pcm-product-offer-detail | grep \"Restart Count\"</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> Restart Count: 0 (should not increase, no new restarts)</p>\n        </div>\n      \n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #607d8b; border-radius: 8px; margin: 15px 0; background: #eceff1;\">\n    <div style=\"background: #607d8b; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🔧 SUPPORT INFORMATION\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n        <tr><td style=\"font-weight: bold; width: 150px; padding: 5px;\">Incident ID:</td><td style=\"padding: 5px; font-family: monospace;\">ctx-1766076687180-o6nlz1opk</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Timestamp:</td><td style=\"padding: 5px;\">12/18/2025, 7:53:43 PM</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Namespace:</td><td style=\"padding: 5px; font-family: monospace;\">bss-mc-pcm-product-offer-detail</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Pod:</td><td style=\"padding: 5px; font-family: monospace;\">kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Deployment:</td><td style=\"padding: 5px; font-family: monospace;\">kube-prometheus-stack</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Cluster Status:</td><td style=\"padding: 5px;\">degraded</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Total Alerts:</td><td style=\"padding: 5px;\">6 (0 critical)</td></tr>\n      </table>\n      <div style=\"margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 4px; border-left: 4px solid #ff9800;\">\n        <strong>If issue persists:</strong> Escalate to Development Team\n      </div>\n    </div>\n  </div>\n\n  <div style=\"text-align: center; margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666;\">\n    <div>This report was auto-generated by FreePrometheus | 12/18/2025, 7:53:43 PM</div>\n    <div>KB Integration: 42 alerts loaded | Generic Analysis</div>\n  </div>\n</div>\n",
+      "priority": "Critical",
       "labels": [
         "Unknown Alert",
-        "high",
+        "critical",
         "bss-mc-pcm-product-offer-detail",
         "bss-mc-pcm-product-offer-detail",
         "Auto-Detected",
@@ -1374,13 +1148,13 @@
       ],
       "issueType": "Incident",
       "customFields": {
-        "contextId": "ctx-1766068532290-28u86f5qf",
-        "analysisTime": 2,
-        "automationConfidence": 0.45,
+        "contextId": "ctx-1766076687180-o6nlz1opk",
+        "analysisTime": null,
+        "automationConfidence": 0.5,
         "analysisEngine": "FreePrometheus Analysis Engine",
         "engineVersion": "2.0",
         "stagesExecuted": 7,
-        "rootCauseConfidence": 0.45,
+        "rootCauseConfidence": 0.5,
         "affectedServices": 2,
         "sloImpact": "green",
         "kbIntegrationEnabled": true,
@@ -1392,13 +1166,13 @@
       "kbIntegrationEnabled": true,
       "kbEnhanced": false,
       "alertCategory": "UNKNOWN",
-      "urgencyLevel": "HIGH",
+      "urgencyLevel": "CRITICAL",
       "cascadeRisk": "LOW",
       "kbUtilization": {
         "utilizationRate": "0.0%",
         "matchedEntries": 0,
         "totalEntries": 42,
-        "lastUpdated": "2025-12-18T14:37:40.105Z"
+        "lastUpdated": "2025-12-18T16:53:43.091Z"
       },
       "categoryAnalysis": {
         "category": "UNKNOWN",
@@ -1409,7 +1183,7 @@
       "kbEntryDetails": null
     },
     "_debug": {
-      "contextId": "ctx-1766068532290-28u86f5qf",
+      "contextId": "ctx-1766076687180-o6nlz1opk",
       "executionFlow": {
         "stagesExecuted": 7,
         "stageCompletions": {
@@ -1432,7 +1206,7 @@
         "contextPreserved": true,
         "allStagesHaveData": true
       },
-      "timestamp": "2025-12-18T14:37:40.106Z"
+      "timestamp": "2025-12-18T16:53:43.091Z"
     }
   }
 ]
