@@ -1,0 +1,45 @@
+[
+  {
+    "orchestratorInput": {
+      "requestId": "scheduled-1766053223-fv3xi2",
+      "orchestratorId": "scheduler-health-check-1766053223",
+      "timestamp": "2025-12-18T10:20:23.903Z",
+      "requestType": "scheduled_health_check",
+      "timeRange": {
+        "start": 1766049623,
+        "end": 1766053223,
+        "duration": "1h"
+      },
+      "context": {
+        "source": {
+          "type": "scheduler",
+          "trigger": "periodic_check",
+          "interval": "15m"
+        },
+        "namespaces": [
+          "bstp-cms-global-production",
+          "em-control-plane-prod",
+          "production"
+        ],
+        "cluster": "production-cluster",
+        "checkType": "comprehensive"
+      },
+      "metadata": {
+        "scheduler": {
+          "version": "1.0",
+          "nextRun": "2025-12-18T10:35:23.903Z",
+          "runNumber": 1962281
+        },
+        "source": "Scheduler Cluster Health Flow",
+        "automated": true
+      },
+      "priority": "normal",
+      "forceDeepAnalysis": false
+    },
+    "schedulerInfo": {
+      "triggeredAt": "2025-12-18T10:20:23.903Z",
+      "requestId": "scheduled-1766053223-fv3xi2",
+      "checkInterval": "15m"
+    }
+  }
+]

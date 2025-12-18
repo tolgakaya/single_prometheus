@@ -1,140 +1,119 @@
 [
   {
-    "workflowId": "alert-1765718599181",
+    "workflowId": "alert-1765884958208",
     "source": "alert-listener",
-    "orchestratorId": "direct-1765718599181",
-    "requestId": "alert-alert-1765718599169-1765718599181",
-    "startTime": 1765714999,
-    "endTime": 1765718599,
+    "orchestratorId": "direct-1765884958208",
+    "requestId": "alert-alert-1765884958197-1765884958208",
+    "startTime": 1765881358,
+    "endTime": 1765884958,
     "priority": "critical",
     "analysisType": "alert-driven",
     "alertContext": {
-      "alertName": "KubeAPIDown",
-      "alertId": "alert-1765718599169",
+      "alertName": "KubePodCrashLooping",
+      "alertId": "alert-1765884958197",
       "priority": "critical",
       "source": "alertmanager",
       "affectedServices": [
-        "unknown-namespace"
+        "prometheus-kube-state-metrics",
+        "kube-state-metrics",
+        "domain-config-service"
       ],
       "errorPatterns": [
+        "Pod is crash looping",
+        "Container startup failure",
         "Chaos engineering test pattern"
       ],
       "focusAreas": [
+        "pod-analysis",
+        "container-logs",
         "chaos-recovery",
         "resilience-testing"
       ],
       "normalizedAlert": {
-        "alertname": "KubeAPIDown",
+        "alertname": "KubePodCrashLooping",
         "priority": "critical",
-        "container": null,
-        "pod": null,
-        "namespace": null,
-        "service": null,
+        "container": "domain-config-service",
+        "pod": "domain-config-service-t3-645d68cbc8-4h88r",
+        "namespace": "etiyamobile-production",
+        "service": "prometheus-kube-state-metrics",
         "node": null,
         "status": "firing"
       }
     },
     "kubernetesFilters": {
-      "container": null,
-      "pod": null,
-      "namespace": null,
+      "container": "domain-config-service",
+      "pod": "domain-config-service-t3-645d68cbc8-4h88r",
+      "namespace": "etiyamobile-production",
       "namespaces": [
-        "bss-prod-eks-monitoring",
-        "bstp-cms-global-production",
-        "bstp-cms-prod-v3",
-        "em-global-prod-3pp",
-        "em-global-prod-eom",
-        "em-global-prod-flowe",
-        "em-global-prod",
-        "em-prod-3pp",
-        "em-prod-eom",
-        "em-prod-flowe",
-        "em-prod",
-        "em-control-plane-prod"
+        "etiyamobile-production"
       ],
-      "service": null,
+      "service": "prometheus-kube-state-metrics",
       "deployment": null,
       "node": null,
       "persistentvolumeclaim": null,
       "volumename": null,
-      "useSpecificFilters": false,
-      "useMultiNamespace": true
+      "useSpecificFilters": true,
+      "useMultiNamespace": false
     },
     "prometheusContext": {
       "nodeFilter": null,
-      "containerFilter": null,
-      "podFilter": null,
-      "useSpecificFilters": false
+      "containerFilter": "domain-config-service",
+      "podFilter": "domain-config-service-t3-645d68cbc8-4h88r",
+      "useSpecificFilters": true
     },
     "focusAreas": [
+      "pod-analysis",
+      "container-logs",
       "chaos-recovery",
       "resilience-testing"
     ],
     "namespaces": [
-      "bss-prod-eks-monitoring",
-      "bstp-cms-global-production",
-      "bstp-cms-prod-v3",
-      "em-global-prod-3pp",
-      "em-global-prod-eom",
-      "em-global-prod-flowe",
-      "em-global-prod",
-      "em-prod-3pp",
-      "em-prod-eom",
-      "em-prod-flowe",
-      "em-prod",
-      "em-control-plane-prod"
+      "etiyamobile-production"
     ],
     "metadata": {
       "alertSource": "alertmanager",
       "alertDetails": {
-        "id": "alert-1765718599169",
-        "title": "KubeAPIDown",
-        "alertname": "KubeAPIDown",
-        "detectedAt": "2025-12-13T08:49:41.236Z",
+        "id": "alert-1765884958197",
+        "title": "KubePodCrashLooping",
+        "alertname": "KubePodCrashLooping",
+        "detectedAt": "2025-12-16T13:02:51Z",
         "isOngoing": true
       },
-      "analysisMode": "GENERAL"
+      "analysisMode": "TARGETED"
     },
     "context": {
-      "alertName": "KubeAPIDown",
-      "alertId": "alert-1765718599169",
+      "alertName": "KubePodCrashLooping",
+      "alertId": "alert-1765884958197",
       "alertPriority": "critical",
       "source": "alertmanager",
       "kubernetes": {
-        "container": null,
-        "pod": null,
-        "namespace": null,
+        "container": "domain-config-service",
+        "pod": "domain-config-service-t3-645d68cbc8-4h88r",
+        "namespace": "etiyamobile-production",
         "namespaces": [
-          "bss-prod-eks-monitoring",
-          "bstp-cms-global-production",
-          "bstp-cms-prod-v3",
-          "em-global-prod-3pp",
-          "em-global-prod-eom",
-          "em-global-prod-flowe",
-          "em-global-prod",
-          "em-prod-3pp",
-          "em-prod-eom",
-          "em-prod-flowe",
-          "em-prod",
-          "em-control-plane-prod"
+          "etiyamobile-production"
         ],
-        "service": null,
+        "service": "prometheus-kube-state-metrics",
         "deployment": null,
         "node": null,
         "persistentvolumeclaim": null,
         "volumename": null,
-        "useSpecificFilters": false,
-        "useMultiNamespace": true
+        "useSpecificFilters": true,
+        "useMultiNamespace": false
       },
       "affectedServices": [
-        "unknown-namespace"
+        "prometheus-kube-state-metrics",
+        "kube-state-metrics",
+        "domain-config-service"
       ],
       "errorPatterns": [
+        "Pod is crash looping",
+        "Container startup failure",
         "Chaos engineering test pattern"
       ],
       "alerts": [
         {
-          "alertname": "KubeAPIDown",
+          "alertname": "KubePodCrashLooping",
           "severity": "critical"
         }
       ]

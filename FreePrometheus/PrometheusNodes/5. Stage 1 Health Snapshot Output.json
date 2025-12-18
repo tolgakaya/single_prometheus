@@ -2,11 +2,11 @@
   {
     "output": {
       "stage": "health_snapshot",
-      "timestamp": "2023-11-16T09:53:44.321Z",
-      "overall_status": "unknown",
+      "timestamp": "2023-11-17T02:48:24.162Z",
+      "overall_status": "degraded",
       "proceed_to_stage2": true,
-      "urgency": "medium",
-      "reason": "Cluster health data is unavailable, but multiple alerts are active, indicating potential issues.",
+      "urgency": "high",
+      "reason": "Active alerts detected, indicating potential issues in the cluster.",
       "alerts": {
         "total": 6,
         "critical": 0,
@@ -17,21 +17,28 @@
         ]
       },
       "scores": {
-        "cluster_health": 3,
-        "node_availability": 3,
-        "pod_stability": 3,
-        "api_reliability": 3
+        "cluster_health": 5,
+        "node_availability": 5,
+        "pod_stability": 5,
+        "api_reliability": 1
       },
-      "quick_findings": [
-        "Multiple alerts active, including warnings for KubeHpaMaxedOut and KubeCPUOvercommit."
-      ],
+      "quick_findings": [],
       "forceDeepAnalysis": false,
       "overridden": false,
-      "_context": {},
+      "_context": {
+        "contextId": "ctx-1766053223970-o67gn3tod",
+        "contextPreserved": true,
+        "receivedFromSource": "manual",
+        "priority": "normal",
+        "timeRangeUsed": {
+          "start": 1766049623,
+          "end": 1766053223
+        }
+      },
       "_debug": {
         "nodeType": "Stage 1: Health Snapshot",
-        "processedAt": "2023-11-16T09:53:44.321Z",
-        "contextId": "ctx-1765950352039-izsx2rs4a"
+        "processedAt": "2023-11-17T02:48:24.162Z",
+        "contextId": "ctx-1766053223970-o67gn3tod"
       }
     }
   }

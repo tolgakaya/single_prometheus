@@ -4,38 +4,48 @@
       "stage": "automated_diagnosis",
       "diagnostics_executed": [
         {
-          "target": "",
-          "type": "pod",
+          "target": "infrastructure",
+          "type": "infrastructure",
           "commands_run": [
-            "kubectl describe pod  -n bss-prod-eks-monitoring",
-            "kubectl logs  -n bss-prod-eks-monitoring --since=24h",
-            "kubectl get events -n bss-prod-eks-monitoring --field-selector involvedObject.name="
+            "KB Troubleshooting: kubectl logs [pod] --previous",
+            "KB Troubleshooting: kubectl describe pod [pod]",
+            "KB Troubleshooting: kubectl get events --field-selector involvedObject.name=[pod]"
           ],
           "findings": {
-            "pod_status": {
-              "phase": "",
-              "restart_count": 0,
-              "last_termination": {
-                "reason": "OOMKilled",
-                "exit_code": 137,
-                "finished_at": "2025-12-14T13:23:19.000Z"
-              }
+            "infrastructure_status": {
+              "component": "Unknown",
+              "description": "Pod repeatedly crashes after starting",
+              "category": "APPLICATION",
+              "urgency": "CRITICAL"
+            },
+            "kb_evidence": {
+              "common_causes": [
+                "Application bugs",
+                "Missing configs/secrets",
+                "Resource limits exceeded",
+                "Invalid probe settings"
+              ],
+              "immediate_actions": [
+                "Rollback deployment",
+                "Increase memory limits",
+                "Fix probe configuration",
+                "Check secret mounts"
+              ],
+              "expected_results": [
+                "Logs show application errors",
+                "RestartCount > 5",
+                "OOMKilled/ExitCode in status",
+                "FailedScheduling events"
+              ]
             },
             "error_logs": [
               {
-                "timestamp": "2025-12-14T13:23:19.000Z",
-                "level": "Error",
-                "message": "Container killed due to memory limit",
+                "timestamp": "2023-10-15T10:29:18.000Z",
+                "level": "Critical",
+                "message": "Pod repeatedly crashes after starting",
                 "stack_trace": null
               }
-            ],
-            "events": [],
-            "resource_usage": {
-              "memory_request": "1Gi",
-              "memory_limit": "2Gi",
-              "memory_used": "",
-              "cpu_used": ""
-            }
+            ]
           }
         }
       ],
@@ -44,20 +54,24 @@
           "name": "",
           "version": "unknown",
           "replicas": "unknown",
-          "last_update": "2025-12-14T13:23:19.000Z",
+          "last_update": "2023-10-15T10:29:18.000Z",
           "update_strategy": "RollingUpdate"
         },
         "recent_changes": [
           {
             "type": "deployment",
-            "time": "2025-12-14T13:23:19.000Z",
+            "time": "2023-10-15T10:29:18.000Z",
             "change": "Pod experiencing memory issues",
             "user": "system"
           }
         ],
         "dependencies": {
           "upstream": [],
-          "downstream": "unknown-namespace",
+          "downstream": [
+            "prometheus-kube-state-metrics",
+            "kube-state-metrics",
+            "domain-config-service"
+          ],
           "databases": [],
           "external": []
         }
@@ -65,11 +79,22 @@
       "diagnostic_summary": {
         "confirmed_issues": [
           {
-            "issue": "Pod instability detected",
-            "evidence": "",
+            "issue": "Pod repeatedly crashes after starting",
+            "evidence": [
+              "Application bugs",
+              "Missing configs/secrets",
+              "Resource limits exceeded",
+              "Invalid probe settings"
+            ],
             "severity": "critical",
-            "impact": "Service  is experiencing outages",
-            "namespace": "bss-prod-eks-monitoring"
+            "impact": "Infrastructure component: Pod repeatedly crashes after starting",
+            "namespace": "infrastructure",
+            "kb_guidance": [
+              "Rollback deployment",
+              "Increase memory limits",
+              "Fix probe configuration",
+              "Check secret mounts"
+            ]
           }
         ],
         "secondary_issues": []
@@ -79,17 +104,21 @@
       "_context": {},
       "_debug": {
         "nodeType": "Stage 4: Automated Diagnosis",
-        "processedAt": "2023-10-11T14:00:00.000Z",
-        "contextId": "ctx-1765718599269-mveauf",
+        "processedAt": "2023-10-15T10:29:18.000Z",
+        "contextId": "ctx-1765884958296-sowzfe",
         "contextPreserved": true,
         "receivedFromStage": "Fix Stage 3 Context",
         "stageSequence": "",
         "diagnosticsCount": 1,
         "autoRemediationEnabled": true,
-        "actualPodUsed": "",
+        "actualPodUsed": "N/A (infrastructure alarm)",
+        "diagnosticType": "kb-infrastructure",
+        "kbFallbackUsed": true,
+        "alertName": "Unknown",
+        "alertCategory": "APPLICATION",
         "timeRangeUsed": {
-          "start": 1765714999,
-          "end": 1765718599
+          "start": 1765881358,
+          "end": 1765884958
         }
       }
     }

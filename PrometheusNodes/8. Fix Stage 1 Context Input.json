@@ -2,29 +2,32 @@
   {
     "output": {
       "stage": "initial_analysis",
-      "timestamp": "2023-11-24T18:31:19.000Z",
-      "cluster": "null",
+      "timestamp": "2025-12-16T11:36:58.296Z",
+      "cluster": "etiyamobile-production",
       "overall_status": "critical",
       "proceed_to_stage2": true,
       "urgency": "critical",
-      "reason": "KubeAPIDown alert is active and critical. Quick Cluster Health and Active Alerts Count indicate potential widespread issues.",
+      "reason": "The alert KubePodCrashLooping is active and critical. No additional alerts or cascading effects detected in the same namespace.",
       "alerts": {
-        "total": 0,
-        "critical": 0,
-        "warning": 0
+        "total": 1,
+        "critical": 1,
+        "warning": 0,
+        "top_alerts": [
+          "KubePodCrashLooping"
+        ]
       },
       "scores": {
-        "cluster_health": 0,
-        "node_availability": 0,
-        "pod_stability": 0,
-        "api_reliability": 0
+        "cluster_health": 50,
+        "node_availability": 100,
+        "pod_stability": 20,
+        "api_reliability": 100
       },
       "quick_findings": [
-        "No active alerts found in the namespace.",
-        "Cluster health check did not return any results, indicating potential API server unavailability."
+        "Pod domain-config-service-t3-645d68cbc8-4h88r is crash looping.",
+        "No other alerts detected in the same namespace.",
+        "Cluster health is degraded due to pod instability."
       ],
-      "forceDeepAnalysis": true,
-      "overridden": false
+      "forceDeepAnalysis": true
     }
   }
 ]

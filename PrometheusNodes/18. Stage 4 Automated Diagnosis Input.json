@@ -4,11 +4,127 @@
       "stage": "alert_intelligence",
       "active_alerts": [
         {
-          "name": "No alerts",
-          "severity": "unknown",
-          "count": 0,
+          "name": "Watchdog",
+          "severity": "none",
+          "count": 1,
           "duration": "unknown",
-          "labels": {},
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "Watchdog",
+            "alertstate": "firing",
+            "severity": "none"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "InfoInhibitor",
+          "severity": "none",
+          "count": 6,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "InfoInhibitor",
+            "alertstate": "firing",
+            "container": "fluent-bit",
+            "instance": "10.94.217.52:10250",
+            "namespace": "bss-prod-eks-monitoring",
+            "pod": "fluent-bit-wqw26",
+            "service": "kube-prometheus-stack-kubelet",
+            "severity": "none"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "CPUThrottlingHigh",
+          "severity": "info",
+          "count": 5,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "CPUThrottlingHigh",
+            "alertstate": "firing",
+            "container": "fluent-bit",
+            "instance": "10.94.157.160:10250",
+            "namespace": "bss-prod-eks-monitoring",
+            "pod": "fluent-bit-x4px6",
+            "service": "kube-prometheus-stack-kubelet",
+            "severity": "info"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "TargetDown",
+          "severity": "info",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "TargetDown",
+            "alertstate": "firing",
+            "job": "kubelet",
+            "namespace": "kube-system",
+            "service": "kube-prometheus-stack-bss-kubelet",
+            "severity": "info"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "KubeHpaMaxedOut",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeHpaMaxedOut",
+            "alertstate": "firing",
+            "container": "kube-state-metrics",
+            "endpoint": "http",
+            "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+            "instance": "10.94.145.151:8080",
+            "job": "kube-state-metrics",
+            "namespace": "em-control-plane-prod",
+            "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+            "service": "kube-prometheus-stack-kube-state-metrics",
+            "severity": "warning"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "KubeCPUOvercommit",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeCPUOvercommit",
+            "alertstate": "firing",
+            "severity": "warning"
+          },
           "annotations": {},
           "category": "UNKNOWN",
           "kb_enriched": false,
@@ -19,18 +135,47 @@
       ],
       "alert_groups": [
         {
-          "root_alert": "none",
-          "related_alerts": [],
-          "correlation_score": 0,
-          "shared_labels": {}
+          "root_alert": "CPUThrottlingHigh",
+          "related_alerts": [
+            "InfoInhibitor",
+            "KubeCPUOvercommit"
+          ],
+          "correlation_score": 0.5,
+          "shared_labels": {
+            "namespace": "bss-prod-eks-monitoring"
+          }
+        },
+        {
+          "root_alert": "Watchdog",
+          "related_alerts": [
+            "InfoInhibitor",
+            "CPUThrottlingHigh",
+            "TargetDown",
+            "KubeHpaMaxedOut",
+            "KubeCPUOvercommit"
+          ],
+          "correlation_score": 0.7,
+          "category": "UNKNOWN",
+          "shared_labels": {
+            "__name__": "ALERTS",
+            "alertstate": "firing"
+          },
+          "impact_analysis": {
+            "total_impact": 300,
+            "max_severity": 30,
+            "cascade_risk": 1
+          }
         }
       ],
       "knowledge_base_matches": [],
       "alert_patterns": {
-        "recurring": [],
+        "recurring": [
+          "CPUThrottlingHigh",
+          "InfoInhibitor"
+        ],
         "storm_detection": {
           "detected": false,
-          "alert_count": 1,
+          "alert_count": 6,
           "time_window": "5m",
           "likely_root": null,
           "storm_category": null
@@ -38,7 +183,7 @@
         "category_distribution": [
           {
             "category": "UNKNOWN",
-            "count": 1,
+            "count": 6,
             "percentage": "100.0"
           }
         ]
@@ -58,14 +203,59 @@
       },
       "recommended_alert_actions": [
         {
-          "alert": "none",
-          "action": "Monitor",
-          "confidence": 0,
-          "risk": "low",
-          "command": null
+          "alert": "KubeHpaMaxedOut",
+          "action": "Check HPA configuration",
+          "confidence": 0.9,
+          "risk": "medium",
+          "command": "kubectl describe hpa"
         },
         {
-          "alert": "No alerts",
+          "alert": "Watchdog",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "InfoInhibitor",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "CPUThrottlingHigh",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "TargetDown",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "KubeHpaMaxedOut",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "KubeCPUOvercommit",
           "action": "Investigate alert",
           "confidence": 0.3,
           "risk": "medium",
@@ -77,21 +267,137 @@
       "proceed_to_stage4": true,
       "auto_remediation_approved": true,
       "_context": {
-        "contextId": "ctx-1765718599269-mveauf",
+        "contextId": "ctx-1765884958296-sowzfe",
         "initialParams": {
-          "startTime": 1765714999,
-          "endTime": 1765718599
+          "startTime": 1765881358,
+          "endTime": 1765884958
         },
         "stageResults": {
           "stage3": {
             "output": {
               "active_alerts": [
                 {
-                  "name": "No alerts",
-                  "severity": "unknown",
-                  "count": 0,
+                  "name": "Watchdog",
+                  "severity": "none",
+                  "count": 1,
                   "duration": "unknown",
-                  "labels": {},
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "Watchdog",
+                    "alertstate": "firing",
+                    "severity": "none"
+                  },
+                  "annotations": {},
+                  "category": "UNKNOWN",
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50,
+                  "correlations": []
+                },
+                {
+                  "name": "InfoInhibitor",
+                  "severity": "none",
+                  "count": 6,
+                  "duration": "unknown",
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "InfoInhibitor",
+                    "alertstate": "firing",
+                    "container": "fluent-bit",
+                    "instance": "10.94.217.52:10250",
+                    "namespace": "bss-prod-eks-monitoring",
+                    "pod": "fluent-bit-wqw26",
+                    "service": "kube-prometheus-stack-kubelet",
+                    "severity": "none"
+                  },
+                  "annotations": {},
+                  "category": "UNKNOWN",
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50,
+                  "correlations": []
+                },
+                {
+                  "name": "CPUThrottlingHigh",
+                  "severity": "info",
+                  "count": 5,
+                  "duration": "unknown",
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "CPUThrottlingHigh",
+                    "alertstate": "firing",
+                    "container": "fluent-bit",
+                    "instance": "10.94.157.160:10250",
+                    "namespace": "bss-prod-eks-monitoring",
+                    "pod": "fluent-bit-x4px6",
+                    "service": "kube-prometheus-stack-kubelet",
+                    "severity": "info"
+                  },
+                  "annotations": {},
+                  "category": "UNKNOWN",
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50,
+                  "correlations": []
+                },
+                {
+                  "name": "TargetDown",
+                  "severity": "info",
+                  "count": 1,
+                  "duration": "unknown",
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "TargetDown",
+                    "alertstate": "firing",
+                    "job": "kubelet",
+                    "namespace": "kube-system",
+                    "service": "kube-prometheus-stack-bss-kubelet",
+                    "severity": "info"
+                  },
+                  "annotations": {},
+                  "category": "UNKNOWN",
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50,
+                  "correlations": []
+                },
+                {
+                  "name": "KubeHpaMaxedOut",
+                  "severity": "warning",
+                  "count": 1,
+                  "duration": "unknown",
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "KubeHpaMaxedOut",
+                    "alertstate": "firing",
+                    "container": "kube-state-metrics",
+                    "endpoint": "http",
+                    "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+                    "instance": "10.94.145.151:8080",
+                    "job": "kube-state-metrics",
+                    "namespace": "em-control-plane-prod",
+                    "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+                    "service": "kube-prometheus-stack-kube-state-metrics",
+                    "severity": "warning"
+                  },
+                  "annotations": {},
+                  "category": "UNKNOWN",
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50,
+                  "correlations": []
+                },
+                {
+                  "name": "KubeCPUOvercommit",
+                  "severity": "warning",
+                  "count": 1,
+                  "duration": "unknown",
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "KubeCPUOvercommit",
+                    "alertstate": "firing",
+                    "severity": "warning"
+                  },
                   "annotations": {},
                   "category": "UNKNOWN",
                   "kb_enriched": false,
@@ -102,18 +408,47 @@
               ],
               "alert_groups": [
                 {
-                  "root_alert": "none",
-                  "related_alerts": [],
-                  "correlation_score": 0,
-                  "shared_labels": {}
+                  "root_alert": "CPUThrottlingHigh",
+                  "related_alerts": [
+                    "InfoInhibitor",
+                    "KubeCPUOvercommit"
+                  ],
+                  "correlation_score": 0.5,
+                  "shared_labels": {
+                    "namespace": "bss-prod-eks-monitoring"
+                  }
+                },
+                {
+                  "root_alert": "Watchdog",
+                  "related_alerts": [
+                    "InfoInhibitor",
+                    "CPUThrottlingHigh",
+                    "TargetDown",
+                    "KubeHpaMaxedOut",
+                    "KubeCPUOvercommit"
+                  ],
+                  "correlation_score": 0.7,
+                  "category": "UNKNOWN",
+                  "shared_labels": {
+                    "__name__": "ALERTS",
+                    "alertstate": "firing"
+                  },
+                  "impact_analysis": {
+                    "total_impact": 300,
+                    "max_severity": 30,
+                    "cascade_risk": 1
+                  }
                 }
               ],
               "knowledge_base_matches": [],
               "alert_patterns": {
-                "recurring": [],
+                "recurring": [
+                  "CPUThrottlingHigh",
+                  "InfoInhibitor"
+                ],
                 "storm_detection": {
                   "detected": false,
-                  "alert_count": 1,
+                  "alert_count": 6,
                   "time_window": "5m",
                   "likely_root": null,
                   "storm_category": null
@@ -121,7 +456,7 @@
                 "category_distribution": [
                   {
                     "category": "UNKNOWN",
-                    "count": 1,
+                    "count": 6,
                     "percentage": "100.0"
                   }
                 ]
@@ -141,14 +476,59 @@
               },
               "recommended_alert_actions": [
                 {
-                  "alert": "none",
-                  "action": "Monitor",
-                  "confidence": 0,
-                  "risk": "low",
-                  "command": null
+                  "alert": "KubeHpaMaxedOut",
+                  "action": "Check HPA configuration",
+                  "confidence": 0.9,
+                  "risk": "medium",
+                  "command": "kubectl describe hpa"
                 },
                 {
-                  "alert": "No alerts",
+                  "alert": "Watchdog",
+                  "action": "Investigate alert",
+                  "confidence": 0.3,
+                  "risk": "medium",
+                  "command": null,
+                  "category": "UNKNOWN",
+                  "priority": 50
+                },
+                {
+                  "alert": "InfoInhibitor",
+                  "action": "Investigate alert",
+                  "confidence": 0.3,
+                  "risk": "medium",
+                  "command": null,
+                  "category": "UNKNOWN",
+                  "priority": 50
+                },
+                {
+                  "alert": "CPUThrottlingHigh",
+                  "action": "Investigate alert",
+                  "confidence": 0.3,
+                  "risk": "medium",
+                  "command": null,
+                  "category": "UNKNOWN",
+                  "priority": 50
+                },
+                {
+                  "alert": "TargetDown",
+                  "action": "Investigate alert",
+                  "confidence": 0.3,
+                  "risk": "medium",
+                  "command": null,
+                  "category": "UNKNOWN",
+                  "priority": 50
+                },
+                {
+                  "alert": "KubeHpaMaxedOut",
+                  "action": "Investigate alert",
+                  "confidence": 0.3,
+                  "risk": "medium",
+                  "command": null,
+                  "category": "UNKNOWN",
+                  "priority": 50
+                },
+                {
+                  "alert": "KubeCPUOvercommit",
                   "action": "Investigate alert",
                   "confidence": 0.3,
                   "risk": "medium",
@@ -159,43 +539,43 @@
               ],
               "proceed_to_stage4": true,
               "auto_remediation_approved": true,
-              "alert_category": "API"
+              "alert_category": "APPLICATION"
             },
-            "completedAt": "2025-12-14T13:23:43.900Z",
+            "completedAt": "2025-12-16T11:36:47.115Z",
             "decision": true
           }
         },
         "decisions": {
           "forceDeepAnalysisOverride": {
-            "timestamp": "2025-12-14T13:23:28.735Z",
+            "timestamp": "2025-12-16T11:36:19.846Z",
             "forceDeepAnalysis": true,
             "overrideApplied": true,
             "reason": "Deep analysis forced due to critical priority from alert-listener"
           },
           "stage3Proceed": {
-            "timestamp": "2025-12-14T13:23:39.008Z",
+            "timestamp": "2025-12-16T11:36:32.731Z",
             "shouldProceed": true,
             "reason": "Priority or category requires full analysis"
           },
           "stage4Proceed": {
-            "timestamp": "2025-12-14T13:23:43.900Z",
+            "timestamp": "2025-12-16T11:36:47.115Z",
             "shouldProceed": true,
             "autoRemediationApproved": true,
-            "alertCount": 1,
+            "alertCount": 6,
             "sloImpact": "100%",
             "alertStorm": false,
-            "primaryCategory": "API"
+            "primaryCategory": "APPLICATION"
           }
         }
       },
       "_debug": {
         "nodeType": "Stage 3: Alert Intelligence",
-        "processedAt": "2023-11-01T09:14:00.000Z",
-        "contextId": "ctx-1765718599269-mveauf",
+        "processedAt": "2023-11-15T06:56:34.000Z",
+        "contextId": "ctx-1765884958296-sowzfe",
         "contextPreserved": true,
         "receivedFromStage": "Fix Stage 2 Context",
         "priority": "critical",
-        "alertCategory": "API",
+        "alertCategory": "APPLICATION",
         "rootCauseIdentified": false,
         "correlationPatternsApplied": true,
         "stormDetected": false,
@@ -213,27 +593,143 @@
           "Fix Stage 3 Context"
         ],
         "timeRangeUsed": {
-          "start": 1765714999,
-          "end": 1765718599
+          "start": 1765881358,
+          "end": 1765884958
         }
       }
     },
     "_context": {
-      "contextId": "ctx-1765718599269-mveauf",
+      "contextId": "ctx-1765884958296-sowzfe",
       "initialParams": {
-        "startTime": 1765714999,
-        "endTime": 1765718599
+        "startTime": 1765881358,
+        "endTime": 1765884958
       },
       "stageResults": {
         "stage3": {
           "output": {
             "active_alerts": [
               {
-                "name": "No alerts",
-                "severity": "unknown",
-                "count": 0,
+                "name": "Watchdog",
+                "severity": "none",
+                "count": 1,
                 "duration": "unknown",
-                "labels": {},
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "Watchdog",
+                  "alertstate": "firing",
+                  "severity": "none"
+                },
+                "annotations": {},
+                "category": "UNKNOWN",
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50,
+                "correlations": []
+              },
+              {
+                "name": "InfoInhibitor",
+                "severity": "none",
+                "count": 6,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "InfoInhibitor",
+                  "alertstate": "firing",
+                  "container": "fluent-bit",
+                  "instance": "10.94.217.52:10250",
+                  "namespace": "bss-prod-eks-monitoring",
+                  "pod": "fluent-bit-wqw26",
+                  "service": "kube-prometheus-stack-kubelet",
+                  "severity": "none"
+                },
+                "annotations": {},
+                "category": "UNKNOWN",
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50,
+                "correlations": []
+              },
+              {
+                "name": "CPUThrottlingHigh",
+                "severity": "info",
+                "count": 5,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "CPUThrottlingHigh",
+                  "alertstate": "firing",
+                  "container": "fluent-bit",
+                  "instance": "10.94.157.160:10250",
+                  "namespace": "bss-prod-eks-monitoring",
+                  "pod": "fluent-bit-x4px6",
+                  "service": "kube-prometheus-stack-kubelet",
+                  "severity": "info"
+                },
+                "annotations": {},
+                "category": "UNKNOWN",
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50,
+                "correlations": []
+              },
+              {
+                "name": "TargetDown",
+                "severity": "info",
+                "count": 1,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "TargetDown",
+                  "alertstate": "firing",
+                  "job": "kubelet",
+                  "namespace": "kube-system",
+                  "service": "kube-prometheus-stack-bss-kubelet",
+                  "severity": "info"
+                },
+                "annotations": {},
+                "category": "UNKNOWN",
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50,
+                "correlations": []
+              },
+              {
+                "name": "KubeHpaMaxedOut",
+                "severity": "warning",
+                "count": 1,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "KubeHpaMaxedOut",
+                  "alertstate": "firing",
+                  "container": "kube-state-metrics",
+                  "endpoint": "http",
+                  "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+                  "instance": "10.94.145.151:8080",
+                  "job": "kube-state-metrics",
+                  "namespace": "em-control-plane-prod",
+                  "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+                  "service": "kube-prometheus-stack-kube-state-metrics",
+                  "severity": "warning"
+                },
+                "annotations": {},
+                "category": "UNKNOWN",
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50,
+                "correlations": []
+              },
+              {
+                "name": "KubeCPUOvercommit",
+                "severity": "warning",
+                "count": 1,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "KubeCPUOvercommit",
+                  "alertstate": "firing",
+                  "severity": "warning"
+                },
                 "annotations": {},
                 "category": "UNKNOWN",
                 "kb_enriched": false,
@@ -244,18 +740,47 @@
             ],
             "alert_groups": [
               {
-                "root_alert": "none",
-                "related_alerts": [],
-                "correlation_score": 0,
-                "shared_labels": {}
+                "root_alert": "CPUThrottlingHigh",
+                "related_alerts": [
+                  "InfoInhibitor",
+                  "KubeCPUOvercommit"
+                ],
+                "correlation_score": 0.5,
+                "shared_labels": {
+                  "namespace": "bss-prod-eks-monitoring"
+                }
+              },
+              {
+                "root_alert": "Watchdog",
+                "related_alerts": [
+                  "InfoInhibitor",
+                  "CPUThrottlingHigh",
+                  "TargetDown",
+                  "KubeHpaMaxedOut",
+                  "KubeCPUOvercommit"
+                ],
+                "correlation_score": 0.7,
+                "category": "UNKNOWN",
+                "shared_labels": {
+                  "__name__": "ALERTS",
+                  "alertstate": "firing"
+                },
+                "impact_analysis": {
+                  "total_impact": 300,
+                  "max_severity": 30,
+                  "cascade_risk": 1
+                }
               }
             ],
             "knowledge_base_matches": [],
             "alert_patterns": {
-              "recurring": [],
+              "recurring": [
+                "CPUThrottlingHigh",
+                "InfoInhibitor"
+              ],
               "storm_detection": {
                 "detected": false,
-                "alert_count": 1,
+                "alert_count": 6,
                 "time_window": "5m",
                 "likely_root": null,
                 "storm_category": null
@@ -263,7 +788,7 @@
               "category_distribution": [
                 {
                   "category": "UNKNOWN",
-                  "count": 1,
+                  "count": 6,
                   "percentage": "100.0"
                 }
               ]
@@ -283,14 +808,59 @@
             },
             "recommended_alert_actions": [
               {
-                "alert": "none",
-                "action": "Monitor",
-                "confidence": 0,
-                "risk": "low",
-                "command": null
+                "alert": "KubeHpaMaxedOut",
+                "action": "Check HPA configuration",
+                "confidence": 0.9,
+                "risk": "medium",
+                "command": "kubectl describe hpa"
               },
               {
-                "alert": "No alerts",
+                "alert": "Watchdog",
+                "action": "Investigate alert",
+                "confidence": 0.3,
+                "risk": "medium",
+                "command": null,
+                "category": "UNKNOWN",
+                "priority": 50
+              },
+              {
+                "alert": "InfoInhibitor",
+                "action": "Investigate alert",
+                "confidence": 0.3,
+                "risk": "medium",
+                "command": null,
+                "category": "UNKNOWN",
+                "priority": 50
+              },
+              {
+                "alert": "CPUThrottlingHigh",
+                "action": "Investigate alert",
+                "confidence": 0.3,
+                "risk": "medium",
+                "command": null,
+                "category": "UNKNOWN",
+                "priority": 50
+              },
+              {
+                "alert": "TargetDown",
+                "action": "Investigate alert",
+                "confidence": 0.3,
+                "risk": "medium",
+                "command": null,
+                "category": "UNKNOWN",
+                "priority": 50
+              },
+              {
+                "alert": "KubeHpaMaxedOut",
+                "action": "Investigate alert",
+                "confidence": 0.3,
+                "risk": "medium",
+                "command": null,
+                "category": "UNKNOWN",
+                "priority": 50
+              },
+              {
+                "alert": "KubeCPUOvercommit",
                 "action": "Investigate alert",
                 "confidence": 0.3,
                 "risk": "medium",
@@ -301,26 +871,142 @@
             ],
             "proceed_to_stage4": true,
             "auto_remediation_approved": true,
-            "alert_category": "API"
+            "alert_category": "APPLICATION"
           },
-          "completedAt": "2025-12-14T13:23:43.900Z",
+          "completedAt": "2025-12-16T11:36:47.115Z",
           "decision": true,
           "kbEnhanced": true,
-          "alertCategory": "API",
-          "urgencyLevel": "BLOCKER",
+          "alertCategory": "APPLICATION",
+          "urgencyLevel": "CRITICAL",
           "kbEnhancedAlerts": 0
         }
       }
     },
-    "contextId": "ctx-1765718599269-mveauf",
+    "contextId": "ctx-1765884958296-sowzfe",
     "stage3Data": {
       "active_alerts": [
         {
-          "name": "No alerts",
-          "severity": "unknown",
-          "count": 0,
+          "name": "Watchdog",
+          "severity": "none",
+          "count": 1,
           "duration": "unknown",
-          "labels": {},
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "Watchdog",
+            "alertstate": "firing",
+            "severity": "none"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "InfoInhibitor",
+          "severity": "none",
+          "count": 6,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "InfoInhibitor",
+            "alertstate": "firing",
+            "container": "fluent-bit",
+            "instance": "10.94.217.52:10250",
+            "namespace": "bss-prod-eks-monitoring",
+            "pod": "fluent-bit-wqw26",
+            "service": "kube-prometheus-stack-kubelet",
+            "severity": "none"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "CPUThrottlingHigh",
+          "severity": "info",
+          "count": 5,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "CPUThrottlingHigh",
+            "alertstate": "firing",
+            "container": "fluent-bit",
+            "instance": "10.94.157.160:10250",
+            "namespace": "bss-prod-eks-monitoring",
+            "pod": "fluent-bit-x4px6",
+            "service": "kube-prometheus-stack-kubelet",
+            "severity": "info"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "TargetDown",
+          "severity": "info",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "TargetDown",
+            "alertstate": "firing",
+            "job": "kubelet",
+            "namespace": "kube-system",
+            "service": "kube-prometheus-stack-bss-kubelet",
+            "severity": "info"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "KubeHpaMaxedOut",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeHpaMaxedOut",
+            "alertstate": "firing",
+            "container": "kube-state-metrics",
+            "endpoint": "http",
+            "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+            "instance": "10.94.145.151:8080",
+            "job": "kube-state-metrics",
+            "namespace": "em-control-plane-prod",
+            "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+            "service": "kube-prometheus-stack-kube-state-metrics",
+            "severity": "warning"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "KubeCPUOvercommit",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeCPUOvercommit",
+            "alertstate": "firing",
+            "severity": "warning"
+          },
           "annotations": {},
           "category": "UNKNOWN",
           "kb_enriched": false,
@@ -331,10 +1017,36 @@
       ],
       "alert_groups": [
         {
-          "root_alert": "none",
-          "related_alerts": [],
-          "correlation_score": 0,
-          "shared_labels": {}
+          "root_alert": "CPUThrottlingHigh",
+          "related_alerts": [
+            "InfoInhibitor",
+            "KubeCPUOvercommit"
+          ],
+          "correlation_score": 0.5,
+          "shared_labels": {
+            "namespace": "bss-prod-eks-monitoring"
+          }
+        },
+        {
+          "root_alert": "Watchdog",
+          "related_alerts": [
+            "InfoInhibitor",
+            "CPUThrottlingHigh",
+            "TargetDown",
+            "KubeHpaMaxedOut",
+            "KubeCPUOvercommit"
+          ],
+          "correlation_score": 0.7,
+          "category": "UNKNOWN",
+          "shared_labels": {
+            "__name__": "ALERTS",
+            "alertstate": "firing"
+          },
+          "impact_analysis": {
+            "total_impact": 300,
+            "max_severity": 30,
+            "cascade_risk": 1
+          }
         }
       ],
       "knowledge_base_matches": [],
@@ -353,14 +1065,59 @@
       },
       "recommended_actions": [
         {
-          "alert": "none",
-          "action": "Monitor",
-          "confidence": 0,
-          "risk": "low",
-          "command": null
+          "alert": "KubeHpaMaxedOut",
+          "action": "Check HPA configuration",
+          "confidence": 0.9,
+          "risk": "medium",
+          "command": "kubectl describe hpa"
         },
         {
-          "alert": "No alerts",
+          "alert": "Watchdog",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "InfoInhibitor",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "CPUThrottlingHigh",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "TargetDown",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "KubeHpaMaxedOut",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "KubeCPUOvercommit",
           "action": "Investigate alert",
           "confidence": 0.3,
           "risk": "medium",
@@ -372,12 +1129,15 @@
       "auto_remediation_approved": true,
       "proceed_to_stage4": true,
       "kb_enriched_count": 0,
-      "alert_category": "API",
+      "alert_category": "APPLICATION",
       "alert_patterns": {
-        "recurring": [],
+        "recurring": [
+          "CPUThrottlingHigh",
+          "InfoInhibitor"
+        ],
         "storm_detection": {
           "detected": false,
-          "alert_count": 1,
+          "alert_count": 6,
           "time_window": "5m",
           "likely_root": null,
           "storm_category": null
@@ -385,19 +1145,19 @@
         "category_distribution": [
           {
             "category": "UNKNOWN",
-            "count": 1,
+            "count": 6,
             "percentage": "100.0"
           }
         ]
       },
       "correlation_analysis": {
-        "groups_found": 1,
+        "groups_found": 2,
         "storm_detected": false,
-        "primary_category": "API",
+        "primary_category": "APPLICATION",
         "category_distribution": [
           {
             "category": "UNKNOWN",
-            "count": 1,
+            "count": 6,
             "percentage": "100.0"
           }
         ]
@@ -406,75 +1166,80 @@
     "stage1Data": {
       "overall_status": "critical",
       "alerts": {
-        "total": 0,
-        "critical": 0,
-        "warning": 0
+        "total": 1,
+        "critical": 1,
+        "warning": 0,
+        "top_alerts": [
+          "KubePodCrashLooping"
+        ]
       },
       "scores": {
-        "cluster_health": 0,
-        "node_availability": 0,
-        "pod_stability": 0,
-        "api_reliability": 0
+        "cluster_health": 50,
+        "node_availability": 100,
+        "pod_stability": 20,
+        "api_reliability": 100
       },
       "quick_findings": [
-        "No active alerts found in the namespace.",
-        "Cluster health check did not return any results, indicating potential API server unavailability."
+        "Pod domain-config-service-t3-645d68cbc8-4h88r is crash looping.",
+        "No other alerts detected in the same namespace.",
+        "Cluster health is degraded due to pod instability."
       ]
     },
     "stage2Data": {
       "root_cause": {
         "identified": false,
-        "component": "",
-        "issue": "",
-        "evidence": [],
-        "confidence": 0,
-        "category": "API",
-        "pattern_matched": null
+        "category": "APPLICATION"
       },
       "affected_services": [
-        "unknown-namespace"
+        "prometheus-kube-state-metrics",
+        "kube-state-metrics",
+        "domain-config-service"
       ],
       "critical_pods": [],
       "cascading_effects": {
         "hasCascadingFailures": false,
         "affectedComponents": [],
         "spreadPattern": "isolated",
-        "cascadeCategory": "API"
+        "cascadeCategory": "APPLICATION"
       },
       "correlation_matrix": {
-        "primary_chain": "unknown",
+        "primary_chain": "service",
         "affected_services": [
-          "unknown-namespace"
+          "prometheus-kube-state-metrics",
+          "kube-state-metrics",
+          "domain-config-service"
         ],
-        "blast_radius": "unknown",
+        "blast_radius": "service",
         "kubernetes_impact": {
           "evicted_pods": 0,
           "pending_pods": 0,
           "failed_schedules": 0
         }
       },
-      "alert_category": "API"
+      "alert_category": "APPLICATION"
     },
     "stage4PrepData": {
       "rootCause": {
         "identified": false,
-        "component": "",
-        "issue": "",
-        "evidence": [],
-        "confidence": 0,
-        "category": "API",
-        "pattern_matched": null
+        "category": "APPLICATION"
       },
       "affectedServices": [
-        "unknown-namespace"
+        "prometheus-kube-state-metrics",
+        "kube-state-metrics",
+        "domain-config-service"
       ],
       "criticalPods": [],
       "primaryAlert": {
-        "name": "No alerts",
-        "severity": "unknown",
-        "count": 0,
+        "name": "Watchdog",
+        "severity": "none",
+        "count": 1,
         "duration": "unknown",
-        "labels": {},
+        "labels": {
+          "__name__": "ALERTS",
+          "alertname": "Watchdog",
+          "alertstate": "firing",
+          "severity": "none"
+        },
         "annotations": {},
         "category": "UNKNOWN",
         "kb_enriched": false,
@@ -483,98 +1248,113 @@
         "correlations": []
       },
       "kbMatches": [],
-      "contextId": "ctx-1765718599269-mveauf",
-      "alertCategory": "API",
+      "contextId": "ctx-1765884958296-sowzfe",
+      "alertCategory": "APPLICATION",
       "correlationGroups": [
         {
-          "root_alert": "none",
-          "related_alerts": [],
-          "correlation_score": 0,
-          "shared_labels": {}
+          "root_alert": "CPUThrottlingHigh",
+          "related_alerts": [
+            "InfoInhibitor",
+            "KubeCPUOvercommit"
+          ],
+          "correlation_score": 0.5,
+          "shared_labels": {
+            "namespace": "bss-prod-eks-monitoring"
+          }
+        },
+        {
+          "root_alert": "Watchdog",
+          "related_alerts": [
+            "InfoInhibitor",
+            "CPUThrottlingHigh",
+            "TargetDown",
+            "KubeHpaMaxedOut",
+            "KubeCPUOvercommit"
+          ],
+          "correlation_score": 0.7,
+          "category": "UNKNOWN",
+          "shared_labels": {
+            "__name__": "ALERTS",
+            "alertstate": "firing"
+          },
+          "impact_analysis": {
+            "total_impact": 300,
+            "max_severity": 30,
+            "cascade_risk": 1
+          }
         }
       ]
     },
     "namespaces": [
-      "bss-prod-eks-monitoring",
-      "bstp-cms-global-production",
-      "bstp-cms-prod-v3",
-      "em-global-prod-3pp",
-      "em-global-prod-eom",
-      "em-global-prod-flowe",
-      "em-global-prod",
-      "em-prod-3pp",
-      "em-prod-eom",
-      "em-prod-flowe",
-      "em-prod",
-      "em-control-plane-prod"
+      "etiyamobile-production"
     ],
     "timeRange": {
-      "start": 1765714999,
-      "end": 1765718599
+      "start": 1765881358,
+      "end": 1765884958
     },
     "knowledgeBase": {
-      "alertCategory": "API",
-      "urgencyLevel": "BLOCKER",
-      "cascadeRisk": "CRITICAL",
+      "alertCategory": "APPLICATION",
+      "urgencyLevel": "CRITICAL",
+      "cascadeRisk": "MEDIUM",
       "kbEntriesAvailable": 9,
       "enhancementVersion": "KB-Enhanced-Full-v1.0",
       "kbEnhancedAlerts": 0
     },
     "alertKBStats": {
-      "alertCategory": "API",
-      "urgencyLevel": "BLOCKER",
-      "cascadeRisk": "CRITICAL",
+      "alertCategory": "APPLICATION",
+      "urgencyLevel": "CRITICAL",
+      "cascadeRisk": "MEDIUM",
       "kbAlertKnowledgeBase": {
         "severity": "critical",
-        "description": "Kubernetes API server is down",
+        "description": "Pod repeatedly crashes after starting",
         "commonCauses": [
-          "API server process crashed",
-          "etcd connectivity issues",
-          "Certificate problems",
-          "Resource exhaustion"
+          "Application bugs",
+          "Missing configs/secrets",
+          "Resource limits exceeded",
+          "Invalid probe settings"
         ],
         "troubleshootingSteps": [
-          "Check API server pod status",
-          "Verify etcd connectivity",
-          "Check certificates",
-          "Review resource usage"
+          "kubectl logs [pod] --previous",
+          "kubectl describe pod [pod]",
+          "kubectl get events --field-selector involvedObject.name=[pod]",
+          "kubectl top pod [pod]"
         ],
         "expectedResults": [
-          "API server responding",
-          "etcd connectivity restored",
-          "Valid certificates",
-          "Sufficient resources"
+          "Logs show application errors",
+          "RestartCount > 5",
+          "OOMKilled/ExitCode in status",
+          "FailedScheduling events"
         ],
         "immediateActions": [
-          "Restart API server",
-          "Fix etcd issues",
-          "Renew certificates",
-          "Scale up resources"
+          "Rollback deployment",
+          "Increase memory limits",
+          "Fix probe configuration",
+          "Check secret mounts"
         ],
         "longTermSolutions": [
-          "API server high availability",
-          "Certificate automation",
-          "Resource monitoring"
+          "Implement CI/CD health checks",
+          "Add resource quotas",
+          "Configure proper liveness probes"
         ],
         "requiredMetrics": [
-          "apiserver_up",
-          "apiserver_request_duration_seconds"
+          "kube_pod_container_status_restarts_total",
+          "kube_pod_status_phase"
         ],
         "cascadeCheckPoints": [
-          "cluster_operations",
-          "kubectl_access",
-          "controller_functions"
+          "service_availability",
+          "deployment_health",
+          "application_performance"
         ]
       },
       "kbEnhanced": true,
       "kbEntriesLoaded": 9,
       "totalCategories": 151,
       "totalMappings": 12,
-      "exportedAt": "2025-12-14T13:23:43.901Z",
+      "exportedAt": "2025-12-16T11:36:47.116Z",
       "debug": {
-        "originalUrgency": "BLOCKER",
-        "originalCascadeRisk": "CRITICAL",
-        "severityScore": 136,
+        "originalUrgency": "CRITICAL",
+        "originalCascadeRisk": "MEDIUM",
+        "severityScore": 91,
         "hasKBData": true
       }
     },
@@ -582,15 +1362,15 @@
       "fromNode": "Fix Stage 3 Context",
       "contextFixed": true,
       "validationPassed": true,
-      "stage3AlertCount": 1,
+      "stage3AlertCount": 6,
       "stage3Decision": true,
-      "alertCategory": "API",
-      "correlationGroupsFound": 1,
+      "alertCategory": "APPLICATION",
+      "correlationGroupsFound": 2,
       "stormDetected": false,
       "allStagesDataPresent": true,
       "kbEnhanced": true,
       "kbEnhancedAlertsCount": 0,
-      "timestamp": "2025-12-14T13:23:43.901Z"
+      "timestamp": "2025-12-16T11:36:47.117Z"
     }
   }
 ]

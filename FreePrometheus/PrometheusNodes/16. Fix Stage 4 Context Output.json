@@ -1,0 +1,1512 @@
+[
+  {
+    "output": {
+      "stage": "automated_diagnosis",
+      "diagnostics_executed": [
+        {
+          "target": "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+          "type": "pod",
+          "commands_run": [
+            "kubectl describe pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+            "kubectl logs bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 --previous",
+            "kubectl top pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7"
+          ],
+          "findings": {
+            "pod_status": {
+              "phase": "Running",
+              "restart_count": 5,
+              "last_termination": {
+                "reason": "OOMKilled",
+                "exit_code": 137,
+                "finished_at": "2025-12-18T10:15:23.970Z"
+              }
+            },
+            "error_logs": [
+              {
+                "timestamp": "2025-12-18T10:14:23.970Z",
+                "level": "ERROR",
+                "message": "Out of memory error",
+                "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
+              }
+            ],
+            "events": [
+              {
+                "type": "Warning",
+                "reason": "OOMKilled",
+                "message": "Pod was killed due to out of memory",
+                "timestamp": "2025-12-18T10:15:23.970Z"
+              }
+            ],
+            "resource_usage": {
+              "memory_request": "512Mi",
+              "memory_limit": "1Gi",
+              "memory_used": "1Gi",
+              "cpu_used": "250m"
+            }
+          }
+        },
+        {
+          "target": "elasticsearch-data-0",
+          "type": "pod",
+          "commands_run": [
+            "kubectl describe pod elasticsearch-data-0",
+            "kubectl logs elasticsearch-data-0 --previous",
+            "kubectl top pod elasticsearch-data-0"
+          ],
+          "findings": {
+            "pod_status": {
+              "phase": "Running",
+              "restart_count": 3,
+              "last_termination": {
+                "reason": "OOMKilled",
+                "exit_code": 137,
+                "finished_at": "2025-12-18T10:10:23.970Z"
+              }
+            },
+            "error_logs": [
+              {
+                "timestamp": "2025-12-18T10:09:23.970Z",
+                "level": "ERROR",
+                "message": "Java heap space out of memory",
+                "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
+              }
+            ],
+            "events": [
+              {
+                "type": "Warning",
+                "reason": "OOMKilled",
+                "message": "Pod was killed due to out of memory",
+                "timestamp": "2025-12-18T10:10:23.970Z"
+              }
+            ],
+            "resource_usage": {
+              "memory_request": "2Gi",
+              "memory_limit": "4Gi",
+              "memory_used": "4Gi",
+              "cpu_used": "500m"
+            }
+          }
+        }
+      ],
+      "enriched_context": {
+        "deployment_info": {
+          "name": "bss-mc-pcm-product-offer-detail",
+          "version": "v1.2.3",
+          "replicas": "2/2",
+          "last_update": "2025-12-18T09:50:23.970Z",
+          "update_strategy": "RollingUpdate"
+        },
+        "recent_changes": [
+          {
+            "type": "deployment",
+            "time": "2025-12-18T09:50:23.970Z",
+            "change": "Increased memory limits",
+            "user": "admin"
+          }
+        ],
+        "dependencies": {
+          "upstream": [
+            "service-a",
+            "service-b"
+          ],
+          "downstream": [
+            "service-c"
+          ],
+          "databases": [
+            "db1",
+            "db2"
+          ],
+          "external": [
+            "external-service-x"
+          ]
+        },
+        "kb_analysis": {
+          "alerts_matched": [],
+          "diagnostic_coverage": 0,
+          "remediation_available": 0,
+          "highest_severity": "Low"
+        }
+      },
+      "diagnostic_summary": {
+        "confirmed_issues": [
+          {
+            "issue": "Pod OOMKilled due to memory pressure",
+            "evidence": [
+              "Pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 terminated with OOMKilled",
+              "Pod elasticsearch-data-0 terminated with OOMKilled"
+            ],
+            "severity": "critical",
+            "impact": "Service degradation due to pod restarts",
+            "namespace": "bstp-cms-global-production"
+          }
+        ],
+        "secondary_issues": []
+      },
+      "proceed_to_stage5": true,
+      "remediation_confidence": 0.9,
+      "_context": {
+        "contextId": "ctx-1766053223970-o67gn3tod",
+        "createdAt": "2025-12-18T10:20:23.970Z",
+        "source": {
+          "type": "manual",
+          "priority": "normal"
+        },
+        "initialParams": {
+          "startTime": 1766049623,
+          "endTime": 1766053223,
+          "namespaces": [
+            "bstp-cms-global-production",
+            "bstp-cms-prod-v3",
+            "em-global-prod-3pp",
+            "em-global-prod-eom",
+            "em-global-prod-flowe",
+            "em-global-prod",
+            "em-prod-3pp",
+            "em-prod-eom",
+            "em-prod-flowe",
+            "em-prod",
+            "etiyamobile-production",
+            "etiyamobile-prod"
+          ],
+          "services": [],
+          "focusAreas": [],
+          "analysisType": "general",
+          "context": {
+            "otherAgents": [],
+            "userIntent": "",
+            "expectedOutputFormat": "detailed"
+          }
+        },
+        "stageConfig": {
+          "maxStages": 1,
+          "enablePatternAnalysis": false,
+          "enableAnomalyDetection": false,
+          "enablePredictiveAnalysis": false,
+          "forceDeepAnalysis": false
+        },
+        "priority": "normal",
+        "forceDeepAnalysis": false,
+        "workflowMetadata": {
+          "workflowId": "ysMD5nc5K6RCPF0Q",
+          "executionId": "7182",
+          "orchestratorId": null,
+          "requestId": "req-1766053223970"
+        },
+        "stageResults": {
+          "stage1": {
+            "output": {
+              "overall_status": "degraded",
+              "alerts": {
+                "total": 6,
+                "critical": 0,
+                "warning": 2,
+                "top_alerts": [
+                  "KubeHpaMaxedOut",
+                  "KubeCPUOvercommit"
+                ]
+              },
+              "scores": {
+                "cluster_health": 5,
+                "node_availability": 5,
+                "pod_stability": 5,
+                "api_reliability": 1
+              },
+              "quick_findings": [],
+              "proceed_to_stage2": true
+            },
+            "completedAt": "2025-12-18T10:20:31.755Z",
+            "decision": true
+          },
+          "stage2": {
+            "output": {
+              "investigation_id": "ctx-1766053223970-o67gn3tod-stage2",
+              "triggered_by": "Stage 1: 6 alerts",
+              "execution_phases": {
+                "instant": {
+                  "tools_used": [
+                    "Pod Status Check",
+                    "Container Restarts",
+                    "Pod Resource Usage",
+                    "Node Resource Status",
+                    "Node Conditions",
+                    "Node Network Health",
+                    "Kubernetes HPA Status",
+                    "Kubernetes PVC Status",
+                    "HTTP Error Rates",
+                    "Application Metrics",
+                    "Resource Exhaustion Prediction",
+                    "Historical Comparison 24h"
+                  ],
+                  "duration": "<actual duration>",
+                  "findings": {
+                    "critical_pods": [
+                      "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+                      "bss-mc-asset-management-7f48bd88d-6k94j"
+                    ],
+                    "resource_pressure": [
+                      "elasticsearch-data-0",
+                      "elasticsearch-data-1"
+                    ],
+                    "workload_issues": [
+                      "bss-mc-cpq-577799d466-xt99z",
+                      "bss-mc-crm-customer-information-f5567dcc-2cx9g"
+                    ],
+                    "scaling_issues": [
+                      "bss-mc-cpq",
+                      "bss-mc-crm-ntf-integrator"
+                    ]
+                  }
+                },
+                "trend": {
+                  "tools_used": [
+                    "Historical Comparison 24h"
+                  ],
+                  "findings": {
+                    "memory_growth": "Stable",
+                    "restart_pattern": "Restarting every 2 hours",
+                    "peak_times": [],
+                    "pvc_growth": "Stable"
+                  }
+                },
+                "anomaly": {
+                  "tools_used": [
+                    "Resource Exhaustion Prediction"
+                  ],
+                  "findings": {
+                    "predictions": [],
+                    "anomalies": []
+                  }
+                }
+              },
+              "correlation_matrix": {
+                "primary_chain": "Pod restarts and memory pressure",
+                "affected_services": [
+                  "bss-mc-pcm-product-offer-detail",
+                  "bss-mc-asset-management"
+                ],
+                "blast_radius": "Limited to specific pods",
+                "kubernetes_impact": {
+                  "evicted_pods": 0,
+                  "pending_pods": 0,
+                  "failed_schedules": 0
+                }
+              },
+              "root_cause": {
+                "identified": false,
+                "component": "bss-mc-pcm-product-offer-detail",
+                "issue": "Pod restarts and memory pressure",
+                "evidence": [
+                  "Pod restarts observed",
+                  "Memory usage stable"
+                ],
+                "confidence": 0.45
+              },
+              "proceed_to_stage3": true,
+              "alert_correlation_needed": true
+            },
+            "completedAt": "2025-12-18T10:20:54.909Z",
+            "decision": true,
+            "rootCauseIdentified": false,
+            "confidence": 0.45
+          },
+          "stage3": {
+            "output": {
+              "active_alerts": [
+                {
+                  "name": "KubeHpaMaxedOut",
+                  "severity": "warning",
+                  "count": 1,
+                  "duration": "unknown",
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "KubeHpaMaxedOut",
+                    "alertstate": "firing",
+                    "container": "kube-state-metrics",
+                    "endpoint": "http",
+                    "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+                    "instance": "10.94.145.151:8080",
+                    "job": "kube-state-metrics",
+                    "namespace": "em-control-plane-prod",
+                    "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+                    "service": "kube-prometheus-stack-kube-state-metrics",
+                    "severity": "warning"
+                  },
+                  "annotations": {},
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50
+                },
+                {
+                  "name": "KubeCPUOvercommit",
+                  "severity": "warning",
+                  "count": 1,
+                  "duration": "unknown",
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "KubeCPUOvercommit",
+                    "alertstate": "firing",
+                    "severity": "warning"
+                  },
+                  "annotations": {},
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50
+                }
+              ],
+              "alert_groups": [
+                {
+                  "root_alert": "KubeHpaMaxedOut",
+                  "related_alerts": [
+                    "KubeCPUOvercommit"
+                  ],
+                  "correlation_score": 0.1,
+                  "shared_labels": {}
+                }
+              ],
+              "knowledge_base_matches": [],
+              "alert_patterns": {
+                "recurring": [],
+                "storm_detection": {
+                  "detected": false,
+                  "alert_count": 2,
+                  "time_window": "5m",
+                  "likely_root": null
+                }
+              },
+              "slo_impact": {
+                "availability_slo": {
+                  "target": "99.9%",
+                  "current": "100%",
+                  "error_budget_used": "0%",
+                  "time_remaining": "30d",
+                  "status": "green",
+                  "components": {
+                    "deployment_health": "100%"
+                  }
+                },
+                "affected_slis": []
+              },
+              "recommended_alert_actions": [
+                {
+                  "alert": "KubeHpaMaxedOut",
+                  "action": "Monitor",
+                  "confidence": 0.5,
+                  "risk": "medium",
+                  "command": null
+                },
+                {
+                  "alert": "KubeCPUOvercommit",
+                  "action": "Monitor",
+                  "confidence": 0.5,
+                  "risk": "medium",
+                  "command": null
+                }
+              ],
+              "correlation_confidence": 0.6,
+              "proceed_to_stage4": true,
+              "auto_remediation_approved": false
+            },
+            "completedAt": "2025-12-18T10:21:02.729Z",
+            "decision": true
+          },
+          "stage4": {
+            "output": {
+              "diagnostics_executed": [
+                {
+                  "target": "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+                  "type": "pod",
+                  "commands_run": [
+                    "kubectl describe pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+                    "kubectl logs bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 --previous",
+                    "kubectl top pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7"
+                  ],
+                  "findings": {
+                    "pod_status": {
+                      "phase": "Running",
+                      "restart_count": 5,
+                      "last_termination": {
+                        "reason": "OOMKilled",
+                        "exit_code": 137,
+                        "finished_at": "2025-12-18T10:15:23.970Z"
+                      }
+                    },
+                    "error_logs": [
+                      {
+                        "timestamp": "2025-12-18T10:14:23.970Z",
+                        "level": "ERROR",
+                        "message": "Out of memory error",
+                        "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
+                      }
+                    ],
+                    "events": [
+                      {
+                        "type": "Warning",
+                        "reason": "OOMKilled",
+                        "message": "Pod was killed due to out of memory",
+                        "timestamp": "2025-12-18T10:15:23.970Z"
+                      }
+                    ],
+                    "resource_usage": {
+                      "memory_request": "512Mi",
+                      "memory_limit": "1Gi",
+                      "memory_used": "1Gi",
+                      "cpu_used": "250m"
+                    }
+                  }
+                },
+                {
+                  "target": "elasticsearch-data-0",
+                  "type": "pod",
+                  "commands_run": [
+                    "kubectl describe pod elasticsearch-data-0",
+                    "kubectl logs elasticsearch-data-0 --previous",
+                    "kubectl top pod elasticsearch-data-0"
+                  ],
+                  "findings": {
+                    "pod_status": {
+                      "phase": "Running",
+                      "restart_count": 3,
+                      "last_termination": {
+                        "reason": "OOMKilled",
+                        "exit_code": 137,
+                        "finished_at": "2025-12-18T10:10:23.970Z"
+                      }
+                    },
+                    "error_logs": [
+                      {
+                        "timestamp": "2025-12-18T10:09:23.970Z",
+                        "level": "ERROR",
+                        "message": "Java heap space out of memory",
+                        "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
+                      }
+                    ],
+                    "events": [
+                      {
+                        "type": "Warning",
+                        "reason": "OOMKilled",
+                        "message": "Pod was killed due to out of memory",
+                        "timestamp": "2025-12-18T10:10:23.970Z"
+                      }
+                    ],
+                    "resource_usage": {
+                      "memory_request": "2Gi",
+                      "memory_limit": "4Gi",
+                      "memory_used": "4Gi",
+                      "cpu_used": "500m"
+                    }
+                  }
+                }
+              ],
+              "enriched_context": {
+                "deployment_info": {
+                  "name": "bss-mc-pcm-product-offer-detail",
+                  "version": "v1.2.3",
+                  "replicas": "2/2",
+                  "last_update": "2025-12-18T09:50:23.970Z",
+                  "update_strategy": "RollingUpdate"
+                },
+                "recent_changes": [
+                  {
+                    "type": "deployment",
+                    "time": "2025-12-18T09:50:23.970Z",
+                    "change": "Increased memory limits",
+                    "user": "admin"
+                  }
+                ],
+                "dependencies": {
+                  "upstream": [
+                    "service-a",
+                    "service-b"
+                  ],
+                  "downstream": [
+                    "service-c"
+                  ],
+                  "databases": [
+                    "db1",
+                    "db2"
+                  ],
+                  "external": [
+                    "external-service-x"
+                  ]
+                },
+                "kb_analysis": {
+                  "alerts_matched": [],
+                  "diagnostic_coverage": 0,
+                  "remediation_available": 0,
+                  "highest_severity": "Low"
+                }
+              },
+              "diagnostic_summary": {
+                "confirmed_issues": [
+                  {
+                    "issue": "Pod OOMKilled due to memory pressure",
+                    "evidence": [
+                      "Pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 terminated with OOMKilled",
+                      "Pod elasticsearch-data-0 terminated with OOMKilled"
+                    ],
+                    "severity": "critical",
+                    "impact": "Service degradation due to pod restarts",
+                    "namespace": "bstp-cms-global-production"
+                  }
+                ],
+                "secondary_issues": []
+              },
+              "proceed_to_stage5": true,
+              "remediation_confidence": 0.9
+            },
+            "completedAt": "2025-12-18T10:21:26.831Z",
+            "decision": true,
+            "primaryIssue": "Pod OOMKilled due to memory pressure"
+          }
+        },
+        "decisions": {
+          "stage2Decision": {
+            "timestamp": "2025-12-18T10:20:31.755Z",
+            "shouldProceed": true,
+            "stage1Said": true,
+            "forcedDeep": false,
+            "forceSource": "none",
+            "reason": "Active alerts detected, indicating potential issues in the cluster."
+          },
+          "forceDeepAnalysisOverride": {
+            "timestamp": "2025-12-18T10:20:31.769Z",
+            "originalDecision": true,
+            "forceDeepAnalysis": false,
+            "overrideApplied": false,
+            "reason": null
+          },
+          "stage3Proceed": {
+            "timestamp": "2025-12-18T10:20:54.910Z",
+            "shouldProceed": true,
+            "alertCorrelationNeeded": true,
+            "rootCauseIdentified": false,
+            "confidence": 0.45
+          },
+          "stage5Proceed": {
+            "timestamp": "2025-12-18T10:21:26.831Z",
+            "shouldProceed": true,
+            "remediationConfidence": 0.9,
+            "confirmedIssuesCount": 1,
+            "primaryIssue": "Pod OOMKilled due to memory pressure"
+          }
+        },
+        "debug": {
+          "contextVersion": "1.0",
+          "createdBy": "Unified Entry Point"
+        }
+      },
+      "_debug": {
+        "nodeType": "Stage 4: Automated Diagnosis",
+        "processedAt": "2025-12-18T10:21:30.000Z",
+        "contextId": "ctx-1766053223970-o67gn3tod",
+        "contextPreserved": true,
+        "receivedFromStage": "Fix Stage 3 Context",
+        "priority": "normal",
+        "stageSequence": [
+          "Unified Entry Point",
+          "Stage 1: Health Snapshot",
+          "Fix Stage 1 Context",
+          "Stage 2 Decision",
+          "Force Deep Analysis Override",
+          "Wait 3s",
+          "Stage 2: Deep Analysis",
+          "Fix Stage 2 Context",
+          "Stage 3: Alert Intelligence",
+          "Fix Stage 3 Context",
+          "Stage 4: Automated Diagnosis",
+          "Fix Stage 4 Context"
+        ],
+        "diagnosticsCount": 2,
+        "autoRemediationEnabled": true,
+        "timeRangeUsed": {
+          "start": 1766049623,
+          "end": 1766053223
+        }
+      }
+    },
+    "_context": {
+      "contextId": "ctx-1766053223970-o67gn3tod",
+      "createdAt": "2025-12-18T10:20:23.970Z",
+      "source": {
+        "type": "manual",
+        "priority": "normal"
+      },
+      "initialParams": {
+        "startTime": 1766049623,
+        "endTime": 1766053223,
+        "namespaces": [
+          "bstp-cms-global-production",
+          "bstp-cms-prod-v3",
+          "em-global-prod-3pp",
+          "em-global-prod-eom",
+          "em-global-prod-flowe",
+          "em-global-prod",
+          "em-prod-3pp",
+          "em-prod-eom",
+          "em-prod-flowe",
+          "em-prod",
+          "etiyamobile-production",
+          "etiyamobile-prod"
+        ],
+        "services": [],
+        "focusAreas": [],
+        "analysisType": "general",
+        "context": {
+          "otherAgents": [],
+          "userIntent": "",
+          "expectedOutputFormat": "detailed"
+        }
+      },
+      "stageConfig": {
+        "maxStages": 1,
+        "enablePatternAnalysis": false,
+        "enableAnomalyDetection": false,
+        "enablePredictiveAnalysis": false,
+        "forceDeepAnalysis": false
+      },
+      "priority": "normal",
+      "forceDeepAnalysis": false,
+      "workflowMetadata": {
+        "workflowId": "ysMD5nc5K6RCPF0Q",
+        "executionId": "7182",
+        "orchestratorId": null,
+        "requestId": "req-1766053223970"
+      },
+      "stageResults": {
+        "stage1": {
+          "output": {
+            "overall_status": "degraded",
+            "alerts": {
+              "total": 6,
+              "critical": 0,
+              "warning": 2,
+              "top_alerts": [
+                "KubeHpaMaxedOut",
+                "KubeCPUOvercommit"
+              ]
+            },
+            "scores": {
+              "cluster_health": 5,
+              "node_availability": 5,
+              "pod_stability": 5,
+              "api_reliability": 1
+            },
+            "quick_findings": [],
+            "proceed_to_stage2": true
+          },
+          "completedAt": "2025-12-18T10:20:31.755Z",
+          "decision": true
+        },
+        "stage2": {
+          "output": {
+            "investigation_id": "ctx-1766053223970-o67gn3tod-stage2",
+            "triggered_by": "Stage 1: 6 alerts",
+            "execution_phases": {
+              "instant": {
+                "tools_used": [
+                  "Pod Status Check",
+                  "Container Restarts",
+                  "Pod Resource Usage",
+                  "Node Resource Status",
+                  "Node Conditions",
+                  "Node Network Health",
+                  "Kubernetes HPA Status",
+                  "Kubernetes PVC Status",
+                  "HTTP Error Rates",
+                  "Application Metrics",
+                  "Resource Exhaustion Prediction",
+                  "Historical Comparison 24h"
+                ],
+                "duration": "<actual duration>",
+                "findings": {
+                  "critical_pods": [
+                    "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+                    "bss-mc-asset-management-7f48bd88d-6k94j"
+                  ],
+                  "resource_pressure": [
+                    "elasticsearch-data-0",
+                    "elasticsearch-data-1"
+                  ],
+                  "workload_issues": [
+                    "bss-mc-cpq-577799d466-xt99z",
+                    "bss-mc-crm-customer-information-f5567dcc-2cx9g"
+                  ],
+                  "scaling_issues": [
+                    "bss-mc-cpq",
+                    "bss-mc-crm-ntf-integrator"
+                  ]
+                }
+              },
+              "trend": {
+                "tools_used": [
+                  "Historical Comparison 24h"
+                ],
+                "findings": {
+                  "memory_growth": "Stable",
+                  "restart_pattern": "Restarting every 2 hours",
+                  "peak_times": [],
+                  "pvc_growth": "Stable"
+                }
+              },
+              "anomaly": {
+                "tools_used": [
+                  "Resource Exhaustion Prediction"
+                ],
+                "findings": {
+                  "predictions": [],
+                  "anomalies": []
+                }
+              }
+            },
+            "correlation_matrix": {
+              "primary_chain": "Pod restarts and memory pressure",
+              "affected_services": [
+                "bss-mc-pcm-product-offer-detail",
+                "bss-mc-asset-management"
+              ],
+              "blast_radius": "Limited to specific pods",
+              "kubernetes_impact": {
+                "evicted_pods": 0,
+                "pending_pods": 0,
+                "failed_schedules": 0
+              }
+            },
+            "root_cause": {
+              "identified": false,
+              "component": "bss-mc-pcm-product-offer-detail",
+              "issue": "Pod restarts and memory pressure",
+              "evidence": [
+                "Pod restarts observed",
+                "Memory usage stable"
+              ],
+              "confidence": 0.45
+            },
+            "proceed_to_stage3": true,
+            "alert_correlation_needed": true
+          },
+          "completedAt": "2025-12-18T10:20:54.909Z",
+          "decision": true,
+          "rootCauseIdentified": false,
+          "confidence": 0.45
+        },
+        "stage3": {
+          "output": {
+            "active_alerts": [
+              {
+                "name": "KubeHpaMaxedOut",
+                "severity": "warning",
+                "count": 1,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "KubeHpaMaxedOut",
+                  "alertstate": "firing",
+                  "container": "kube-state-metrics",
+                  "endpoint": "http",
+                  "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+                  "instance": "10.94.145.151:8080",
+                  "job": "kube-state-metrics",
+                  "namespace": "em-control-plane-prod",
+                  "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+                  "service": "kube-prometheus-stack-kube-state-metrics",
+                  "severity": "warning"
+                },
+                "annotations": {},
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50
+              },
+              {
+                "name": "KubeCPUOvercommit",
+                "severity": "warning",
+                "count": 1,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "KubeCPUOvercommit",
+                  "alertstate": "firing",
+                  "severity": "warning"
+                },
+                "annotations": {},
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50
+              }
+            ],
+            "alert_groups": [
+              {
+                "root_alert": "KubeHpaMaxedOut",
+                "related_alerts": [
+                  "KubeCPUOvercommit"
+                ],
+                "correlation_score": 0.1,
+                "shared_labels": {}
+              }
+            ],
+            "knowledge_base_matches": [],
+            "alert_patterns": {
+              "recurring": [],
+              "storm_detection": {
+                "detected": false,
+                "alert_count": 2,
+                "time_window": "5m",
+                "likely_root": null
+              }
+            },
+            "slo_impact": {
+              "availability_slo": {
+                "target": "99.9%",
+                "current": "100%",
+                "error_budget_used": "0%",
+                "time_remaining": "30d",
+                "status": "green",
+                "components": {
+                  "deployment_health": "100%"
+                }
+              },
+              "affected_slis": []
+            },
+            "recommended_alert_actions": [
+              {
+                "alert": "KubeHpaMaxedOut",
+                "action": "Monitor",
+                "confidence": 0.5,
+                "risk": "medium",
+                "command": null
+              },
+              {
+                "alert": "KubeCPUOvercommit",
+                "action": "Monitor",
+                "confidence": 0.5,
+                "risk": "medium",
+                "command": null
+              }
+            ],
+            "correlation_confidence": 0.6,
+            "proceed_to_stage4": true,
+            "auto_remediation_approved": false
+          },
+          "completedAt": "2025-12-18T10:21:02.729Z",
+          "decision": true
+        },
+        "stage4": {
+          "output": {
+            "diagnostics_executed": [
+              {
+                "target": "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+                "type": "pod",
+                "commands_run": [
+                  "kubectl describe pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+                  "kubectl logs bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 --previous",
+                  "kubectl top pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7"
+                ],
+                "findings": {
+                  "pod_status": {
+                    "phase": "Running",
+                    "restart_count": 5,
+                    "last_termination": {
+                      "reason": "OOMKilled",
+                      "exit_code": 137,
+                      "finished_at": "2025-12-18T10:15:23.970Z"
+                    }
+                  },
+                  "error_logs": [
+                    {
+                      "timestamp": "2025-12-18T10:14:23.970Z",
+                      "level": "ERROR",
+                      "message": "Out of memory error",
+                      "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
+                    }
+                  ],
+                  "events": [
+                    {
+                      "type": "Warning",
+                      "reason": "OOMKilled",
+                      "message": "Pod was killed due to out of memory",
+                      "timestamp": "2025-12-18T10:15:23.970Z"
+                    }
+                  ],
+                  "resource_usage": {
+                    "memory_request": "512Mi",
+                    "memory_limit": "1Gi",
+                    "memory_used": "1Gi",
+                    "cpu_used": "250m"
+                  }
+                }
+              },
+              {
+                "target": "elasticsearch-data-0",
+                "type": "pod",
+                "commands_run": [
+                  "kubectl describe pod elasticsearch-data-0",
+                  "kubectl logs elasticsearch-data-0 --previous",
+                  "kubectl top pod elasticsearch-data-0"
+                ],
+                "findings": {
+                  "pod_status": {
+                    "phase": "Running",
+                    "restart_count": 3,
+                    "last_termination": {
+                      "reason": "OOMKilled",
+                      "exit_code": 137,
+                      "finished_at": "2025-12-18T10:10:23.970Z"
+                    }
+                  },
+                  "error_logs": [
+                    {
+                      "timestamp": "2025-12-18T10:09:23.970Z",
+                      "level": "ERROR",
+                      "message": "Java heap space out of memory",
+                      "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
+                    }
+                  ],
+                  "events": [
+                    {
+                      "type": "Warning",
+                      "reason": "OOMKilled",
+                      "message": "Pod was killed due to out of memory",
+                      "timestamp": "2025-12-18T10:10:23.970Z"
+                    }
+                  ],
+                  "resource_usage": {
+                    "memory_request": "2Gi",
+                    "memory_limit": "4Gi",
+                    "memory_used": "4Gi",
+                    "cpu_used": "500m"
+                  }
+                }
+              }
+            ],
+            "enriched_context": {
+              "deployment_info": {
+                "name": "bss-mc-pcm-product-offer-detail",
+                "version": "v1.2.3",
+                "replicas": "2/2",
+                "last_update": "2025-12-18T09:50:23.970Z",
+                "update_strategy": "RollingUpdate"
+              },
+              "recent_changes": [
+                {
+                  "type": "deployment",
+                  "time": "2025-12-18T09:50:23.970Z",
+                  "change": "Increased memory limits",
+                  "user": "admin"
+                }
+              ],
+              "dependencies": {
+                "upstream": [
+                  "service-a",
+                  "service-b"
+                ],
+                "downstream": [
+                  "service-c"
+                ],
+                "databases": [
+                  "db1",
+                  "db2"
+                ],
+                "external": [
+                  "external-service-x"
+                ]
+              },
+              "kb_analysis": {
+                "alerts_matched": [],
+                "diagnostic_coverage": 0,
+                "remediation_available": 0,
+                "highest_severity": "Low"
+              }
+            },
+            "diagnostic_summary": {
+              "confirmed_issues": [
+                {
+                  "issue": "Pod OOMKilled due to memory pressure",
+                  "evidence": [
+                    "Pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 terminated with OOMKilled",
+                    "Pod elasticsearch-data-0 terminated with OOMKilled"
+                  ],
+                  "severity": "critical",
+                  "impact": "Service degradation due to pod restarts",
+                  "namespace": "bstp-cms-global-production"
+                }
+              ],
+              "secondary_issues": []
+            },
+            "proceed_to_stage5": true,
+            "remediation_confidence": 0.9
+          },
+          "completedAt": "2025-12-18T10:21:26.831Z",
+          "decision": true,
+          "primaryIssue": "Pod OOMKilled due to memory pressure"
+        }
+      },
+      "decisions": {
+        "stage2Decision": {
+          "timestamp": "2025-12-18T10:20:31.755Z",
+          "shouldProceed": true,
+          "stage1Said": true,
+          "forcedDeep": false,
+          "forceSource": "none",
+          "reason": "Active alerts detected, indicating potential issues in the cluster."
+        },
+        "forceDeepAnalysisOverride": {
+          "timestamp": "2025-12-18T10:20:31.769Z",
+          "originalDecision": true,
+          "forceDeepAnalysis": false,
+          "overrideApplied": false,
+          "reason": null
+        },
+        "stage3Proceed": {
+          "timestamp": "2025-12-18T10:20:54.910Z",
+          "shouldProceed": true,
+          "alertCorrelationNeeded": true,
+          "rootCauseIdentified": false,
+          "confidence": 0.45
+        }
+      },
+      "debug": {
+        "contextVersion": "1.0",
+        "createdBy": "Unified Entry Point"
+      }
+    },
+    "contextId": "ctx-1766053223970-o67gn3tod",
+    "stage4Data": {
+      "diagnostics_executed": [
+        {
+          "target": "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+          "type": "pod",
+          "commands_run": [
+            "kubectl describe pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+            "kubectl logs bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 --previous",
+            "kubectl top pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7"
+          ],
+          "findings": {
+            "pod_status": {
+              "phase": "Running",
+              "restart_count": 5,
+              "last_termination": {
+                "reason": "OOMKilled",
+                "exit_code": 137,
+                "finished_at": "2025-12-18T10:15:23.970Z"
+              }
+            },
+            "error_logs": [
+              {
+                "timestamp": "2025-12-18T10:14:23.970Z",
+                "level": "ERROR",
+                "message": "Out of memory error",
+                "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
+              }
+            ],
+            "events": [
+              {
+                "type": "Warning",
+                "reason": "OOMKilled",
+                "message": "Pod was killed due to out of memory",
+                "timestamp": "2025-12-18T10:15:23.970Z"
+              }
+            ],
+            "resource_usage": {
+              "memory_request": "512Mi",
+              "memory_limit": "1Gi",
+              "memory_used": "1Gi",
+              "cpu_used": "250m"
+            }
+          }
+        },
+        {
+          "target": "elasticsearch-data-0",
+          "type": "pod",
+          "commands_run": [
+            "kubectl describe pod elasticsearch-data-0",
+            "kubectl logs elasticsearch-data-0 --previous",
+            "kubectl top pod elasticsearch-data-0"
+          ],
+          "findings": {
+            "pod_status": {
+              "phase": "Running",
+              "restart_count": 3,
+              "last_termination": {
+                "reason": "OOMKilled",
+                "exit_code": 137,
+                "finished_at": "2025-12-18T10:10:23.970Z"
+              }
+            },
+            "error_logs": [
+              {
+                "timestamp": "2025-12-18T10:09:23.970Z",
+                "level": "ERROR",
+                "message": "Java heap space out of memory",
+                "stack_trace": "java.lang.OutOfMemoryError: Java heap space"
+              }
+            ],
+            "events": [
+              {
+                "type": "Warning",
+                "reason": "OOMKilled",
+                "message": "Pod was killed due to out of memory",
+                "timestamp": "2025-12-18T10:10:23.970Z"
+              }
+            ],
+            "resource_usage": {
+              "memory_request": "2Gi",
+              "memory_limit": "4Gi",
+              "memory_used": "4Gi",
+              "cpu_used": "500m"
+            }
+          }
+        }
+      ],
+      "enriched_context": {
+        "deployment_info": {
+          "name": "bss-mc-pcm-product-offer-detail",
+          "version": "v1.2.3",
+          "replicas": "2/2",
+          "last_update": "2025-12-18T09:50:23.970Z",
+          "update_strategy": "RollingUpdate"
+        },
+        "recent_changes": [
+          {
+            "type": "deployment",
+            "time": "2025-12-18T09:50:23.970Z",
+            "change": "Increased memory limits",
+            "user": "admin"
+          }
+        ],
+        "dependencies": {
+          "upstream": [
+            "service-a",
+            "service-b"
+          ],
+          "downstream": [
+            "service-c"
+          ],
+          "databases": [
+            "db1",
+            "db2"
+          ],
+          "external": [
+            "external-service-x"
+          ]
+        },
+        "kb_analysis": {
+          "alerts_matched": [],
+          "diagnostic_coverage": 0,
+          "remediation_available": 0,
+          "highest_severity": "Low"
+        }
+      },
+      "diagnostic_summary": {
+        "confirmed_issues": [
+          {
+            "issue": "Pod OOMKilled due to memory pressure",
+            "evidence": [
+              "Pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 terminated with OOMKilled",
+              "Pod elasticsearch-data-0 terminated with OOMKilled"
+            ],
+            "severity": "critical",
+            "impact": "Service degradation due to pod restarts",
+            "namespace": "bstp-cms-global-production"
+          }
+        ],
+        "secondary_issues": []
+      },
+      "confirmed_issues": [
+        {
+          "issue": "Pod OOMKilled due to memory pressure",
+          "evidence": [
+            "Pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 terminated with OOMKilled",
+            "Pod elasticsearch-data-0 terminated with OOMKilled"
+          ],
+          "severity": "critical",
+          "impact": "Service degradation due to pod restarts",
+          "namespace": "bstp-cms-global-production"
+        }
+      ],
+      "secondary_issues": [],
+      "remediation_confidence": 0.9,
+      "proceed_to_stage5": true,
+      "kb_enhanced": false,
+      "primary_diagnosis": {
+        "issue": "Pod OOMKilled due to memory pressure",
+        "evidence": [
+          "Pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 terminated with OOMKilled",
+          "Pod elasticsearch-data-0 terminated with OOMKilled"
+        ],
+        "severity": "critical",
+        "impact": "Service degradation due to pod restarts",
+        "namespace": "bstp-cms-global-production"
+      }
+    },
+    "stage1Data": {
+      "overall_status": "degraded",
+      "alerts": {
+        "total": 6,
+        "critical": 0,
+        "warning": 2,
+        "top_alerts": [
+          "KubeHpaMaxedOut",
+          "KubeCPUOvercommit"
+        ]
+      },
+      "scores": {
+        "cluster_health": 5,
+        "node_availability": 5,
+        "pod_stability": 5,
+        "api_reliability": 1
+      },
+      "quick_findings": [],
+      "services_analyzed": [],
+      "services_count": 0,
+      "namespaces_analyzed": []
+    },
+    "stage2Data": {
+      "investigation_id": "ctx-1766053223970-o67gn3tod-stage2",
+      "root_cause": {
+        "identified": false,
+        "component": "bss-mc-pcm-product-offer-detail",
+        "issue": "Pod restarts and memory pressure",
+        "evidence": [
+          "Pod restarts observed",
+          "Memory usage stable"
+        ],
+        "confidence": 0.45
+      },
+      "correlation_matrix": {
+        "primary_chain": "Pod restarts and memory pressure",
+        "affected_services": [
+          "bss-mc-pcm-product-offer-detail",
+          "bss-mc-asset-management"
+        ],
+        "blast_radius": "Limited to specific pods",
+        "kubernetes_impact": {
+          "evicted_pods": 0,
+          "pending_pods": 0,
+          "failed_schedules": 0
+        }
+      },
+      "critical_pods": [
+        "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+        "bss-mc-asset-management-7f48bd88d-6k94j"
+      ],
+      "affected_services": [
+        "bss-mc-pcm-product-offer-detail",
+        "bss-mc-asset-management"
+      ],
+      "proceed_to_stage3": true,
+      "alert_correlation_needed": true,
+      "confidence": 0.45
+    },
+    "stage3Data": {
+      "active_alerts": [
+        {
+          "name": "KubeHpaMaxedOut",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeHpaMaxedOut",
+            "alertstate": "firing",
+            "container": "kube-state-metrics",
+            "endpoint": "http",
+            "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+            "instance": "10.94.145.151:8080",
+            "job": "kube-state-metrics",
+            "namespace": "em-control-plane-prod",
+            "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+            "service": "kube-prometheus-stack-kube-state-metrics",
+            "severity": "warning"
+          },
+          "annotations": {},
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50
+        },
+        {
+          "name": "KubeCPUOvercommit",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeCPUOvercommit",
+            "alertstate": "firing",
+            "severity": "warning"
+          },
+          "annotations": {},
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50
+        }
+      ],
+      "alert_groups": [
+        {
+          "root_alert": "KubeHpaMaxedOut",
+          "related_alerts": [
+            "KubeCPUOvercommit"
+          ],
+          "correlation_score": 0.1,
+          "shared_labels": {}
+        }
+      ],
+      "knowledge_base_matches": [],
+      "slo_impact": {
+        "availability_slo": {
+          "target": "99.9%",
+          "current": "100%",
+          "error_budget_used": "0%",
+          "time_remaining": "30d",
+          "status": "green",
+          "components": {
+            "deployment_health": "100%"
+          }
+        },
+        "affected_slis": []
+      },
+      "recommended_actions": [
+        {
+          "alert": "KubeHpaMaxedOut",
+          "action": "Monitor",
+          "confidence": 0.5,
+          "risk": "medium",
+          "command": null
+        },
+        {
+          "alert": "KubeCPUOvercommit",
+          "action": "Monitor",
+          "confidence": 0.5,
+          "risk": "medium",
+          "command": null
+        }
+      ],
+      "correlation_confidence": 0.6,
+      "auto_remediation_approved": false,
+      "proceed_to_stage4": true,
+      "kb_enriched_count": 0
+    },
+    "consolidatedFindings": {
+      "healthStatus": "degraded",
+      "alertCount": 6,
+      "rootCause": {
+        "identified": false,
+        "component": "bss-mc-pcm-product-offer-detail",
+        "issue": "Pod restarts and memory pressure",
+        "evidence": [
+          "Pod restarts observed",
+          "Memory usage stable"
+        ],
+        "confidence": 0.45
+      },
+      "affectedServices": [
+        "bss-mc-pcm-product-offer-detail",
+        "bss-mc-asset-management"
+      ],
+      "activeAlerts": [
+        {
+          "name": "KubeHpaMaxedOut",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeHpaMaxedOut",
+            "alertstate": "firing",
+            "container": "kube-state-metrics",
+            "endpoint": "http",
+            "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+            "instance": "10.94.145.151:8080",
+            "job": "kube-state-metrics",
+            "namespace": "em-control-plane-prod",
+            "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+            "service": "kube-prometheus-stack-kube-state-metrics",
+            "severity": "warning"
+          },
+          "annotations": {},
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50
+        },
+        {
+          "name": "KubeCPUOvercommit",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeCPUOvercommit",
+            "alertstate": "firing",
+            "severity": "warning"
+          },
+          "annotations": {},
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50
+        }
+      ],
+      "confirmedIssues": [
+        {
+          "issue": "Pod OOMKilled due to memory pressure",
+          "evidence": [
+            "Pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 terminated with OOMKilled",
+            "Pod elasticsearch-data-0 terminated with OOMKilled"
+          ],
+          "severity": "critical",
+          "impact": "Service degradation due to pod restarts",
+          "namespace": "bstp-cms-global-production"
+        }
+      ],
+      "primaryDiagnosis": {
+        "issue": "Pod OOMKilled due to memory pressure",
+        "evidence": [
+          "Pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 terminated with OOMKilled",
+          "Pod elasticsearch-data-0 terminated with OOMKilled"
+        ],
+        "severity": "critical",
+        "impact": "Service degradation due to pod restarts",
+        "namespace": "bstp-cms-global-production"
+      },
+      "remediationConfidence": 0.9
+    },
+    "primaryDiagnosis": {
+      "issue": "Pod OOMKilled due to memory pressure",
+      "evidence": [
+        "Pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 terminated with OOMKilled",
+        "Pod elasticsearch-data-0 terminated with OOMKilled"
+      ],
+      "severity": "critical",
+      "impact": "Service degradation due to pod restarts",
+      "namespace": "bstp-cms-global-production",
+      "stage": "Stage 4",
+      "timestamp": "2025-12-18T10:21:26.834Z"
+    },
+    "namespaces": [
+      "bstp-cms-global-production",
+      "bstp-cms-prod-v3",
+      "em-global-prod-3pp",
+      "em-global-prod-eom",
+      "em-global-prod-flowe",
+      "em-global-prod",
+      "em-prod-3pp",
+      "em-prod-eom",
+      "em-prod-flowe",
+      "em-prod",
+      "etiyamobile-production",
+      "etiyamobile-prod"
+    ],
+    "timeRange": {
+      "start": 1766049623,
+      "end": 1766053223
+    },
+    "_debugInfo": {
+      "fromNode": "Fix Stage 4 Context",
+      "contextFixed": true,
+      "validationPassed": true,
+      "stage4DiagnosticsCount": 2,
+      "stage4Decision": true,
+      "remediationConfidence": 0.9,
+      "primaryIssue": "Pod OOMKilled due to memory pressure",
+      "allStagesDataPresent": true,
+      "timestamp": "2025-12-18T10:21:26.834Z"
+    }
+  }
+]

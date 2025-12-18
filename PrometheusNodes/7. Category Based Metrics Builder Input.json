@@ -1,104 +1,79 @@
 [
   {
-    "timestamp": "2025-12-14T13:23:19.269Z",
+    "timestamp": "2025-12-16T11:35:58.296Z",
     "source": {
       "type": "alert-listener",
       "priority": "critical"
     },
     "analysisParams": {
-      "startTime": 1765714999,
-      "endTime": 1765718599,
+      "startTime": 1765881358,
+      "endTime": 1765884958,
       "namespaces": [
-        "bss-prod-eks-monitoring",
-        "bstp-cms-global-production",
-        "bstp-cms-prod-v3",
-        "em-global-prod-3pp",
-        "em-global-prod-eom",
-        "em-global-prod-flowe",
-        "em-global-prod",
-        "em-prod-3pp",
-        "em-prod-eom",
-        "em-prod-flowe",
-        "em-prod",
-        "em-control-plane-prod"
+        "etiyamobile-production"
       ],
       "services": [
-        "unknown-namespace"
+        "prometheus-kube-state-metrics",
+        "kube-state-metrics",
+        "domain-config-service"
       ],
       "focusAreas": [
+        "Pod is crash looping",
+        "Container startup failure",
         "Chaos engineering test pattern"
       ],
       "analysisType": "alert-driven",
       "context": {
-        "alertName": "KubeAPIDown",
-        "alertId": "alert-1765718599169",
+        "alertName": "KubePodCrashLooping",
+        "alertId": "alert-1765884958197",
         "alertPriority": "critical",
         "source": "alertmanager",
         "kubernetes": {
-          "container": null,
-          "pod": null,
-          "namespace": null,
+          "container": "domain-config-service",
+          "pod": "domain-config-service-t3-645d68cbc8-4h88r",
+          "namespace": "etiyamobile-production",
           "namespaces": [
-            "bss-prod-eks-monitoring",
-            "bstp-cms-global-production",
-            "bstp-cms-prod-v3",
-            "em-global-prod-3pp",
-            "em-global-prod-eom",
-            "em-global-prod-flowe",
-            "em-global-prod",
-            "em-prod-3pp",
-            "em-prod-eom",
-            "em-prod-flowe",
-            "em-prod",
-            "em-control-plane-prod"
+            "etiyamobile-production"
           ],
-          "service": null,
+          "service": "prometheus-kube-state-metrics",
           "deployment": null,
           "node": null,
           "persistentvolumeclaim": null,
           "volumename": null,
-          "useSpecificFilters": false,
-          "useMultiNamespace": true
+          "useSpecificFilters": true,
+          "useMultiNamespace": false
         },
         "affectedServices": [
-          "unknown-namespace"
+          "prometheus-kube-state-metrics",
+          "kube-state-metrics",
+          "domain-config-service"
         ],
         "errorPatterns": [
+          "Pod is crash looping",
+          "Container startup failure",
           "Chaos engineering test pattern"
         ],
         "alerts": [
           {
-            "alertname": "KubeAPIDown",
+            "alertname": "KubePodCrashLooping",
             "severity": "critical"
           }
         ]
       }
     },
     "kubernetesFilters": {
-      "container": null,
-      "pod": null,
-      "namespace": null,
+      "container": "domain-config-service",
+      "pod": "domain-config-service-t3-645d68cbc8-4h88r",
+      "namespace": "etiyamobile-production",
       "namespaces": [
-        "bss-prod-eks-monitoring",
-        "bstp-cms-global-production",
-        "bstp-cms-prod-v3",
-        "em-global-prod-3pp",
-        "em-global-prod-eom",
-        "em-global-prod-flowe",
-        "em-global-prod",
-        "em-prod-3pp",
-        "em-prod-eom",
-        "em-prod-flowe",
-        "em-prod",
-        "em-control-plane-prod"
+        "etiyamobile-production"
       ],
-      "service": null,
+      "service": "prometheus-kube-state-metrics",
       "deployment": null,
       "node": null,
       "persistentvolumeclaim": null,
       "volumename": null,
-      "useSpecificFilters": false,
-      "useMultiNamespace": true
+      "useSpecificFilters": true,
+      "useMultiNamespace": false
     },
     "stageConfig": {
       "maxStages": 6,
@@ -111,206 +86,174 @@
     "forceDeepAnalysis": true,
     "metadata": {
       "workflowId": "LBDqj72azAqepcuC",
-      "executionId": "5598",
-      "requestId": "alert-alert-1765718599169-1765718599181",
-      "orchestratorId": "direct-1765718599181",
-      "alertId": "alert-1765718599169",
-      "alertName": "KubeAPIDown"
+      "executionId": "6321",
+      "requestId": "alert-alert-1765884958197-1765884958208",
+      "orchestratorId": "direct-1765884958208",
+      "alertId": "alert-1765884958197",
+      "alertName": "KubePodCrashLooping"
     },
     "prometheusQueries": [
       {
         "type": "container_cpu",
-        "query": "rate(container_cpu_usage_seconds_total{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}[5m]) * 100",
-        "description": "CPU usage for all containers (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+        "query": "rate(container_cpu_usage_seconds_total{namespace=\"etiyamobile-production\", pod=\"domain-config-service-t3-645d68cbc8-4h88r\", container=\"domain-config-service\"}[5m]) * 100",
+        "description": "CPU usage for domain-config-service (namespaces: etiyamobile-production)"
       },
       {
         "type": "container_memory",
-        "query": "container_memory_working_set_bytes{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
-        "description": "Memory usage for all containers (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+        "query": "container_memory_working_set_bytes{namespace=\"etiyamobile-production\", pod=\"domain-config-service-t3-645d68cbc8-4h88r\", container=\"domain-config-service\"}",
+        "description": "Memory usage for domain-config-service (namespaces: etiyamobile-production)"
       },
       {
         "type": "container_memory_limit",
-        "query": "container_spec_memory_limit_bytes{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
-        "description": "Memory limit for all containers (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+        "query": "container_spec_memory_limit_bytes{namespace=\"etiyamobile-production\", pod=\"domain-config-service-t3-645d68cbc8-4h88r\", container=\"domain-config-service\"}",
+        "description": "Memory limit for domain-config-service (namespaces: etiyamobile-production)"
       },
       {
         "type": "container_restarts",
-        "query": "kube_pod_container_status_restarts_total{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
-        "description": "Restart count for all containers (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+        "query": "kube_pod_container_status_restarts_total{namespace=\"etiyamobile-production\", pod=\"domain-config-service-t3-645d68cbc8-4h88r\", container=\"domain-config-service\"}",
+        "description": "Restart count for domain-config-service (namespaces: etiyamobile-production)"
       },
       {
         "type": "pod_status",
-        "query": "kube_pod_status_phase{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
-        "description": "Pod phase for all pods (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+        "query": "kube_pod_status_phase{namespace=\"etiyamobile-production\", pod=\"domain-config-service-t3-645d68cbc8-4h88r\"}",
+        "description": "Pod phase for domain-config-service-t3-645d68cbc8-4h88r (namespaces: etiyamobile-production)"
       },
       {
         "type": "pod_ready",
-        "query": "kube_pod_status_ready{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
-        "description": "Pod ready status for all pods (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+        "query": "kube_pod_status_ready{namespace=\"etiyamobile-production\", pod=\"domain-config-service-t3-645d68cbc8-4h88r\"}",
+        "description": "Pod ready status for domain-config-service-t3-645d68cbc8-4h88r (namespaces: etiyamobile-production)"
       },
       {
         "type": "service_cpu",
-        "query": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}[5m])) by (pod) * 100",
-        "description": "CPU usage for service all services (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+        "query": "sum(rate(container_cpu_usage_seconds_total{namespace=\"etiyamobile-production\", pod=~\"prometheus-kube-state-metrics.*\"}[5m])) by (pod) * 100",
+        "description": "CPU usage for service prometheus-kube-state-metrics (namespaces: etiyamobile-production)"
       },
       {
         "type": "service_memory",
-        "query": "sum(container_memory_working_set_bytes{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}) by (pod)",
-        "description": "Memory usage for service all services (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+        "query": "sum(container_memory_working_set_bytes{namespace=\"etiyamobile-production\", pod=~\"prometheus-kube-state-metrics.*\"}) by (pod)",
+        "description": "Memory usage for service prometheus-kube-state-metrics (namespaces: etiyamobile-production)"
       },
       {
         "type": "service_replicas",
-        "query": "kube_deployment_status_replicas{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
-        "description": "Replica count for all deployments (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+        "query": "kube_deployment_status_replicas{namespace=\"etiyamobile-production\", deployment=\"prometheus-kube-state-metrics\"}",
+        "description": "Replica count for prometheus-kube-state-metrics (namespaces: etiyamobile-production)"
       },
       {
         "type": "crashloop_restarts",
-        "query": "rate(kube_pod_container_status_restarts_total{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}[15m]) > 0",
-        "description": "Pods with recent restarts (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+        "query": "rate(kube_pod_container_status_restarts_total{namespace=\"etiyamobile-production\"}[15m]) > 0",
+        "description": "Pods with recent restarts (namespaces: etiyamobile-production)"
       }
     ],
     "_context": {
-      "contextId": "ctx-1765718599269-mveauf",
-      "createdAt": "2025-12-14T13:23:19.269Z",
+      "contextId": "ctx-1765884958296-sowzfe",
+      "createdAt": "2025-12-16T11:35:58.296Z",
       "source": {
         "type": "alert-listener",
         "priority": "critical"
       },
       "initialParams": {
-        "startTime": 1765714999,
-        "endTime": 1765718599,
+        "startTime": 1765881358,
+        "endTime": 1765884958,
         "namespaces": [
-          "bss-prod-eks-monitoring",
-          "bstp-cms-global-production",
-          "bstp-cms-prod-v3",
-          "em-global-prod-3pp",
-          "em-global-prod-eom",
-          "em-global-prod-flowe",
-          "em-global-prod",
-          "em-prod-3pp",
-          "em-prod-eom",
-          "em-prod-flowe",
-          "em-prod",
-          "em-control-plane-prod"
+          "etiyamobile-production"
         ],
         "services": [
-          "unknown-namespace"
+          "prometheus-kube-state-metrics",
+          "kube-state-metrics",
+          "domain-config-service"
         ],
         "focusAreas": [
+          "Pod is crash looping",
+          "Container startup failure",
           "Chaos engineering test pattern"
         ],
         "analysisType": "alert-driven",
         "context": {
-          "alertName": "KubeAPIDown",
-          "alertId": "alert-1765718599169",
+          "alertName": "KubePodCrashLooping",
+          "alertId": "alert-1765884958197",
           "alertPriority": "critical",
           "source": "alertmanager",
           "kubernetes": {
-            "container": null,
-            "pod": null,
-            "namespace": null,
+            "container": "domain-config-service",
+            "pod": "domain-config-service-t3-645d68cbc8-4h88r",
+            "namespace": "etiyamobile-production",
             "namespaces": [
-              "bss-prod-eks-monitoring",
-              "bstp-cms-global-production",
-              "bstp-cms-prod-v3",
-              "em-global-prod-3pp",
-              "em-global-prod-eom",
-              "em-global-prod-flowe",
-              "em-global-prod",
-              "em-prod-3pp",
-              "em-prod-eom",
-              "em-prod-flowe",
-              "em-prod",
-              "em-control-plane-prod"
+              "etiyamobile-production"
             ],
-            "service": null,
+            "service": "prometheus-kube-state-metrics",
             "deployment": null,
             "node": null,
             "persistentvolumeclaim": null,
             "volumename": null,
-            "useSpecificFilters": false,
-            "useMultiNamespace": true
+            "useSpecificFilters": true,
+            "useMultiNamespace": false
           },
           "affectedServices": [
-            "unknown-namespace"
+            "prometheus-kube-state-metrics",
+            "kube-state-metrics",
+            "domain-config-service"
           ],
           "errorPatterns": [
+            "Pod is crash looping",
+            "Container startup failure",
             "Chaos engineering test pattern"
           ],
           "alerts": [
             {
-              "alertname": "KubeAPIDown",
+              "alertname": "KubePodCrashLooping",
               "severity": "critical"
             }
           ]
         }
       },
       "kubernetesFilters": {
-        "container": null,
-        "pod": null,
-        "namespace": null,
+        "container": "domain-config-service",
+        "pod": "domain-config-service-t3-645d68cbc8-4h88r",
+        "namespace": "etiyamobile-production",
         "namespaces": [
-          "bss-prod-eks-monitoring",
-          "bstp-cms-global-production",
-          "bstp-cms-prod-v3",
-          "em-global-prod-3pp",
-          "em-global-prod-eom",
-          "em-global-prod-flowe",
-          "em-global-prod",
-          "em-prod-3pp",
-          "em-prod-eom",
-          "em-prod-flowe",
-          "em-prod",
-          "em-control-plane-prod"
+          "etiyamobile-production"
         ],
-        "service": null,
+        "service": "prometheus-kube-state-metrics",
         "deployment": null,
         "node": null,
         "persistentvolumeclaim": null,
         "volumename": null,
-        "useSpecificFilters": false,
-        "useMultiNamespace": true
+        "useSpecificFilters": true,
+        "useMultiNamespace": false
       },
       "alertContext": {
-        "alertName": "KubeAPIDown",
-        "alertId": "alert-1765718599169",
+        "alertName": "KubePodCrashLooping",
+        "alertId": "alert-1765884958197",
         "alertPriority": "critical",
         "source": "alertmanager",
         "kubernetes": {
-          "container": null,
-          "pod": null,
-          "namespace": null,
+          "container": "domain-config-service",
+          "pod": "domain-config-service-t3-645d68cbc8-4h88r",
+          "namespace": "etiyamobile-production",
           "namespaces": [
-            "bss-prod-eks-monitoring",
-            "bstp-cms-global-production",
-            "bstp-cms-prod-v3",
-            "em-global-prod-3pp",
-            "em-global-prod-eom",
-            "em-global-prod-flowe",
-            "em-global-prod",
-            "em-prod-3pp",
-            "em-prod-eom",
-            "em-prod-flowe",
-            "em-prod",
-            "em-control-plane-prod"
+            "etiyamobile-production"
           ],
-          "service": null,
+          "service": "prometheus-kube-state-metrics",
           "deployment": null,
           "node": null,
           "persistentvolumeclaim": null,
           "volumename": null,
-          "useSpecificFilters": false,
-          "useMultiNamespace": true
+          "useSpecificFilters": true,
+          "useMultiNamespace": false
         },
         "affectedServices": [
-          "unknown-namespace"
+          "prometheus-kube-state-metrics",
+          "kube-state-metrics",
+          "domain-config-service"
         ],
         "errorPatterns": [
+          "Pod is crash looping",
+          "Container startup failure",
           "Chaos engineering test pattern"
         ],
         "alerts": [
           {
-            "alertname": "KubeAPIDown",
+            "alertname": "KubePodCrashLooping",
             "severity": "critical"
           }
         ]
@@ -326,9 +269,9 @@
       "forceDeepAnalysis": true,
       "workflowMetadata": {
         "workflowId": "LBDqj72azAqepcuC",
-        "executionId": "5598",
-        "requestId": "alert-alert-1765718599169-1765718599181",
-        "orchestratorId": "direct-1765718599181"
+        "executionId": "6321",
+        "requestId": "alert-alert-1765884958197-1765884958208",
+        "orchestratorId": "direct-1765884958208"
       },
       "stageResults": {},
       "decisions": {},
@@ -336,97 +279,99 @@
         "contextVersion": "1.0",
         "createdBy": "Unified Entry Point",
         "sourceType": "alert-listener",
-        "alertName": "KubeAPIDown",
+        "alertName": "KubePodCrashLooping",
         "priority": "critical",
         "knowledgeBaseEnriched": true,
-        "alertNameFound": "KubeAPIDown",
-        "alertCategory": "API",
+        "alertNameFound": "KubePodCrashLooping",
+        "alertCategory": "APPLICATION",
         "knowledgeBaseMatched": true,
-        "totalKnowledgeBaseEntries": 41,
+        "totalKnowledgeBaseEntries": 42,
         "csvEnhanced": true,
         "kbVersion": "2.0-CSV-Enhanced"
       },
-      "alertCategory": "API",
+      "alertCategory": "APPLICATION",
       "needsExtendedAnalysis": true,
-      "categoryBasedSeverity": 136,
+      "categoryBasedSeverity": 91,
       "csvSeverity": "unknown",
       "alertEnrichment": {
-        "category": "API",
-        "severityScore": 136,
+        "category": "APPLICATION",
+        "severityScore": 91,
         "csvSeverity": "unknown",
         "criticalAlert": true,
         "categoryConfig": {
-          "baseScore": 85,
+          "baseScore": 70,
           "criticalAlerts": [
-            "KubeAPIDown",
-            "KubeAPIErrorBudgetBurn",
-            "KubeStateMetricsListErrors"
+            "KubePodCrashLooping",
+            "KubePodOOMKilled",
+            "KubeStatefulSetReplicasMismatch",
+            "KubeDeploymentRolloutStuck"
           ],
-          "multiplier": 1.6
+          "multiplier": 1.3
         },
         "totalKnownAlerts": 151
       },
       "requiredMetrics": [
-        "apiserver_up",
-        "apiserver_request_duration_seconds"
+        "kube_pod_container_status_restarts_total",
+        "kube_pod_status_phase"
       ],
       "cascadeCheckPoints": [
-        "cluster_operations",
-        "kubectl_access",
-        "controller_functions"
+        "service_availability",
+        "deployment_health",
+        "application_performance"
       ],
       "troubleshootingGuidance": [
-        "Check API server pod status",
-        "Verify etcd connectivity",
-        "Check certificates",
-        "Review resource usage"
+        "kubectl logs [pod] --previous",
+        "kubectl describe pod [pod]",
+        "kubectl get events --field-selector involvedObject.name=[pod]",
+        "kubectl top pod [pod]"
       ],
       "expectedResults": [
-        "API server responding",
-        "etcd connectivity restored",
-        "Valid certificates",
-        "Sufficient resources"
+        "Logs show application errors",
+        "RestartCount > 5",
+        "OOMKilled/ExitCode in status",
+        "FailedScheduling events"
       ],
       "immediateActions": [
-        "Restart API server",
-        "Fix etcd issues",
-        "Renew certificates",
-        "Scale up resources"
+        "Rollback deployment",
+        "Increase memory limits",
+        "Fix probe configuration",
+        "Check secret mounts"
       ],
       "longTermSolutions": [
-        "API server high availability",
-        "Certificate automation",
-        "Resource monitoring"
+        "Implement CI/CD health checks",
+        "Add resource quotas",
+        "Configure proper liveness probes"
       ],
       "alertKnowledgeEnriched": true,
       "csvDataAvailable": true,
       "alertSeverity": "critical"
     },
-    "alertCategory": "API",
+    "alertCategory": "APPLICATION",
     "alertCategoryConfig": {
-      "baseScore": 85,
+      "baseScore": 70,
       "criticalAlerts": [
-        "KubeAPIDown",
-        "KubeAPIErrorBudgetBurn",
-        "KubeStateMetricsListErrors"
+        "KubePodCrashLooping",
+        "KubePodOOMKilled",
+        "KubeStatefulSetReplicasMismatch",
+        "KubeDeploymentRolloutStuck"
       ],
-      "multiplier": 1.6
+      "multiplier": 1.3
     },
-    "calculatedSeverityScore": 136,
+    "calculatedSeverityScore": 91,
     "csvSeverity": "unknown",
     "csvEnhanced": true,
     "categoryHandlingHints": {
       "requiresNodeAnalysis": false,
-      "requiresPodAnalysis": false,
+      "requiresPodAnalysis": true,
       "requiresNetworkAnalysis": false,
       "requiresCertificateCheck": false,
-      "requiresApplicationMetrics": false,
+      "requiresApplicationMetrics": true,
       "requiresStorageCheck": false,
-      "requiresAPICheck": true,
+      "requiresAPICheck": false,
       "requiresMonitoringCheck": false,
-      "isInfrastructureCritical": true,
-      "cascadeRisk": "CRITICAL",
-      "immediateActionRequired": true
+      "isInfrastructureCritical": false,
+      "cascadeRisk": "MEDIUM",
+      "immediateActionRequired": false
     },
     "_categoryStats": {
       "totalAlerts": 151,
@@ -446,269 +391,242 @@
       },
       "csvEnhanced": true,
       "currentAlert": {
-        "name": "KubeAPIDown",
-        "category": "API",
+        "name": "KubePodCrashLooping",
+        "category": "APPLICATION",
         "csvSeverity": "unknown",
-        "severityScore": 136
+        "severityScore": 91
       }
     },
     "knowledgeBase": {
       "alert": {
         "severity": "critical",
-        "description": "Kubernetes API server is down",
+        "description": "Pod repeatedly crashes after starting",
         "commonCauses": [
-          "API server process crashed",
-          "etcd connectivity issues",
-          "Certificate problems",
-          "Resource exhaustion"
+          "Application bugs",
+          "Missing configs/secrets",
+          "Resource limits exceeded",
+          "Invalid probe settings"
         ],
         "troubleshootingSteps": [
-          "Check API server pod status",
-          "Verify etcd connectivity",
-          "Check certificates",
-          "Review resource usage"
+          "kubectl logs [pod] --previous",
+          "kubectl describe pod [pod]",
+          "kubectl get events --field-selector involvedObject.name=[pod]",
+          "kubectl top pod [pod]"
         ],
         "expectedResults": [
-          "API server responding",
-          "etcd connectivity restored",
-          "Valid certificates",
-          "Sufficient resources"
+          "Logs show application errors",
+          "RestartCount > 5",
+          "OOMKilled/ExitCode in status",
+          "FailedScheduling events"
         ],
         "immediateActions": [
-          "Restart API server",
-          "Fix etcd issues",
-          "Renew certificates",
-          "Scale up resources"
+          "Rollback deployment",
+          "Increase memory limits",
+          "Fix probe configuration",
+          "Check secret mounts"
         ],
         "longTermSolutions": [
-          "API server high availability",
-          "Certificate automation",
-          "Resource monitoring"
+          "Implement CI/CD health checks",
+          "Add resource quotas",
+          "Configure proper liveness probes"
         ],
         "requiredMetrics": [
-          "apiserver_up",
-          "apiserver_request_duration_seconds"
+          "kube_pod_container_status_restarts_total",
+          "kube_pod_status_phase"
         ],
         "cascadeCheckPoints": [
-          "cluster_operations",
-          "kubectl_access",
-          "controller_functions"
+          "service_availability",
+          "deployment_health",
+          "application_performance"
         ]
       },
-      "alertName": "KubeAPIDown",
-      "category": "API",
-      "enrichedAt": "2025-12-14T13:23:19.299Z",
+      "alertName": "KubePodCrashLooping",
+      "category": "APPLICATION",
+      "enrichedAt": "2025-12-16T11:35:58.329Z",
       "csvEnhanced": true,
-      "totalKBEntries": 41
+      "totalKBEntries": 42
     },
     "_kbStats": {
-      "totalEntries": 41,
+      "totalEntries": 42,
       "severityBreakdown": {
         "blocker": 3,
-        "critical": 18,
+        "critical": 19,
         "warning": 7,
         "high": 8,
         "medium": 3,
         "info": 2
       },
       "csvEnhanced": true,
-      "loadedAt": "2025-12-14T13:23:19.300Z"
+      "loadedAt": "2025-12-16T11:35:58.329Z"
     },
-    "systemPrompt": "You are a Kubernetes SRE expert analyzing a SPECIFIC ALERT and its cascading effects.\n\nALERT INFORMATION:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAlert: KubeAPIDown\nPriority: critical\nAlert ID: alert-1765718599169\n\nAFFECTED COMPONENTS:\n- Pod: N/A\n- Container: N/A\n- Namespace: N/A\n- Service: N/A\n- Node: N/A\n\nKNOWLEDGE BASE INFO:\n- Common Causes: API server process crashed, etcd connectivity issues, Certificate problems, Resource exhaustion\n- Check These Metrics: apiserver_up, apiserver_request_duration_seconds\n- Cascade Points: cluster_operations, kubectl_access, controller_functions\n\nYOUR ANALYSIS TASKS:\n═══════════════════════════════════════\n\n1. VERIFY ALERT STATUS:\n   - Confirm alert is still active\n   - Check current severity\n   - Determine duration\n\n2. ANALYZE AFFECTED COMPONENT:\n   - Current status of the component\n   - Resource usage (CPU, Memory)\n   - Recent errors or restarts\n   - Health check status\n\n3. DETECT CASCADING EFFECTS:\n   - Check other pods in same namespace\n   - Check other pods on same node (if applicable)\n   - Check dependent services\n   - Identify spread pattern\n\n4. ASSESS OVERALL IMPACT:\n   - Service availability\n   - User impact\n   - Data integrity risk\n   - Performance degradation\n\nAVAILABLE TOOLS:\n- List Kubernetes Services: Use to see all services in cluster\n- Quick Cluster Health: Use to get overall health context\n- Active Alerts Count: Will show alerts in affected namespace\n- Pod Status Check: Will focus on the alert pod\n- Plus other dynamic tools that adapt to the alert context\n\nIMPORTANT: Check both the specific alert AND potential cascading failures.\n\nOutput a structured JSON with your findings.\n\nOUTPUT FORMAT RULES:\n- You MUST return valid JSON only\n- You MUST include the _context object exactly as provided\n- Use current timestamp: new Date().toISOString()\n- Actual namespace: null\n- Never use mock data or placeholder values",
-    "userMessage": "Analyze the KubeAPIDown alert affecting the system in namespace null. Use all available tools to verify the alert, check the affected component's health, detect any cascading effects, and determine if deeper analysis is needed.\n\nCRITICAL OUTPUT REQUIREMENTS:\n1. Your response MUST be valid JSON\n2. Include real timestamp using new Date().toISOString()\n3. Use cluster name: null\n4. Include pod: unknown\n5. MUST include this exact _context field in your JSON response:\n\"_context\": {\"contextId\":\"ctx-1765718599269-mveauf\",\"createdAt\":\"2025-12-14T13:23:19.269Z\",\"source\":{\"type\":\"alert-listener\",\"priority\":\"critical\"},\"initialParams\":{\"startTime\":1765714999,\"endTime\":1765718599,\"namespaces\":[\"bss-prod-eks-monitoring\",\"bstp-cms-global-production\",\"bstp-cms-prod-v3\",\"em-global-prod-3pp\",\"em-global-prod-eom\",\"em-global-prod-flowe\",\"em-global-prod\",\"em-prod-3pp\",\"em-prod-eom\",\"em-prod-flowe\",\"em-prod\",\"em-control-plane-prod\"],\"services\":[\"unknown-namespace\"],\"focusAreas\":[\"Chaos engineering test pattern\"],\"analysisType\":\"alert-driven\",\"context\":{\"alertName\":\"KubeAPIDown\",\"alertId\":\"alert-1765718599169\",\"alertPriority\":\"critical\",\"source\":\"alertmanager\",\"kubernetes\":{\"container\":null,\"pod\":null,\"namespace\":null,\"namespaces\":[\"bss-prod-eks-monitoring\",\"bstp-cms-global-production\",\"bstp-cms-prod-v3\",\"em-global-prod-3pp\",\"em-global-prod-eom\",\"em-global-prod-flowe\",\"em-global-prod\",\"em-prod-3pp\",\"em-prod-eom\",\"em-prod-flowe\",\"em-prod\",\"em-control-plane-prod\"],\"service\":null,\"deployment\":null,\"node\":null,\"persistentvolumeclaim\":null,\"volumename\":null,\"useSpecificFilters\":false,\"useMultiNamespace\":true},\"affectedServices\":[\"unknown-namespace\"],\"errorPatterns\":[\"Chaos engineering test pattern\"],\"alerts\":[{\"alertname\":\"KubeAPIDown\",\"severity\":\"critical\"}]}},\"kubernetesFilters\":{\"container\":null,\"pod\":null,\"namespace\":null,\"namespaces\":[\"bss-prod-eks-monitoring\",\"bstp-cms-global-production\",\"bstp-cms-prod-v3\",\"em-global-prod-3pp\",\"em-global-prod-eom\",\"em-global-prod-flowe\",\"em-global-prod\",\"em-prod-3pp\",\"em-prod-eom\",\"em-prod-flowe\",\"em-prod\",\"em-control-plane-prod\"],\"service\":null,\"deployment\":null,\"node\":null,\"persistentvolumeclaim\":null,\"volumename\":null,\"useSpecificFilters\":false,\"useMultiNamespace\":true},\"alertContext\":{\"alertName\":\"KubeAPIDown\",\"alertId\":\"alert-1765718599169\",\"alertPriority\":\"critical\",\"source\":\"alertmanager\",\"kubernetes\":{\"container\":null,\"pod\":null,\"namespace\":null,\"namespaces\":[\"bss-prod-eks-monitoring\",\"bstp-cms-global-production\",\"bstp-cms-prod-v3\",\"em-global-prod-3pp\",\"em-global-prod-eom\",\"em-global-prod-flowe\",\"em-global-prod\",\"em-prod-3pp\",\"em-prod-eom\",\"em-prod-flowe\",\"em-prod\",\"em-control-plane-prod\"],\"service\":null,\"deployment\":null,\"node\":null,\"persistentvolumeclaim\":null,\"volumename\":null,\"useSpecificFilters\":false,\"useMultiNamespace\":true},\"affectedServices\":[\"unknown-namespace\"],\"errorPatterns\":[\"Chaos engineering test pattern\"],\"alerts\":[{\"alertname\":\"KubeAPIDown\",\"severity\":\"critical\"}]},\"stageConfig\":{\"maxStages\":6,\"enablePatternAnalysis\":true,\"enableAnomalyDetection\":true,\"enablePredictiveAnalysis\":true,\"forceDeepAnalysis\":true},\"priority\":\"critical\",\"forceDeepAnalysis\":true,\"workflowMetadata\":{\"workflowId\":\"LBDqj72azAqepcuC\",\"executionId\":\"5598\",\"requestId\":\"alert-alert-1765718599169-1765718599181\",\"orchestratorId\":\"direct-1765718599181\"},\"stageResults\":{},\"decisions\":{},\"debug\":{\"contextVersion\":\"1.0\",\"createdBy\":\"Unified Entry Point\",\"sourceType\":\"alert-listener\",\"alertName\":\"KubeAPIDown\",\"priority\":\"critical\",\"knowledgeBaseEnriched\":true,\"alertNameFound\":\"KubeAPIDown\",\"alertCategory\":\"API\",\"knowledgeBaseMatched\":true,\"totalKnowledgeBaseEntries\":41,\"csvEnhanced\":true,\"kbVersion\":\"2.0-CSV-Enhanced\"},\"alertCategory\":\"API\",\"needsExtendedAnalysis\":true,\"categoryBasedSeverity\":136,\"csvSeverity\":\"unknown\",\"alertEnrichment\":{\"category\":\"API\",\"severityScore\":136,\"csvSeverity\":\"unknown\",\"criticalAlert\":true,\"categoryConfig\":{\"baseScore\":85,\"criticalAlerts\":[\"KubeAPIDown\",\"KubeAPIErrorBudgetBurn\",\"KubeStateMetricsListErrors\"],\"multiplier\":1.6},\"totalKnownAlerts\":151},\"requiredMetrics\":[\"apiserver_up\",\"apiserver_request_duration_seconds\"],\"cascadeCheckPoints\":[\"cluster_operations\",\"kubectl_access\",\"controller_functions\"],\"troubleshootingGuidance\":[\"Check API server pod status\",\"Verify etcd connectivity\",\"Check certificates\",\"Review resource usage\"],\"expectedResults\":[\"API server responding\",\"etcd connectivity restored\",\"Valid certificates\",\"Sufficient resources\"],\"immediateActions\":[\"Restart API server\",\"Fix etcd issues\",\"Renew certificates\",\"Scale up resources\"],\"longTermSolutions\":[\"API server high availability\",\"Certificate automation\",\"Resource monitoring\"],\"alertKnowledgeEnriched\":true,\"csvDataAvailable\":true,\"alertSeverity\":\"critical\"}\n\nNever use placeholder dates like 2024-04-27 or default-cluster.",
+    "systemPrompt": "You are a Kubernetes SRE expert analyzing a SPECIFIC ALERT and its cascading effects.\n\nALERT INFORMATION:\n━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\nAlert: KubePodCrashLooping\nPriority: critical\nAlert ID: alert-1765884958197\n\nAFFECTED COMPONENTS:\n- Pod: domain-config-service-t3-645d68cbc8-4h88r\n- Container: domain-config-service\n- Namespace: etiyamobile-production\n- Service: prometheus-kube-state-metrics\n- Node: N/A\n\nKNOWLEDGE BASE INFO:\n- Common Causes: Application bugs, Missing configs/secrets, Resource limits exceeded, Invalid probe settings\n- Check These Metrics: kube_pod_container_status_restarts_total, kube_pod_status_phase\n- Cascade Points: service_availability, deployment_health, application_performance\n\nYOUR ANALYSIS TASKS:\n═══════════════════════════════════════\n\n1. VERIFY ALERT STATUS:\n   - Confirm alert is still active\n   - Check current severity\n   - Determine duration\n\n2. ANALYZE AFFECTED COMPONENT:\n   - Current status of domain-config-service-t3-645d68cbc8-4h88r\n   - Resource usage (CPU, Memory)\n   - Recent errors or restarts\n   - Health check status\n\n3. DETECT CASCADING EFFECTS:\n   - Check other pods in same namespace\n   - Check other pods on same node (if applicable)\n   - Check dependent services\n   - Identify spread pattern\n\n4. ASSESS OVERALL IMPACT:\n   - Service availability\n   - User impact\n   - Data integrity risk\n   - Performance degradation\n\nAVAILABLE TOOLS:\n- List Kubernetes Services: Use to see all services in cluster\n- Quick Cluster Health: Use to get overall health context\n- Active Alerts Count: Will show alerts in affected namespace\n- Pod Status Check: Will focus on the alert pod\n- Plus other dynamic tools that adapt to the alert context\n\nIMPORTANT: Check both the specific alert AND potential cascading failures.\n\nOutput a structured JSON with your findings.\n\nOUTPUT FORMAT RULES:\n- You MUST return valid JSON only\n- You MUST include the _context object exactly as provided\n- Use current timestamp: new Date().toISOString()\n- Actual namespace: etiyamobile-production\n- Never use mock data or placeholder values",
+    "userMessage": "Analyze the KubePodCrashLooping alert affecting domain-config-service-t3-645d68cbc8-4h88r in namespace etiyamobile-production. Use all available tools to verify the alert, check the affected component's health, detect any cascading effects, and determine if deeper analysis is needed.\n\nCRITICAL OUTPUT REQUIREMENTS:\n1. Your response MUST be valid JSON\n2. Include real timestamp using new Date().toISOString()\n3. Use cluster name: etiyamobile-production\n4. Include pod: domain-config-service-t3-645d68cbc8-4h88r\n5. MUST include this exact _context field in your JSON response:\n\"_context\": {\"contextId\":\"ctx-1765884958296-sowzfe\",\"createdAt\":\"2025-12-16T11:35:58.296Z\",\"source\":{\"type\":\"alert-listener\",\"priority\":\"critical\"},\"initialParams\":{\"startTime\":1765881358,\"endTime\":1765884958,\"namespaces\":[\"etiyamobile-production\"],\"services\":[\"prometheus-kube-state-metrics\",\"kube-state-metrics\",\"domain-config-service\"],\"focusAreas\":[\"Pod is crash looping\",\"Container startup failure\",\"Chaos engineering test pattern\"],\"analysisType\":\"alert-driven\",\"context\":{\"alertName\":\"KubePodCrashLooping\",\"alertId\":\"alert-1765884958197\",\"alertPriority\":\"critical\",\"source\":\"alertmanager\",\"kubernetes\":{\"container\":\"domain-config-service\",\"pod\":\"domain-config-service-t3-645d68cbc8-4h88r\",\"namespace\":\"etiyamobile-production\",\"namespaces\":[\"etiyamobile-production\"],\"service\":\"prometheus-kube-state-metrics\",\"deployment\":null,\"node\":null,\"persistentvolumeclaim\":null,\"volumename\":null,\"useSpecificFilters\":true,\"useMultiNamespace\":false},\"affectedServices\":[\"prometheus-kube-state-metrics\",\"kube-state-metrics\",\"domain-config-service\"],\"errorPatterns\":[\"Pod is crash looping\",\"Container startup failure\",\"Chaos engineering test pattern\"],\"alerts\":[{\"alertname\":\"KubePodCrashLooping\",\"severity\":\"critical\"}]}},\"kubernetesFilters\":{\"container\":\"domain-config-service\",\"pod\":\"domain-config-service-t3-645d68cbc8-4h88r\",\"namespace\":\"etiyamobile-production\",\"namespaces\":[\"etiyamobile-production\"],\"service\":\"prometheus-kube-state-metrics\",\"deployment\":null,\"node\":null,\"persistentvolumeclaim\":null,\"volumename\":null,\"useSpecificFilters\":true,\"useMultiNamespace\":false},\"alertContext\":{\"alertName\":\"KubePodCrashLooping\",\"alertId\":\"alert-1765884958197\",\"alertPriority\":\"critical\",\"source\":\"alertmanager\",\"kubernetes\":{\"container\":\"domain-config-service\",\"pod\":\"domain-config-service-t3-645d68cbc8-4h88r\",\"namespace\":\"etiyamobile-production\",\"namespaces\":[\"etiyamobile-production\"],\"service\":\"prometheus-kube-state-metrics\",\"deployment\":null,\"node\":null,\"persistentvolumeclaim\":null,\"volumename\":null,\"useSpecificFilters\":true,\"useMultiNamespace\":false},\"affectedServices\":[\"prometheus-kube-state-metrics\",\"kube-state-metrics\",\"domain-config-service\"],\"errorPatterns\":[\"Pod is crash looping\",\"Container startup failure\",\"Chaos engineering test pattern\"],\"alerts\":[{\"alertname\":\"KubePodCrashLooping\",\"severity\":\"critical\"}]},\"stageConfig\":{\"maxStages\":6,\"enablePatternAnalysis\":true,\"enableAnomalyDetection\":true,\"enablePredictiveAnalysis\":true,\"forceDeepAnalysis\":true},\"priority\":\"critical\",\"forceDeepAnalysis\":true,\"workflowMetadata\":{\"workflowId\":\"LBDqj72azAqepcuC\",\"executionId\":\"6321\",\"requestId\":\"alert-alert-1765884958197-1765884958208\",\"orchestratorId\":\"direct-1765884958208\"},\"stageResults\":{},\"decisions\":{},\"debug\":{\"contextVersion\":\"1.0\",\"createdBy\":\"Unified Entry Point\",\"sourceType\":\"alert-listener\",\"alertName\":\"KubePodCrashLooping\",\"priority\":\"critical\",\"knowledgeBaseEnriched\":true,\"alertNameFound\":\"KubePodCrashLooping\",\"alertCategory\":\"APPLICATION\",\"knowledgeBaseMatched\":true,\"totalKnowledgeBaseEntries\":42,\"csvEnhanced\":true,\"kbVersion\":\"2.0-CSV-Enhanced\"},\"alertCategory\":\"APPLICATION\",\"needsExtendedAnalysis\":true,\"categoryBasedSeverity\":91,\"csvSeverity\":\"unknown\",\"alertEnrichment\":{\"category\":\"APPLICATION\",\"severityScore\":91,\"csvSeverity\":\"unknown\",\"criticalAlert\":true,\"categoryConfig\":{\"baseScore\":70,\"criticalAlerts\":[\"KubePodCrashLooping\",\"KubePodOOMKilled\",\"KubeStatefulSetReplicasMismatch\",\"KubeDeploymentRolloutStuck\"],\"multiplier\":1.3},\"totalKnownAlerts\":151},\"requiredMetrics\":[\"kube_pod_container_status_restarts_total\",\"kube_pod_status_phase\"],\"cascadeCheckPoints\":[\"service_availability\",\"deployment_health\",\"application_performance\"],\"troubleshootingGuidance\":[\"kubectl logs [pod] --previous\",\"kubectl describe pod [pod]\",\"kubectl get events --field-selector involvedObject.name=[pod]\",\"kubectl top pod [pod]\"],\"expectedResults\":[\"Logs show application errors\",\"RestartCount > 5\",\"OOMKilled/ExitCode in status\",\"FailedScheduling events\"],\"immediateActions\":[\"Rollback deployment\",\"Increase memory limits\",\"Fix probe configuration\",\"Check secret mounts\"],\"longTermSolutions\":[\"Implement CI/CD health checks\",\"Add resource quotas\",\"Configure proper liveness probes\"],\"alertKnowledgeEnriched\":true,\"csvDataAvailable\":true,\"alertSeverity\":\"critical\"}\n\nNever use placeholder dates like 2024-04-27 or default-cluster.",
     "stageContext": {
       "stage": "Stage 1: Alert and Cascading Analysis",
       "stageNumber": 1,
-      "timestamp": "2025-12-14T13:23:19.315Z",
+      "timestamp": "2025-12-16T11:35:58.344Z",
       "alertContext": {
-        "alertName": "KubeAPIDown",
-        "alertId": "alert-1765718599169",
+        "alertName": "KubePodCrashLooping",
+        "alertId": "alert-1765884958197",
         "alertPriority": "critical",
         "source": "alertmanager",
         "kubernetes": {
-          "container": null,
-          "pod": null,
-          "namespace": null,
+          "container": "domain-config-service",
+          "pod": "domain-config-service-t3-645d68cbc8-4h88r",
+          "namespace": "etiyamobile-production",
           "namespaces": [
-            "bss-prod-eks-monitoring",
-            "bstp-cms-global-production",
-            "bstp-cms-prod-v3",
-            "em-global-prod-3pp",
-            "em-global-prod-eom",
-            "em-global-prod-flowe",
-            "em-global-prod",
-            "em-prod-3pp",
-            "em-prod-eom",
-            "em-prod-flowe",
-            "em-prod",
-            "em-control-plane-prod"
+            "etiyamobile-production"
           ],
-          "service": null,
+          "service": "prometheus-kube-state-metrics",
           "deployment": null,
           "node": null,
           "persistentvolumeclaim": null,
           "volumename": null,
-          "useSpecificFilters": false,
-          "useMultiNamespace": true
+          "useSpecificFilters": true,
+          "useMultiNamespace": false
         },
         "affectedServices": [
-          "unknown-namespace"
+          "prometheus-kube-state-metrics",
+          "kube-state-metrics",
+          "domain-config-service"
         ],
         "errorPatterns": [
+          "Pod is crash looping",
+          "Container startup failure",
           "Chaos engineering test pattern"
         ],
         "alerts": [
           {
-            "alertname": "KubeAPIDown",
+            "alertname": "KubePodCrashLooping",
             "severity": "critical"
           }
         ]
       },
       "kubernetesFilters": {
-        "container": null,
-        "pod": null,
-        "namespace": null,
+        "container": "domain-config-service",
+        "pod": "domain-config-service-t3-645d68cbc8-4h88r",
+        "namespace": "etiyamobile-production",
         "namespaces": [
-          "bss-prod-eks-monitoring",
-          "bstp-cms-global-production",
-          "bstp-cms-prod-v3",
-          "em-global-prod-3pp",
-          "em-global-prod-eom",
-          "em-global-prod-flowe",
-          "em-global-prod",
-          "em-prod-3pp",
-          "em-prod-eom",
-          "em-prod-flowe",
-          "em-prod",
-          "em-control-plane-prod"
+          "etiyamobile-production"
         ],
-        "service": null,
+        "service": "prometheus-kube-state-metrics",
         "deployment": null,
         "node": null,
         "persistentvolumeclaim": null,
         "volumename": null,
-        "useSpecificFilters": false,
-        "useMultiNamespace": true
+        "useSpecificFilters": true,
+        "useMultiNamespace": false
       },
       "prometheusQueries": [
         {
           "type": "container_cpu",
-          "query": "rate(container_cpu_usage_seconds_total{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}[5m]) * 100",
-          "description": "CPU usage for all containers (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+          "query": "rate(container_cpu_usage_seconds_total{namespace=\"etiyamobile-production\", pod=\"domain-config-service-t3-645d68cbc8-4h88r\", container=\"domain-config-service\"}[5m]) * 100",
+          "description": "CPU usage for domain-config-service (namespaces: etiyamobile-production)"
         },
         {
           "type": "container_memory",
-          "query": "container_memory_working_set_bytes{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
-          "description": "Memory usage for all containers (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+          "query": "container_memory_working_set_bytes{namespace=\"etiyamobile-production\", pod=\"domain-config-service-t3-645d68cbc8-4h88r\", container=\"domain-config-service\"}",
+          "description": "Memory usage for domain-config-service (namespaces: etiyamobile-production)"
         },
         {
           "type": "container_memory_limit",
-          "query": "container_spec_memory_limit_bytes{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
-          "description": "Memory limit for all containers (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+          "query": "container_spec_memory_limit_bytes{namespace=\"etiyamobile-production\", pod=\"domain-config-service-t3-645d68cbc8-4h88r\", container=\"domain-config-service\"}",
+          "description": "Memory limit for domain-config-service (namespaces: etiyamobile-production)"
         },
         {
           "type": "container_restarts",
-          "query": "kube_pod_container_status_restarts_total{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
-          "description": "Restart count for all containers (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+          "query": "kube_pod_container_status_restarts_total{namespace=\"etiyamobile-production\", pod=\"domain-config-service-t3-645d68cbc8-4h88r\", container=\"domain-config-service\"}",
+          "description": "Restart count for domain-config-service (namespaces: etiyamobile-production)"
         },
         {
           "type": "pod_status",
-          "query": "kube_pod_status_phase{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
-          "description": "Pod phase for all pods (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+          "query": "kube_pod_status_phase{namespace=\"etiyamobile-production\", pod=\"domain-config-service-t3-645d68cbc8-4h88r\"}",
+          "description": "Pod phase for domain-config-service-t3-645d68cbc8-4h88r (namespaces: etiyamobile-production)"
         },
         {
           "type": "pod_ready",
-          "query": "kube_pod_status_ready{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
-          "description": "Pod ready status for all pods (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+          "query": "kube_pod_status_ready{namespace=\"etiyamobile-production\", pod=\"domain-config-service-t3-645d68cbc8-4h88r\"}",
+          "description": "Pod ready status for domain-config-service-t3-645d68cbc8-4h88r (namespaces: etiyamobile-production)"
         },
         {
           "type": "service_cpu",
-          "query": "sum(rate(container_cpu_usage_seconds_total{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}[5m])) by (pod) * 100",
-          "description": "CPU usage for service all services (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+          "query": "sum(rate(container_cpu_usage_seconds_total{namespace=\"etiyamobile-production\", pod=~\"prometheus-kube-state-metrics.*\"}[5m])) by (pod) * 100",
+          "description": "CPU usage for service prometheus-kube-state-metrics (namespaces: etiyamobile-production)"
         },
         {
           "type": "service_memory",
-          "query": "sum(container_memory_working_set_bytes{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}) by (pod)",
-          "description": "Memory usage for service all services (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+          "query": "sum(container_memory_working_set_bytes{namespace=\"etiyamobile-production\", pod=~\"prometheus-kube-state-metrics.*\"}) by (pod)",
+          "description": "Memory usage for service prometheus-kube-state-metrics (namespaces: etiyamobile-production)"
         },
         {
           "type": "service_replicas",
-          "query": "kube_deployment_status_replicas{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}",
-          "description": "Replica count for all deployments (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+          "query": "kube_deployment_status_replicas{namespace=\"etiyamobile-production\", deployment=\"prometheus-kube-state-metrics\"}",
+          "description": "Replica count for prometheus-kube-state-metrics (namespaces: etiyamobile-production)"
         },
         {
           "type": "crashloop_restarts",
-          "query": "rate(kube_pod_container_status_restarts_total{namespace=~\"bss-prod-eks-monitoring|bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|em-control-plane-prod\"}[15m]) > 0",
-          "description": "Pods with recent restarts (namespaces: bss-prod-eks-monitoring, bstp-cms-global-production, bstp-cms-prod-v3, em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod, em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod, em-control-plane-prod)"
+          "query": "rate(kube_pod_container_status_restarts_total{namespace=\"etiyamobile-production\"}[15m]) > 0",
+          "description": "Pods with recent restarts (namespaces: etiyamobile-production)"
         }
       ],
       "knowledgeBase": {
         "alert": {
           "severity": "critical",
-          "description": "Kubernetes API server is down",
+          "description": "Pod repeatedly crashes after starting",
           "commonCauses": [
-            "API server process crashed",
-            "etcd connectivity issues",
-            "Certificate problems",
-            "Resource exhaustion"
+            "Application bugs",
+            "Missing configs/secrets",
+            "Resource limits exceeded",
+            "Invalid probe settings"
           ],
           "troubleshootingSteps": [
-            "Check API server pod status",
-            "Verify etcd connectivity",
-            "Check certificates",
-            "Review resource usage"
+            "kubectl logs [pod] --previous",
+            "kubectl describe pod [pod]",
+            "kubectl get events --field-selector involvedObject.name=[pod]",
+            "kubectl top pod [pod]"
           ],
           "expectedResults": [
-            "API server responding",
-            "etcd connectivity restored",
-            "Valid certificates",
-            "Sufficient resources"
+            "Logs show application errors",
+            "RestartCount > 5",
+            "OOMKilled/ExitCode in status",
+            "FailedScheduling events"
           ],
           "immediateActions": [
-            "Restart API server",
-            "Fix etcd issues",
-            "Renew certificates",
-            "Scale up resources"
+            "Rollback deployment",
+            "Increase memory limits",
+            "Fix probe configuration",
+            "Check secret mounts"
           ],
           "longTermSolutions": [
-            "API server high availability",
-            "Certificate automation",
-            "Resource monitoring"
+            "Implement CI/CD health checks",
+            "Add resource quotas",
+            "Configure proper liveness probes"
           ],
           "requiredMetrics": [
-            "apiserver_up",
-            "apiserver_request_duration_seconds"
+            "kube_pod_container_status_restarts_total",
+            "kube_pod_status_phase"
           ],
           "cascadeCheckPoints": [
-            "cluster_operations",
-            "kubectl_access",
-            "controller_functions"
+            "service_availability",
+            "deployment_health",
+            "application_performance"
           ]
         },
-        "alertName": "KubeAPIDown",
-        "category": "API",
-        "enrichedAt": "2025-12-14T13:23:19.299Z",
+        "alertName": "KubePodCrashLooping",
+        "category": "APPLICATION",
+        "enrichedAt": "2025-12-16T11:35:58.329Z",
         "csvEnhanced": true,
-        "totalKBEntries": 41
+        "totalKBEntries": 42
       },
       "priority": "critical",
       "analysisType": "alert-driven-with-cascading",
       "namespaces": [
-        "bss-prod-eks-monitoring",
-        "bstp-cms-global-production",
-        "bstp-cms-prod-v3",
-        "em-global-prod-3pp",
-        "em-global-prod-eom",
-        "em-global-prod-flowe",
-        "em-global-prod",
-        "em-prod-3pp",
-        "em-prod-eom",
-        "em-prod-flowe",
-        "em-prod",
-        "em-control-plane-prod"
+        "etiyamobile-production"
       ],
       "services": [
-        "unknown-namespace"
+        "prometheus-kube-state-metrics",
+        "kube-state-metrics",
+        "domain-config-service"
       ],
       "focusAreas": [
         "alert-verification",
@@ -716,13 +634,13 @@
         "impact-assessment"
       ],
       "requiredMetrics": [
-        "apiserver_up",
-        "apiserver_request_duration_seconds"
+        "kube_pod_container_status_restarts_total",
+        "kube_pod_status_phase"
       ],
       "cascadeCheckPoints": [
-        "cluster_operations",
-        "kubectl_access",
-        "controller_functions"
+        "service_availability",
+        "deployment_health",
+        "application_performance"
       ]
     }
   }

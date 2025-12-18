@@ -1,0 +1,128 @@
+[
+  {
+    "output": {
+      "stage": "prevention_learning",
+      "incident_summary": {
+        "id": "INC-ctx-1766053223970-o67gn3tod",
+        "title": "Pod restarts and memory pressure",
+        "duration": "3704 seconds",
+        "severity": "normal",
+        "services_affected": [
+          "bss-mc-pcm-product-offer-detail",
+          "bss-mc-asset-management"
+        ],
+        "customer_impact": "Limited impact",
+        "root_cause": "Pod restarts and memory pressure",
+        "resolution": "Restore service to previous stable version"
+      },
+      "prevention_actions": [
+        {
+          "type": "monitoring",
+          "action": "Add memory leak detection alert for bstp-cms-global-production",
+          "status": "planned"
+        },
+        {
+          "type": "code_fix",
+          "action": "Fix identified issue in bss-mc-pcm-product-offer-detail",
+          "status": "in_progress"
+        },
+        {
+          "type": "configuration",
+          "action": "Implement resource limits in bstp-cms-global-production",
+          "status": "planned"
+        },
+        {
+          "type": "process",
+          "action": "Add automated testing for normal priority issues",
+          "status": "planned"
+        }
+      ],
+      "knowledge_base_update": {
+        "alert_name": "KubeHpaMaxedOut",
+        "kb_updated": true,
+        "entry_id": "KB-ctx-1766053223970-o67gn3tod"
+      },
+      "runbook_updates": [
+        {
+          "runbook": "bstp-cms-global-production-troubleshooting",
+          "section": "normal Priority Issues",
+          "addition": "Context ctx-1766053223970-o67gn3tod: Pod restarts and memory pressure",
+          "url": "https://runbooks.company.com/ctx-1766053223970-o67gn3tod"
+        }
+      ],
+      "team_recommendations": [
+        {
+          "team": "bss-mc-pcm-product-offer-detail-team",
+          "action": "Review and implement prevention actions for normal issues",
+          "priority": "normal"
+        },
+        {
+          "team": "platform-team",
+          "action": "Update monitoring for bstp-cms-global-production",
+          "priority": "medium"
+        },
+        {
+          "team": "sre-team",
+          "action": "Review incident ctx-1766053223970-o67gn3tod",
+          "priority": "low"
+        }
+      ],
+      "follow_up_schedule": [
+        {
+          "action": "Verify fix in bstp-cms-global-production",
+          "when": "Next release cycle",
+          "owner": "bss-mc-pcm-product-offer-detail-team",
+          "attendees": []
+        },
+        {
+          "action": "Review metrics for recurrence",
+          "when": "Daily for 1 week",
+          "owner": "sre-team",
+          "attendees": []
+        },
+        {
+          "action": "Post-mortem meeting",
+          "when": "Within 1 week",
+          "owner": "",
+          "attendees": [
+            "platform-team",
+            "sre-team",
+            "affected-service-teams"
+          ]
+        }
+      ],
+      "metrics_improvements": {
+        "new_alerts": 1,
+        "runbook_updates": 1,
+        "kb_entries": 1,
+        "process_improvements": 2,
+        "estimated_future_prevention": "75%"
+      },
+      "prevention_quality_score": 0.8,
+      "final_status": {
+        "incident_resolved": false,
+        "prevention_implemented": true,
+        "learning_captured": true,
+        "ready_for_next": true
+      },
+      "_context": {
+        "contextId": "ctx-1766053223970-o67gn3tod",
+        "createdAt": "2025-12-18T10:20:23.970Z",
+        "priority": "normal",
+        "forceDeepAnalysis": false
+      },
+      "_debug": {
+        "nodeType": "Stage 6: Prevention & Learning",
+        "processedAt": "2025-12-18T10:22:07.155Z",
+        "contextId": "ctx-1766053223970-o67gn3tod",
+        "contextPreserved": true,
+        "receivedFromStage": "",
+        "stageSequence": [],
+        "totalStagesExecuted": 6,
+        "workflowComplete": true,
+        "priorityLevel": "normal",
+        "contextJourneyComplete": "ctx-1766053223970-o67gn3tod - Full lifecycle tracked"
+      }
+    }
+  }
+]

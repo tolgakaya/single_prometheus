@@ -4,38 +4,48 @@
       "stage": "automated_diagnosis",
       "diagnostics_executed": [
         {
-          "target": "",
-          "type": "pod",
+          "target": "infrastructure",
+          "type": "infrastructure",
           "commands_run": [
-            "kubectl describe pod  -n bss-prod-eks-monitoring",
-            "kubectl logs  -n bss-prod-eks-monitoring --since=24h",
-            "kubectl get events -n bss-prod-eks-monitoring --field-selector involvedObject.name="
+            "KB Troubleshooting: kubectl logs [pod] --previous",
+            "KB Troubleshooting: kubectl describe pod [pod]",
+            "KB Troubleshooting: kubectl get events --field-selector involvedObject.name=[pod]"
           ],
           "findings": {
-            "pod_status": {
-              "phase": "",
-              "restart_count": 0,
-              "last_termination": {
-                "reason": "OOMKilled",
-                "exit_code": 137,
-                "finished_at": "2025-12-14T13:23:19.000Z"
-              }
+            "infrastructure_status": {
+              "component": "Unknown",
+              "description": "Pod repeatedly crashes after starting",
+              "category": "APPLICATION",
+              "urgency": "CRITICAL"
+            },
+            "kb_evidence": {
+              "common_causes": [
+                "Application bugs",
+                "Missing configs/secrets",
+                "Resource limits exceeded",
+                "Invalid probe settings"
+              ],
+              "immediate_actions": [
+                "Rollback deployment",
+                "Increase memory limits",
+                "Fix probe configuration",
+                "Check secret mounts"
+              ],
+              "expected_results": [
+                "Logs show application errors",
+                "RestartCount > 5",
+                "OOMKilled/ExitCode in status",
+                "FailedScheduling events"
+              ]
             },
             "error_logs": [
               {
-                "timestamp": "2025-12-14T13:23:19.000Z",
-                "level": "Error",
-                "message": "Container killed due to memory limit",
+                "timestamp": "2023-10-15T10:29:18.000Z",
+                "level": "Critical",
+                "message": "Pod repeatedly crashes after starting",
                 "stack_trace": null
               }
-            ],
-            "events": [],
-            "resource_usage": {
-              "memory_request": "1Gi",
-              "memory_limit": "2Gi",
-              "memory_used": "",
-              "cpu_used": ""
-            }
+            ]
           }
         }
       ],
@@ -44,20 +54,24 @@
           "name": "",
           "version": "unknown",
           "replicas": "unknown",
-          "last_update": "2025-12-14T13:23:19.000Z",
+          "last_update": "2023-10-15T10:29:18.000Z",
           "update_strategy": "RollingUpdate"
         },
         "recent_changes": [
           {
             "type": "deployment",
-            "time": "2025-12-14T13:23:19.000Z",
+            "time": "2023-10-15T10:29:18.000Z",
             "change": "Pod experiencing memory issues",
             "user": "system"
           }
         ],
         "dependencies": {
           "upstream": [],
-          "downstream": "unknown-namespace",
+          "downstream": [
+            "prometheus-kube-state-metrics",
+            "kube-state-metrics",
+            "domain-config-service"
+          ],
           "databases": [],
           "external": []
         },
@@ -72,11 +86,22 @@
       "diagnostic_summary": {
         "confirmed_issues": [
           {
-            "issue": "Pod instability detected",
-            "evidence": "",
+            "issue": "Pod repeatedly crashes after starting",
+            "evidence": [
+              "Application bugs",
+              "Missing configs/secrets",
+              "Resource limits exceeded",
+              "Invalid probe settings"
+            ],
             "severity": "critical",
-            "impact": "Service  is experiencing outages",
-            "namespace": "bss-prod-eks-monitoring"
+            "impact": "Infrastructure component: Pod repeatedly crashes after starting",
+            "namespace": "infrastructure",
+            "kb_guidance": [
+              "Rollback deployment",
+              "Increase memory limits",
+              "Fix probe configuration",
+              "Check secret mounts"
+            ]
           }
         ],
         "secondary_issues": []
@@ -84,21 +109,137 @@
       "proceed_to_stage5": true,
       "remediation_confidence": 0.85,
       "_context": {
-        "contextId": "ctx-1765718599269-mveauf",
+        "contextId": "ctx-1765884958296-sowzfe",
         "initialParams": {
-          "startTime": 1765714999,
-          "endTime": 1765718599
+          "startTime": 1765881358,
+          "endTime": 1765884958
         },
         "stageResults": {
           "stage3": {
             "output": {
               "active_alerts": [
                 {
-                  "name": "No alerts",
-                  "severity": "unknown",
-                  "count": 0,
+                  "name": "Watchdog",
+                  "severity": "none",
+                  "count": 1,
                   "duration": "unknown",
-                  "labels": {},
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "Watchdog",
+                    "alertstate": "firing",
+                    "severity": "none"
+                  },
+                  "annotations": {},
+                  "category": "UNKNOWN",
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50,
+                  "correlations": []
+                },
+                {
+                  "name": "InfoInhibitor",
+                  "severity": "none",
+                  "count": 6,
+                  "duration": "unknown",
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "InfoInhibitor",
+                    "alertstate": "firing",
+                    "container": "fluent-bit",
+                    "instance": "10.94.217.52:10250",
+                    "namespace": "bss-prod-eks-monitoring",
+                    "pod": "fluent-bit-wqw26",
+                    "service": "kube-prometheus-stack-kubelet",
+                    "severity": "none"
+                  },
+                  "annotations": {},
+                  "category": "UNKNOWN",
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50,
+                  "correlations": []
+                },
+                {
+                  "name": "CPUThrottlingHigh",
+                  "severity": "info",
+                  "count": 5,
+                  "duration": "unknown",
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "CPUThrottlingHigh",
+                    "alertstate": "firing",
+                    "container": "fluent-bit",
+                    "instance": "10.94.157.160:10250",
+                    "namespace": "bss-prod-eks-monitoring",
+                    "pod": "fluent-bit-x4px6",
+                    "service": "kube-prometheus-stack-kubelet",
+                    "severity": "info"
+                  },
+                  "annotations": {},
+                  "category": "UNKNOWN",
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50,
+                  "correlations": []
+                },
+                {
+                  "name": "TargetDown",
+                  "severity": "info",
+                  "count": 1,
+                  "duration": "unknown",
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "TargetDown",
+                    "alertstate": "firing",
+                    "job": "kubelet",
+                    "namespace": "kube-system",
+                    "service": "kube-prometheus-stack-bss-kubelet",
+                    "severity": "info"
+                  },
+                  "annotations": {},
+                  "category": "UNKNOWN",
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50,
+                  "correlations": []
+                },
+                {
+                  "name": "KubeHpaMaxedOut",
+                  "severity": "warning",
+                  "count": 1,
+                  "duration": "unknown",
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "KubeHpaMaxedOut",
+                    "alertstate": "firing",
+                    "container": "kube-state-metrics",
+                    "endpoint": "http",
+                    "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+                    "instance": "10.94.145.151:8080",
+                    "job": "kube-state-metrics",
+                    "namespace": "em-control-plane-prod",
+                    "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+                    "service": "kube-prometheus-stack-kube-state-metrics",
+                    "severity": "warning"
+                  },
+                  "annotations": {},
+                  "category": "UNKNOWN",
+                  "kb_enriched": false,
+                  "severity_score": 30,
+                  "impact_score": 50,
+                  "correlations": []
+                },
+                {
+                  "name": "KubeCPUOvercommit",
+                  "severity": "warning",
+                  "count": 1,
+                  "duration": "unknown",
+                  "labels": {
+                    "__name__": "ALERTS",
+                    "alertname": "KubeCPUOvercommit",
+                    "alertstate": "firing",
+                    "severity": "warning"
+                  },
                   "annotations": {},
                   "category": "UNKNOWN",
                   "kb_enriched": false,
@@ -109,18 +250,47 @@
               ],
               "alert_groups": [
                 {
-                  "root_alert": "none",
-                  "related_alerts": [],
-                  "correlation_score": 0,
-                  "shared_labels": {}
+                  "root_alert": "CPUThrottlingHigh",
+                  "related_alerts": [
+                    "InfoInhibitor",
+                    "KubeCPUOvercommit"
+                  ],
+                  "correlation_score": 0.5,
+                  "shared_labels": {
+                    "namespace": "bss-prod-eks-monitoring"
+                  }
+                },
+                {
+                  "root_alert": "Watchdog",
+                  "related_alerts": [
+                    "InfoInhibitor",
+                    "CPUThrottlingHigh",
+                    "TargetDown",
+                    "KubeHpaMaxedOut",
+                    "KubeCPUOvercommit"
+                  ],
+                  "correlation_score": 0.7,
+                  "category": "UNKNOWN",
+                  "shared_labels": {
+                    "__name__": "ALERTS",
+                    "alertstate": "firing"
+                  },
+                  "impact_analysis": {
+                    "total_impact": 300,
+                    "max_severity": 30,
+                    "cascade_risk": 1
+                  }
                 }
               ],
               "knowledge_base_matches": [],
               "alert_patterns": {
-                "recurring": [],
+                "recurring": [
+                  "CPUThrottlingHigh",
+                  "InfoInhibitor"
+                ],
                 "storm_detection": {
                   "detected": false,
-                  "alert_count": 1,
+                  "alert_count": 6,
                   "time_window": "5m",
                   "likely_root": null,
                   "storm_category": null
@@ -128,7 +298,7 @@
                 "category_distribution": [
                   {
                     "category": "UNKNOWN",
-                    "count": 1,
+                    "count": 6,
                     "percentage": "100.0"
                   }
                 ]
@@ -148,14 +318,59 @@
               },
               "recommended_alert_actions": [
                 {
-                  "alert": "none",
-                  "action": "Monitor",
-                  "confidence": 0,
-                  "risk": "low",
-                  "command": null
+                  "alert": "KubeHpaMaxedOut",
+                  "action": "Check HPA configuration",
+                  "confidence": 0.9,
+                  "risk": "medium",
+                  "command": "kubectl describe hpa"
                 },
                 {
-                  "alert": "No alerts",
+                  "alert": "Watchdog",
+                  "action": "Investigate alert",
+                  "confidence": 0.3,
+                  "risk": "medium",
+                  "command": null,
+                  "category": "UNKNOWN",
+                  "priority": 50
+                },
+                {
+                  "alert": "InfoInhibitor",
+                  "action": "Investigate alert",
+                  "confidence": 0.3,
+                  "risk": "medium",
+                  "command": null,
+                  "category": "UNKNOWN",
+                  "priority": 50
+                },
+                {
+                  "alert": "CPUThrottlingHigh",
+                  "action": "Investigate alert",
+                  "confidence": 0.3,
+                  "risk": "medium",
+                  "command": null,
+                  "category": "UNKNOWN",
+                  "priority": 50
+                },
+                {
+                  "alert": "TargetDown",
+                  "action": "Investigate alert",
+                  "confidence": 0.3,
+                  "risk": "medium",
+                  "command": null,
+                  "category": "UNKNOWN",
+                  "priority": 50
+                },
+                {
+                  "alert": "KubeHpaMaxedOut",
+                  "action": "Investigate alert",
+                  "confidence": 0.3,
+                  "risk": "medium",
+                  "command": null,
+                  "category": "UNKNOWN",
+                  "priority": 50
+                },
+                {
+                  "alert": "KubeCPUOvercommit",
                   "action": "Investigate alert",
                   "confidence": 0.3,
                   "risk": "medium",
@@ -166,51 +381,61 @@
               ],
               "proceed_to_stage4": true,
               "auto_remediation_approved": true,
-              "alert_category": "API"
+              "alert_category": "APPLICATION"
             },
-            "completedAt": "2025-12-14T13:23:43.900Z",
+            "completedAt": "2025-12-16T11:36:47.115Z",
             "decision": true,
             "kbEnhanced": true,
-            "alertCategory": "API",
-            "urgencyLevel": "BLOCKER",
+            "alertCategory": "APPLICATION",
+            "urgencyLevel": "CRITICAL",
             "kbEnhancedAlerts": 0
           },
           "stage4": {
             "output": {
               "diagnostics_executed": [
                 {
-                  "target": "",
-                  "type": "pod",
+                  "target": "infrastructure",
+                  "type": "infrastructure",
                   "commands_run": [
-                    "kubectl describe pod  -n bss-prod-eks-monitoring",
-                    "kubectl logs  -n bss-prod-eks-monitoring --since=24h",
-                    "kubectl get events -n bss-prod-eks-monitoring --field-selector involvedObject.name="
+                    "KB Troubleshooting: kubectl logs [pod] --previous",
+                    "KB Troubleshooting: kubectl describe pod [pod]",
+                    "KB Troubleshooting: kubectl get events --field-selector involvedObject.name=[pod]"
                   ],
                   "findings": {
-                    "pod_status": {
-                      "phase": "",
-                      "restart_count": 0,
-                      "last_termination": {
-                        "reason": "OOMKilled",
-                        "exit_code": 137,
-                        "finished_at": "2025-12-14T13:23:19.000Z"
-                      }
+                    "infrastructure_status": {
+                      "component": "Unknown",
+                      "description": "Pod repeatedly crashes after starting",
+                      "category": "APPLICATION",
+                      "urgency": "CRITICAL"
+                    },
+                    "kb_evidence": {
+                      "common_causes": [
+                        "Application bugs",
+                        "Missing configs/secrets",
+                        "Resource limits exceeded",
+                        "Invalid probe settings"
+                      ],
+                      "immediate_actions": [
+                        "Rollback deployment",
+                        "Increase memory limits",
+                        "Fix probe configuration",
+                        "Check secret mounts"
+                      ],
+                      "expected_results": [
+                        "Logs show application errors",
+                        "RestartCount > 5",
+                        "OOMKilled/ExitCode in status",
+                        "FailedScheduling events"
+                      ]
                     },
                     "error_logs": [
                       {
-                        "timestamp": "2025-12-14T13:23:19.000Z",
-                        "level": "Error",
-                        "message": "Container killed due to memory limit",
+                        "timestamp": "2023-10-15T10:29:18.000Z",
+                        "level": "Critical",
+                        "message": "Pod repeatedly crashes after starting",
                         "stack_trace": null
                       }
-                    ],
-                    "events": [],
-                    "resource_usage": {
-                      "memory_request": "1Gi",
-                      "memory_limit": "2Gi",
-                      "memory_used": "",
-                      "cpu_used": ""
-                    }
+                    ]
                   }
                 }
               ],
@@ -219,20 +444,24 @@
                   "name": "",
                   "version": "unknown",
                   "replicas": "unknown",
-                  "last_update": "2025-12-14T13:23:19.000Z",
+                  "last_update": "2023-10-15T10:29:18.000Z",
                   "update_strategy": "RollingUpdate"
                 },
                 "recent_changes": [
                   {
                     "type": "deployment",
-                    "time": "2025-12-14T13:23:19.000Z",
+                    "time": "2023-10-15T10:29:18.000Z",
                     "change": "Pod experiencing memory issues",
                     "user": "system"
                   }
                 ],
                 "dependencies": {
                   "upstream": [],
-                  "downstream": "unknown-namespace",
+                  "downstream": [
+                    "prometheus-kube-state-metrics",
+                    "kube-state-metrics",
+                    "domain-config-service"
+                  ],
                   "databases": [],
                   "external": []
                 },
@@ -247,44 +476,55 @@
               "diagnostic_summary": {
                 "confirmed_issues": [
                   {
-                    "issue": "Pod instability detected",
-                    "evidence": "",
+                    "issue": "Pod repeatedly crashes after starting",
+                    "evidence": [
+                      "Application bugs",
+                      "Missing configs/secrets",
+                      "Resource limits exceeded",
+                      "Invalid probe settings"
+                    ],
                     "severity": "critical",
-                    "impact": "Service  is experiencing outages",
-                    "namespace": "bss-prod-eks-monitoring"
+                    "impact": "Infrastructure component: Pod repeatedly crashes after starting",
+                    "namespace": "infrastructure",
+                    "kb_guidance": [
+                      "Rollback deployment",
+                      "Increase memory limits",
+                      "Fix probe configuration",
+                      "Check secret mounts"
+                    ]
                   }
                 ],
                 "secondary_issues": []
               },
               "proceed_to_stage5": true,
               "remediation_confidence": 0.85,
-              "alert_category": "API",
-              "diagnostic_category": "API"
+              "alert_category": "APPLICATION",
+              "diagnostic_category": "APPLICATION"
             },
-            "completedAt": "2025-12-14T13:23:47.374Z",
+            "completedAt": "2025-12-16T11:36:55.148Z",
             "decision": true,
-            "primaryIssue": "Pod instability detected"
+            "primaryIssue": "Pod repeatedly crashes after starting"
           }
         },
         "decisions": {
           "stage5Proceed": {
-            "timestamp": "2025-12-14T13:23:47.374Z",
+            "timestamp": "2025-12-16T11:36:55.148Z",
             "shouldProceed": true,
             "remediationConfidence": 0.85,
             "confirmedIssuesCount": 1,
-            "primaryIssue": "Pod instability detected",
-            "diagnosticCategory": "API"
+            "primaryIssue": "Pod repeatedly crashes after starting",
+            "diagnosticCategory": "APPLICATION"
           }
         }
       },
       "_debug": {
         "nodeType": "Stage 4: Automated Diagnosis",
-        "processedAt": "2023-10-11T14:00:00.000Z",
-        "contextId": "ctx-1765718599269-mveauf",
+        "processedAt": "2023-10-15T10:29:18.000Z",
+        "contextId": "ctx-1765884958296-sowzfe",
         "contextPreserved": true,
         "receivedFromStage": "Fix Stage 3 Context",
         "priority": "normal",
-        "alertCategory": "API",
+        "alertCategory": "APPLICATION",
         "stageSequence": [
           "Unified Entry Point",
           "Stage 1: Health Snapshot",
@@ -303,29 +543,145 @@
         "diagnosticCommands": 3,
         "diagnosticCategories": [],
         "autoRemediationEnabled": true,
-        "categoryDiagnostics": "API",
+        "categoryDiagnostics": "APPLICATION",
         "timeRangeUsed": {
-          "start": 1765714999,
-          "end": 1765718599
+          "start": 1765881358,
+          "end": 1765884958
         }
       }
     },
     "_context": {
-      "contextId": "ctx-1765718599269-mveauf",
+      "contextId": "ctx-1765884958296-sowzfe",
       "initialParams": {
-        "startTime": 1765714999,
-        "endTime": 1765718599
+        "startTime": 1765881358,
+        "endTime": 1765884958
       },
       "stageResults": {
         "stage3": {
           "output": {
             "active_alerts": [
               {
-                "name": "No alerts",
-                "severity": "unknown",
-                "count": 0,
+                "name": "Watchdog",
+                "severity": "none",
+                "count": 1,
                 "duration": "unknown",
-                "labels": {},
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "Watchdog",
+                  "alertstate": "firing",
+                  "severity": "none"
+                },
+                "annotations": {},
+                "category": "UNKNOWN",
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50,
+                "correlations": []
+              },
+              {
+                "name": "InfoInhibitor",
+                "severity": "none",
+                "count": 6,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "InfoInhibitor",
+                  "alertstate": "firing",
+                  "container": "fluent-bit",
+                  "instance": "10.94.217.52:10250",
+                  "namespace": "bss-prod-eks-monitoring",
+                  "pod": "fluent-bit-wqw26",
+                  "service": "kube-prometheus-stack-kubelet",
+                  "severity": "none"
+                },
+                "annotations": {},
+                "category": "UNKNOWN",
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50,
+                "correlations": []
+              },
+              {
+                "name": "CPUThrottlingHigh",
+                "severity": "info",
+                "count": 5,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "CPUThrottlingHigh",
+                  "alertstate": "firing",
+                  "container": "fluent-bit",
+                  "instance": "10.94.157.160:10250",
+                  "namespace": "bss-prod-eks-monitoring",
+                  "pod": "fluent-bit-x4px6",
+                  "service": "kube-prometheus-stack-kubelet",
+                  "severity": "info"
+                },
+                "annotations": {},
+                "category": "UNKNOWN",
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50,
+                "correlations": []
+              },
+              {
+                "name": "TargetDown",
+                "severity": "info",
+                "count": 1,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "TargetDown",
+                  "alertstate": "firing",
+                  "job": "kubelet",
+                  "namespace": "kube-system",
+                  "service": "kube-prometheus-stack-bss-kubelet",
+                  "severity": "info"
+                },
+                "annotations": {},
+                "category": "UNKNOWN",
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50,
+                "correlations": []
+              },
+              {
+                "name": "KubeHpaMaxedOut",
+                "severity": "warning",
+                "count": 1,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "KubeHpaMaxedOut",
+                  "alertstate": "firing",
+                  "container": "kube-state-metrics",
+                  "endpoint": "http",
+                  "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+                  "instance": "10.94.145.151:8080",
+                  "job": "kube-state-metrics",
+                  "namespace": "em-control-plane-prod",
+                  "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+                  "service": "kube-prometheus-stack-kube-state-metrics",
+                  "severity": "warning"
+                },
+                "annotations": {},
+                "category": "UNKNOWN",
+                "kb_enriched": false,
+                "severity_score": 30,
+                "impact_score": 50,
+                "correlations": []
+              },
+              {
+                "name": "KubeCPUOvercommit",
+                "severity": "warning",
+                "count": 1,
+                "duration": "unknown",
+                "labels": {
+                  "__name__": "ALERTS",
+                  "alertname": "KubeCPUOvercommit",
+                  "alertstate": "firing",
+                  "severity": "warning"
+                },
                 "annotations": {},
                 "category": "UNKNOWN",
                 "kb_enriched": false,
@@ -336,18 +692,47 @@
             ],
             "alert_groups": [
               {
-                "root_alert": "none",
-                "related_alerts": [],
-                "correlation_score": 0,
-                "shared_labels": {}
+                "root_alert": "CPUThrottlingHigh",
+                "related_alerts": [
+                  "InfoInhibitor",
+                  "KubeCPUOvercommit"
+                ],
+                "correlation_score": 0.5,
+                "shared_labels": {
+                  "namespace": "bss-prod-eks-monitoring"
+                }
+              },
+              {
+                "root_alert": "Watchdog",
+                "related_alerts": [
+                  "InfoInhibitor",
+                  "CPUThrottlingHigh",
+                  "TargetDown",
+                  "KubeHpaMaxedOut",
+                  "KubeCPUOvercommit"
+                ],
+                "correlation_score": 0.7,
+                "category": "UNKNOWN",
+                "shared_labels": {
+                  "__name__": "ALERTS",
+                  "alertstate": "firing"
+                },
+                "impact_analysis": {
+                  "total_impact": 300,
+                  "max_severity": 30,
+                  "cascade_risk": 1
+                }
               }
             ],
             "knowledge_base_matches": [],
             "alert_patterns": {
-              "recurring": [],
+              "recurring": [
+                "CPUThrottlingHigh",
+                "InfoInhibitor"
+              ],
               "storm_detection": {
                 "detected": false,
-                "alert_count": 1,
+                "alert_count": 6,
                 "time_window": "5m",
                 "likely_root": null,
                 "storm_category": null
@@ -355,7 +740,7 @@
               "category_distribution": [
                 {
                   "category": "UNKNOWN",
-                  "count": 1,
+                  "count": 6,
                   "percentage": "100.0"
                 }
               ]
@@ -375,14 +760,59 @@
             },
             "recommended_alert_actions": [
               {
-                "alert": "none",
-                "action": "Monitor",
-                "confidence": 0,
-                "risk": "low",
-                "command": null
+                "alert": "KubeHpaMaxedOut",
+                "action": "Check HPA configuration",
+                "confidence": 0.9,
+                "risk": "medium",
+                "command": "kubectl describe hpa"
               },
               {
-                "alert": "No alerts",
+                "alert": "Watchdog",
+                "action": "Investigate alert",
+                "confidence": 0.3,
+                "risk": "medium",
+                "command": null,
+                "category": "UNKNOWN",
+                "priority": 50
+              },
+              {
+                "alert": "InfoInhibitor",
+                "action": "Investigate alert",
+                "confidence": 0.3,
+                "risk": "medium",
+                "command": null,
+                "category": "UNKNOWN",
+                "priority": 50
+              },
+              {
+                "alert": "CPUThrottlingHigh",
+                "action": "Investigate alert",
+                "confidence": 0.3,
+                "risk": "medium",
+                "command": null,
+                "category": "UNKNOWN",
+                "priority": 50
+              },
+              {
+                "alert": "TargetDown",
+                "action": "Investigate alert",
+                "confidence": 0.3,
+                "risk": "medium",
+                "command": null,
+                "category": "UNKNOWN",
+                "priority": 50
+              },
+              {
+                "alert": "KubeHpaMaxedOut",
+                "action": "Investigate alert",
+                "confidence": 0.3,
+                "risk": "medium",
+                "command": null,
+                "category": "UNKNOWN",
+                "priority": 50
+              },
+              {
+                "alert": "KubeCPUOvercommit",
                 "action": "Investigate alert",
                 "confidence": 0.3,
                 "risk": "medium",
@@ -393,51 +823,61 @@
             ],
             "proceed_to_stage4": true,
             "auto_remediation_approved": true,
-            "alert_category": "API"
+            "alert_category": "APPLICATION"
           },
-          "completedAt": "2025-12-14T13:23:43.900Z",
+          "completedAt": "2025-12-16T11:36:47.115Z",
           "decision": true,
           "kbEnhanced": true,
-          "alertCategory": "API",
-          "urgencyLevel": "BLOCKER",
+          "alertCategory": "APPLICATION",
+          "urgencyLevel": "CRITICAL",
           "kbEnhancedAlerts": 0
         },
         "stage4": {
           "output": {
             "diagnostics_executed": [
               {
-                "target": "",
-                "type": "pod",
+                "target": "infrastructure",
+                "type": "infrastructure",
                 "commands_run": [
-                  "kubectl describe pod  -n bss-prod-eks-monitoring",
-                  "kubectl logs  -n bss-prod-eks-monitoring --since=24h",
-                  "kubectl get events -n bss-prod-eks-monitoring --field-selector involvedObject.name="
+                  "KB Troubleshooting: kubectl logs [pod] --previous",
+                  "KB Troubleshooting: kubectl describe pod [pod]",
+                  "KB Troubleshooting: kubectl get events --field-selector involvedObject.name=[pod]"
                 ],
                 "findings": {
-                  "pod_status": {
-                    "phase": "",
-                    "restart_count": 0,
-                    "last_termination": {
-                      "reason": "OOMKilled",
-                      "exit_code": 137,
-                      "finished_at": "2025-12-14T13:23:19.000Z"
-                    }
+                  "infrastructure_status": {
+                    "component": "Unknown",
+                    "description": "Pod repeatedly crashes after starting",
+                    "category": "APPLICATION",
+                    "urgency": "CRITICAL"
+                  },
+                  "kb_evidence": {
+                    "common_causes": [
+                      "Application bugs",
+                      "Missing configs/secrets",
+                      "Resource limits exceeded",
+                      "Invalid probe settings"
+                    ],
+                    "immediate_actions": [
+                      "Rollback deployment",
+                      "Increase memory limits",
+                      "Fix probe configuration",
+                      "Check secret mounts"
+                    ],
+                    "expected_results": [
+                      "Logs show application errors",
+                      "RestartCount > 5",
+                      "OOMKilled/ExitCode in status",
+                      "FailedScheduling events"
+                    ]
                   },
                   "error_logs": [
                     {
-                      "timestamp": "2025-12-14T13:23:19.000Z",
-                      "level": "Error",
-                      "message": "Container killed due to memory limit",
+                      "timestamp": "2023-10-15T10:29:18.000Z",
+                      "level": "Critical",
+                      "message": "Pod repeatedly crashes after starting",
                       "stack_trace": null
                     }
-                  ],
-                  "events": [],
-                  "resource_usage": {
-                    "memory_request": "1Gi",
-                    "memory_limit": "2Gi",
-                    "memory_used": "",
-                    "cpu_used": ""
-                  }
+                  ]
                 }
               }
             ],
@@ -446,20 +886,24 @@
                 "name": "",
                 "version": "unknown",
                 "replicas": "unknown",
-                "last_update": "2025-12-14T13:23:19.000Z",
+                "last_update": "2023-10-15T10:29:18.000Z",
                 "update_strategy": "RollingUpdate"
               },
               "recent_changes": [
                 {
                   "type": "deployment",
-                  "time": "2025-12-14T13:23:19.000Z",
+                  "time": "2023-10-15T10:29:18.000Z",
                   "change": "Pod experiencing memory issues",
                   "user": "system"
                 }
               ],
               "dependencies": {
                 "upstream": [],
-                "downstream": "unknown-namespace",
+                "downstream": [
+                  "prometheus-kube-state-metrics",
+                  "kube-state-metrics",
+                  "domain-config-service"
+                ],
                 "databases": [],
                 "external": []
               },
@@ -474,62 +918,83 @@
             "diagnostic_summary": {
               "confirmed_issues": [
                 {
-                  "issue": "Pod instability detected",
-                  "evidence": "",
+                  "issue": "Pod repeatedly crashes after starting",
+                  "evidence": [
+                    "Application bugs",
+                    "Missing configs/secrets",
+                    "Resource limits exceeded",
+                    "Invalid probe settings"
+                  ],
                   "severity": "critical",
-                  "impact": "Service  is experiencing outages",
-                  "namespace": "bss-prod-eks-monitoring"
+                  "impact": "Infrastructure component: Pod repeatedly crashes after starting",
+                  "namespace": "infrastructure",
+                  "kb_guidance": [
+                    "Rollback deployment",
+                    "Increase memory limits",
+                    "Fix probe configuration",
+                    "Check secret mounts"
+                  ]
                 }
               ],
               "secondary_issues": []
             },
             "proceed_to_stage5": true,
             "remediation_confidence": 0.85,
-            "alert_category": "API",
-            "diagnostic_category": "API"
+            "alert_category": "APPLICATION",
+            "diagnostic_category": "APPLICATION"
           },
-          "completedAt": "2025-12-14T13:23:47.374Z",
+          "completedAt": "2025-12-16T11:36:55.148Z",
           "decision": true,
-          "primaryIssue": "Pod instability detected"
+          "primaryIssue": "Pod repeatedly crashes after starting"
         }
       }
     },
-    "contextId": "ctx-1765718599269-mveauf",
+    "contextId": "ctx-1765884958296-sowzfe",
     "stage4Data": {
       "diagnostics_executed": [
         {
-          "target": "",
-          "type": "pod",
+          "target": "infrastructure",
+          "type": "infrastructure",
           "commands_run": [
-            "kubectl describe pod  -n bss-prod-eks-monitoring",
-            "kubectl logs  -n bss-prod-eks-monitoring --since=24h",
-            "kubectl get events -n bss-prod-eks-monitoring --field-selector involvedObject.name="
+            "KB Troubleshooting: kubectl logs [pod] --previous",
+            "KB Troubleshooting: kubectl describe pod [pod]",
+            "KB Troubleshooting: kubectl get events --field-selector involvedObject.name=[pod]"
           ],
           "findings": {
-            "pod_status": {
-              "phase": "",
-              "restart_count": 0,
-              "last_termination": {
-                "reason": "OOMKilled",
-                "exit_code": 137,
-                "finished_at": "2025-12-14T13:23:19.000Z"
-              }
+            "infrastructure_status": {
+              "component": "Unknown",
+              "description": "Pod repeatedly crashes after starting",
+              "category": "APPLICATION",
+              "urgency": "CRITICAL"
+            },
+            "kb_evidence": {
+              "common_causes": [
+                "Application bugs",
+                "Missing configs/secrets",
+                "Resource limits exceeded",
+                "Invalid probe settings"
+              ],
+              "immediate_actions": [
+                "Rollback deployment",
+                "Increase memory limits",
+                "Fix probe configuration",
+                "Check secret mounts"
+              ],
+              "expected_results": [
+                "Logs show application errors",
+                "RestartCount > 5",
+                "OOMKilled/ExitCode in status",
+                "FailedScheduling events"
+              ]
             },
             "error_logs": [
               {
-                "timestamp": "2025-12-14T13:23:19.000Z",
-                "level": "Error",
-                "message": "Container killed due to memory limit",
+                "timestamp": "2023-10-15T10:29:18.000Z",
+                "level": "Critical",
+                "message": "Pod repeatedly crashes after starting",
                 "stack_trace": null
               }
-            ],
-            "events": [],
-            "resource_usage": {
-              "memory_request": "1Gi",
-              "memory_limit": "2Gi",
-              "memory_used": "",
-              "cpu_used": ""
-            }
+            ]
           }
         }
       ],
@@ -538,20 +1003,24 @@
           "name": "",
           "version": "unknown",
           "replicas": "unknown",
-          "last_update": "2025-12-14T13:23:19.000Z",
+          "last_update": "2023-10-15T10:29:18.000Z",
           "update_strategy": "RollingUpdate"
         },
         "recent_changes": [
           {
             "type": "deployment",
-            "time": "2025-12-14T13:23:19.000Z",
+            "time": "2023-10-15T10:29:18.000Z",
             "change": "Pod experiencing memory issues",
             "user": "system"
           }
         ],
         "dependencies": {
           "upstream": [],
-          "downstream": "unknown-namespace",
+          "downstream": [
+            "prometheus-kube-state-metrics",
+            "kube-state-metrics",
+            "domain-config-service"
+          ],
           "databases": [],
           "external": []
         },
@@ -566,22 +1035,44 @@
       "diagnostic_summary": {
         "confirmed_issues": [
           {
-            "issue": "Pod instability detected",
-            "evidence": "",
+            "issue": "Pod repeatedly crashes after starting",
+            "evidence": [
+              "Application bugs",
+              "Missing configs/secrets",
+              "Resource limits exceeded",
+              "Invalid probe settings"
+            ],
             "severity": "critical",
-            "impact": "Service  is experiencing outages",
-            "namespace": "bss-prod-eks-monitoring"
+            "impact": "Infrastructure component: Pod repeatedly crashes after starting",
+            "namespace": "infrastructure",
+            "kb_guidance": [
+              "Rollback deployment",
+              "Increase memory limits",
+              "Fix probe configuration",
+              "Check secret mounts"
+            ]
           }
         ],
         "secondary_issues": []
       },
       "confirmed_issues": [
         {
-          "issue": "Pod instability detected",
-          "evidence": "",
+          "issue": "Pod repeatedly crashes after starting",
+          "evidence": [
+            "Application bugs",
+            "Missing configs/secrets",
+            "Resource limits exceeded",
+            "Invalid probe settings"
+          ],
           "severity": "critical",
-          "impact": "Service  is experiencing outages",
-          "namespace": "bss-prod-eks-monitoring"
+          "impact": "Infrastructure component: Pod repeatedly crashes after starting",
+          "namespace": "infrastructure",
+          "kb_guidance": [
+            "Rollback deployment",
+            "Increase memory limits",
+            "Fix probe configuration",
+            "Check secret mounts"
+          ]
         }
       ],
       "secondary_issues": [],
@@ -589,14 +1080,25 @@
       "proceed_to_stage5": true,
       "kb_enhanced": false,
       "primary_diagnosis": {
-        "issue": "Pod instability detected",
-        "evidence": "",
+        "issue": "Pod repeatedly crashes after starting",
+        "evidence": [
+          "Application bugs",
+          "Missing configs/secrets",
+          "Resource limits exceeded",
+          "Invalid probe settings"
+        ],
         "severity": "critical",
-        "impact": "Service  is experiencing outages",
-        "namespace": "bss-prod-eks-monitoring"
+        "impact": "Infrastructure component: Pod repeatedly crashes after starting",
+        "namespace": "infrastructure",
+        "kb_guidance": [
+          "Rollback deployment",
+          "Increase memory limits",
+          "Fix probe configuration",
+          "Check secret mounts"
+        ]
       },
       "diagnostic_metadata": {
-        "category": "API",
+        "category": "APPLICATION",
         "total_commands": 3,
         "kb_commands": 0,
         "root_cause_commands": 0,
@@ -606,63 +1108,182 @@
     "stage1Data": {
       "overall_status": "critical",
       "alerts": {
-        "total": 0,
-        "critical": 0,
-        "warning": 0
+        "total": 1,
+        "critical": 1,
+        "warning": 0,
+        "top_alerts": [
+          "KubePodCrashLooping"
+        ]
       },
       "scores": {
-        "cluster_health": 0,
-        "node_availability": 0,
-        "pod_stability": 0,
-        "api_reliability": 0
+        "cluster_health": 50,
+        "node_availability": 100,
+        "pod_stability": 20,
+        "api_reliability": 100
       },
       "quick_findings": [
-        "No active alerts found in the namespace.",
-        "Cluster health check did not return any results, indicating potential API server unavailability."
+        "Pod domain-config-service-t3-645d68cbc8-4h88r is crash looping.",
+        "No other alerts detected in the same namespace.",
+        "Cluster health is degraded due to pod instability."
       ]
     },
     "stage2Data": {
       "root_cause": {
         "identified": false,
-        "component": "",
-        "issue": "",
-        "evidence": [],
-        "confidence": 0,
-        "category": "API",
-        "pattern_matched": null
+        "category": "APPLICATION"
       },
       "affected_services": [
-        "unknown-namespace"
+        "prometheus-kube-state-metrics",
+        "kube-state-metrics",
+        "domain-config-service"
       ],
       "critical_pods": [],
       "cascading_effects": {
         "hasCascadingFailures": false,
         "affectedComponents": [],
         "spreadPattern": "isolated",
-        "cascadeCategory": "API"
+        "cascadeCategory": "APPLICATION"
       },
       "correlation_matrix": {
-        "primary_chain": "unknown",
+        "primary_chain": "service",
         "affected_services": [
-          "unknown-namespace"
+          "prometheus-kube-state-metrics",
+          "kube-state-metrics",
+          "domain-config-service"
         ],
-        "blast_radius": "unknown",
+        "blast_radius": "service",
         "kubernetes_impact": {
           "evicted_pods": 0,
           "pending_pods": 0,
           "failed_schedules": 0
         }
       },
-      "alert_category": "API"
+      "alert_category": "APPLICATION"
     },
     "stage3Data": {
       "active_alerts": [
         {
-          "name": "No alerts",
-          "severity": "unknown",
-          "count": 0,
+          "name": "Watchdog",
+          "severity": "none",
+          "count": 1,
           "duration": "unknown",
-          "labels": {},
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "Watchdog",
+            "alertstate": "firing",
+            "severity": "none"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "InfoInhibitor",
+          "severity": "none",
+          "count": 6,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "InfoInhibitor",
+            "alertstate": "firing",
+            "container": "fluent-bit",
+            "instance": "10.94.217.52:10250",
+            "namespace": "bss-prod-eks-monitoring",
+            "pod": "fluent-bit-wqw26",
+            "service": "kube-prometheus-stack-kubelet",
+            "severity": "none"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "CPUThrottlingHigh",
+          "severity": "info",
+          "count": 5,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "CPUThrottlingHigh",
+            "alertstate": "firing",
+            "container": "fluent-bit",
+            "instance": "10.94.157.160:10250",
+            "namespace": "bss-prod-eks-monitoring",
+            "pod": "fluent-bit-x4px6",
+            "service": "kube-prometheus-stack-kubelet",
+            "severity": "info"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "TargetDown",
+          "severity": "info",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "TargetDown",
+            "alertstate": "firing",
+            "job": "kubelet",
+            "namespace": "kube-system",
+            "service": "kube-prometheus-stack-bss-kubelet",
+            "severity": "info"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "KubeHpaMaxedOut",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeHpaMaxedOut",
+            "alertstate": "firing",
+            "container": "kube-state-metrics",
+            "endpoint": "http",
+            "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+            "instance": "10.94.145.151:8080",
+            "job": "kube-state-metrics",
+            "namespace": "em-control-plane-prod",
+            "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+            "service": "kube-prometheus-stack-kube-state-metrics",
+            "severity": "warning"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "KubeCPUOvercommit",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeCPUOvercommit",
+            "alertstate": "firing",
+            "severity": "warning"
+          },
           "annotations": {},
           "category": "UNKNOWN",
           "kb_enriched": false,
@@ -673,10 +1294,36 @@
       ],
       "alert_groups": [
         {
-          "root_alert": "none",
-          "related_alerts": [],
-          "correlation_score": 0,
-          "shared_labels": {}
+          "root_alert": "CPUThrottlingHigh",
+          "related_alerts": [
+            "InfoInhibitor",
+            "KubeCPUOvercommit"
+          ],
+          "correlation_score": 0.5,
+          "shared_labels": {
+            "namespace": "bss-prod-eks-monitoring"
+          }
+        },
+        {
+          "root_alert": "Watchdog",
+          "related_alerts": [
+            "InfoInhibitor",
+            "CPUThrottlingHigh",
+            "TargetDown",
+            "KubeHpaMaxedOut",
+            "KubeCPUOvercommit"
+          ],
+          "correlation_score": 0.7,
+          "category": "UNKNOWN",
+          "shared_labels": {
+            "__name__": "ALERTS",
+            "alertstate": "firing"
+          },
+          "impact_analysis": {
+            "total_impact": 300,
+            "max_severity": 30,
+            "cascade_risk": 1
+          }
         }
       ],
       "knowledge_base_matches": [],
@@ -695,14 +1342,59 @@
       },
       "recommended_actions": [
         {
-          "alert": "none",
-          "action": "Monitor",
-          "confidence": 0,
-          "risk": "low",
-          "command": null
+          "alert": "KubeHpaMaxedOut",
+          "action": "Check HPA configuration",
+          "confidence": 0.9,
+          "risk": "medium",
+          "command": "kubectl describe hpa"
         },
         {
-          "alert": "No alerts",
+          "alert": "Watchdog",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "InfoInhibitor",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "CPUThrottlingHigh",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "TargetDown",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "KubeHpaMaxedOut",
+          "action": "Investigate alert",
+          "confidence": 0.3,
+          "risk": "medium",
+          "command": null,
+          "category": "UNKNOWN",
+          "priority": 50
+        },
+        {
+          "alert": "KubeCPUOvercommit",
           "action": "Investigate alert",
           "confidence": 0.3,
           "risk": "medium",
@@ -714,12 +1406,15 @@
       "auto_remediation_approved": true,
       "proceed_to_stage4": true,
       "kb_enriched_count": 0,
-      "alert_category": "API",
+      "alert_category": "APPLICATION",
       "alert_patterns": {
-        "recurring": [],
+        "recurring": [
+          "CPUThrottlingHigh",
+          "InfoInhibitor"
+        ],
         "storm_detection": {
           "detected": false,
-          "alert_count": 1,
+          "alert_count": 6,
           "time_window": "5m",
           "likely_root": null,
           "storm_category": null
@@ -727,19 +1422,19 @@
         "category_distribution": [
           {
             "category": "UNKNOWN",
-            "count": 1,
+            "count": 6,
             "percentage": "100.0"
           }
         ]
       },
       "correlation_analysis": {
-        "groups_found": 1,
+        "groups_found": 2,
         "storm_detected": false,
-        "primary_category": "API",
+        "primary_category": "APPLICATION",
         "category_distribution": [
           {
             "category": "UNKNOWN",
-            "count": 1,
+            "count": 6,
             "percentage": "100.0"
           }
         ]
@@ -747,26 +1442,139 @@
     },
     "consolidatedFindings": {
       "healthStatus": "critical",
-      "alertCount": 0,
+      "alertCount": 1,
       "rootCause": {
         "identified": false,
-        "component": "",
-        "issue": "",
-        "evidence": [],
-        "confidence": 0,
-        "category": "API",
-        "pattern_matched": null
+        "category": "APPLICATION"
       },
       "affectedServices": [
-        "unknown-namespace"
+        "prometheus-kube-state-metrics",
+        "kube-state-metrics",
+        "domain-config-service"
       ],
       "activeAlerts": [
         {
-          "name": "No alerts",
-          "severity": "unknown",
-          "count": 0,
+          "name": "Watchdog",
+          "severity": "none",
+          "count": 1,
           "duration": "unknown",
-          "labels": {},
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "Watchdog",
+            "alertstate": "firing",
+            "severity": "none"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "InfoInhibitor",
+          "severity": "none",
+          "count": 6,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "InfoInhibitor",
+            "alertstate": "firing",
+            "container": "fluent-bit",
+            "instance": "10.94.217.52:10250",
+            "namespace": "bss-prod-eks-monitoring",
+            "pod": "fluent-bit-wqw26",
+            "service": "kube-prometheus-stack-kubelet",
+            "severity": "none"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "CPUThrottlingHigh",
+          "severity": "info",
+          "count": 5,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "CPUThrottlingHigh",
+            "alertstate": "firing",
+            "container": "fluent-bit",
+            "instance": "10.94.157.160:10250",
+            "namespace": "bss-prod-eks-monitoring",
+            "pod": "fluent-bit-x4px6",
+            "service": "kube-prometheus-stack-kubelet",
+            "severity": "info"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "TargetDown",
+          "severity": "info",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "TargetDown",
+            "alertstate": "firing",
+            "job": "kubelet",
+            "namespace": "kube-system",
+            "service": "kube-prometheus-stack-bss-kubelet",
+            "severity": "info"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "KubeHpaMaxedOut",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeHpaMaxedOut",
+            "alertstate": "firing",
+            "container": "kube-state-metrics",
+            "endpoint": "http",
+            "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+            "instance": "10.94.145.151:8080",
+            "job": "kube-state-metrics",
+            "namespace": "em-control-plane-prod",
+            "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+            "service": "kube-prometheus-stack-kube-state-metrics",
+            "severity": "warning"
+          },
+          "annotations": {},
+          "category": "UNKNOWN",
+          "kb_enriched": false,
+          "severity_score": 30,
+          "impact_score": 50,
+          "correlations": []
+        },
+        {
+          "name": "KubeCPUOvercommit",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeCPUOvercommit",
+            "alertstate": "firing",
+            "severity": "warning"
+          },
           "annotations": {},
           "category": "UNKNOWN",
           "kb_enriched": false,
@@ -777,24 +1585,46 @@
       ],
       "confirmedIssues": [
         {
-          "issue": "Pod instability detected",
-          "evidence": "",
+          "issue": "Pod repeatedly crashes after starting",
+          "evidence": [
+            "Application bugs",
+            "Missing configs/secrets",
+            "Resource limits exceeded",
+            "Invalid probe settings"
+          ],
           "severity": "critical",
-          "impact": "Service  is experiencing outages",
-          "namespace": "bss-prod-eks-monitoring"
+          "impact": "Infrastructure component: Pod repeatedly crashes after starting",
+          "namespace": "infrastructure",
+          "kb_guidance": [
+            "Rollback deployment",
+            "Increase memory limits",
+            "Fix probe configuration",
+            "Check secret mounts"
+          ]
         }
       ],
       "primaryDiagnosis": {
-        "issue": "Pod instability detected",
-        "evidence": "",
+        "issue": "Pod repeatedly crashes after starting",
+        "evidence": [
+          "Application bugs",
+          "Missing configs/secrets",
+          "Resource limits exceeded",
+          "Invalid probe settings"
+        ],
         "severity": "critical",
-        "impact": "Service  is experiencing outages",
-        "namespace": "bss-prod-eks-monitoring"
+        "impact": "Infrastructure component: Pod repeatedly crashes after starting",
+        "namespace": "infrastructure",
+        "kb_guidance": [
+          "Rollback deployment",
+          "Increase memory limits",
+          "Fix probe configuration",
+          "Check secret mounts"
+        ]
       },
       "remediationConfidence": 0.85,
-      "alertCategory": "API",
+      "alertCategory": "APPLICATION",
       "diagnosticCoverage": {
-        "category": "API",
+        "category": "APPLICATION",
         "total_commands": 3,
         "kb_commands": 0,
         "root_cause_commands": 0,
@@ -802,14 +1632,25 @@
       }
     },
     "primaryDiagnosis": {
-      "issue": "Pod instability detected",
-      "evidence": "",
+      "issue": "Pod repeatedly crashes after starting",
+      "evidence": [
+        "Application bugs",
+        "Missing configs/secrets",
+        "Resource limits exceeded",
+        "Invalid probe settings"
+      ],
       "severity": "critical",
-      "impact": "Service  is experiencing outages",
-      "namespace": "bss-prod-eks-monitoring",
+      "impact": "Infrastructure component: Pod repeatedly crashes after starting",
+      "namespace": "infrastructure",
+      "kb_guidance": [
+        "Rollback deployment",
+        "Increase memory limits",
+        "Fix probe configuration",
+        "Check secret mounts"
+      ],
       "stage": "Stage 4",
-      "timestamp": "2025-12-14T13:23:47.377Z",
-      "category": "API"
+      "timestamp": "2025-12-16T11:36:55.153Z",
+      "category": "APPLICATION"
     },
     "namespaces": [
       "bstp-cms-global-production",
@@ -824,15 +1665,15 @@
       "em-prod"
     ],
     "timeRange": {
-      "start": 1765714999,
-      "end": 1765718599
+      "start": 1765881358,
+      "end": 1765884958
     },
     "alertCategoryAnalysis": {
-      "category": "API",
-      "diagnosticFocus": "general diagnostics",
-      "commandsAvailable": 0,
+      "category": "APPLICATION",
+      "diagnosticFocus": "application logs and configuration",
+      "commandsAvailable": 5,
       "rootCausePattern": "none",
-      "correlationGroups": 1
+      "correlationGroups": 2
     },
     "_debugInfo": {
       "fromNode": "Fix Stage 4 Context",
@@ -842,11 +1683,11 @@
       "stage4CommandsCount": 3,
       "stage4Decision": true,
       "remediationConfidence": 0.85,
-      "primaryIssue": "Pod instability detected",
-      "alertCategory": "API",
+      "primaryIssue": "Pod repeatedly crashes after starting",
+      "alertCategory": "APPLICATION",
       "diagnosticCategories": [],
       "allStagesDataPresent": true,
-      "timestamp": "2025-12-14T13:23:47.377Z"
+      "timestamp": "2025-12-16T11:36:55.154Z"
     }
   }
 ]

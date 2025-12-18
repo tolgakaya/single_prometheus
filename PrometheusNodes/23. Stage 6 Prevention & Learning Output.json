@@ -3,16 +3,18 @@
     "output": {
       "stage": "prevention_learning",
       "incident_summary": {
-        "id": "INC-ctx-1765718599269-mveauf",
+        "id": "INC-ctx-1765884958296-sowzfe",
         "title": "Kubernetes Cluster Issue",
-        "duration": "3600 ms",
+        "duration": "unknown",
         "severity": "critical",
         "services_affected": [
-          "bss-prod-eks-monitoring"
+          "prometheus-kube-state-metrics",
+          "kube-state-metrics",
+          "domain-config-service"
         ],
-        "customer_impact": "Service outages in critical namespace",
-        "root_cause": "Pod instability due to memory limits",
-        "resolution": "Rollback deployment and increase memory limits"
+        "customer_impact": "Limited impact",
+        "root_cause": "Pod repeatedly crashes after starting due to resource limits exceeded",
+        "resolution": "Remediation applied"
       },
       "prevention_actions": [
         {
@@ -27,7 +29,7 @@
         },
         {
           "type": "configuration",
-          "action": "Implement resource limits in all services",
+          "action": "Implement resource limits in all-services",
           "status": "planned"
         },
         {
@@ -37,32 +39,27 @@
         }
       ],
       "knowledge_base_update": {
-        "alert_name": "Pod instability detected",
+        "alert_name": "Watchdog",
         "kb_updated": true,
-        "entry_id": "KB-ctx-1765718599269-mveauf"
+        "entry_id": "KB-ctx-1765884958296-sowzfe"
       },
       "runbook_updates": [
         {
-          "runbook": "Kubernetes Troubleshooting",
-          "section": "Memory Issues",
-          "addition": "Context ctx-1765718599269-mveauf: Pod instability detected due to memory limits.",
-          "url": "https://runbooks.company.com/ctx-1765718599269-mveauf"
+          "runbook": "-troubleshooting",
+          "section": " Priority Issues",
+          "addition": "Context ctx-1765884958296-sowzfe: Pod repeatedly crashes after starting",
+          "url": "https://runbooks.company.com/ctx-1765884958296-sowzfe"
         }
       ],
       "team_recommendations": [
         {
           "team": "platform-team",
           "action": "Review and implement prevention actions for memory issues",
-          "priority": "high"
-        },
-        {
-          "team": "sre-team",
-          "action": "Update monitoring for memory usage",
           "priority": "medium"
         },
         {
-          "team": "development-team",
-          "action": "Review incident ctx-1765718599269-mveauf",
+          "team": "sre-team",
+          "action": "Review incident ctx-1765884958296-sowzfe",
           "priority": "low"
         }
       ],
@@ -70,7 +67,7 @@
         {
           "action": "Verify fix in next release cycle",
           "when": "Next release cycle",
-          "owner": "development-team",
+          "owner": "platform-team",
           "attendees": []
         },
         {
@@ -82,7 +79,7 @@
         {
           "action": "Post-mortem meeting",
           "when": "Within 1 week",
-          "owner": "platform-team",
+          "owner": "",
           "attendees": [
             "platform-team",
             "sre-team",
@@ -104,24 +101,32 @@
         "ready_for_next": true
       },
       "_context": {
-        "contextId": "ctx-1765718599269-mveauf",
-        "createdAt": "2025-12-14T13:24:05.037Z",
-        "priority": "high",
-        "forceDeepAnalysis": true
+        "contextId": "ctx-1765884958296-sowzfe",
+        "createdAt": "2025-12-16T11:37:26.498Z",
+        "priority": "critical",
+        "forceDeepAnalysis": false
       },
       "_debug": {
         "nodeType": "Stage 6: Prevention & Learning",
-        "processedAt": "2025-12-14T13:24:05.037Z",
-        "contextId": "ctx-1765718599269-mveauf",
+        "processedAt": "2025-12-16T11:37:26.498Z",
+        "contextId": "ctx-1765884958296-sowzfe",
         "contextPreserved": true,
         "receivedFromStage": "Stage 5: AI-Powered Analysis",
         "stageSequence": [
           "Unified Entry Point",
           "Stage 1: Health Snapshot",
+          "Fix Stage 1 Context",
+          "Stage 2 Decision",
+          "Force Deep Analysis Override",
+          "Wait 3s",
           "Stage 2: Deep Analysis",
+          "Fix Stage 2 Context",
           "Stage 3: Alert Intelligence",
+          "Fix Stage 3 Context",
           "Stage 4: Automated Diagnosis",
+          "Fix Stage 4 Context",
           "Stage 5: AI-Powered Analysis",
+          "Fix Stage 5 Context",
           "Stage 6: Prevention & Learning"
         ],
         "totalStagesExecuted": 6,

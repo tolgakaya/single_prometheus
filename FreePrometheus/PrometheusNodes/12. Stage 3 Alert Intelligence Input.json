@@ -1,0 +1,591 @@
+[
+  {
+    "output": {
+      "stage": "deep_analysis",
+      "investigation_id": "ctx-1766053223970-o67gn3tod-stage2",
+      "triggered_by": "Stage 1: 6 alerts",
+      "execution_phases": {
+        "instant": {
+          "tools_used": [
+            "Pod Status Check",
+            "Container Restarts",
+            "Pod Resource Usage",
+            "Node Resource Status",
+            "Node Conditions",
+            "Node Network Health",
+            "Kubernetes HPA Status",
+            "Kubernetes PVC Status",
+            "HTTP Error Rates",
+            "Application Metrics",
+            "Resource Exhaustion Prediction",
+            "Historical Comparison 24h"
+          ],
+          "duration": "<actual duration>",
+          "findings": {
+            "critical_pods": [
+              "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+              "bss-mc-asset-management-7f48bd88d-6k94j"
+            ],
+            "resource_pressure": [
+              "elasticsearch-data-0",
+              "elasticsearch-data-1"
+            ],
+            "workload_issues": [
+              "bss-mc-cpq-577799d466-xt99z",
+              "bss-mc-crm-customer-information-f5567dcc-2cx9g"
+            ],
+            "scaling_issues": [
+              "bss-mc-cpq",
+              "bss-mc-crm-ntf-integrator"
+            ]
+          }
+        },
+        "trend": {
+          "tools_used": [
+            "Historical Comparison 24h"
+          ],
+          "findings": {
+            "memory_growth": "Stable",
+            "restart_pattern": "Restarting every 2 hours",
+            "peak_times": [],
+            "pvc_growth": "Stable"
+          }
+        },
+        "anomaly": {
+          "tools_used": [
+            "Resource Exhaustion Prediction"
+          ],
+          "findings": {
+            "predictions": [],
+            "anomalies": []
+          }
+        }
+      },
+      "correlation_matrix": {
+        "primary_chain": "Pod restarts and memory pressure",
+        "affected_services": [
+          "bss-mc-pcm-product-offer-detail",
+          "bss-mc-asset-management"
+        ],
+        "blast_radius": "Limited to specific pods",
+        "kubernetes_impact": {
+          "evicted_pods": 0,
+          "pending_pods": 0,
+          "failed_schedules": 0
+        }
+      },
+      "root_cause": {
+        "identified": false,
+        "component": "bss-mc-pcm-product-offer-detail",
+        "issue": "Pod restarts and memory pressure",
+        "evidence": [
+          "Pod restarts observed",
+          "Memory usage stable"
+        ],
+        "confidence": 0.45
+      },
+      "proceed_to_stage3": true,
+      "alert_correlation_needed": true,
+      "_context": {
+        "contextId": "ctx-1766053223970-o67gn3tod",
+        "createdAt": "2025-12-18T10:20:23.970Z",
+        "source": {
+          "type": "manual",
+          "priority": "normal"
+        },
+        "initialParams": {
+          "startTime": 1766049623,
+          "endTime": 1766053223,
+          "namespaces": [
+            "bstp-cms-global-production",
+            "bstp-cms-prod-v3",
+            "em-global-prod-3pp",
+            "em-global-prod-eom",
+            "em-global-prod-flowe",
+            "em-global-prod",
+            "em-prod-3pp",
+            "em-prod-eom",
+            "em-prod-flowe",
+            "em-prod",
+            "etiyamobile-production",
+            "etiyamobile-prod"
+          ],
+          "services": [],
+          "focusAreas": [],
+          "analysisType": "general",
+          "context": {
+            "otherAgents": [],
+            "userIntent": "",
+            "expectedOutputFormat": "detailed"
+          }
+        },
+        "stageConfig": {
+          "maxStages": 1,
+          "enablePatternAnalysis": false,
+          "enableAnomalyDetection": false,
+          "enablePredictiveAnalysis": false,
+          "forceDeepAnalysis": false
+        },
+        "priority": "normal",
+        "forceDeepAnalysis": false,
+        "workflowMetadata": {
+          "workflowId": "ysMD5nc5K6RCPF0Q",
+          "executionId": "7182",
+          "orchestratorId": null,
+          "requestId": "req-1766053223970"
+        },
+        "stageResults": {
+          "stage1": {
+            "output": {
+              "overall_status": "degraded",
+              "alerts": {
+                "total": 6,
+                "critical": 0,
+                "warning": 2,
+                "top_alerts": [
+                  "KubeHpaMaxedOut",
+                  "KubeCPUOvercommit"
+                ]
+              },
+              "scores": {
+                "cluster_health": 5,
+                "node_availability": 5,
+                "pod_stability": 5,
+                "api_reliability": 1
+              },
+              "quick_findings": [],
+              "proceed_to_stage2": true
+            },
+            "completedAt": "2025-12-18T10:20:31.755Z",
+            "decision": true
+          },
+          "stage2": {
+            "output": {
+              "investigation_id": "ctx-1766053223970-o67gn3tod-stage2",
+              "triggered_by": "Stage 1: 6 alerts",
+              "execution_phases": {
+                "instant": {
+                  "tools_used": [
+                    "Pod Status Check",
+                    "Container Restarts",
+                    "Pod Resource Usage",
+                    "Node Resource Status",
+                    "Node Conditions",
+                    "Node Network Health",
+                    "Kubernetes HPA Status",
+                    "Kubernetes PVC Status",
+                    "HTTP Error Rates",
+                    "Application Metrics",
+                    "Resource Exhaustion Prediction",
+                    "Historical Comparison 24h"
+                  ],
+                  "duration": "<actual duration>",
+                  "findings": {
+                    "critical_pods": [
+                      "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+                      "bss-mc-asset-management-7f48bd88d-6k94j"
+                    ],
+                    "resource_pressure": [
+                      "elasticsearch-data-0",
+                      "elasticsearch-data-1"
+                    ],
+                    "workload_issues": [
+                      "bss-mc-cpq-577799d466-xt99z",
+                      "bss-mc-crm-customer-information-f5567dcc-2cx9g"
+                    ],
+                    "scaling_issues": [
+                      "bss-mc-cpq",
+                      "bss-mc-crm-ntf-integrator"
+                    ]
+                  }
+                },
+                "trend": {
+                  "tools_used": [
+                    "Historical Comparison 24h"
+                  ],
+                  "findings": {
+                    "memory_growth": "Stable",
+                    "restart_pattern": "Restarting every 2 hours",
+                    "peak_times": [],
+                    "pvc_growth": "Stable"
+                  }
+                },
+                "anomaly": {
+                  "tools_used": [
+                    "Resource Exhaustion Prediction"
+                  ],
+                  "findings": {
+                    "predictions": [],
+                    "anomalies": []
+                  }
+                }
+              },
+              "correlation_matrix": {
+                "primary_chain": "Pod restarts and memory pressure",
+                "affected_services": [
+                  "bss-mc-pcm-product-offer-detail",
+                  "bss-mc-asset-management"
+                ],
+                "blast_radius": "Limited to specific pods",
+                "kubernetes_impact": {
+                  "evicted_pods": 0,
+                  "pending_pods": 0,
+                  "failed_schedules": 0
+                }
+              },
+              "root_cause": {
+                "identified": false,
+                "component": "bss-mc-pcm-product-offer-detail",
+                "issue": "Pod restarts and memory pressure",
+                "evidence": [
+                  "Pod restarts observed",
+                  "Memory usage stable"
+                ],
+                "confidence": 0.45
+              },
+              "proceed_to_stage3": true,
+              "alert_correlation_needed": true
+            },
+            "completedAt": "2025-12-18T10:20:54.909Z",
+            "decision": true,
+            "rootCauseIdentified": false,
+            "confidence": 0.45
+          }
+        },
+        "decisions": {
+          "stage2Decision": {
+            "timestamp": "2025-12-18T10:20:31.755Z",
+            "shouldProceed": true,
+            "stage1Said": true,
+            "forcedDeep": false,
+            "forceSource": "none",
+            "reason": "Active alerts detected, indicating potential issues in the cluster."
+          },
+          "forceDeepAnalysisOverride": {
+            "timestamp": "2025-12-18T10:20:31.769Z",
+            "originalDecision": true,
+            "forceDeepAnalysis": false,
+            "overrideApplied": false,
+            "reason": null
+          },
+          "stage3Proceed": {
+            "timestamp": "2025-12-18T10:20:54.910Z",
+            "shouldProceed": true,
+            "alertCorrelationNeeded": true,
+            "rootCauseIdentified": false,
+            "confidence": 0.45
+          }
+        },
+        "debug": {
+          "contextVersion": "1.0",
+          "createdBy": "Unified Entry Point"
+        }
+      },
+      "_debug": {
+        "nodeType": "Stage 2: Deep Analysis",
+        "processedAt": "2025-12-18T10:20:54.909Z",
+        "contextId": "ctx-1766053223970-o67gn3tod",
+        "contextPreserved": true,
+        "receivedFromStage": "Force Deep Analysis Override",
+        "priority": "normal",
+        "stageSequence": [
+          "Unified Entry Point",
+          "Stage 1: Health Snapshot",
+          "Fix Stage 1 Context",
+          "Stage 2 Decision",
+          "Force Deep Analysis Override",
+          "Wait 3s",
+          "Stage 2: Deep Analysis",
+          "Fix Stage 2 Context"
+        ],
+        "timeRangeUsed": {
+          "start": 1766049623,
+          "end": 1766053223
+        }
+      }
+    },
+    "_context": {
+      "contextId": "ctx-1766053223970-o67gn3tod",
+      "createdAt": "2025-12-18T10:20:23.970Z",
+      "source": {
+        "type": "manual",
+        "priority": "normal"
+      },
+      "initialParams": {
+        "startTime": 1766049623,
+        "endTime": 1766053223,
+        "namespaces": [
+          "bstp-cms-global-production",
+          "bstp-cms-prod-v3",
+          "em-global-prod-3pp",
+          "em-global-prod-eom",
+          "em-global-prod-flowe",
+          "em-global-prod",
+          "em-prod-3pp",
+          "em-prod-eom",
+          "em-prod-flowe",
+          "em-prod",
+          "etiyamobile-production",
+          "etiyamobile-prod"
+        ],
+        "services": [],
+        "focusAreas": [],
+        "analysisType": "general",
+        "context": {
+          "otherAgents": [],
+          "userIntent": "",
+          "expectedOutputFormat": "detailed"
+        }
+      },
+      "stageConfig": {
+        "maxStages": 1,
+        "enablePatternAnalysis": false,
+        "enableAnomalyDetection": false,
+        "enablePredictiveAnalysis": false,
+        "forceDeepAnalysis": false
+      },
+      "priority": "normal",
+      "forceDeepAnalysis": false,
+      "workflowMetadata": {
+        "workflowId": "ysMD5nc5K6RCPF0Q",
+        "executionId": "7182",
+        "orchestratorId": null,
+        "requestId": "req-1766053223970"
+      },
+      "stageResults": {
+        "stage1": {
+          "output": {
+            "overall_status": "degraded",
+            "alerts": {
+              "total": 6,
+              "critical": 0,
+              "warning": 2,
+              "top_alerts": [
+                "KubeHpaMaxedOut",
+                "KubeCPUOvercommit"
+              ]
+            },
+            "scores": {
+              "cluster_health": 5,
+              "node_availability": 5,
+              "pod_stability": 5,
+              "api_reliability": 1
+            },
+            "quick_findings": [],
+            "proceed_to_stage2": true
+          },
+          "completedAt": "2025-12-18T10:20:31.755Z",
+          "decision": true
+        },
+        "stage2": {
+          "output": {
+            "investigation_id": "ctx-1766053223970-o67gn3tod-stage2",
+            "triggered_by": "Stage 1: 6 alerts",
+            "execution_phases": {
+              "instant": {
+                "tools_used": [
+                  "Pod Status Check",
+                  "Container Restarts",
+                  "Pod Resource Usage",
+                  "Node Resource Status",
+                  "Node Conditions",
+                  "Node Network Health",
+                  "Kubernetes HPA Status",
+                  "Kubernetes PVC Status",
+                  "HTTP Error Rates",
+                  "Application Metrics",
+                  "Resource Exhaustion Prediction",
+                  "Historical Comparison 24h"
+                ],
+                "duration": "<actual duration>",
+                "findings": {
+                  "critical_pods": [
+                    "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+                    "bss-mc-asset-management-7f48bd88d-6k94j"
+                  ],
+                  "resource_pressure": [
+                    "elasticsearch-data-0",
+                    "elasticsearch-data-1"
+                  ],
+                  "workload_issues": [
+                    "bss-mc-cpq-577799d466-xt99z",
+                    "bss-mc-crm-customer-information-f5567dcc-2cx9g"
+                  ],
+                  "scaling_issues": [
+                    "bss-mc-cpq",
+                    "bss-mc-crm-ntf-integrator"
+                  ]
+                }
+              },
+              "trend": {
+                "tools_used": [
+                  "Historical Comparison 24h"
+                ],
+                "findings": {
+                  "memory_growth": "Stable",
+                  "restart_pattern": "Restarting every 2 hours",
+                  "peak_times": [],
+                  "pvc_growth": "Stable"
+                }
+              },
+              "anomaly": {
+                "tools_used": [
+                  "Resource Exhaustion Prediction"
+                ],
+                "findings": {
+                  "predictions": [],
+                  "anomalies": []
+                }
+              }
+            },
+            "correlation_matrix": {
+              "primary_chain": "Pod restarts and memory pressure",
+              "affected_services": [
+                "bss-mc-pcm-product-offer-detail",
+                "bss-mc-asset-management"
+              ],
+              "blast_radius": "Limited to specific pods",
+              "kubernetes_impact": {
+                "evicted_pods": 0,
+                "pending_pods": 0,
+                "failed_schedules": 0
+              }
+            },
+            "root_cause": {
+              "identified": false,
+              "component": "bss-mc-pcm-product-offer-detail",
+              "issue": "Pod restarts and memory pressure",
+              "evidence": [
+                "Pod restarts observed",
+                "Memory usage stable"
+              ],
+              "confidence": 0.45
+            },
+            "proceed_to_stage3": true,
+            "alert_correlation_needed": true
+          },
+          "completedAt": "2025-12-18T10:20:54.909Z",
+          "decision": true,
+          "rootCauseIdentified": false,
+          "confidence": 0.45
+        }
+      },
+      "decisions": {
+        "stage2Decision": {
+          "timestamp": "2025-12-18T10:20:31.755Z",
+          "shouldProceed": true,
+          "stage1Said": true,
+          "forcedDeep": false,
+          "forceSource": "none",
+          "reason": "Active alerts detected, indicating potential issues in the cluster."
+        },
+        "forceDeepAnalysisOverride": {
+          "timestamp": "2025-12-18T10:20:31.769Z",
+          "originalDecision": true,
+          "forceDeepAnalysis": false,
+          "overrideApplied": false,
+          "reason": null
+        },
+        "stage3Proceed": {
+          "timestamp": "2025-12-18T10:20:54.910Z",
+          "shouldProceed": true,
+          "alertCorrelationNeeded": true,
+          "rootCauseIdentified": false,
+          "confidence": 0.45
+        }
+      },
+      "debug": {
+        "contextVersion": "1.0",
+        "createdBy": "Unified Entry Point"
+      }
+    },
+    "contextId": "ctx-1766053223970-o67gn3tod",
+    "stage1Data": {
+      "overall_status": "degraded",
+      "alerts": {
+        "total": 6,
+        "critical": 0,
+        "warning": 2,
+        "top_alerts": [
+          "KubeHpaMaxedOut",
+          "KubeCPUOvercommit"
+        ]
+      },
+      "scores": {
+        "cluster_health": 5,
+        "node_availability": 5,
+        "pod_stability": 5,
+        "api_reliability": 1
+      },
+      "quick_findings": [],
+      "services_analyzed": [],
+      "services_count": 0,
+      "namespaces_analyzed": []
+    },
+    "stage2Data": {
+      "investigation_id": "ctx-1766053223970-o67gn3tod-stage2",
+      "root_cause": {
+        "identified": false,
+        "component": "bss-mc-pcm-product-offer-detail",
+        "issue": "Pod restarts and memory pressure",
+        "evidence": [
+          "Pod restarts observed",
+          "Memory usage stable"
+        ],
+        "confidence": 0.45
+      },
+      "correlation_matrix": {
+        "primary_chain": "Pod restarts and memory pressure",
+        "affected_services": [
+          "bss-mc-pcm-product-offer-detail",
+          "bss-mc-asset-management"
+        ],
+        "blast_radius": "Limited to specific pods",
+        "kubernetes_impact": {
+          "evicted_pods": 0,
+          "pending_pods": 0,
+          "failed_schedules": 0
+        }
+      },
+      "critical_pods": [
+        "bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7",
+        "bss-mc-asset-management-7f48bd88d-6k94j"
+      ],
+      "affected_services": [
+        "bss-mc-pcm-product-offer-detail",
+        "bss-mc-asset-management"
+      ],
+      "proceed_to_stage3": true,
+      "alert_correlation_needed": true,
+      "confidence": 0.45
+    },
+    "namespaces": [
+      "bstp-cms-global-production",
+      "bstp-cms-prod-v3",
+      "em-global-prod-3pp",
+      "em-global-prod-eom",
+      "em-global-prod-flowe",
+      "em-global-prod",
+      "em-prod-3pp",
+      "em-prod-eom",
+      "em-prod-flowe",
+      "em-prod",
+      "etiyamobile-production",
+      "etiyamobile-prod"
+    ],
+    "timeRange": {
+      "start": 1766049623,
+      "end": 1766053223
+    },
+    "_debugInfo": {
+      "fromNode": "Fix Stage 2 Context",
+      "contextFixed": true,
+      "validationPassed": true,
+      "stage1DataSource": "found",
+      "stage2RootCause": "Pod restarts and memory pressure",
+      "stage2Decision": true,
+      "timestamp": "2025-12-18T10:20:54.910Z"
+    },
+    "outputProcessed": true
+  }
+]

@@ -4,47 +4,143 @@
       "stage": "alert_intelligence",
       "active_alerts": [
         {
-          "name": "No alerts",
-          "severity": "unknown",
-          "count": 0,
+          "name": "Watchdog",
+          "severity": "none",
+          "count": 1,
           "duration": "unknown",
-          "labels": {},
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "Watchdog",
+            "alertstate": "firing",
+            "severity": "none"
+          },
+          "annotations": {}
+        },
+        {
+          "name": "InfoInhibitor",
+          "severity": "none",
+          "count": 6,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "InfoInhibitor",
+            "alertstate": "firing",
+            "container": "fluent-bit",
+            "instance": "10.94.217.52:10250",
+            "namespace": "bss-prod-eks-monitoring",
+            "pod": "fluent-bit-wqw26",
+            "service": "kube-prometheus-stack-kubelet",
+            "severity": "none"
+          },
+          "annotations": {}
+        },
+        {
+          "name": "CPUThrottlingHigh",
+          "severity": "info",
+          "count": 5,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "CPUThrottlingHigh",
+            "alertstate": "firing",
+            "container": "fluent-bit",
+            "instance": "10.94.157.160:10250",
+            "namespace": "bss-prod-eks-monitoring",
+            "pod": "fluent-bit-x4px6",
+            "service": "kube-prometheus-stack-kubelet",
+            "severity": "info"
+          },
+          "annotations": {}
+        },
+        {
+          "name": "TargetDown",
+          "severity": "info",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "TargetDown",
+            "alertstate": "firing",
+            "job": "kubelet",
+            "namespace": "kube-system",
+            "service": "kube-prometheus-stack-bss-kubelet",
+            "severity": "info"
+          },
+          "annotations": {}
+        },
+        {
+          "name": "KubeHpaMaxedOut",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeHpaMaxedOut",
+            "alertstate": "firing",
+            "container": "kube-state-metrics",
+            "endpoint": "http",
+            "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+            "instance": "10.94.145.151:8080",
+            "job": "kube-state-metrics",
+            "namespace": "em-control-plane-prod",
+            "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+            "service": "kube-prometheus-stack-kube-state-metrics",
+            "severity": "warning"
+          },
+          "annotations": {}
+        },
+        {
+          "name": "KubeCPUOvercommit",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeCPUOvercommit",
+            "alertstate": "firing",
+            "severity": "warning"
+          },
           "annotations": {}
         }
       ],
       "alert_groups": [
         {
-          "root_alert": "none",
-          "related_alerts": [],
-          "correlation_score": 0,
-          "shared_labels": {}
+          "root_alert": "CPUThrottlingHigh",
+          "related_alerts": [
+            "InfoInhibitor",
+            "KubeCPUOvercommit"
+          ],
+          "correlation_score": 0.5,
+          "shared_labels": {
+            "namespace": "bss-prod-eks-monitoring"
+          }
         }
       ],
       "knowledge_base_matches": [
         {
-          "alert": "none",
+          "alert": "KubeHpaMaxedOut",
           "kb_entry": {
             "root_causes": [
-              "Based on alert type and previous incidents"
+              "HPA configuration issues"
             ],
             "diagnostic_commands": [
-              "kubectl describe",
-              "kubectl logs"
+              "kubectl describe hpa"
             ],
             "immediate_actions": [
-              "Check pod status",
-              "Review recent changes"
+              "Check HPA configuration"
             ],
             "long_term_solutions": [
-              "Update resource limits",
-              "Fix application code"
+              "Adjust HPA thresholds"
             ]
           },
-          "applicability_score": 0
+          "applicability_score": 0.8
         }
       ],
       "alert_patterns": {
-        "recurring": [],
+        "recurring": [
+          "CPUThrottlingHigh",
+          "InfoInhibitor"
+        ],
         "storm_detection": {
           "detected": false,
           "alert_count": 0,
@@ -67,37 +163,37 @@
       },
       "recommended_alert_actions": [
         {
-          "alert": "none",
-          "action": "Monitor",
-          "confidence": 0,
-          "risk": "low",
-          "command": null
+          "alert": "KubeHpaMaxedOut",
+          "action": "Check HPA configuration",
+          "confidence": 0.9,
+          "risk": "medium",
+          "command": "kubectl describe hpa"
         }
       ],
-      "proceed_to_stage4": false,
+      "proceed_to_stage4": true,
       "auto_remediation_approved": false,
       "_context": {
-        "contextId": "ctx-1765718599269-mveauf",
+        "contextId": "ctx-1765884958296-sowzfe",
         "initialParams": {
-          "startTime": 1765714999,
-          "endTime": 1765718599
+          "startTime": 1765881358,
+          "endTime": 1765884958
         }
       },
       "_debug": {
         "nodeType": "Stage 3: Alert Intelligence",
-        "processedAt": "2023-11-01T09:14:00.000Z",
-        "contextId": "ctx-1765718599269-mveauf",
+        "processedAt": "2023-11-15T06:56:34.000Z",
+        "contextId": "ctx-1765884958296-sowzfe",
         "contextPreserved": true,
         "receivedFromStage": "Fix Stage 2 Context",
         "stageSequence": [
           "Stage 3: Alert Intelligence"
         ],
         "timeRangeUsed": {
-          "start": 1765714999,
-          "end": 1765718599
+          "start": 1765881358,
+          "end": 1765884958
         },
         "sloToolErrors": [],
-        "toolCallCount": 2,
+        "toolCallCount": 5,
         "alertHistoryCallCount": 1
       }
     }

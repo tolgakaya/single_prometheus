@@ -1,15 +1,102 @@
 [
   {
-    "timestamp": "2025-12-17T08:45:52.006+03:00",
-    "Readable date": "December 17th 2025, 8:45:52 am",
-    "Readable time": "8:45:52 am",
-    "Day of week": "Wednesday",
-    "Year": "2025",
-    "Month": "December",
-    "Day of month": "17",
-    "Hour": "08",
-    "Minute": "45",
-    "Second": "52",
-    "Timezone": "Europe/Istanbul (UTC+03:00)"
+    "source": "direct",
+    "orchestratorId": null,
+    "requestId": "prom-1766053223959",
+    "timestamp": "2025-12-18T10:20:23.959Z",
+    "timeRange": {
+      "start": 1766049623,
+      "end": 1766053223,
+      "duration": 3600,
+      "humanReadable": {
+        "start": "2025-12-18T09:20:23.000Z",
+        "end": "2025-12-18T10:20:23.000Z",
+        "duration": "60 minutes"
+      }
+    },
+    "analysisConfig": {
+      "type": "metrics",
+      "priority": "normal",
+      "depth": "standard",
+      "forceDeepAnalysis": false,
+      "skipHealthGate": false
+    },
+    "searchParams": {
+      "cluster": "k8s-prod",
+      "namespaces": [
+        "bstp-cms-global-production",
+        "bstp-cms-prod-v3",
+        "em-global-prod-3pp",
+        "em-global-prod-eom",
+        "em-global-prod-flowe",
+        "em-global-prod",
+        "em-prod-3pp",
+        "em-prod-eom",
+        "em-prod-flowe",
+        "em-prod",
+        "etiyamobile-production",
+        "etiyamobile-prod"
+      ],
+      "services": [],
+      "nodes": [],
+      "pods": [],
+      "workloadTypes": [],
+      "metrics": [],
+      "alertTypes": [],
+      "resourceTypes": []
+    },
+    "features": {
+      "includeAlerts": true,
+      "includeKnowledgeBase": true,
+      "enableAutoRemediation": false,
+      "compareWithHistory": false,
+      "predictiveAnalysis": false,
+      "sloChecking": false,
+      "kubernetesHealth": true,
+      "applicationMetrics": true
+    },
+    "context": {
+      "otherAgents": [],
+      "userIntent": "",
+      "expectedOutputFormat": "detailed"
+    },
+    "analysisParams": {
+      "cluster": "k8s-prod",
+      "environment": "k8s-prod",
+      "namespaceFilter": "bstp-cms-global-production,bstp-cms-prod-v3,em-global-prod-3pp,em-global-prod-eom,em-global-prod-flowe,em-global-prod,em-prod-3pp,em-prod-eom,em-prod-flowe,em-prod,etiyamobile-production,etiyamobile-prod",
+      "timeRange": 3600,
+      "includeAlerts": true,
+      "includeKnowledgeBase": true,
+      "enableAutoRemediation": false,
+      "maxStages": 3,
+      "forceDeepAnalysis": false,
+      "skipHealthGate": false,
+      "analysisDepth": "standard",
+      "priority": "normal"
+    },
+    "_debug": {
+      "originalInput": "{\n  \"orchestratorInput\": {\n    \"requestId\": \"scheduled-1766053223-fv3xi2\",\n    \"orchestratorId\": \"scheduler-health-check-1766053223\",\n    \"timestamp\": \"2025-12-18T10:20:23.903Z\",\n    \"requestType\": \"scheduled_health_check\",\n    \"timeRange\": {\n      \"start\": 1766049623,\n      \"end\": 1766053223,\n      \"duration\": \"1h\"\n    },\n    \"context\": {\n      \"source\": {\n        \"type\": \"scheduler\",\n        \"trigger\": \"periodic_check\",\n        \"interval\": \"15m\"\n      },\n      \"namespaces\": [\n        \"bstp-cms-global-production\",\n        \"em-control-plane-prod\",\n        \"production\"\n      ],\n      \"cluster\": \"production-cluster\",\n      \"checkType\": \"comprehensive\"\n    },\n    \"metadata\": {\n      \"scheduler\": {\n        \"version\": \"1.0\",\n        \"nextRun\": \"2025-12-18T10:35:23.903Z\",\n        \"runNumber\": 1962281\n      },\n      \"source\": \"Scheduler Cluster Health Flow\",\n      \"automated\": true\n    },\n    \"priority\": \"normal\",\n    \"forceDeepAnalysis\": false\n  },\n  \"schedulerInfo\": {\n    \"triggeredAt\": \"2025-12-18T10:20:23.903Z\",\n    \"requestId\": \"scheduled-1766053223-fv3xi2\",\n    \"checkInterval\": \"15m\"\n  }\n}",
+      "processedAt": "2025-12-18T10:20:23.959Z",
+      "timeRangeInfo": "From 2025-12-18T09:20:23.000Z to 2025-12-18T10:20:23.000Z",
+      "servicesFound": [],
+      "namespacesFound": [
+        "bstp-cms-global-production",
+        "bstp-cms-prod-v3",
+        "em-global-prod-3pp",
+        "em-global-prod-eom",
+        "em-global-prod-flowe",
+        "em-global-prod",
+        "em-prod-3pp",
+        "em-prod-eom",
+        "em-prod-flowe",
+        "em-prod",
+        "etiyamobile-production",
+        "etiyamobile-prod"
+      ],
+      "metricsToCheck": [],
+      "analysisDepth": "standard",
+      "forceDeepAnalysis": false,
+      "priority": "normal"
+    }
   }
 ]

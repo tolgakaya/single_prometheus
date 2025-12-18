@@ -1,0 +1,138 @@
+[
+  {
+    "output": {
+      "stage": "alert_intelligence",
+      "active_alerts": [
+        {
+          "name": "KubeHpaMaxedOut",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeHpaMaxedOut",
+            "alertstate": "firing",
+            "container": "kube-state-metrics",
+            "endpoint": "http",
+            "horizontalpodautoscaler": "bss-tenant-control-plane-batch",
+            "instance": "10.94.145.151:8080",
+            "job": "kube-state-metrics",
+            "namespace": "em-control-plane-prod",
+            "pod": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf",
+            "service": "kube-prometheus-stack-kube-state-metrics",
+            "severity": "warning"
+          },
+          "annotations": {}
+        },
+        {
+          "name": "KubeCPUOvercommit",
+          "severity": "warning",
+          "count": 1,
+          "duration": "unknown",
+          "labels": {
+            "__name__": "ALERTS",
+            "alertname": "KubeCPUOvercommit",
+            "alertstate": "firing",
+            "severity": "warning"
+          },
+          "annotations": {}
+        }
+      ],
+      "alert_groups": [
+        {
+          "root_alert": "KubeHpaMaxedOut",
+          "related_alerts": [
+            "KubeCPUOvercommit"
+          ],
+          "correlation_score": 0.1,
+          "shared_labels": {}
+        }
+      ],
+      "knowledge_base_matches": [
+        {
+          "alert": "KubeHpaMaxedOut",
+          "kb_entry": {
+            "root_causes": [
+              "Based on alert type and previous incidents"
+            ],
+            "diagnostic_commands": [
+              "kubectl describe",
+              "kubectl logs"
+            ],
+            "immediate_actions": [
+              "Check pod status",
+              "Review recent changes"
+            ],
+            "long_term_solutions": [
+              "Update resource limits",
+              "Fix application code"
+            ]
+          },
+          "applicability_score": 0.3
+        },
+        {
+          "alert": "KubeCPUOvercommit",
+          "kb_entry": {
+            "root_causes": [
+              "Based on alert type and previous incidents"
+            ],
+            "diagnostic_commands": [
+              "kubectl describe",
+              "kubectl logs"
+            ],
+            "immediate_actions": [
+              "Check pod status",
+              "Review recent changes"
+            ],
+            "long_term_solutions": [
+              "Update resource limits",
+              "Fix application code"
+            ]
+          },
+          "applicability_score": 0.3
+        }
+      ],
+      "alert_patterns": {
+        "recurring": [],
+        "storm_detection": {
+          "detected": false,
+          "alert_count": 2,
+          "time_window": "5m",
+          "likely_root": null
+        }
+      },
+      "slo_impact": {
+        "availability_slo": {
+          "target": "99.9%",
+          "current": "100%",
+          "error_budget_used": "0%",
+          "time_remaining": "30d",
+          "status": "green",
+          "components": {
+            "deployment_health": "100%"
+          }
+        },
+        "affected_slis": []
+      },
+      "recommended_alert_actions": [
+        {
+          "alert": "KubeHpaMaxedOut",
+          "action": "Monitor",
+          "confidence": 0.5,
+          "risk": "medium",
+          "command": null
+        },
+        {
+          "alert": "KubeCPUOvercommit",
+          "action": "Monitor",
+          "confidence": 0.5,
+          "risk": "medium",
+          "command": null
+        }
+      ],
+      "proceed_to_stage4": true,
+      "auto_remediation_approved": false,
+      "correlation_confidence": 0.6
+    }
+  }
+]

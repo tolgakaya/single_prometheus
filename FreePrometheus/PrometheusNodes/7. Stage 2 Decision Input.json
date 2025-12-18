@@ -2,11 +2,11 @@
   {
     "output": {
       "stage": "health_snapshot",
-      "timestamp": "2023-11-16T09:53:44.321Z",
-      "overall_status": "unknown",
+      "timestamp": "2023-11-17T02:48:24.162Z",
+      "overall_status": "degraded",
       "proceed_to_stage2": true,
-      "urgency": "medium",
-      "reason": "Cluster health data is unavailable, but multiple alerts are active, indicating potential issues.",
+      "urgency": "high",
+      "reason": "Active alerts detected, indicating potential issues in the cluster.",
       "alerts": {
         "total": 6,
         "critical": 0,
@@ -17,26 +17,24 @@
         ]
       },
       "scores": {
-        "cluster_health": 3,
-        "node_availability": 3,
-        "pod_stability": 3,
-        "api_reliability": 3
+        "cluster_health": 5,
+        "node_availability": 5,
+        "pod_stability": 5,
+        "api_reliability": 1
       },
-      "quick_findings": [
-        "Multiple alerts active, including warnings for KubeHpaMaxedOut and KubeCPUOvercommit."
-      ],
+      "quick_findings": [],
       "forceDeepAnalysis": false,
       "overridden": false,
       "_context": {
-        "contextId": "ctx-1765950352039-izsx2rs4a",
-        "createdAt": "2025-12-17T05:45:52.039Z",
+        "contextId": "ctx-1766053223970-o67gn3tod",
+        "createdAt": "2025-12-18T10:20:23.970Z",
         "source": {
           "type": "manual",
           "priority": "normal"
         },
         "initialParams": {
-          "startTime": 1765946752,
-          "endTime": 1765950352,
+          "startTime": 1766049623,
+          "endTime": 1766053223,
           "namespaces": [
             "bstp-cms-global-production",
             "bstp-cms-prod-v3",
@@ -51,64 +49,14 @@
             "etiyamobile-production",
             "etiyamobile-prod"
           ],
-          "services": [
-            "bss-mc-crm-search-integrator",
-            "bss-mc-crm-customer-information",
-            "bss-mc-crm-customer-search",
-            "bss-mc-crm-mash-up",
-            "bss-mc-crm-ntf-integrator",
-            "bss-mc-activity",
-            "bss-mc-asset-management",
-            "bss-mc-cpq",
-            "bss-mc-cpq-batch",
-            "bss-mc-cpq-ntf-integrator",
-            "bss-mc-csr",
-            "bss-mc-domain-config",
-            "bss-mc-id-service",
-            "bss-mc-message-relay",
-            "bss-mc-ntf-engine",
-            "bss-mc-ntf-history",
-            "bss-mc-rim",
-            "bss-mc-ui-authz",
-            "bss-mc-user-management",
-            "bss-mc-wsc-new",
-            "bss-crm-batch",
-            "bss-ntf-batch",
-            "bss-mc-pcm-cfm",
-            "bss-mc-pcm-cms-integrator",
-            "bss-mc-pcm-product-catalog",
-            "bss-mc-pcm-product-offer-detail",
-            "bss-mc-pcm-next-gen-admintoolbox-config-manager",
-            "bss-mc-pcm-next-gen-admintoolbox-ui",
-            "eom-micro-flows",
-            "eom-operate",
-            "eom-scheduler",
-            "eom-ui",
-            "eom-activemqqueueoperations",
-            "eom-postgresqldboperations",
-            "eom-zeebe",
-            "eom-castlemock",
-            "bss-services-service",
-            "external-services-service",
-            "loyalty-services-service",
-            "om-services-service",
-            "fstp-bpmn-ms",
-            "fstp-configuration-ms",
-            "fstp-dashboard-ms",
-            "fstp-frontend",
-            "fstp-orchestra-ms",
-            "fstp-scheduler-ms",
-            "fstp-eca",
-            "eca",
-            "wso2am-gw-service",
-            "wso2am-cp-service",
-            "bss-saas-control-plane",
-            "bss-saas-control-plane-ui",
-            "bss-tenant-control-plane-batch"
-          ],
+          "services": [],
           "focusAreas": [],
           "analysisType": "general",
-          "context": {}
+          "context": {
+            "otherAgents": [],
+            "userIntent": "",
+            "expectedOutputFormat": "detailed"
+          }
         },
         "stageConfig": {
           "maxStages": 1,
@@ -121,14 +69,14 @@
         "forceDeepAnalysis": false,
         "workflowMetadata": {
           "workflowId": "ysMD5nc5K6RCPF0Q",
-          "executionId": "6662",
+          "executionId": "7182",
           "orchestratorId": null,
-          "requestId": "req-1765950352039"
+          "requestId": "req-1766053223970"
         },
         "stageResults": {
           "stage1": {
             "output": {
-              "overall_status": "unknown",
+              "overall_status": "degraded",
               "alerts": {
                 "total": 6,
                 "critical": 0,
@@ -139,23 +87,21 @@
                 ]
               },
               "scores": {
-                "cluster_health": 3,
-                "node_availability": 3,
-                "pod_stability": 3,
-                "api_reliability": 3
+                "cluster_health": 5,
+                "node_availability": 5,
+                "pod_stability": 5,
+                "api_reliability": 1
               },
-              "quick_findings": [
-                "Multiple alerts active, including warnings for KubeHpaMaxedOut and KubeCPUOvercommit."
-              ],
+              "quick_findings": [],
               "proceed_to_stage2": true,
-              "urgency": "medium",
-              "reason": "Cluster health data is unavailable, but multiple alerts are active, indicating potential issues.",
+              "urgency": "high",
+              "reason": "Active alerts detected, indicating potential issues in the cluster.",
               "forceDeepAnalysis": false,
               "overridden": false
             },
-            "completedAt": "2023-11-16T09:53:44.321Z",
+            "completedAt": "2023-11-17T02:48:24.162Z",
             "decision": true,
-            "status": "unknown",
+            "status": "degraded",
             "alerts": 6
           }
         },
@@ -167,20 +113,20 @@
       },
       "_debug": {
         "nodeType": "Stage 1: Health Snapshot",
-        "processedAt": "2023-11-16T09:53:44.321Z",
-        "contextId": "ctx-1765950352039-izsx2rs4a"
+        "processedAt": "2023-11-17T02:48:24.162Z",
+        "contextId": "ctx-1766053223970-o67gn3tod"
       }
     },
     "_context": {
-      "contextId": "ctx-1765950352039-izsx2rs4a",
-      "createdAt": "2025-12-17T05:45:52.039Z",
+      "contextId": "ctx-1766053223970-o67gn3tod",
+      "createdAt": "2025-12-18T10:20:23.970Z",
       "source": {
         "type": "manual",
         "priority": "normal"
       },
       "initialParams": {
-        "startTime": 1765946752,
-        "endTime": 1765950352,
+        "startTime": 1766049623,
+        "endTime": 1766053223,
         "namespaces": [
           "bstp-cms-global-production",
           "bstp-cms-prod-v3",
@@ -195,64 +141,14 @@
           "etiyamobile-production",
           "etiyamobile-prod"
         ],
-        "services": [
-          "bss-mc-crm-search-integrator",
-          "bss-mc-crm-customer-information",
-          "bss-mc-crm-customer-search",
-          "bss-mc-crm-mash-up",
-          "bss-mc-crm-ntf-integrator",
-          "bss-mc-activity",
-          "bss-mc-asset-management",
-          "bss-mc-cpq",
-          "bss-mc-cpq-batch",
-          "bss-mc-cpq-ntf-integrator",
-          "bss-mc-csr",
-          "bss-mc-domain-config",
-          "bss-mc-id-service",
-          "bss-mc-message-relay",
-          "bss-mc-ntf-engine",
-          "bss-mc-ntf-history",
-          "bss-mc-rim",
-          "bss-mc-ui-authz",
-          "bss-mc-user-management",
-          "bss-mc-wsc-new",
-          "bss-crm-batch",
-          "bss-ntf-batch",
-          "bss-mc-pcm-cfm",
-          "bss-mc-pcm-cms-integrator",
-          "bss-mc-pcm-product-catalog",
-          "bss-mc-pcm-product-offer-detail",
-          "bss-mc-pcm-next-gen-admintoolbox-config-manager",
-          "bss-mc-pcm-next-gen-admintoolbox-ui",
-          "eom-micro-flows",
-          "eom-operate",
-          "eom-scheduler",
-          "eom-ui",
-          "eom-activemqqueueoperations",
-          "eom-postgresqldboperations",
-          "eom-zeebe",
-          "eom-castlemock",
-          "bss-services-service",
-          "external-services-service",
-          "loyalty-services-service",
-          "om-services-service",
-          "fstp-bpmn-ms",
-          "fstp-configuration-ms",
-          "fstp-dashboard-ms",
-          "fstp-frontend",
-          "fstp-orchestra-ms",
-          "fstp-scheduler-ms",
-          "fstp-eca",
-          "eca",
-          "wso2am-gw-service",
-          "wso2am-cp-service",
-          "bss-saas-control-plane",
-          "bss-saas-control-plane-ui",
-          "bss-tenant-control-plane-batch"
-        ],
+        "services": [],
         "focusAreas": [],
         "analysisType": "general",
-        "context": {}
+        "context": {
+          "otherAgents": [],
+          "userIntent": "",
+          "expectedOutputFormat": "detailed"
+        }
       },
       "stageConfig": {
         "maxStages": 1,
@@ -265,14 +161,14 @@
       "forceDeepAnalysis": false,
       "workflowMetadata": {
         "workflowId": "ysMD5nc5K6RCPF0Q",
-        "executionId": "6662",
+        "executionId": "7182",
         "orchestratorId": null,
-        "requestId": "req-1765950352039"
+        "requestId": "req-1766053223970"
       },
       "stageResults": {
         "stage1": {
           "output": {
-            "overall_status": "unknown",
+            "overall_status": "degraded",
             "alerts": {
               "total": 6,
               "critical": 0,
@@ -283,23 +179,21 @@
               ]
             },
             "scores": {
-              "cluster_health": 3,
-              "node_availability": 3,
-              "pod_stability": 3,
-              "api_reliability": 3
+              "cluster_health": 5,
+              "node_availability": 5,
+              "pod_stability": 5,
+              "api_reliability": 1
             },
-            "quick_findings": [
-              "Multiple alerts active, including warnings for KubeHpaMaxedOut and KubeCPUOvercommit."
-            ],
+            "quick_findings": [],
             "proceed_to_stage2": true,
-            "urgency": "medium",
-            "reason": "Cluster health data is unavailable, but multiple alerts are active, indicating potential issues.",
+            "urgency": "high",
+            "reason": "Active alerts detected, indicating potential issues in the cluster.",
             "forceDeepAnalysis": false,
             "overridden": false
           },
-          "completedAt": "2023-11-16T09:53:44.321Z",
+          "completedAt": "2023-11-17T02:48:24.162Z",
           "decision": true,
-          "status": "unknown",
+          "status": "degraded",
           "alerts": 6
         }
       },
@@ -309,11 +203,11 @@
         "createdBy": "Unified Entry Point"
       }
     },
-    "contextId": "ctx-1765950352039-izsx2rs4a",
+    "contextId": "ctx-1766053223970-o67gn3tod",
     "_contextFixed": true,
-    "_fixedAt": "2025-12-17T05:45:59.822Z",
+    "_fixedAt": "2025-12-18T10:20:31.742Z",
     "stage1Data": {
-      "overall_status": "unknown",
+      "overall_status": "degraded",
       "alerts": {
         "total": 6,
         "critical": 0,
@@ -324,29 +218,27 @@
         ]
       },
       "scores": {
-        "cluster_health": 3,
-        "node_availability": 3,
-        "pod_stability": 3,
-        "api_reliability": 3
+        "cluster_health": 5,
+        "node_availability": 5,
+        "pod_stability": 5,
+        "api_reliability": 1
       },
-      "quick_findings": [
-        "Multiple alerts active, including warnings for KubeHpaMaxedOut and KubeCPUOvercommit."
-      ],
+      "quick_findings": [],
       "services_analyzed": [],
       "services_count": 0,
       "namespaces_analyzed": [],
       "proceed_to_stage2": true,
-      "urgency": "medium",
-      "reason": "Cluster health data is unavailable, but multiple alerts are active, indicating potential issues."
+      "urgency": "high",
+      "reason": "Active alerts detected, indicating potential issues in the cluster."
     },
     "_debugInfo": {
       "fromNode": "Fix Stage 1 Context",
       "contextFixed": true,
       "originalHadTemplates": false,
       "stage1Decision": true,
-      "stage1Status": "unknown",
+      "stage1Status": "degraded",
       "stage1Alerts": 6,
-      "timestamp": "2025-12-17T05:45:59.822Z"
+      "timestamp": "2025-12-18T10:20:31.742Z"
     }
   }
 ]
