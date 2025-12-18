@@ -2,8 +2,21 @@
 
 ## 🎯 EXECUTE 3 TOOLS:
 1. Cascade Timeline Reconstructor
-2. Error Pattern Analyzer  
+2. Error Pattern Analyzer
 3. Service Error Distribution OR Thread Correlation
+
+## 🔧 IMPORTANT: USE ACTUAL DATA FROM TOOLS
+You MUST use the actual data returned by the Loki query tools. Do NOT use predefined examples or mock data.
+Always base your analysis on:
+1. Real error messages from the logs
+2. Actual service names found in the data
+3. Real timestamps and cascade patterns from the tools
+4. Actual thread correlations and error distributions
+
+If a tool returns NO data or EMPTY results:
+- State explicitly "No patterns found in time range"
+- Set pattern arrays to empty with explanation
+- Do NOT fabricate example cascades or correlations
 
 ## 📊 CONTEXT:
 {{$json.timeRange.startISO}}-{{$json.timeRange.endISO}} ({{$json.timeRange.durationHuman}})
@@ -61,7 +74,20 @@ FALSE: random errors|<10% affected|no patterns|confidence<0.5
   "confidence_score": 0.0
 }
 
-Execute tools→Analyze→Fill JSON→Return
+## ✅ TOOL EXECUTION VERIFICATION
+After executing EACH of the 3 required tools, verify:
+1. Tool returned data (not empty array, not null, not error)
+2. Data structure matches expected format (has 'data' field with 'result' array)
+3. If tool returns empty/null, explicitly state in output: "Tool [name] returned no data"
+4. Include ALL executed tools in tools_executed array in final JSON
+
+CRITICAL Tool Execution Requirements:
+- AT LEAST 3 tools MUST be executed (Cascade Timeline, Error Pattern, Service Distribution OR Thread Correlation)
+- Each tool must be verified before using its data
+- If a tool fails: document in confidence_score explanation, continue with other tools
+- Do NOT fabricate patterns/cascades to compensate for missing tool data
+
+Execute tools→Verify each→Analyze patterns→Return JSON
 
 !!! IMPORTANT
-You should wait for 10 seconds after using a tool to go on another tool
+You should wait for 3 seconds after using a tool to go on another tool

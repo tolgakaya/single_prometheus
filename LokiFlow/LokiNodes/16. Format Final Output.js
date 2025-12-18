@@ -1,12 +1,27 @@
-// Enhanced Format Final Output - COMPLETE VERSION
-const stage1Result = $input.first().json.stage1 || $input.first().json;
-const stage2Result = $input.first().json.stage2 || null;
-const stage3Result = $input.first().json.stage3 || null;
-const cascadeData = $input.first().json.cascadeAnalysis || null;
-const timeContext = $input.first().json;
+// Enhanced Format Final Output - Standardized Structure Version
+const inputData = $input.first().json;
 
-const timeRange = timeContext.timeRange || {};
-const context = timeContext.context || {};
+console.log("=== FORMAT FINAL OUTPUT (Standardized Structure) ===");
+
+// Read from standardized structure (with legacy fallbacks)
+const metadata = inputData.metadata || {};
+const context = inputData.context || inputData;
+const timeRange = context.timeRange || inputData.timeRange || {};
+const stageResults = inputData.stageResults || {};
+const enrichments = inputData.enrichments || {};
+
+// Get stage results from standardized location
+const stage1Result = stageResults.stage1 || inputData.stage1 || inputData;
+const stage2Result = stageResults.stage2 || inputData.stage2 || null;
+const stage3Result = stageResults.stage3 || inputData.stage3 || null;
+const cascadeData = enrichments.cascadeAnalysis || inputData.cascadeAnalysis || null;
+
+console.log("Stage results:", {
+  hasStage1: !!stage1Result,
+  hasStage2: !!stage2Result,
+  hasStage3: !!stage3Result,
+  hasCascade: !!cascadeData
+});
 
 // Calculate execution time properly
 const startTime = $execution.startedAt ? new Date($execution.startedAt).getTime() : Date.now();
@@ -16,15 +31,15 @@ const finalOutput = {
   analysisComplete: true,
   timestamp: new Date().toISOString(),
   workflowExecutionId: $execution.id,
-  analysisId: timeContext.analysisId || 'unknown',
+  analysisId: metadata.analysisId || inputData.analysisId || 'unknown',
   analysisDepth: stage3Result ? "deep" : stage2Result ? "pattern" : "quick",
-  
+
   timeContext: {
     requestedRange: {
       start: timeRange.startISO || 'N/A',
       end: timeRange.endISO || 'N/A',
       duration: timeRange.durationHuman || 'N/A',
-      source: context.source || 'unknown'
+      source: metadata.source || context.source || 'unknown'
     }
   },
   

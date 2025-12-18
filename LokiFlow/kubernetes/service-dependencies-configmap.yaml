@@ -1,0 +1,235 @@
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: lokiflow-service-dependencies
+  namespace: monitoring
+  labels:
+    app: lokiflow
+    component: service-dependencies
+    version: v1.0.0
+  annotations:
+    description: "Service dependency graph for LokiFlow cascade failure detection"
+    last-updated: "2025-12-19"
+    maintainer: "platform-team"
+data:
+  # Service dependency graph
+  # Format: service -> list of services it depends on
+  dependencies.json: |
+    {
+      "cpq-ntf-integrator-service": {
+        "dependencies": ["domain-config-service", "ntf-engine-service", "ntf-history-service", "crm-customer-information", "bss-mc-ntf-engine-t4"],
+        "criticality": "high"
+      },
+      "ntf-batch-service": {
+        "dependencies": ["domain-config-service", "ntf-engine-service"],
+        "criticality": "medium"
+      },
+      "activity": {
+        "dependencies": ["domain-config-service"],
+        "criticality": "medium"
+      },
+      "ui-authz-mc-backend": {
+        "dependencies": ["domain-config-service"],
+        "criticality": "high"
+      },
+      "crm-ntf-integrator-service": {
+        "dependencies": ["domain-config-service", "ntf-engine-service", "crm-customer-information", "search-integrator-mc-backend"],
+        "criticality": "high"
+      },
+      "search-integrator-mc-backend": {
+        "dependencies": ["crm-customer-information"],
+        "criticality": "medium"
+      },
+      "crm-customer-information": {
+        "dependencies": ["crm-asset", "domain-config-service", "bstp-pcm-product-catalog", "eca-t4", "bss-services-service.etiyamobile-production-eom", "bss-mc-domain-config-t4", "bss-mc-asset-management-t4", "bss-mc-ntf-engine-t4", "bss-mc-crm-customer-information-t4", "bss-mc-pcm-product-catalog-t4"],
+        "criticality": "critical"
+      },
+      "crm-mash-up": {
+        "dependencies": ["crm-customer-information", "cpq-ordercapture", "bstp-pcm-product-catalog", "bstp-pcm-product-offer-detail", "bss-mc-cpq-t4", "bss-mc-crm-customer-information-t4", "bss-mc-asset-management-t4", "customer-search-mc-backend", "bss-mc-pcm-product-catalog-t4"],
+        "criticality": "critical"
+      },
+      "bstp-pcm-product-catalog": {
+        "dependencies": ["domain-config-service"],
+        "criticality": "high"
+      },
+      "cpq-ordercapture": {
+        "dependencies": ["bstp-pcm-product-catalog", "bstp-pcm-product-offer-detail", "domain-config-service", "activity"],
+        "criticality": "high"
+      },
+      "bstp-pcm-product-offer-detail": {
+        "dependencies": ["crm-asset"],
+        "criticality": "medium"
+      },
+      "ntf-engine-service": {
+        "dependencies": ["ntf-history-service", "bss-services-service.etiyamobile-production-eom", "bss-mc-domain-config-t4"],
+        "criticality": "critical"
+      },
+      "domain-config-service": {
+        "dependencies": ["ntf-engine-service", "ntf-history-service", "bss-mc-ntf-engine-t4"],
+        "criticality": "critical"
+      },
+      "ntf-history-service": {
+        "dependencies": [],
+        "criticality": "high"
+      },
+      "crm-asset": {
+        "dependencies": [],
+        "criticality": "medium"
+      },
+      "bstp-cpq-batch": {
+        "dependencies": ["bss-mc-domain-config-t4", "eca-t4"],
+        "criticality": "medium"
+      },
+      "bstp-id-service": {
+        "dependencies": [],
+        "criticality": "high"
+      },
+      "em-b2c-wsc-new-ui": {
+        "dependencies": ["eca-t4"],
+        "criticality": "medium"
+      },
+      "APIGateway": {
+        "dependencies": ["crm-mash-up", "crm-customer-information", "cpq-ordercapture"],
+        "criticality": "critical"
+      },
+      "bss-services-service.etiyamobile-production-eom": {
+        "dependencies": [],
+        "criticality": "high"
+      },
+      "eca-t4": {
+        "dependencies": [],
+        "criticality": "high"
+      },
+      "bss-mc-domain-config-t4": {
+        "dependencies": ["eca-t4"],
+        "criticality": "high"
+      },
+      "bss-mc-cpq-t4": {
+        "dependencies": [],
+        "criticality": "medium"
+      },
+      "bss-mc-crm-customer-information-t4": {
+        "dependencies": [],
+        "criticality": "medium"
+      },
+      "bss-mc-ntf-engine-t4": {
+        "dependencies": [],
+        "criticality": "high"
+      },
+      "bss-mc-pcm-product-catalog-t4": {
+        "dependencies": [],
+        "criticality": "medium"
+      },
+      "bss-mc-asset-management-t4": {
+        "dependencies": [],
+        "criticality": "medium"
+      },
+      "customer-search-mc-backend": {
+        "dependencies": [],
+        "criticality": "medium"
+      }
+    }
+
+  # Service groups for categorization
+  service-groups.json: |
+    {
+      "cpq": ["cpq-ntf-integrator-service", "cpq-ordercapture", "bstp-cpq-batch", "bss-mc-cpq-t4"],
+      "crm": ["crm-customer-information", "crm-mash-up", "crm-asset", "crm-ntf-integrator-service", "bss-mc-crm-customer-information-t4"],
+      "ntf": ["ntf-engine-service", "ntf-batch-service", "ntf-history-service", "bss-mc-ntf-engine-t4"],
+      "pcm": ["bstp-pcm-product-catalog", "bstp-pcm-product-offer-detail", "bss-mc-pcm-product-catalog-t4"],
+      "config": ["domain-config-service", "bss-mc-domain-config-t4"],
+      "gateway": ["APIGateway"],
+      "search": ["search-integrator-mc-backend", "customer-search-mc-backend"],
+      "asset": ["crm-asset", "bss-mc-asset-management-t4"],
+      "ui": ["ui-authz-mc-backend", "em-b2c-wsc-new-ui"],
+      "identity": ["bstp-id-service"],
+      "external": ["bss-services-service.etiyamobile-production-eom", "eca-t4"]
+    }
+
+  # Namespace mappings - which services are in which namespaces
+  namespace-mappings.json: |
+    {
+      "bstp-cms-global-production": ["cpq-ntf-integrator-service", "cpq-ordercapture", "bstp-cpq-batch", "bstp-pcm-product-catalog", "bstp-pcm-product-offer-detail", "bstp-id-service"],
+      "bstp-cms-prod-v3": ["cpq-ntf-integrator-service", "cpq-ordercapture", "bstp-cpq-batch"],
+      "em-global-prod-3pp": ["APIGateway", "crm-mash-up", "crm-customer-information"],
+      "em-global-prod-eom": ["ntf-engine-service", "ntf-batch-service", "ntf-history-service", "bss-services-service.etiyamobile-production-eom"],
+      "em-global-prod-flowe": ["domain-config-service", "activity"],
+      "em-global-prod": ["crm-ntf-integrator-service", "search-integrator-mc-backend", "customer-search-mc-backend"],
+      "em-prod-3pp": ["APIGateway", "crm-mash-up"],
+      "em-prod-eom": ["ntf-engine-service", "ntf-batch-service"],
+      "em-prod-flowe": ["domain-config-service"],
+      "em-prod": ["crm-customer-information", "crm-asset"],
+      "etiyamobile-production": ["ui-authz-mc-backend", "em-b2c-wsc-new-ui"],
+      "etiyamobile-prod": ["bss-mc-domain-config-t4", "bss-mc-cpq-t4", "bss-mc-crm-customer-information-t4", "bss-mc-ntf-engine-t4", "bss-mc-pcm-product-catalog-t4", "bss-mc-asset-management-t4", "eca-t4"]
+    }
+
+  # Criticality levels explanation
+  criticality-levels.txt: |
+    CRITICAL: Service failure causes immediate system-wide impact
+      - APIGateway: Entry point for all requests
+      - crm-customer-information: Core customer data service
+      - crm-mash-up: Critical aggregation layer
+      - ntf-engine-service: Core notification engine
+      - domain-config-service: Configuration for all services
+
+    HIGH: Service failure causes significant feature degradation
+      - cpq-ntf-integrator-service: CPQ notification integration
+      - cpq-ordercapture: Order capture functionality
+      - crm-ntf-integrator-service: CRM notification integration
+      - bstp-pcm-product-catalog: Product catalog
+      - ui-authz-mc-backend: Authorization service
+      - ntf-history-service: Notification history
+      - bstp-id-service: Identity service
+      - bss-services-service: External BSS service
+      - eca-t4: External ECA service
+      - bss-mc-domain-config-t4: T4 configuration
+      - bss-mc-ntf-engine-t4: T4 notification engine
+
+    MEDIUM: Service failure causes partial feature degradation
+      - ntf-batch-service: Batch notification processing
+      - activity: Activity tracking
+      - search-integrator-mc-backend: Search integration
+      - bstp-pcm-product-offer-detail: Product offer details
+      - crm-asset: Asset management
+      - bstp-cpq-batch: Batch CPQ processing
+      - em-b2c-wsc-new-ui: B2C UI
+      - bss-mc-cpq-t4, bss-mc-crm-customer-information-t4, bss-mc-pcm-product-catalog-t4, bss-mc-asset-management-t4: T4 services
+      - customer-search-mc-backend: Customer search
+
+---
+# Deployment instructions
+#
+# 1. Deploy to Kubernetes:
+#    kubectl apply -f service-dependencies-configmap.yaml
+#
+# 2. Verify deployment:
+#    kubectl get configmap lokiflow-service-dependencies -n monitoring
+#    kubectl describe configmap lokiflow-service-dependencies -n monitoring
+#
+# 3. View configuration:
+#    kubectl get configmap lokiflow-service-dependencies -n monitoring -o yaml
+#
+# 4. Update existing ConfigMap:
+#    kubectl apply -f service-dependencies-configmap.yaml
+#
+# 5. Delete ConfigMap (if needed):
+#    kubectl delete configmap lokiflow-service-dependencies -n monitoring
+#
+# 6. Access from n8n workflow:
+#    Use Kubernetes API or mount as volume in n8n pod:
+#
+#    volumes:
+#      - name: service-dependencies
+#        configMap:
+#          name: lokiflow-service-dependencies
+#    volumeMounts:
+#      - name: service-dependencies
+#        mountPath: /config/service-dependencies
+#        readOnly: true
+#
+# 7. Read from JavaScript in n8n node:
+#    const fs = require('fs');
+#    const dependencies = JSON.parse(
+#      fs.readFileSync('/config/service-dependencies/dependencies.json', 'utf8')
+#    );

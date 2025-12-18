@@ -9,6 +9,26 @@ Execute ALL 4 anomaly tools to get time-series data, then calculate anomaly scor
 3. Anomaly - Rate Change (get rate changes over time)
 4. Anomaly - Spike Detection (identify sudden spikes)
 
+## 🔧 IMPORTANT: USE ACTUAL DATA FROM TOOLS AND CALCULATE REAL SCORES
+You MUST use the actual data returned by the Loki query tools. Do NOT use predefined examples or mock data.
+Always base your analysis on:
+1. Real time-series data from all 4 anomaly tools
+2. Actual calculations of moving average, std deviation, rate change, spike ratio
+3. Real service names and metrics from the data
+4. Actual timestamp patterns from tool results
+
+⚠️ CRITICAL - Anomaly Score Validation:
+- ALL 4 anomaly scores MUST be calculated from real tool data
+- If a score is 0.0, you MUST explain why (e.g., "no variance in error rate")
+- Do NOT return 0.0 scores without calculating from actual data
+- If tools return empty results, state "No anomaly data available" explicitly
+
+If a tool returns NO data or EMPTY results:
+- State explicitly "No anomaly detected in [tool name]"
+- Set that specific score to 0.0 with clear explanation
+- Continue with other tools and scores
+- Do NOT fabricate example time-series data
+
 ## 📊 CONTEXT:
 Period: {{$json.timeRange.startISO}} to {{$json.timeRange.endISO}} ({{$json.timeRange.durationHuman}})
 Stage 1 Status: {{$json.stage1_result.status}}
@@ -101,6 +121,21 @@ proceed_to_stage2 = TRUE if:
   "anomaly_summary": "Clear description of anomaly findings",
   "recommended_focus": "What Stage 2 should focus on based on anomalies"
 }
+
+## ✅ TOOL EXECUTION VERIFICATION
+After executing EACH of the 4 anomaly tools, verify:
+1. Tool returned time-series data (not empty, not null)
+2. Data has timestamps and values
+3. Can calculate score from returned data
+4. If tool returns no data, set that specific score to 0.0 with explanation
+
+CRITICAL Tool Execution Requirements:
+- ALL 4 tools MUST be executed (Moving Average, Std Dev, Rate Change, Spike Detection)
+- Each tool must be verified before calculating its score
+- Include all 4 tools in tools_executed array
+- If a tool fails: document in anomaly_summary, continue with other tools
+
+Execute 4 tools→Verify each→Calculate scores→Analyze trends→Return JSON
 
 !!! IMPORTANT
 After getting data from each tool, perform the calculations described above to generate anomaly scores.

@@ -149,20 +149,31 @@ const mostCritical = Object.entries(serviceCriticality)
   .slice(0, 5)
   .map(([s, data]) => ({service: s, score: data.criticalityScore}));
 
-// IMPORTANT: Return as an array with json property
+// Build service dependency data
+const serviceDependencyData = {
+  raw: serviceDependencies,
+  reverse: reverseDependencies,
+  criticality: serviceCriticality,
+  serviceGroups: serviceGroups,
+  metadata: {
+    totalServices: Object.keys(serviceDependencies).length,
+    avgDependencies: Object.values(serviceDependencies).reduce((sum, s) => sum + s.dependencies.length, 0) / Object.keys(serviceDependencies).length,
+    mostCritical: mostCritical
+  }
+};
+
+// IMPORTANT: Return with standardized structure update
 return [{
   json: {
     ...input, // PRESERVE ALL EXISTING DATA
-    serviceDependencies: {
-      raw: serviceDependencies,
-      reverse: reverseDependencies,
-      criticality: serviceCriticality,
-      serviceGroups: serviceGroups,
-      metadata: {
-        totalServices: Object.keys(serviceDependencies).length,
-        avgDependencies: Object.values(serviceDependencies).reduce((sum, s) => sum + s.dependencies.length, 0) / Object.keys(serviceDependencies).length,
-        mostCritical: mostCritical
-      }
-    }
+
+    // Update standardized context.serviceDependencies
+    context: {
+      ...(input.context || {}),
+      serviceDependencies: serviceDependencyData
+    },
+
+    // Legacy compatibility - keep at root level
+    serviceDependencies: serviceDependencyData
   }
 }];

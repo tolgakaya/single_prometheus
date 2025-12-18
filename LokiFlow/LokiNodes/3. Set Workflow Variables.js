@@ -1,39 +1,41 @@
-// Set Workflow Variables - Clean Production Version
+// Set Workflow Variables - Standardized Structure Version
 const timeData = $input.first().json;
 
-const anomalyStart = timeData.timeRange.start - 3600;
-const anomalyEnd = timeData.timeRange.end + 3600;
+// Read from standardized structure (with legacy fallback)
+const metadata = timeData.metadata || {};
+const context = timeData.context || timeData;
+const timeRange = context.timeRange || timeData.timeRange;
 
-// Extract forceDeepAnalysis flag from multiple sources
-const forceDeepAnalysis = 
-  timeData.forceDeepAnalysis || 
-  timeData.context?.forceDeepAnalysis || 
-  timeData.analysisConfig?.forceDeepAnalysis ||
-  timeData.context?.priority === 'critical' ||
-  timeData.priority === 'critical' ||
+const anomalyStart = timeRange.start - 3600;
+const anomalyEnd = timeRange.end + 3600;
+
+// Extract forceDeepAnalysis flag from standardized metadata
+const forceDeepAnalysis =
+  metadata.forceDeepAnalysis ||
+  timeData.forceDeepAnalysis ||  // Legacy fallback
+  metadata.priority === 'critical' ||
   false;
 
-console.log("=== SET WORKFLOW VARIABLES ===");
-console.log("timeData.forceDeepAnalysis:", timeData.forceDeepAnalysis);
-console.log("timeData.analysisConfig?.forceDeepAnalysis:", timeData.analysisConfig?.forceDeepAnalysis);
-console.log("timeData.priority:", timeData.priority);
+console.log("=== SET WORKFLOW VARIABLES (Standardized) ===");
+console.log("metadata.forceDeepAnalysis:", metadata.forceDeepAnalysis);
+console.log("metadata.priority:", metadata.priority);
 console.log("Final forceDeepAnalysis:", forceDeepAnalysis);
-console.log("==============================");
+console.log("=============================================");
 
 const vars = {
-  START_TIME: timeData.timeRange.start,
-  END_TIME: timeData.timeRange.end,
-  START_ISO: timeData.timeRange.startISO,
-  END_ISO: timeData.timeRange.endISO,
-  STEP: timeData.queryParams.step,
-  DURATION_MINUTES: timeData.timeRange.durationMinutes,
-  ANALYSIS_ID: timeData.analysisId,
-  AFFECTED_SERVICES: timeData.affectedServices,
-  SEVERITY: timeData.context.severity || 'unknown',
-  SOURCE: timeData.context.source,
+  START_TIME: timeRange.start,
+  END_TIME: timeRange.end,
+  START_ISO: timeRange.startISO,
+  END_ISO: timeRange.endISO,
+  STEP: context.queryParams?.step || timeData.queryParams?.step,
+  DURATION_MINUTES: timeRange.durationMinutes,
+  ANALYSIS_ID: metadata.analysisId || timeData.analysisId,  // Legacy fallback
+  AFFECTED_SERVICES: context.affectedServices || timeData.affectedServices,
+  SEVERITY: timeData.context?.severity || 'unknown',  // Not in standardized structure yet
+  SOURCE: metadata.source || timeData.context?.source,
   FORCE_DEEP_ANALYSIS: forceDeepAnalysis,
-  PRIORITY: timeData.context?.priority || timeData.priority || 'normal',
-  IS_ORCHESTRATOR_REQUEST: timeData.orchestratorId ? true : false
+  PRIORITY: metadata.priority || timeData.priority || 'normal',
+  IS_ORCHESTRATOR_REQUEST: metadata.orchestratorId ? true : false
 };
 
 console.log("WORKFLOW VARIABLES SET:");
@@ -41,14 +43,23 @@ console.log("Force Deep Analysis:", vars.FORCE_DEEP_ANALYSIS);
 console.log("Priority:", vars.PRIORITY);
 console.log("Orchestrator Request:", vars.IS_ORCHESTRATOR_REQUEST);
 
-// Pass all data forward
+// Pass all data forward (preserve standardized structure)
 return [{
   json: {
-    ...timeData,
+    ...timeData,  // Preserve entire standardized structure
     $vars: vars,
     anomalyStart: anomalyStart,
     anomalyEnd: anomalyEnd,
+
+    // Update metadata with confirmed values
+    metadata: {
+      ...metadata,
+      forceDeepAnalysis: forceDeepAnalysis,
+      priority: metadata.priority || timeData.priority || 'normal'
+    },
+
+    // Legacy compatibility
     forceDeepAnalysis: forceDeepAnalysis,
-    priority: timeData.priority || timeData.context?.priority || 'normal'
+    priority: metadata.priority || timeData.priority || 'normal'
   }
 }];

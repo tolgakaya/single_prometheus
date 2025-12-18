@@ -1,72 +1,69 @@
-// Preserve Context After Stage 2 - Fixed for both branches
+// Preserve Context After Stage 2 - Standardized Structure Version
 const inputs = $input.all();
 const results = [];
 
+console.log("=== PRESERVE CONTEXT AFTER STAGE 2 (Standardized) ===");
+console.log("Total inputs:", inputs.length);
+
 for (const input of inputs) {
-  const stage2Output = input.json;
-  
-  // Get original context - it might come from different sources
-  let originalContext = {};
-  
-  // Option 1: Context is already embedded in the input (from either branch)
-  if (stage2Output.timeRange && stage2Output.stage1_result) {
-    console.log("Using embedded context from input");
-    originalContext = stage2Output;
-  }
-  // Option 2: Try to get from the anomaly branch node
-  else {
-    try {
-      const passContextItems = $items("Pass Time Context to Stage 2");
-      if (passContextItems && passContextItems.length > 0) {
-        originalContext = passContextItems[0].json;
-        console.log("Got context from Pass Time Context to Stage 2");
-      }
-    } catch (e) {
-      // This node didn't run (FALSE branch)
-      try {
-        const passWithoutAnomalyItems = $items("Pass Context Without Anomaly");
-        if (passWithoutAnomalyItems && passWithoutAnomalyItems.length > 0) {
-          originalContext = passWithoutAnomalyItems[0].json;
-          console.log("Got context from Pass Context Without Anomaly");
-        }
-      } catch (e2) {
-        console.log("No context nodes found, using input data");
-        originalContext = stage2Output;
-      }
-    }
-  }
-  
-  // Merge Stage 2 output with original context
-  results.push({
-    json: {
-      // First, preserve all original context
-      ...originalContext,
-      
-      // Then add/override with Stage 2 output
-      output: stage2Output.output || stage2Output,
-      
-      // Ensure critical fields are preserved
-      timeRange: originalContext.timeRange || stage2Output.timeRange,
-      priority: originalContext.priority || stage2Output.priority,
-      forceDeepAnalysis: originalContext.forceDeepAnalysis || stage2Output.forceDeepAnalysis,
-      stage1_result: originalContext.stage1_result || originalContext.output,
-      anomaly_analysis: originalContext.anomaly_analysis || null,
-      anomaly_check_performed: originalContext.anomaly_check_performed !== undefined ? 
-        originalContext.anomaly_check_performed : false,
-      analysisId: originalContext.analysisId || stage2Output.analysisId,
-      context: originalContext.context || stage2Output.context,
-      affectedServices: originalContext.affectedServices || stage2Output.affectedServices,
-      serviceDependencies: originalContext.serviceDependencies || stage2Output.serviceDependencies,
-      
-      // Add Stage 2 reference
-      stage2_output: stage2Output,
-      
-      // Debug info
-      _contextSource: originalContext.timeRange ? "preserved" : "reconstructed",
-      _branch: originalContext._branch || "unknown"
-    }
+  const data = input.json;
+
+  console.log("Input structure:", {
+    hasMetadata: !!data.metadata,
+    hasContext: !!data.context,
+    hasStageResults: !!data.stageResults,
+    hasOutput: !!data.output,
+    outputStage: data.output?.stage
   });
+
+  // With standardized structure, context is ALWAYS preserved in the data object
+  // No need for complex fallback logic - it's all in the structure!
+
+  // Get Stage 2 result from output (AI agent response)
+  const stage2Result = data.output && data.output.stage === "pattern_analysis"
+    ? data.output
+    : null;
+  
+  if (stage2Result) {
+    // Stage 2 was executed - add results to standardized structure
+    results.push({
+      json: {
+        ...data,  // Preserve ENTIRE standardized structure (metadata, context, stageResults, enrichments)
+
+        // Update stageResults.stage2 with Stage 2 output
+        stageResults: {
+          ...data.stageResults,
+          stage2: {
+            stage: "pattern_analysis",
+            execution_time: stage2Result.execution_time,
+            patterns_identified: stage2Result.patterns_identified,
+            correlations: stage2Result.correlations,
+            user_impact: stage2Result.user_impact,
+            confidence_score: stage2Result.confidence_score,
+            tools_executed: stage2Result.tools_executed,
+            anomaly_context: stage2Result.anomaly_context,
+            proceed_to_stage3: stage2Result.proceed_to_stage3
+          }
+        },
+
+        // Legacy fields for compatibility
+        output: stage2Result,
+        stage2_output: stage2Result,
+        proceed_to_stage3: stage2Result.proceed_to_stage3
+      }
+    });
+  } else {
+    // No Stage 2 result - just pass through with structure intact
+    console.log("WARNING: No Stage 2 result found, passing through");
+    results.push({
+      json: {
+        ...data,
+        _warning: "Stage 2 result not found"
+      }
+    });
+  }
 }
 
-console.log(`Preserved context for ${results.length} items`);
+console.log(`=== Preserved context for ${results.length} items ===`);
+console.log("Standardized structure preserved - no complex fallback needed!");
 return results;

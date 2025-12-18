@@ -293,106 +293,87 @@ if (cascades.length > 0) {
   );
 }
 
-// Get Stage 2 results from input
-let stage2Result = {};
-let proceed_to_stage3 = cascades.length > 0;
-
-// Extract input data - handle wrapped output
-const inputJson = $input.first().json;
-const actualInputData = inputJson.output || inputJson;
-
-// NEW: Process all inputs to preserve stage data
+// Process all inputs to preserve stage data (Standardized Structure Version)
 const results = [];
+
+console.log("=== CASCADE DETECTOR - BUILDING OUTPUT (Standardized) ===");
 
 for (const input of $input.all()) {
   const inputData = input.json;
-  const stage2Data = inputData.output || inputData;
-  
-  // Find Stage 1 data
-  const stage1Data = inputData.stage1_result || 
-                     (inputData.output?.stage === "health_snapshot" ? inputData.output : null);
-  
-  // Find anomaly data
-  const anomalyData = inputData.anomaly_analysis || 
-                      (inputData.output?.stage === "anomaly_detection" ? inputData.output : null);
-  
-  // Override proceed_to_stage3 based on multiple factors
-  const shouldProceed = inputData.forceDeepAnalysis || 
-                       inputData.priority === 'critical' ||
-                       stage2Data.proceed_to_stage3 || 
+
+  // Read from standardized structure (with legacy fallbacks)
+  const metadata = inputData.metadata || {};
+  const stageResults = inputData.stageResults || {};
+
+  // Get Stage 2 data from standardized location
+  const stage2Data = stageResults.stage2 || inputData.output || inputData;
+
+  // Determine if we should proceed to Stage 3
+  const shouldProceed = metadata.forceDeepAnalysis ||
+                       inputData.forceDeepAnalysis ||  // Legacy fallback
+                       metadata.priority === 'critical' ||
+                       inputData.priority === 'critical' ||  // Legacy fallback
+                       stage2Data.proceed_to_stage3 ||
                        cascades.length > 0;
+
+  console.log("Cascade decision:", {
+    forceDeepAnalysis: metadata.forceDeepAnalysis,
+    priority: metadata.priority,
+    stage2Proceed: stage2Data.proceed_to_stage3,
+    cascadesDetected: cascades.length,
+    finalDecision: shouldProceed
+  });
   
-  // Build comprehensive output
+  // Build comprehensive output with standardized structure
   const comprehensiveOutput = {
-    // Preserve ALL original data
+    // Preserve ENTIRE standardized structure
     ...inputData,
-    
-    // Add Stage-specific sections
-    stage1_health_check: stage1Data ? {
-      status: stage1Data.status,
-      execution_time: stage1Data.execution_time,
-      metrics: stage1Data.metrics,
-      anomalies: stage1Data.anomalies,
-      summary: stage1Data.quick_summary,
-      tools_executed: stage1Data.tools_executed
-    } : null,
-    
-    stage1_5_anomaly_detection: anomalyData ? {
-      performed: true,
-      execution_time: anomalyData.execution_time,
-      anomaly_scores: anomalyData.anomaly_scores,
-      anomaly_findings: anomalyData.anomaly_findings,
-      service_anomalies: anomalyData.service_anomalies,
-      raw_metrics: anomalyData.raw_metrics,
-      summary: anomalyData.anomaly_summary,
-      tools_executed: anomalyData.tools_executed
-    } : {
-      performed: inputData.anomaly_check_performed || false,
-      reason_skipped: inputData.anomaly_reason_skipped || "Not performed"
+
+    // Add cascade analysis to enrichments section
+    enrichments: {
+      ...(inputData.enrichments || {}),
+      cascadeAnalysis: {
+        totalCascades: cascadeAnalysis.totalCascades,
+        averageDuration: cascadeAnalysis.averageDuration,
+        maxDuration: cascadeAnalysis.maxDuration,
+        cascadePatterns: cascadeAnalysis.cascadePatterns,
+        criticalCascades: cascadeAnalysis.criticalCascades,
+        dependencyBasedCascades: cascadeAnalysis.dependencyBasedCascades,
+        affectedServicesPerCascade: cascadeAnalysis.affectedServicesPerCascade
+      },
+      serviceImpact: serviceImpact,
+      timeline: events.slice(0, 50),
+      recommendation: cascades.length > 0
+        ? "CRITICAL: Dependency-aware cascade detected. See detailed recommendations."
+        : "No cascade pattern detected in the time range.",
+      suggestedActions: recommendations,
+      dependencyContext: {
+        criticalServices: dependencies.metadata?.mostCritical || [],
+        serviceGroups: dependencies.serviceGroups || {},
+        totalServices: dependencies.metadata?.totalServices || 0,
+        averageDependencyDepth: dependencies.metadata?.avgDependencies || 0
+      }
     },
-    
-    stage2_pattern_analysis: stage2Data.stage === "pattern_analysis" ? {
-      execution_time: stage2Data.execution_time || new Date().toISOString(),
-      patterns_identified: stage2Data.patterns_identified,
-      correlations: stage2Data.correlations,
-      user_impact: stage2Data.user_impact,
-      confidence_score: stage2Data.confidence_score,
-      tools_executed: stage2Data.tools_executed,
-      anomaly_context: stage2Data.anomaly_context
-    } : null,
-    
-    // Add enhanced cascade analysis
+
+    // Update metadata with Stage 3 decision
+    metadata: {
+      ...metadata,
+      proceed_to_stage3: shouldProceed
+    },
+
+    // Legacy fields for compatibility
     cascadeDetected: cascades.length > 0,
-    cascadeAnalysis,
-    serviceImpact,
-    timeline: events.slice(0, 50),
-    recommendation: cascades.length > 0 ? 
-      "CRITICAL: Dependency-aware cascade detected. See detailed recommendations." :
-      "No cascade pattern detected in the time range.",
-    suggestedActions: recommendations,
-    dependencyContext: {
-      criticalServices: dependencies.metadata?.mostCritical || [],
-      serviceGroups: dependencies.serviceGroups || {},
-      totalServices: dependencies.metadata?.totalServices || 0,
-      averageDependencyDepth: dependencies.metadata?.avgDependencies || 0
-    },
-    
-    // Preserve context
-    analysis_context: {
-      timeRange: inputData.timeRange,
-      analysisId: inputData.analysisId,
-      priority: inputData.priority,
-      forceDeepAnalysis: inputData.forceDeepAnalysis,
-      source: inputData.context?.source
-    },
-    
-    // CRITICAL: proceed_to_stage3
+    cascadeAnalysis: cascadeAnalysis,  // Legacy location
+    serviceImpact: serviceImpact,  // Legacy location
     proceed_to_stage3: shouldProceed,
-    
-    // Keep the current stage output for compatibility
-    output: stage2Data
+    output: stage2Data,
+
+    // Legacy context preservation
+    stage1_health_check: stageResults.stage1 || null,
+    stage1_5_anomaly_detection: stageResults.stage1_5_anomaly || null,
+    stage2_pattern_analysis: stageResults.stage2 || null
   };
-  
+
   results.push({ json: comprehensiveOutput });
 }
 results[0].json._debugInfo = debugInfo;

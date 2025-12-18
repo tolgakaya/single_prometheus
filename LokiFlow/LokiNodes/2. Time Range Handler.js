@@ -170,8 +170,53 @@ if (durationMinutes <= 60) {
   step = 1800;
 }
 
-// Build output with validation
+// Build standardized output structure
 const output = {
+  // === METADATA (Never changes, always preserved) ===
+  metadata: {
+    analysisId: input.analysisId || input.requestId || `analysis-${Date.now()}`,
+    timestamp: new Date().toISOString(),
+    priority: context.priority || input.priority || 'normal',
+    forceDeepAnalysis: context.forceDeepAnalysis || context.priority === 'critical' || false,
+    source: context.source || 'unknown',
+
+    // Preserve orchestrator metadata
+    orchestratorId: input.orchestratorId || null,
+    requestId: input.requestId || null,
+    analysisConfig: input.analysisConfig || null,
+    searchFilters: input.searchFilters || null,
+    features: input.features || null,
+    orchestratorMetadata: input.orchestratorMetadata || null
+  },
+
+  // === CONTEXT (Preserved throughout pipeline) ===
+  context: {
+    timeRange: {
+      start: timeRange.start,
+      end: timeRange.end,
+      startISO: new Date(timeRange.start * 1000).toISOString(),
+      endISO: new Date(timeRange.end * 1000).toISOString(),
+      durationSeconds: duration,
+      durationMinutes: Math.round(duration / 60),
+      durationHuman: duration < 3600 ? `${Math.round(duration / 60)} minutes` : `${Math.round(duration / 3600)} hours`,
+      step: step
+    },
+    queryParams: {
+      start: timeRange.start,
+      end: timeRange.end,
+      step: step
+    },
+    affectedServices: affectedServices,
+    serviceDependencies: null  // Will be filled by Node 4
+  },
+
+  // === STAGE RESULTS (Added as pipeline progresses) ===
+  stageResults: {},
+
+  // === ENRICHMENTS (Added by analysis nodes) ===
+  enrichments: {},
+
+  // LEGACY FIELDS (For backward compatibility - remove after migration)
   timeRange: {
     start: timeRange.start,
     end: timeRange.end,
@@ -181,45 +226,19 @@ const output = {
     durationMinutes: Math.round(duration / 60),
     durationHuman: duration < 3600 ? `${Math.round(duration / 60)} minutes` : `${Math.round(duration / 3600)} hours`
   },
-  queryParams: {
-    start: timeRange.start,
-    end: timeRange.end,
-    step: step
-  },
-  context: context,
-  affectedServices: affectedServices,
-  analysisId: input.requestId || `analysis-${Date.now()}`,
-  timestamp: new Date().toISOString(),
-  
-  // CRITICAL: Add forceDeepAnalysis at root level
-  forceDeepAnalysis: context.forceDeepAnalysis || false,
+  analysisId: input.analysisId || input.requestId || `analysis-${Date.now()}`,
   priority: context.priority || input.priority || 'normal',
-  
-  // PRODUCTION: Never enable test mode
-  testMode: false
-};
-
-// Preserve orchestrator metadata
-if (input.orchestratorId) {
-  output.orchestratorId = input.orchestratorId;
-  output.requestId = input.requestId;
-  output.analysisConfig = input.analysisConfig;
-  output.searchFilters = input.searchFilters;
-  output.features = input.features;
-  output.orchestratorMetadata = input.orchestratorMetadata;
-}
-
-// Force deep analysis flag - ensure it's set
-if (context.forceDeepAnalysis || context.priority === 'critical') {
-  output.forceDeepAnalysis = true;
+  forceDeepAnalysis: context.forceDeepAnalysis || context.priority === 'critical' || false
 }
 
 // Debug log
-console.log("=== TIME RANGE HANDLER OUTPUT ===");
-console.log("Time Range:", output.timeRange.startISO, "to", output.timeRange.endISO);
-console.log("Duration:", output.timeRange.durationHuman);
-console.log("Priority:", output.priority);
-console.log("Test Mode:", output.testMode, "(PRODUCTION: Always false)");
-console.log("================================");
+console.log("=== TIME RANGE HANDLER OUTPUT (Standardized Structure) ===");
+console.log("Analysis ID:", output.metadata.analysisId);
+console.log("Time Range:", output.context.timeRange.startISO, "to", output.context.timeRange.endISO);
+console.log("Duration:", output.context.timeRange.durationHuman);
+console.log("Priority:", output.metadata.priority);
+console.log("Force Deep Analysis:", output.metadata.forceDeepAnalysis);
+console.log("Source:", output.metadata.source);
+console.log("==========================================================");
 
 return [{ json: output }];

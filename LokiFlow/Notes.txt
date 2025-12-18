@@ -1,4 +1,4 @@
-Daha önceki flowlar gibi bir n8n agent ai flowum var. LokiFlow.json Bu flowu incelemeni istiyorum.
+Daha önceki flowlar gibi bir n8n agent ai flowum var. LokiFlow\LokiFlow.json Bu flowu incelemeni istiyorum.
 Bu flowdaki her bir node dosyaları LokiFlow\LokiNodes klasörü içinde js dosyalarında ve agentların promptları txt dosyası olarak mevcut
 Her bir stage'te http tool'lar var. Agentların analiz için bu toolları doğru kullanmasını bekliyorum. Her bir agent'ın ismi ve toolları ilgili parametreleri ile birlikte LokiFlow\AgentTools.txt dosyasında mevcut.
 Flowum uçtan uca her bir stageteki amaca  uygun olarak veri akışının doğru çalışmasını garanti etmen ve her bir node ve prompta gerekli düzenlemeyi yapmanı istiyorum
