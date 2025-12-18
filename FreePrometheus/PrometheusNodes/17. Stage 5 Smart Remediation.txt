@@ -131,20 +131,29 @@ Each step must have:
 ## 💾 OUTPUT FORMAT (PURE JSON ONLY):
 
 **CRITICAL TEMPLATE SYNTAX RULES:**
-1. **Deployment name**: MUST use {{ $json.stage4Data.enriched_context.deployment_info.name }} (with .name)
-2. **Namespace**: MUST use {{ $json.primaryDiagnosis.namespace }} OR {{ $json.stage4Data.diagnostic_summary.confirmed_issues.0.namespace }}
-3. **Pod name**: MUST use {{ $json.stage4Data.diagnostics_executed.0.target }} (for actual pod name)
-4. **NEVER** use {{ $json.stage4Data.enriched_context.deployment_info }} without .name - this will show [object Object]
-5. **NEVER** use placeholder values like "example-deployment" or "pod-12345" - ALWAYS use actual template expressions
+1. Deployment name MUST include .name property:
+   CORRECT: stage4Data.enriched_context.deployment_info.name
+   WRONG: stage4Data.enriched_context.deployment_info (shows [object Object])
 
-**EXAMPLE CORRECT COMMANDS:**
-✅ CORRECT: kubectl rollout undo deployment/{{ $json.stage4Data.enriched_context.deployment_info.name }} -n {{ $json.primaryDiagnosis.namespace }}
-✅ CORRECT: kubectl set resources deployment/{{ $json.stage4Data.enriched_context.deployment_info.name }} --limits=memory=2Gi -n {{ $json.primaryDiagnosis.namespace }}
-✅ CORRECT: kubectl logs {{ $json.stage4Data.diagnostics_executed.0.target }} -n {{ $json.primaryDiagnosis.namespace }} --tail=100
+2. Namespace from: primaryDiagnosis.namespace
 
-❌ WRONG: kubectl rollout undo deployment/{{ $json.stage4Data.enriched_context.deployment_info }} (missing .name - shows [object Object])
-❌ WRONG: kubectl rollout undo deployment/example-deployment -n production (hardcoded values)
-❌ WRONG: kubectl logs pod-12345 -n namespace (placeholder values)
+3. Pod name from: stage4Data.diagnostics_executed.0.target
+
+4. NEVER use hardcoded values like "example-deployment" or "pod-12345"
+
+**EXAMPLE COMMANDS:**
+For rollback use:
+kubectl rollout undo deployment/DEPLOYMENT_NAME -n NAMESPACE
+
+For memory increase use:
+kubectl set resources deployment/DEPLOYMENT_NAME --limits=memory=2Gi -n NAMESPACE
+
+For logs use:
+kubectl logs POD_NAME -n NAMESPACE --tail=100
+
+Replace DEPLOYMENT_NAME with template expression for deployment_info.name
+Replace NAMESPACE with template expression for namespace
+Replace POD_NAME with template expression for pod target
 
 {
   "stage": "ai_powered_analysis",
