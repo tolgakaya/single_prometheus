@@ -49,7 +49,7 @@
             "mode": "list",
             "cachedResultName": "Platform_Support"
           },
-          "description": "={{ $json.alert.originalAnalysis.jiraTicket.description }}",
+          "description": "={{ $json.alert.jiraTicketData.description }}",
           "customFieldsUi": {
             "customFieldsValues": [
               {
