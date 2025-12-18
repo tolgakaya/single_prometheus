@@ -1402,7 +1402,9 @@ const analysisTimeline = [];
 
 // Alert triggered - include pod name and KB status
 const alertName = safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', 'Unknown Alert');
-const podName = primaryPodName || safeGet(allStageData, 'stage1.alerts.firing.0.labels.pod', 'Unknown Pod');
+const podName = safeGet(allStageData, 'stage4.diagnostics_executed.0.target', null) ||
+                safeGet(allStageData, 'stage2.critical_pods.0', null) ||
+                safeGet(allStageData, 'stage1.alerts.firing.0.labels.pod', 'Unknown Pod');
 const kbStatus = kbEntriesLoaded > 0 ? (hasKBEntry ? 'KB: Found' : 'KB: None') : 'KB: Disabled';
 
 analysisTimeline.push({
