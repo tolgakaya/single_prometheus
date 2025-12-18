@@ -93,14 +93,36 @@ const needsJiraTicket = shouldCreateJiraTicket(analysisResult, executiveSummary)
 
 // ============= PREPARE JIRA TICKET DATA =============
 function prepareJiraTicketData(result) {
+  // ÖNCE: Yeni Final Report format'ını kontrol et (jiraTicket field)
+  if (result.jiraTicket) {
+    // ✅ YENİ FORMAT VAR - Direkt kullan!
+    console.log('✅ Using new Final Report jiraTicket format');
+
+    return {
+      project: 'INCIDENT',
+      issueType: result.jiraTicket.issueType || 'Incident',
+      summary: result.jiraTicket.title, // Pre-formatted with HTML styling
+      description: result.jiraTicket.description, // HTML/CSS formatted!
+      priority: mapJiraPriorityNameToId(result.jiraTicket.priority), // "Critical" -> Jira ID
+      labels: buildLabelsWithKBInsights(result),
+      components: findings.affectedServices || [],
+      customFields: buildCustomFieldsWithOncall(result),
+      duedate: calculateDueDateFromPriority(result.jiraTicket.priority),
+      environment: determineEnvironment(findings.affectedServices?.[0])
+    };
+  }
+
+  // FALLBACK: Eski format (backwards compatibility)
+  console.log('⚠️ Using legacy Jira ticket format (new format not found)');
+
   const title = `[${stage1Results.alerts?.top_alerts?.[0] || 'Health Check'}] ${findings.rootCause?.component || 'Cluster'} - ${findings.rootCause?.issue || 'Investigation Required'}`;
-  
+
   // Build description from analysis summary
   const description = buildJiraDescription(result);
-  
+
   // Map severity to Jira priority
   const priority = mapSeverityToJiraPriority(executiveSummary.overallHealth);
-  
+
   // Build labels
   const labels = [
     'kubernetes',
@@ -110,10 +132,10 @@ function prepareJiraTicketData(result) {
     `confidence-${Math.round((findings.rootCause?.confidence || 0.5) * 100)}`,
     contextTracking.contextId ? `context-${contextTracking.contextId}` : null
   ].filter(Boolean);
-  
+
   // Components
   const components = findings.affectedServices || [];
-  
+
   return {
     project: 'INCIDENT',
     issueType: 'Incident',
@@ -135,6 +157,89 @@ function prepareJiraTicketData(result) {
     duedate: calculateDueDate(executiveSummary.overallHealth),
     environment: determineEnvironment(findings.affectedServices?.[0])
   };
+}
+
+// Helper: Map priority name to Jira priority ID
+function mapJiraPriorityNameToId(priorityName) {
+  const mapping = {
+    'Critical': 'Highest',
+    'High': 'High',
+    'Medium': 'Medium',
+    'Low': 'Low'
+  };
+  return mapping[priorityName] || 'Medium';
+}
+
+// Helper: Build labels with KB insights
+function buildLabelsWithKBInsights(result) {
+  const labels = [
+    'kubernetes',
+    'auto-generated',
+    'scheduler',
+    `severity-${executiveSummary.overallHealth || 'unknown'}`
+  ];
+
+  // Add KB insights if available
+  if (result.knowledgeBaseInsights) {
+    labels.push(`category-${result.knowledgeBaseInsights.alertCategory}`);
+    labels.push(`urgency-${result.knowledgeBaseInsights.urgencyLevel}`);
+    labels.push(`cascade-risk-${result.knowledgeBaseInsights.cascadeRisk}`);
+  }
+
+  // Add confidence
+  const confidence = findings.rootCause?.confidence || result.confidenceProgression?.overall_confidence || 0;
+  labels.push(`confidence-${Math.round(confidence * 100)}`);
+
+  // Add context ID
+  if (contextTracking.contextId) {
+    labels.push(`context-${contextTracking.contextId}`);
+  }
+
+  return labels.filter(Boolean);
+}
+
+// Helper: Build custom fields with oncall data
+function buildCustomFieldsWithOncall(result) {
+  // Önce oncallTicket custom fields'ını kontrol et
+  if (result.oncallTicket?.customFields) {
+    return {
+      'customfield_10001': result.oncallTicket.customFields.contextId || contextTracking.contextId,
+      'customfield_10002': result.confidenceProgression?.overall_confidence || findings.rootCause?.confidence || 0,
+      'customfield_10003': findings.affectedServices?.[0] || 'unknown',
+      'customfield_10004': result.oncallTicket.customFields.symptoms || executiveSummary.alertsActive || 0,
+      'customfield_10005': result.oncallTicket.customFields.rootCause || findings.rootCause?.issue || 'Under investigation',
+      'customfield_10006': result.executiveSummary?.quickActions?.rollback || actions.immediate?.[0]?.command || '',
+      'customfield_10007': executiveSummary.stagesExecuted || 0,
+      'customfield_10008': new Date().toISOString(),
+      'customfield_10009': result.oncallTicket.customFields.oncallFriendly || false
+    };
+  }
+
+  // Fallback: Legacy custom fields
+  return {
+    'customfield_10001': contextTracking.contextId,
+    'customfield_10002': findings.rootCause?.confidence || 0,
+    'customfield_10003': findings.affectedServices?.[0] || 'unknown',
+    'customfield_10004': findings.diagnosticEvidence?.[0]?.namespace || 'unknown',
+    'customfield_10005': findings.rootCause?.issue || 'Under investigation',
+    'customfield_10006': actions.immediate?.[0]?.command || '',
+    'customfield_10007': executiveSummary.stagesExecuted || 0,
+    'customfield_10008': new Date().toISOString()
+  };
+}
+
+// Helper: Calculate due date from priority name
+function calculateDueDateFromPriority(priorityName) {
+  const now = new Date();
+  const hoursToAdd = {
+    'Critical': 4,
+    'High': 24,
+    'Medium': 72,
+    'Low': 168
+  };
+
+  now.setHours(now.getHours() + (hoursToAdd[priorityName] || 72));
+  return now.toISOString().split('T')[0];
 }
 
 function buildJiraDescription(result) {
