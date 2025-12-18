@@ -649,6 +649,178 @@ function generateMarkdownReport(allStageData, masterContext, config) {
   return html;
 }
 
+// Generate Enhanced Jira Description (Rich HTML format like File 26)
+function generateEnhancedJiraDescription(allStageData, masterContext) {
+  const severity = safeGet(allStageData, 'primaryDiagnosis.severity', 'unknown');
+  const style = getSeverityStyle(severity);
+  const alertName = safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', 'Unknown Alert');
+  const component = safeGet(allStageData, 'stage2.root_cause.component', 'unknown-component');
+  const issue = safeGet(allStageData, 'stage2.root_cause.issue', 'Issue not identified');
+  const namespace = safeGet(allStageData, 'stage2.affected_services.0', 'unknown-namespace');
+  const confidence = safeGet(allStageData, 'stage2.root_cause.confidence', 0);
+  const affectedServices = safeGet(allStageData, 'stage2.affected_services', []);
+
+  // Extract pod/deployment info
+  const criticalPod = safeGet(allStageData, 'stage2.critical_pods.0', {});
+  const podName = criticalPod.pod_name || safeGet(allStageData, 'stage4.diagnostics_executed.0.target', 'unknown');
+  const deployment = component;
+
+  // Time calculations
+  const startTime = new Date(masterContext.createdAt);
+  const endTime = new Date();
+  const durationMinutes = Math.round((endTime - startTime) / 60000);
+  const alertStartDate = startTime.toLocaleString('en-US');
+
+  // Immediate actions
+  const immediateActions = safeGet(allStageData, 'stage5.remediation_plan.immediate_actions', []);
+
+  // SLO Impact
+  const sloStatus = safeGet(allStageData, 'stage3.slo_impact.availability_slo.status', 'unknown');
+  const sloCurrent = safeGet(allStageData, 'stage3.slo_impact.availability_slo.current', 'N/A');
+  const sloTarget = safeGet(allStageData, 'stage3.slo_impact.availability_slo.target', 'N/A');
+
+  // Evidence from Stage 4
+  const confirmedIssues = safeGet(allStageData, 'stage4.diagnostic_summary.confirmed_issues', []);
+  const evidenceList = confirmedIssues.map(ci => ci.evidence || {});
+
+  let html = `
+<div style="border: 2px solid #d32f2f; border-radius: 8px; margin: 10px 0; background: #ffebee;">
+  <div style="background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;">
+    🚨 INCIDENT SUMMARY
+  </div>
+  <div style="padding: 15px; background: white; border-radius: 0 0 6px 6px;">
+    <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+      <tr><td style="font-weight: bold; width: 130px; padding: 5px;">Alert:</td><td style="padding: 5px;">${alertName}</td></tr>
+      <tr><td style="font-weight: bold; padding: 5px;">Severity:</td><td style="padding: 5px;"><span style="color: ${style.text}; font-weight: bold;">${style.icon} ${severity.toUpperCase()}</span></td></tr>
+      <tr><td style="font-weight: bold; padding: 5px;">Service:</td><td style="padding: 5px;">${deployment}</td></tr>
+      <tr><td style="font-weight: bold; padding: 5px;">Namespace:</td><td style="padding: 5px;">${namespace}</td></tr>
+      <tr><td style="font-weight: bold; padding: 5px;">Detection:</td><td style="padding: 5px;">${alertStartDate}</td></tr>
+      <tr><td style="font-weight: bold; padding: 5px;">Duration:</td><td style="padding: 5px;">${durationMinutes} minutes</td></tr>
+    </table>
+  </div>
+</div>
+
+<h2 style="color: #1976d2; margin-top: 20px;">📊 INCIDENT DETAILS</h2>
+
+<div style="border: 1px solid #e0e0e0; border-radius: 6px; margin: 10px 0; overflow: hidden;">
+  <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+    <tr style="background: #f5f5f5;">
+      <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #e0e0e0;">Field</td>
+      <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #e0e0e0;">Details</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;">Alert Type</td>
+      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;">${alertName}</td>
+    </tr>
+    <tr style="background: #fafafa;">
+      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;">Pod Name</td>
+      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;">${podName}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;">Deployment</td>
+      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;">${deployment}</td>
+    </tr>
+    <tr style="background: #fafafa;">
+      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;">Namespace</td>
+      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;">${namespace}</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px;">Context ID</td>
+      <td style="padding: 8px; font-family: monospace; color: #666;">${masterContext.contextId}</td>
+    </tr>
+  </table>
+</div>
+
+---
+
+## 🔍 ISSUE IDENTIFICATION
+
+### ${issue}
+
+**Confidence Level**: ${(confidence * 100).toFixed(0)}%
+
+**Business Impact**: ${safeGet(allStageData, 'primaryDiagnosis.impact', 'Service disruption detected')}
+
+### 📊 EVIDENCE SUMMARY
+${evidenceList.length > 0 ? evidenceList.map((ev, idx) => `
+**Evidence ${idx + 1}:**
+- ${Object.keys(ev).map(key => `${key}: ${JSON.stringify(ev[key])}`).join('\n- ')}
+`).join('\n') : 'No detailed evidence available'}
+
+---
+
+## 📊 SLO IMPACT
+
+${sloStatus !== 'unknown' ? `
+- **Availability SLO**: ${sloCurrent} (Target: ${sloTarget})
+- **Status**: **${sloStatus.toUpperCase()}**
+` : '- SLO data not available'}
+
+---
+
+## 🚀 ACTION PLAN
+
+### 🔴 IMMEDIATE ACTIONS (Execute NOW)
+
+${immediateActions.length > 0 ? immediateActions.map((action, idx) => `
+#### ${idx + 1}. ${action.action || 'No action description'}
+
+**Command to execute:**
+\`\`\`bash
+${action.command || 'No command provided'}
+\`\`\`
+
+${action.verification_command ? `**Verification command:**
+\`\`\`bash
+${action.verification_command}
+\`\`\`` : ''}
+
+- **Risk Level**: ${action.risk || 'Unknown'}
+- **Estimated Time**: ${action.estimated_time || 'Unknown'}
+- **Expected Outcome**: ${action.expected_outcome || 'Restore service functionality'}
+
+---
+`).join('\n') : '- No immediate actions recommended'}
+
+${allStageData.stage5?.remediation_plan?.short_term_fixes?.length > 0 ? `
+### 🟠 SHORT-TERM FIXES (Within 24 hours)
+
+${allStageData.stage5.remediation_plan.short_term_fixes.map((fix, idx) => `
+${idx + 1}. **${fix.action || 'Fix not specified'}**
+   - Priority: ${fix.priority || 'Unknown'}
+   - Timeline: ${fix.timeline || 'Unknown'}
+`).join('\n')}
+` : ''}
+
+${allStageData.stage6?.prevention_actions?.length > 0 ? `
+### 🟢 PREVENTION ACTIONS (Long-term)
+
+${allStageData.stage6.prevention_actions.map((prev, idx) => `
+${idx + 1}. **[${prev.type}]** ${prev.action}
+   - Status: ${prev.status || 'Planned'}
+`).join('\n')}
+` : ''}
+
+---
+
+## 📎 Additional Information
+
+- **Analysis Context ID**: ${masterContext.contextId}
+- **Alert Source**: ${alertName}
+- **Analysis Completed**: ${new Date().toISOString()}
+- **Total Analysis Time**: ${durationMinutes} minutes
+- **System**: FreePrometheus Analysis Engine v2.0
+- **Stages Executed**: ${Object.keys(allStageData).filter(k => allStageData[k] !== null).length}/6
+
+---
+
+*This report was automatically generated by the FreePrometheus Analysis System*
+*Report Version: 2.0 | Generated: ${new Date().toISOString()}*
+`;
+
+  return html;
+}
+
 // Generate Oncall Ticket
 function generateOncallTicket(allStageData, masterContext) {
   const severity = safeGet(allStageData, 'primaryDiagnosis.severity', 'unknown');
@@ -699,20 +871,75 @@ function generateOncallTicket(allStageData, masterContext) {
   };
 }
 
-// Generate Jira Ticket
+// Generate Enhanced Jira Ticket (matching File 26 format but without KB)
 function generateJiraTicket(allStageData, masterContext) {
   const severity = safeGet(allStageData, 'primaryDiagnosis.severity', 'unknown');
   const alertName = safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', 'Unknown Alert');
   const component = safeGet(allStageData, 'stage2.root_cause.component', 'unknown-component');
   const issue = safeGet(allStageData, 'stage2.root_cause.issue', 'Issue not identified');
+  const namespace = safeGet(allStageData, 'stage2.affected_services.0', 'unknown-namespace');
+  const confidence = safeGet(allStageData, 'stage2.root_cause.confidence', 0);
 
-  // Use the same markdown report for Jira description
-  const description = generateMarkdownReport(allStageData, masterContext, {});
+  // Extract namespace from service name if needed
+  let actualNamespace = namespace;
+  if (namespace.includes('-')) {
+    const parts = namespace.split('-');
+    if (DEFAULT_NAMESPACES.includes(parts[0])) {
+      actualNamespace = parts[0];
+    }
+  }
+  if (actualNamespace === 'unknown-namespace' || !actualNamespace) {
+    actualNamespace = DEFAULT_NAMESPACES[0];
+  }
+
+  // Generate rich HTML description
+  const description = generateEnhancedJiraDescription(allStageData, masterContext);
+
+  // Enhanced title format
+  const title = `[${alertName}] ${component} - ${issue}`;
+
+  // Priority mapping
+  const priority = mapSeverityToPriority(severity);
+
+  // Build labels array
+  const labels = [
+    alertName,
+    severity.toLowerCase(),
+    actualNamespace,
+    component,
+    "Auto-Detected",
+    "FreePrometheus-Analysis"
+  ].filter(Boolean);
+
+  // Build components array
+  const components = [component].filter(c => c && c !== 'unknown-component');
+
+  // Calculate analysis duration
+  const startTime = new Date(masterContext.createdAt);
+  const endTime = new Date();
+  const durationMinutes = Math.round((endTime - startTime) / 60000);
+
+  // Build custom fields
+  const customFields = {
+    contextId: masterContext.contextId || 'unknown',
+    analysisTime: durationMinutes,
+    automationConfidence: confidence,
+    analysisEngine: "FreePrometheus Analysis Engine",
+    engineVersion: "2.0",
+    stagesExecuted: Object.keys(allStageData).filter(k => allStageData[k] !== null).length,
+    rootCauseConfidence: confidence,
+    affectedServices: safeGet(allStageData, 'stage2.affected_services.length', 0),
+    sloImpact: safeGet(allStageData, 'stage3.slo_impact.availability_slo.status', 'unknown')
+  };
 
   return {
-    title: `[${alertName}] ${component} - ${issue}`,
+    title: title,
     description: description,
-    priority: mapSeverityToPriority(severity)
+    priority: priority,
+    labels: labels,
+    components: components,
+    issueType: "Incident",
+    customFields: customFields
   };
 }
 
