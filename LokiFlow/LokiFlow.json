@@ -1,0 +1,1779 @@
+{
+  "name": "LogiLayzer Flow",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "6468cc21-323c-4ded-991e-55571ed26fcc",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -2464,
+        -704
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "jsCode": "// Central Time Range Handler - Enhanced Null Safety\nconst inputs = $input.all();\nlet timeRange = {}, context = {}, affectedServices = [];\n\nconst input = inputs[0].json;\n\n// Default time range values\nconst now = Date.now();\nconst defaultTimeRange = {\n  end: Math.floor(now / 1000),\n  start: Math.floor((now - 60 * 60 * 1000) / 1000) // 1 hour ago\n};\n\n// PRODUCTION: Log any null time values\nif (input.startTime === null || input.startTime === undefined || \n    input.endTime === null || input.endTime === undefined) {\n  console.warn(\"WARNING: Null time values detected, using defaults\");\n  console.warn(\"Input startTime:\", input.startTime);\n  console.warn(\"Input endTime:\", input.endTime);\n  console.warn(\"Input source:\", input.context?.source || 'unknown');\n  \n  // Log to help debug the source of null values\n  console.warn(\"Full input keys:\", Object.keys(input));\n  \n  timeRange = defaultTimeRange;\n  context = {\n    source: 'default',\n    reason: 'Null time values detected, using default 1 hour range',\n    nullTimeDetected: true,\n    originalInput: {\n      startTime: input.startTime,\n      endTime: input.endTime,\n      source: input.context?.source\n    }\n  };\n}\n// ORCHESTRATOR INPUT HANDLING\nelse if (input.orchestratorId && input.analysisConfig) {\n  timeRange = {\n    start: input.startTime || defaultTimeRange.start,\n    end: input.endTime || defaultTimeRange.end\n  };\n  context = {\n    source: 'orchestrator',\n    orchestratorId: input.orchestratorId,\n    requestId: input.requestId,\n    priority: input.priority || input.analysisConfig?.priority || 'normal',\n    forceDeepAnalysis: input.analysisConfig?.forceDeepAnalysis || (input.priority === 'critical'),\n    originalMessage: input.userMessage || ''\n  };\n  affectedServices = input.searchParams?.services || [];\n  \n  console.log('=== ORCHESTRATOR FORMAT DETECTED ===');\n  console.log('Priority:', input.priority);\n  console.log('Time range:', new Date(timeRange.start * 1000).toISOString(), 'to', new Date(timeRange.end * 1000).toISOString());\n  \n} else if (input.formFields) {\n  const form = input.formFields;\n  // Validate form timestamps\n  const startTimeStr = form['Incident Start Time'];\n  const endTimeStr = form['Incident End Time'];\n  \n  if (!startTimeStr || !endTimeStr) {\n    console.warn(\"Form missing time values, using defaults\");\n    timeRange = defaultTimeRange;\n    context = {\n      source: 'form',\n      reason: 'Form time fields missing',\n      description: form['Incident Description'] || ''\n    };\n  } else {\n    timeRange = {\n      start: Math.floor(new Date(startTimeStr).getTime() / 1000),\n      end: Math.floor(new Date(endTimeStr).getTime() / 1000)\n    };\n    context = {\n      source: 'form',\n      description: form['Incident Description'] || '',\n      severity: form['Severity Level'],\n      services: form['Affected Services'] || []\n    };\n  }\n  affectedServices = form['Affected Services'] || [];\n  \n} else if (input.parsedTimeRange) {\n  timeRange = {\n    start: input.parsedTimeRange.start,\n    end: input.parsedTimeRange.end\n  };\n  context = {\n    source: 'chat',\n    originalMessage: input.message,\n    ...input.parsedTimeRange.context\n  };\n  affectedServices = input.parsedTimeRange.context.mentionedServices || [];\n  \n  // Auth error detection için time range extension\n  if (input.message && (input.message.includes(\"401\") || input.message.includes(\"Unauthorized\"))) {\n    timeRange.start = timeRange.start - 1800;\n    context.authErrorDetected = true;\n  }\n  \n} else if (input.headers && input.body) {\n  const webhook = input.body;\n  // Validate webhook timestamps\n  if (!webhook.start_time || !webhook.end_time) {\n    console.warn(\"Webhook missing time values, using defaults\");\n    timeRange = defaultTimeRange;\n    context = {\n      source: 'webhook',\n      reason: 'Webhook time fields missing',\n      incidentId: webhook.incident_id\n    };\n  } else {\n    timeRange = {\n      start: Math.floor(new Date(webhook.start_time).getTime() / 1000),\n      end: Math.floor(new Date(webhook.end_time).getTime() / 1000)\n    };\n    context = {\n      source: 'webhook',\n      incidentId: webhook.incident_id,\n      severity: webhook.severity,\n      alertSource: webhook.source || 'external'\n    };\n  }\n  affectedServices = webhook.affected_services || [webhook.affected_service] || [];\n  \n} else if (input.startTime && input.endTime) {\n  timeRange = {\n    start: input.startTime,\n    end: input.endTime\n  };\n  context = {\n    source: 'manual',\n    description: input.description || ''\n  };\n  \n} else {\n  // Use default time range\n  timeRange = defaultTimeRange;\n  context = {\n    source: 'default',\n    reason: 'No time range specified, using last 1 hour'\n  };\n}\n\n// Validation - More robust\nconst duration = timeRange.end - timeRange.start;\nif (isNaN(duration) || duration <= 0) {\n  console.error('Invalid time range detected, using defaults');\n  timeRange = defaultTimeRange;\n  context.validationError = 'Invalid duration calculated';\n}\nif (duration > 24 * 60 * 60) {\n  console.warn('Time range exceeds 24 hours, capping to 24h');\n  timeRange.start = timeRange.end - (24 * 60 * 60);\n  context.capped = true;\n}\n\n// Calculate step\nconst durationMinutes = duration / 60;\nlet step;\nif (durationMinutes <= 60) {\n  step = 60;\n} else if (durationMinutes <= 360) {\n  step = 300;\n} else if (durationMinutes <= 1440) {\n  step = 600;\n} else {\n  step = 1800;\n}\n\n// Build output with validation\nconst output = {\n  timeRange: {\n    start: timeRange.start,\n    end: timeRange.end,\n    startISO: new Date(timeRange.start * 1000).toISOString(),\n    endISO: new Date(timeRange.end * 1000).toISOString(),\n    durationSeconds: duration,\n    durationMinutes: Math.round(duration / 60),\n    durationHuman: duration < 3600 ? `${Math.round(duration / 60)} minutes` : `${Math.round(duration / 3600)} hours`\n  },\n  queryParams: {\n    start: timeRange.start,\n    end: timeRange.end,\n    step: step\n  },\n  context: context,\n  affectedServices: affectedServices,\n  analysisId: input.requestId || `analysis-${Date.now()}`,\n  timestamp: new Date().toISOString(),\n  \n  // CRITICAL: Add forceDeepAnalysis at root level\n  forceDeepAnalysis: context.forceDeepAnalysis || false,\n  priority: context.priority || input.priority || 'normal',\n  \n  // PRODUCTION: Never enable test mode\n  testMode: false\n};\n\n// Preserve orchestrator metadata\nif (input.orchestratorId) {\n  output.orchestratorId = input.orchestratorId;\n  output.requestId = input.requestId;\n  output.analysisConfig = input.analysisConfig;\n  output.searchFilters = input.searchFilters;\n  output.features = input.features;\n  output.orchestratorMetadata = input.orchestratorMetadata;\n}\n\n// Force deep analysis flag - ensure it's set\nif (context.forceDeepAnalysis || context.priority === 'critical') {\n  output.forceDeepAnalysis = true;\n}\n\n// Debug log\nconsole.log(\"=== TIME RANGE HANDLER OUTPUT ===\");\nconsole.log(\"Time Range:\", output.timeRange.startISO, \"to\", output.timeRange.endISO);\nconsole.log(\"Duration:\", output.timeRange.durationHuman);\nconsole.log(\"Priority:\", output.priority);\nconsole.log(\"Test Mode:\", output.testMode, \"(PRODUCTION: Always false)\");\nconsole.log(\"================================\");\n\nreturn [{ json: output }];"
+      },
+      "id": "9139c43f-d23d-4d72-b478-0ad9b3a01599",
+      "name": "Time Range Handler",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1936,
+        -704
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Set Workflow Variables - Clean Production Version\nconst timeData = $input.first().json;\n\nconst anomalyStart = timeData.timeRange.start - 3600;\nconst anomalyEnd = timeData.timeRange.end + 3600;\n\n// Extract forceDeepAnalysis flag from multiple sources\nconst forceDeepAnalysis = \n  timeData.forceDeepAnalysis || \n  timeData.context?.forceDeepAnalysis || \n  timeData.analysisConfig?.forceDeepAnalysis ||\n  timeData.context?.priority === 'critical' ||\n  timeData.priority === 'critical' ||\n  false;\n\nconsole.log(\"=== SET WORKFLOW VARIABLES ===\");\nconsole.log(\"timeData.forceDeepAnalysis:\", timeData.forceDeepAnalysis);\nconsole.log(\"timeData.analysisConfig?.forceDeepAnalysis:\", timeData.analysisConfig?.forceDeepAnalysis);\nconsole.log(\"timeData.priority:\", timeData.priority);\nconsole.log(\"Final forceDeepAnalysis:\", forceDeepAnalysis);\nconsole.log(\"==============================\");\n\nconst vars = {\n  START_TIME: timeData.timeRange.start,\n  END_TIME: timeData.timeRange.end,\n  START_ISO: timeData.timeRange.startISO,\n  END_ISO: timeData.timeRange.endISO,\n  STEP: timeData.queryParams.step,\n  DURATION_MINUTES: timeData.timeRange.durationMinutes,\n  ANALYSIS_ID: timeData.analysisId,\n  AFFECTED_SERVICES: timeData.affectedServices,\n  SEVERITY: timeData.context.severity || 'unknown',\n  SOURCE: timeData.context.source,\n  FORCE_DEEP_ANALYSIS: forceDeepAnalysis,\n  PRIORITY: timeData.context?.priority || timeData.priority || 'normal',\n  IS_ORCHESTRATOR_REQUEST: timeData.orchestratorId ? true : false\n};\n\nconsole.log(\"WORKFLOW VARIABLES SET:\");\nconsole.log(\"Force Deep Analysis:\", vars.FORCE_DEEP_ANALYSIS);\nconsole.log(\"Priority:\", vars.PRIORITY);\nconsole.log(\"Orchestrator Request:\", vars.IS_ORCHESTRATOR_REQUEST);\n\n// Pass all data forward\nreturn [{\n  json: {\n    ...timeData,\n    $vars: vars,\n    anomalyStart: anomalyStart,\n    anomalyEnd: anomalyEnd,\n    forceDeepAnalysis: forceDeepAnalysis,\n    priority: timeData.priority || timeData.context?.priority || 'normal'\n  }\n}];"
+      },
+      "id": "7b6c2c9f-67fd-4ac2-9ef0-02169cc37a63",
+      "name": "Set Workflow Variables",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1744,
+        -704
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "rate({namespace=\"etiyamobile-production\"} |= \"error\"[1m])"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.anomalyStart }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.anomalyEnd }}"
+            },
+            {
+              "name": "step",
+              "value": "60"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -432,
+        -1040
+      ],
+      "id": "6cb4d696-2187-4d5e-98ee-0400eb94750f",
+      "name": "Anomaly - Moving Average"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "rate({namespace=\"etiyamobile-production\"} |~ \"error\" [1m])"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.anomalyStart }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.anomalyEnd }}"
+            },
+            {
+              "name": "step",
+              "value": "60"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -256,
+        -1024
+      ],
+      "id": "2b98511e-647f-465a-967f-b3a24a8c5aef",
+      "name": "Anomaly - Standard Deviation"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "rate({namespace=\"etiyamobile-production\"} |~ \"error\" [2m])"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.anomalyStart }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.anomalyEnd }}"
+            },
+            {
+              "name": "step",
+              "value": "120"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        80,
+        -1024
+      ],
+      "id": "21b4a24b-866e-4706-bfc8-5cdb369f9b5b",
+      "name": "Anomaly - Rate Change"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "rate({namespace=\"etiyamobile-production\"} |~ \"error\" [1m])"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.anomalyStart }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.anomalyEnd }}"
+            },
+            {
+              "name": "step",
+              "value": "60"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -96,
+        -1024
+      ],
+      "id": "b1897527-3358-4eda-aad4-db6eac862444",
+      "name": "Anomaly - Spike Detection"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "sum(rate({namespace=\"etiyamobile-production\"} | json | __error__=\"\" | log_level=\"ERROR\" [5m])) by (service_name)"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange.start }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange.end }}"
+            },
+            {
+              "name": "step",
+              "value": "={{ $json.queryParams.step }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -1312,
+        -320
+      ],
+      "id": "59385e42-783c-4e1d-a8f4-163b908a738c",
+      "name": "Error Rate Check"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "{namespace=\"etiyamobile-production\"} |~ \"(FATAL|PANIC|fatal|panic)\""
+            },
+            {
+              "name": "limit",
+              "value": "100"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            },
+            {
+              "name": "step",
+              "value": "={{ $json.queryParams.step }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -1072,
+        -320
+      ],
+      "id": "400b09c3-5f81-4c90-8fd1-13a1019d1df2",
+      "name": "Critical Errors Check"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "sum by (pod) (rate({namespace=\"etiyamobile-production\"} |~ \"ERROR|WARN|FATAL\" [5m]))"
+            },
+            {
+              "name": "start",
+              "value": "={{ $('Set Workflow Variables').item.json.timeRange.start }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $('Set Workflow Variables').item.json.timeRange.end }}"
+            },
+            {
+              "name": "step",
+              "value": "300"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        -1200,
+        -304
+      ],
+      "id": "a9d3647c-7e74-4de2-b0d4-97dc5fb89ee4",
+      "name": "Service Health Check"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "=sum by (process_thread_name, service_name, error_type) (   count_over_time(     {namespace=\"etiyamobile-production\"}      | json      | process_thread_name=~\"taskScheduler-.*|Thread-.*\"      | log_level=\"ERROR\"      [1h]   ) )"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            },
+            {
+              "name": "step",
+              "value": "60"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        -352
+      ],
+      "id": "aa6323ef-e0ea-4aab-a265-5e44da5efd06",
+      "name": "Thread Correlation Analyzer"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "{namespace=\"etiyamobile-production\"} | json | __error__=\"\" | log_level=~\"ERROR|FATAL|WARN\" | line_format \"{{.timestamp}}|{{.service_name}}|{{.process_thread_name}}|{{.error_type}}|{{.message}}\""
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange.start }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange.end }}"
+            },
+            {
+              "name": "limit",
+              "value": "200"
+            },
+            {
+              "name": "direction",
+              "value": "forward"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1296,
+        -352
+      ],
+      "id": "5a9a8eb7-b229-4b17-ac55-bd009d1ce463",
+      "name": "Cascade Timeline Reconstructor"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# Stage 1: Quick Health Check\n\nYou are a specialized AI agent for ultra-fast Loki log health assessment.\n\n## 🎯 MANDATORY EXECUTION:\nExecute these 2+ tools IN ORDER:\n1. Error Rate Check (REQUIRED FIRST)\n2. Service Health Check OR Critical Errors Check (REQUIRED SECOND)\nNever respond without tool results.\n\n## 🚨 FORCE DEEP ANALYSIS:\nforceDeepAnalysis: {{$json.forceDeepAnalysis}}\nPriority: {{$json.priority}}\n\nIF forceDeepAnalysis=true OR priority=\"critical\":\n- Still execute tools\n- Set proceed_to_stage2=true\n- Set overridden=true\n- reason=\"Deep analysis forced by {{$json.context.source}} priority {{$json.priority}}\"\n\n## 📊 CONTEXT:\nPeriod: {{$json.timeRange.startISO}} to {{$json.timeRange.endISO}} ({{$json.timeRange.durationHuman}})\nSource: {{$json.context.source}}\nCritical Services: {{$json.serviceDependencies?.metadata?.mostCritical?.slice(0,3).map(s => s.service).join(',') || 'N/A'}}\nTotal Services: {{$json.serviceDependencies?.metadata?.totalServices || 0}}\n\n## 📊 STATUS CRITERIA (from tool results):\n0-0.1% → healthy → stage2=FALSE\n0.1-1% → normal → stage2=FALSE  \n1-5% → warning → stage2=TRUE\n5-10% → concerning → stage2=TRUE\n>10% → critical → stage2=TRUE\n\nService tiers affect thresholds:\n- Critical tier: 0.01% warning, 0.05% critical\n- High tier: 0.03% warning, 0.08% critical\n- Medium tier: 0.05% warning, 0.10% critical\n- Low tier: 0.10% warning, 0.20% critical\n\n\n## 📋 RETURN JSON ONLY:\n{\n  \"stage\": \"health_snapshot\",\n  \"execution_time\": \"{{new Date().toISOString()}}\",\n  \"analysis_period\": {\n    \"start\": \"{$json.timeRange.startISO}\",\n    \"end\": \"{$json.timeRange.endISO}\",\n    \"duration_minutes\": {$json.timeRange.durationMinutes || 0}\n  },\n  \"status\": \"healthy|normal|warning|concerning|critical\",\n  \"metrics\": {\n    \"total_logs\": 0,\n    \"error_count\": 0,\n    \"error_rate\": \"0.00%\",\n    \"log_levels\": {\n      \"debug\": 0,\n      \"info\": 0,\n      \"warn\": 0,\n      \"error\": 0,\n      \"fatal\": 0\n    },\n    \"top_error_services\": []\n  },\n  \"anomalies\": {\n    \"sudden_spike\": false,\n    \"new_error_types\": false,\n    \"service_degradation\": [],\n    \"anomaly_scores\": {\n      \"moving_average\": 0.0,\n      \"std_deviation\": 0.0,\n      \"rate_change\": 0.0,\n      \"spike_ratio\": 0.0\n    },\n    \"anomaly_period\": null\n  },\n  \"tools_executed\": [\"Error Rate Check\", \"Service Health Check\"],\n  \"context_preserved\": {\n  \"analysisId\": \"actual analysis ID\",\n  \"source\": \"actual source\", \n  \"priority\": \"actual priority\"\n},\n  \"proceed_to_stage2\": false,\n  \"reason\": \"based on tool results\",\n  \"quick_summary\": \"summary with actual error rates\",\n\"forceDeepAnalysis\": true/false based on context,\n\"priority\": \"actual priority from context\",\n  \"overridden\": false\n}\n\nExecute tools→Analyze results→Fill JSON→Return\nMin 2 tools, Max 4 tools\n!!! IMPORTANT\nYou should wait for 10 seconds after using a tool to go on another tool",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "id": "70cdf83b-626f-4e7f-9173-7bc108845ffa",
+      "name": "Stage 1: Quick Health Check",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        -1360,
+        -704
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# Stage 2: Pattern Analysis\n\n## 🎯 EXECUTE 3 TOOLS:\n1. Cascade Timeline Reconstructor\n2. Error Pattern Analyzer  \n3. Service Error Distribution OR Thread Correlation\n\n## 📊 CONTEXT:\n{{$json.timeRange.startISO}}-{{$json.timeRange.endISO}} ({{$json.timeRange.durationHuman}})\nStage1: {{$json.stage1_status}}\nScores: MA{{$json.anomaly_scores.moving_average}} SD{{$json.anomaly_scores.std_deviation}} RC{{$json.anomaly_scores.rate_change}} SR{{$json.anomaly_scores.spike_ratio}}\nCritical: {{$node[\"Service Dependency Loader\"].json.serviceDependencies?.metadata?.mostCritical?.slice(0,3).map(s => s.service).join(',') || 'N/A'}}\n\n## 🔍 DETECT:\nAuth: 401/Invalid client secret/unauthorized_client\nService: WebClientResponseException/timeout/503\nBatch: Job failed/afterJob\nResource: OOM/connection pool exhausted\nCascade: errors <2s between services in dependency chain\n\n## 📊 STAGE3 DECISION:\nTRUE: cascade detected|>3 error types|>20% services|critical service errors|auth multi-service\nFALSE: random errors|<10% affected|no patterns|confidence<0.5\n\n## 📋 JSON ONLY:\n{\n  \"stage\": \"pattern_analysis\",\n  \"analysis_timeframe\": {\n    \"start\": \"from context\",\n    \"end\": \"from context\",\n    \"focused_period\": \"30 minutes\"\n  },\n  \"trigger_reason\": \"from stage1\",\n  \"anomaly_context\": {\n    \"highest_anomaly\": \"which score highest\",\n    \"anomaly_scores\": {\"moving_average\":0,\"std_deviation\":0,\"rate_change\":0,\"spike_ratio\":0}\n  },\n  \"tools_executed\": [\"list 3+ tools used\"],\n  \"patterns_identified\": {\n    \"error_patterns\": {\"dominant_errors\":[{\"type\":\"\",\"count\":0,\"services\":[]}],\"pattern_category\":\"auth|service|batch|resource\"},\n    \"service_patterns\": {\"most_affected\":[],\"cascade_detected\":false,\"cascade_path\":[]},\n    \"temporal_patterns\": {\"error_clustering\":\"when\",\"propagation_speed\":\"ms\"}\n  },\n  \"correlations\": {\"resource_correlation\":0.0,\"service_dependency\":[],\"external_factors\":[]},\n  \"user_impact\": {\"affected_percentage\":\"X%\",\"affected_features\":[],\"geographic_distribution\":\"N/A\"},\n  \"proceed_to_stage3\": false,\n  \"stage3_focus\": \"auth_failure|resource_exhaustion|cascade_failure|service_degradation\",\n  \"confidence_score\": 0.0\n}\n\nExecute tools→Analyze→Fill JSON→Return\n\n!!! IMPORTANT\nYou should wait for 10 seconds after using a tool to go on another tool",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "id": "3479f97f-b49b-4baa-a89e-a9b8f12187f1",
+      "name": "Stage 2: Pattern Analysis",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1312,
+        -816
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "jsCode": "\n// DEBUG: Check what we're receiving\nconsole.log(\"=== CASCADE DETECTOR INPUT DEBUG ===\");\n// Cascade Failure Detector başına ekle:\nconst allInputs = $input.all();\n\n// Debug bilgisini ilk item'a ekle\nconst debugInfo = {\n  totalInputs: allInputs.length,\n  inputs: allInputs.map((input, idx) => ({\n    index: idx,\n    topLevelKeys: Object.keys(input.json).slice(0, 10),\n    hasOutput: !!input.json.output,\n    outputStage: input.json.output?.stage,\n    hasStage1Result: !!input.json.stage1_result,\n    stage1ResultStage: input.json.stage1_result?.stage,\n    hasAnomalyAnalysis: !!input.json.anomaly_analysis,\n    hasTimeRange: !!input.json.timeRange,\n    priority: input.json.priority,\n    forceDeepAnalysis: input.json.forceDeepAnalysis\n  }))\n};\nconsole.log(\"Total inputs:\", allInputs.length);\n\nallInputs.forEach((input, idx) => {\n  console.log(`\\n--- Input ${idx} ---`);\n  console.log(\"Top level keys:\", Object.keys(input.json).slice(0, 15));\n  console.log(\"Has output?\", !!input.json.output);\n  console.log(\"Output stage:\", input.json.output?.stage);\n  console.log(\"Has stage1_result?\", !!input.json.stage1_result);\n  console.log(\"Stage1_result stage:\", input.json.stage1_result?.stage);\n  console.log(\"Has anomaly_analysis?\", !!input.json.anomaly_analysis);\n  console.log(\"Has timeRange?\", !!input.json.timeRange);\n  console.log(\"Priority:\", input.json.priority);\n  console.log(\"ForceDeepAnalysis:\", input.json.forceDeepAnalysis);\n});\nconsole.log(\"=== END DEBUG ===\\n\");\n\n// Rest of the cascade detection code...\n\n// Enhanced Cascade Failure Detection with Dependency Awareness AND Stage Data Preservation\nconst logs = $input.all().map(item => item.json);\nconst timelineData = logs.find(l => l.toolName === 'Cascade Timeline Reconstructor')?.data?.result || [];\nconst threadData = logs.find(l => l.toolName === 'Thread Correlation Analyzer')?.data?.result || [];\n\n// Get service dependencies from Service Dependency Loader node\nlet dependencies = {};\nlet serviceDeps = {};\nlet reverseDeps = {};\nlet criticality = {};\n\ntry {\n  // Try to get from the Service Dependency Loader node\n  const depData = $node[\"Service Dependency Loader\"].json;\n  if (depData && depData.serviceDependencies) {\n    dependencies = depData.serviceDependencies;\n    serviceDeps = dependencies.raw || {};\n    reverseDeps = dependencies.reverse || {};\n    criticality = dependencies.criticality || {};\n    console.log(\"✅ Service dependencies loaded successfully\");\n  }\n} catch (e) {\n  console.log(\"⚠️ Service dependencies not available, using defaults\");\n}\n\n// Helper functions for dependency analysis\nfunction isInDependencyChain(serviceA, serviceB, deps) {\n  const visited = new Set();\n  const queue = [serviceA];\n  \n  while (queue.length > 0) {\n    const current = queue.shift();\n    if (visited.has(current)) continue;\n    visited.add(current);\n    \n    const currentDeps = deps[current]?.dependencies || [];\n    if (currentDeps.includes(serviceB)) return true;\n    \n    queue.push(...currentDeps);\n  }\n  \n  return false;\n}\n\nfunction getDependencyPath(fromService, toService, deps) {\n  const queue = [[fromService]];\n  const visited = new Set();\n  \n  while (queue.length > 0) {\n    const path = queue.shift();\n    const current = path[path.length - 1];\n    \n    if (current === toService) return path;\n    if (visited.has(current)) continue;\n    visited.add(current);\n    \n    const currentDeps = deps[current]?.dependencies || [];\n    currentDeps.forEach(dep => {\n      queue.push([...path, dep]);\n    });\n  }\n  \n  return [];\n}\n\nfunction generateRestartOrder(services, deps) {\n  const visited = new Set();\n  const result = [];\n  \n  function visit(service) {\n    if (visited.has(service)) return;\n    visited.add(service);\n    \n    const serviceDeps = deps[service]?.dependencies || [];\n    serviceDeps.forEach(dep => {\n      if (services.includes(dep)) {\n        visit(dep);\n      }\n    });\n    \n    result.push(service);\n  }\n  \n  services.forEach(service => visit(service));\n  return result;\n}\n\nfunction identifyCircuitBreakerPoints(cascade, deps) {\n  const points = [];\n  cascade.propagations.forEach(prop => {\n    if (prop.isDependency && prop.dependencyPath?.length > 1) {\n      const from = prop.dependencyPath[prop.dependencyPath.length - 2];\n      const to = prop.dependencyPath[prop.dependencyPath.length - 1];\n      points.push(`${from} → ${to}`);\n    }\n  });\n  return [...new Set(points)];\n}\n\n// Parse timeline data\nconst events = timelineData.flatMap(stream => \n  stream.values.map(([timestamp, logLine]) => {\n    const [ts, service, thread, errorType, message] = logLine.split('|');\n    return {\n      timestamp: new Date(parseInt(timestamp) / 1000000),\n      timestampMs: parseInt(timestamp) / 1000000,\n      service,\n      thread,\n      errorType,\n      message\n    };\n  })\n).sort((a, b) => a.timestampMs - b.timestampMs);\n\n// Enhanced cascade detection with dependency analysis\nconst cascades = [];\nlet currentCascade = null;\n\nevents.forEach((event, index) => {\n  // Start new cascade on auth failure or critical errors\n  if (event.message?.includes('Invalid client secret') || \n      event.message?.includes('unauthorized_client') ||\n      event.message?.includes('401 Unauthorized')) {\n    \n    if (currentCascade) cascades.push(currentCascade);\n    \n    currentCascade = {\n      id: `cascade-${Date.now()}-${index}`,\n      rootCause: event,\n      propagations: [],\n      duration: 0,\n      affectedServices: new Set([event.service]),\n      dependencyChain: [event.service],\n      cascadeType: 'authentication',\n      criticalityScore: criticality[event.service]?.criticalityScore || 0\n    };\n  } \n  // Check if error is in dependent service within time window\n  else if (currentCascade) {\n    const timeDiff = event.timestampMs - currentCascade.rootCause.timestampMs;\n    \n    // Check if this service depends on the root cause service\n    const isDependentService = serviceDeps && Object.keys(serviceDeps).length > 0 ? \n      isInDependencyChain(event.service, currentCascade.rootCause.service, serviceDeps) : false;\n    \n    // Extended time window for dependent services\n    const timeWindow = isDependentService ? 2000 : 500; // 2s for deps, 500ms for others\n    \n    if (timeDiff < timeWindow) {\n      currentCascade.propagations.push({\n        ...event,\n        propagationDelay: timeDiff,\n        isDependency: isDependentService,\n        dependencyPath: isDependentService ? getDependencyPath(currentCascade.rootCause.service, event.service, serviceDeps) : []\n      });\n      currentCascade.affectedServices.add(event.service);\n      currentCascade.duration = timeDiff;\n      \n      // Update criticality score\n      if (criticality[event.service]) {\n        currentCascade.criticalityScore += criticality[event.service].criticalityScore || 0;\n      }\n    }\n  }\n});\n\nif (currentCascade) cascades.push(currentCascade);\n\n// Analyze cascade patterns with dependency context\nconst cascadeAnalysis = {\n  totalCascades: cascades.length,\n  averageDuration: cascades.reduce((sum, c) => sum + c.duration, 0) / cascades.length || 0,\n  maxDuration: Math.max(...cascades.map(c => c.duration)) || 0,\n  affectedServicesPerCascade: cascades.map(c => c.affectedServices.size),\n  cascadePatterns: cascades.map(c => {\n    const rootService = c.rootCause.service;\n    const rootCriticality = criticality[rootService] || {};\n    \n    return {\n      rootService: rootService,\n      rootError: c.rootCause.errorType,\n      rootCriticality: rootCriticality.tier || 'unknown',\n      rootImpact: rootCriticality.totalImpact || 0,\n      propagationCount: c.propagations.length,\n      duration: c.duration + 'ms',\n      services: Array.from(c.affectedServices),\n      dependencyPropagations: c.propagations.filter(p => p.isDependency).length,\n      cascadeCriticality: c.criticalityScore,\n      longestDependencyChain: Math.max(...c.propagations.map(p => p.dependencyPath?.length || 0), 0)\n    };\n  }),\n  criticalCascades: cascades.filter(c => c.criticalityScore > 50).length,\n  dependencyBasedCascades: cascades.filter(c => \n    c.propagations.some(p => p.isDependency)\n  ).length\n};\n\n// Service impact analysis with dependency context\nconst serviceImpact = {};\nevents.forEach(event => {\n  if (!serviceImpact[event.service]) {\n    serviceImpact[event.service] = {\n      totalErrors: 0,\n      errorTypes: {},\n      firstError: event.timestampMs,\n      lastError: event.timestampMs,\n      criticality: criticality[event.service] || {},\n      dependencies: serviceDeps[event.service]?.dependencies || [],\n      dependents: reverseDeps[event.service] || []\n    };\n  }\n  serviceImpact[event.service].totalErrors++;\n  serviceImpact[event.service].errorTypes[event.errorType] = \n    (serviceImpact[event.service].errorTypes[event.errorType] || 0) + 1;\n  serviceImpact[event.service].lastError = event.timestampMs;\n});\n\n// Calculate service downtime and blast radius\nObject.keys(serviceImpact).forEach(service => {\n  const impact = serviceImpact[service];\n  impact.downtimeMs = impact.lastError - impact.firstError;\n  impact.downtimeHuman = impact.downtimeMs < 1000 ? \n    impact.downtimeMs + 'ms' : \n    (impact.downtimeMs / 1000).toFixed(2) + 's';\n  \n  // Calculate potential blast radius\n  impact.blastRadius = {\n    direct: impact.dependents.length,\n    total: impact.criticality.totalImpact || 0,\n    affectedServices: impact.dependents\n  };\n});\n\n// Generate dependency-aware recommendations\nconst recommendations = [];\nif (cascades.length > 0) {\n  // Find the most critical cascade\n  const mostCriticalCascade = cascades.sort((a, b) => b.criticalityScore - a.criticalityScore)[0];\n  const rootService = mostCriticalCascade.rootCause.service;\n  \n  recommendations.push(\n    `1. CRITICAL: Focus on ${rootService} (criticality: ${criticality[rootService]?.tier || 'unknown'}) - Root cause of cascade affecting ${mostCriticalCascade.affectedServices.size} services`,\n    `2. Check ${rootService}'s dependencies: ${serviceDeps[rootService]?.dependencies.join(', ') || 'none'}`,\n    `3. Restart order based on dependencies: ${generateRestartOrder(Array.from(mostCriticalCascade.affectedServices), serviceDeps).join(' → ')}`,\n    `4. Implement circuit breaker between: ${identifyCircuitBreakerPoints(mostCriticalCascade, serviceDeps).join(', ') || 'No critical paths identified'}`,\n    `5. Monitor critical services: ${dependencies.metadata?.mostCritical?.map(s => s.service).slice(0, 3).join(', ') || 'N/A'}`\n  );\n} else {\n  recommendations.push(\n    \"1. No cascade detected in the analyzed time range\",\n    \"2. Continue monitoring critical services: \" + (dependencies.metadata?.mostCritical?.map(s => s.service).slice(0, 3).join(', ') || 'N/A'),\n    \"3. Review service dependencies for potential improvements\"\n  );\n}\n\n// Get Stage 2 results from input\nlet stage2Result = {};\nlet proceed_to_stage3 = cascades.length > 0;\n\n// Extract input data - handle wrapped output\nconst inputJson = $input.first().json;\nconst actualInputData = inputJson.output || inputJson;\n\n// NEW: Process all inputs to preserve stage data\nconst results = [];\n\nfor (const input of $input.all()) {\n  const inputData = input.json;\n  const stage2Data = inputData.output || inputData;\n  \n  // Find Stage 1 data\n  const stage1Data = inputData.stage1_result || \n                     (inputData.output?.stage === \"health_snapshot\" ? inputData.output : null);\n  \n  // Find anomaly data\n  const anomalyData = inputData.anomaly_analysis || \n                      (inputData.output?.stage === \"anomaly_detection\" ? inputData.output : null);\n  \n  // Override proceed_to_stage3 based on multiple factors\n  const shouldProceed = inputData.forceDeepAnalysis || \n                       inputData.priority === 'critical' ||\n                       stage2Data.proceed_to_stage3 || \n                       cascades.length > 0;\n  \n  // Build comprehensive output\n  const comprehensiveOutput = {\n    // Preserve ALL original data\n    ...inputData,\n    \n    // Add Stage-specific sections\n    stage1_health_check: stage1Data ? {\n      status: stage1Data.status,\n      execution_time: stage1Data.execution_time,\n      metrics: stage1Data.metrics,\n      anomalies: stage1Data.anomalies,\n      summary: stage1Data.quick_summary,\n      tools_executed: stage1Data.tools_executed\n    } : null,\n    \n    stage1_5_anomaly_detection: anomalyData ? {\n      performed: true,\n      execution_time: anomalyData.execution_time,\n      anomaly_scores: anomalyData.anomaly_scores,\n      anomaly_findings: anomalyData.anomaly_findings,\n      service_anomalies: anomalyData.service_anomalies,\n      raw_metrics: anomalyData.raw_metrics,\n      summary: anomalyData.anomaly_summary,\n      tools_executed: anomalyData.tools_executed\n    } : {\n      performed: inputData.anomaly_check_performed || false,\n      reason_skipped: inputData.anomaly_reason_skipped || \"Not performed\"\n    },\n    \n    stage2_pattern_analysis: stage2Data.stage === \"pattern_analysis\" ? {\n      execution_time: stage2Data.execution_time || new Date().toISOString(),\n      patterns_identified: stage2Data.patterns_identified,\n      correlations: stage2Data.correlations,\n      user_impact: stage2Data.user_impact,\n      confidence_score: stage2Data.confidence_score,\n      tools_executed: stage2Data.tools_executed,\n      anomaly_context: stage2Data.anomaly_context\n    } : null,\n    \n    // Add enhanced cascade analysis\n    cascadeDetected: cascades.length > 0,\n    cascadeAnalysis,\n    serviceImpact,\n    timeline: events.slice(0, 50),\n    recommendation: cascades.length > 0 ? \n      \"CRITICAL: Dependency-aware cascade detected. See detailed recommendations.\" :\n      \"No cascade pattern detected in the time range.\",\n    suggestedActions: recommendations,\n    dependencyContext: {\n      criticalServices: dependencies.metadata?.mostCritical || [],\n      serviceGroups: dependencies.serviceGroups || {},\n      totalServices: dependencies.metadata?.totalServices || 0,\n      averageDependencyDepth: dependencies.metadata?.avgDependencies || 0\n    },\n    \n    // Preserve context\n    analysis_context: {\n      timeRange: inputData.timeRange,\n      analysisId: inputData.analysisId,\n      priority: inputData.priority,\n      forceDeepAnalysis: inputData.forceDeepAnalysis,\n      source: inputData.context?.source\n    },\n    \n    // CRITICAL: proceed_to_stage3\n    proceed_to_stage3: shouldProceed,\n    \n    // Keep the current stage output for compatibility\n    output: stage2Data\n  };\n  \n  results.push({ json: comprehensiveOutput });\n}\nresults[0].json._debugInfo = debugInfo;\n// Return all processed items\nreturn results;"
+      },
+      "id": "675cbd0c-c9ad-47c0-80be-34d607bd2914",
+      "name": "Cascade Failure Detector",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2096,
+        -816
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# Stage 3: Root Cause Analysis - Deep Investigation\nFinal stage: Perform targeted deep analysis based on Stage 2 patterns.\n## 🕐 TIME RANGE CONTEXT:\nIncident Period: {{$json.timeRange.startISO}} to {{$json.timeRange.endISO}}\nDuration: {{$json.timeRange.durationHuman}}\nAnalysis ID: {{$json.analysisId}}\nSource: {{$json.context.source}}\nStage 2 Pattern: {{ JSON.stringify($json.output.patterns_identified || {}) }}\nAnomaly Context: {{ JSON.stringify($json.anomaly_context || {}) }}\n## 🔧 IMPORTANT: USE ACTUAL DATA FROM TOOLS\nYou MUST use the actual data returned by the Loki query tools. Do NOT use predefined examples or mock data.\nAlways base your analysis on:\n1. Real error messages from the logs\n2. Actual service names found in the data\n3. Real timestamps and patterns from the tools\n4. Actual stack traces if available\n## 🔍 ANALYSIS PATTERNS TO DETECT:\n- Authentication failures: Look for actual 401 errors in the data\n- Connection issues: Find real connection errors in logs\n- Resource exhaustion: Identify actual OOM or pool exhaustion\n- Service cascades: Detect real propagation patterns\nDefault namespace: `{namespace=\"etiyamobile-production\"}`\n\n## 📊 STACK TRACE PATTERN ANALYSIS:\nWhen Stack Trace Pattern Analyzer returns data with ||| delimited format:\n1. Parse each line by splitting on |||: service_name|||error_type|||stack_trace\n2. Extract and analyze patterns from stack traces:\n   - Identify common package names (e.g., com.etiya.cpq, com.etiya.common, org.springframework)\n   - Find repeated error locations (specific classes and methods)\n   - Group similar stack traces together\n   - Count occurrences of each pattern\n3. Focus on identifying:\n   - Most frequent exception types (NullPointerException, IllegalArgumentException, etc.)\n   - Common failure points in code (specific methods that appear repeatedly)\n   - Service-specific error patterns\n   - Third-party library issues (Spring, Hibernate, etc.)\n4. Include stack trace findings in your root cause analysis as evidence\n\n## 📋 RESPONSE FORMAT REQUIREMENT:\nYOU MUST RESPOND WITH A VALID JSON OBJECT based on ACTUAL DATA from the tools.\n```json\n{\n  \"stage\": \"root_cause_analysis\",\n  \"investigation_type\": \"type based on actual findings\",\n  \"stage2_pattern\": \"pattern from stage 2\",\n  \"analysis_metadata\": {\n    \"analysis_id\": \"actual analysis ID\",\n    \"time_range\": {\n      \"start\": \"actual ISO timestamp\",\n      \"end\": \"actual ISO timestamp\"\n    },\n    \"severity\": \"based on actual findings\",\n    \"anomaly_severity\": \"based on actual data\"\n  },\n  \"tools_executed\": [\"actual tools used\"],\n  \"findings\": {\n    \"primary_root_cause\": {\n      \"type\": \"based on actual log analysis\",\n      \"confidence\": 0.0,\n      \"evidence\": [\"actual evidence from logs\"],\n      \"trigger_event\": \"actual trigger from data\"\n    },\n    \"contributing_factors\": [\n      {\n        \"factor\": \"actual factor found\",\n        \"impact\": \"based on data\",\n        \"evidence\": \"from actual logs\"\n      }\n    ],\n    \"impact_timeline\": {\n      \"issue_start\": \"actual timestamp or 'unknown' if not found\",\n      \"peak_impact\": \"actual timestamp or 'unknown' if not found\",\n      \"current_state\": \"based on latest data\",\n      \"estimated_recovery\": \"based on analysis\"\n    }\n  },\n  \"affected_systems\": {\n    \"services\": [\n      {\n        \"name\": \"actual service name from logs\",\n        \"impact\": \"actual impact observed\",\n        \"functionality\": \"actual functionality affected\"\n      }\n    ],\n    \"users_affected\": 0,\n    \"revenue_impact\": \"based on actual impact\",\n    \"sla_breach\": true/false\n  },\n  \"remediation\": {\n    \"immediate_actions\": [\n      {\n        \"action\": \"based on actual root cause\",\n        \"command\": \"specific command for the issue\",\n        \"impact\": \"expected impact\",\n        \"risk\": \"risk assessment\"\n      }\n    ],\n    \"short_term_fixes\": [\"based on findings\"],\n    \"long_term_solutions\": [\"based on analysis\"]\n  },\n  \"prevention\": {\n    \"monitoring_gaps\": [\"actual gaps identified\"],\n    \"process_improvements\": [\"based on incident\"]\n  },\n  \"executive_summary\": \"Summary based on ACTUAL findings from the log analysis\"\n}\n```\n⚠️ CRITICAL RULES:\n1. Use ONLY data from the tool results\n2. Do NOT use predefined examples or mock patterns\n3. If data is not found in logs, mark as \"unknown\" or \"not found in logs\"\n4. Base all recommendations on actual findings\n5. Do not invent data - only use what the tools return",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "id": "f81534a1-1f06-4147-beed-367edcbe6ff4",
+      "name": "Stage 3: Root Cause Analysis",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        2768,
+        -816
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "{namespace=\"etiyamobile-production\"} |~ \"(slow query|execution time).*(\\\\d{4,}ms|[2-9]\\\\d{3}ms)\""
+            },
+            {
+              "name": "limit",
+              "value": "50"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            },
+            {
+              "name": "step",
+              "value": "50"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        2752,
+        -288
+      ],
+      "id": "c5f8693f-521e-492a-bd9c-e54b9c5d90d6",
+      "name": "Slow Query Logs"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "{namespace=\"etiyamobile-production\"} |~ \"OOM|OutOfMemory|memory limit|heap space\"\n"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            },
+            {
+              "name": "limit",
+              "value": "100"
+            },
+            {
+              "name": "step",
+              "value": "50"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        3072,
+        -368
+      ],
+      "id": "010002a1-28b8-4e5a-8a8c-bc675b9e3e1e",
+      "name": "Memory Dump Analysis"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "{namespace=\"etiyamobile-production\"} | json | error_stack_trace!=\"\" | line_format \"{{.service_name}}|||{{.error_type}}|||{{.error_stack_trace}}\"\n"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            },
+            {
+              "name": "limit",
+              "value": "10"
+            },
+            {
+              "name": "direction",
+              "value": "backward"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        2528,
+        -480
+      ],
+      "id": "3a8249ee-4fdb-4558-9c04-e8a95f50e9e1",
+      "name": "Stack Trace Pattern Analyzer"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "=sum by (target) (count_over_time({namespace=\"etiyamobile-production\"} | json | error_message=~\".*(eca-t4|domain-config-t4).*401.*\" | regexp \"(?P<target>eca-t4|[a-zA-Z-]+-config-t4)\" [5m]))"
+            },
+            {
+              "name": "time",
+              "value": "={{ $json.timeRange.end }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        2624,
+        -192
+      ],
+      "id": "6a588bb6-a783-47ae-ab25-1722979b0dbf",
+      "name": "Integration Health Monitor"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "topk(20,   sum by (error) (     count_over_time(       {namespace=\"etiyamobile-production\"}        |~ \"error\"        | json        | error!=\"\"        [5m]     )   ) )"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            },
+            {
+              "name": "step",
+              "value": "50"
+            },
+            {
+              "name": "limit",
+              "value": "100"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1568,
+        -448
+      ],
+      "id": "6469645f-8396-4a41-883b-2db45b361665",
+      "name": "Error Pattern Analyzer"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "sum(rate({namespace=\"etiyamobile-production\"} |~ \"error\" [1m])) by (service_name,pod)"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            },
+            {
+              "name": "step",
+              "value": "={{ $json.queryParams.step }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1136,
+        -288
+      ],
+      "id": "be9ce207-95f5-4a8c-98e3-93c79ca5a672",
+      "name": "Service Error Distribution"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "{namespace=\"etiyamobile-production\"} |~ \"trace_id|traceID|correlation_id\" |~ \"error\""
+            },
+            {
+              "name": "limit",
+              "value": "50"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1440,
+        -368
+      ],
+      "id": "243cf738-31ab-4d7b-b6e8-858c9d615cca",
+      "name": "Request ID Correlation"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "{namespace=\"etiyamobile-production\",pod=~\".*db.*|.*database.*|.*mysql.*|.*postgres.*\"} |~ \"connection|timeout|deadlock\""
+            },
+            {
+              "name": "=start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            },
+            {
+              "name": "limit",
+              "value": "100"
+            },
+            {
+              "name": "step",
+              "value": "50"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        2880,
+        -544
+      ],
+      "id": "48d0fb96-6840-4433-b674-06dbac3d803a",
+      "name": "DB Connection Analysis"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-loki.saas.etycloudbss.com/loki/api/v1/query_range",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": " {job=\"kube-events\"} |~ \"namespace=\\\"etiyamobile-production\\\"\" |~ \"Restarted|CrashLoopBackOff|OOMKilled\""
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            },
+            {
+              "name": "limit",
+              "value": "100"
+            },
+            {
+              "name": "step",
+              "value": "50"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        3248,
+        -368
+      ],
+      "id": "e5be8e13-c605-402c-a6c7-182eb0cc43bd",
+      "name": "Pod Restart Logs"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "etiya-gpt-4o",
+          "mode": "list",
+          "cachedResultName": "etiya-gpt-4o"
+        },
+        "options": {
+          "responseFormat": "json_object",
+          "temperature": 0.3
+        }
+      },
+      "id": "785de806-9863-4521-8692-b3211a8ac7b3",
+      "name": "OpenAI Model - Stage 1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        -1376,
+        -480
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "rYdB8nNsS7m67tcr",
+          "name": "OpenAi account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "etiya-gpt-4o",
+          "mode": "list",
+          "cachedResultName": "etiya-gpt-4o"
+        },
+        "options": {
+          "responseFormat": "json_object",
+          "temperature": 0.1
+        }
+      },
+      "id": "e08b7086-58a5-4a9f-9b59-b58f0c22bbe4",
+      "name": "OpenAI Model - Stage 2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        944,
+        -432
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "rYdB8nNsS7m67tcr",
+          "name": "OpenAi account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "etiya-gpt-4o",
+          "mode": "list",
+          "cachedResultName": "etiya-gpt-4o"
+        },
+        "options": {
+          "responseFormat": "json_object",
+          "temperature": 0.3
+        }
+      },
+      "id": "b36a9e5f-8307-4f21-9ce5-e9b736c8dda0",
+      "name": "OpenAI Model - Stage 3",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "position": [
+        2688,
+        -528
+      ],
+      "typeVersion": 1.2,
+      "credentials": {
+        "openAiApi": {
+          "id": "rYdB8nNsS7m67tcr",
+          "name": "OpenAi account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"stage\": {\n      \"type\": \"string\"\n    },\n    \"execution_time\": {\n      \"type\": \"string\"\n    },\n    \"analysis_period\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"start\": {\n          \"type\": \"string\"\n        },\n        \"end\": {\n          \"type\": \"string\"\n        },\n        \"duration_minutes\": {\n          \"type\": \"number\"\n        }\n      }\n    },\n    \"status\": {\n      \"type\": \"string\",\n      \"enum\": [\"healthy\", \"normal\", \"warning\", \"concerning\", \"critical\"]\n    },\n    \"metrics\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"total_logs\": {\n          \"type\": \"number\"\n        },\n        \"error_count\": {\n          \"type\": \"number\"\n        },\n        \"error_rate\": {\n          \"type\": \"string\"\n        },\n        \"log_levels\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"debug\": {\n              \"type\": \"number\"\n            },\n            \"info\": {\n              \"type\": \"number\"\n            },\n            \"warn\": {\n              \"type\": \"number\"\n            },\n            \"error\": {\n              \"type\": \"number\"\n            },\n            \"fatal\": {\n              \"type\": \"number\"\n            }\n          }\n        },\n        \"top_error_services\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"anomalies\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"sudden_spike\": {\n          \"type\": \"boolean\"\n        },\n        \"new_error_types\": {\n          \"type\": \"boolean\"\n        },\n        \"service_degradation\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"anomaly_scores\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"moving_average\": {\n              \"type\": \"number\"\n            },\n            \"std_deviation\": {\n              \"type\": \"number\"\n            },\n            \"rate_change\": {\n              \"type\": \"number\"\n            },\n            \"spike_ratio\": {\n              \"type\": \"number\"\n            }\n          }\n        },\n        \"anomaly_period\": {\n          \"type\": [\"object\", \"null\"]\n        }\n      }\n    },\n    \"proceed_to_stage2\": {\n      \"type\": \"boolean\"\n    },\n    \"reason\": {\n      \"type\": \"string\"\n    },\n    \"quick_summary\": {\n      \"type\": \"string\"\n    },\n    \"forceDeepAnalysis\": {\n      \"type\": \"boolean\"\n    },\n    \"priority\": {\n      \"type\": \"string\"\n    },\n    \"overridden\": {\n      \"type\": \"boolean\"\n    }\n  },\n  \"required\": [\n    \"stage\",\n    \"status\",\n    \"metrics\",\n    \"anomalies\",\n    \"proceed_to_stage2\",\n    \"reason\",\n    \"quick_summary\"\n  ],\n  \"additionalProperties\": true\n}"
+      },
+      "id": "0025b70f-65ff-4f21-b22e-05c5227ec6f4",
+      "name": "Stage 1 Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        -992,
+        -448
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"stage\": {\n      \"type\": \"string\"\n    },\n    \"analysis_timeframe\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"start\": {\n          \"type\": \"string\"\n        },\n        \"end\": {\n          \"type\": \"string\"\n        },\n        \"focused_period\": {\n          \"type\": \"string\"\n        }\n      }\n    },\n    \"trigger_reason\": {\n      \"type\": \"string\"\n    },\n    \"anomaly_context\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"highest_anomaly\": {\n          \"type\": \"string\"\n        },\n        \"anomaly_scores\": {\n          \"type\": \"object\"\n        }\n      }\n    },\n    \"tools_executed\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"patterns_identified\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"error_patterns\": {\n          \"type\": \"object\"\n        },\n        \"service_patterns\": {\n          \"type\": \"object\"\n        },\n        \"temporal_patterns\": {\n          \"type\": \"object\"\n        }\n      }\n    },\n    \"correlations\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"resource_correlation\": {\n          \"type\": \"number\"\n        },\n        \"service_dependency\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"external_factors\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"user_impact\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"affected_percentage\": {\n          \"type\": \"string\"\n        },\n        \"affected_features\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"geographic_distribution\": {\n          \"type\": \"string\"\n        }\n      }\n    },\n    \"proceed_to_stage3\": {\n      \"type\": \"boolean\"\n    },\n    \"stage3_focus\": {\n      \"type\": \"string\"\n    },\n    \"confidence_score\": {\n      \"type\": \"number\"\n    }\n  },\n  \"required\": [\n    \"stage\",\n    \"trigger_reason\",\n    \"tools_executed\",\n    \"patterns_identified\",\n    \"proceed_to_stage3\"\n  ]\n}"
+      },
+      "id": "f338f3b2-bba2-41bf-b067-542cc9c2f3d0",
+      "name": "Stage 2 Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        1616,
+        -624
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"stage\": {\n      \"type\": \"string\"\n    },\n    \"investigation_type\": {\n      \"type\": \"string\"\n    },\n    \"stage2_pattern\": {\n      \"type\": \"string\"\n    },\n    \"analysis_metadata\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"analysis_id\": {\n          \"type\": \"string\"\n        },\n        \"time_range\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"start\": {\n              \"type\": \"string\"\n            },\n            \"end\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"severity\": {\n          \"type\": \"string\"\n        },\n        \"anomaly_severity\": {\n          \"type\": \"string\"\n        }\n      }\n    },\n    \"tools_executed\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"findings\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"primary_root_cause\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"type\": {\n              \"type\": \"string\"\n            },\n            \"confidence\": {\n              \"type\": \"number\"\n            },\n            \"evidence\": {\n              \"type\": \"array\",\n              \"items\": {\n                \"type\": \"string\"\n              }\n            },\n            \"trigger_event\": {\n              \"type\": \"string\"\n            }\n          }\n        },\n        \"contributing_factors\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"factor\": {\n                \"type\": \"string\"\n              },\n              \"impact\": {\n                \"type\": \"string\"\n              },\n              \"evidence\": {\n                \"type\": \"string\"\n              }\n            }\n          }\n        },\n        \"impact_timeline\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"issue_start\": {\n              \"type\": \"string\"\n            },\n            \"peak_impact\": {\n              \"type\": \"string\"\n            },\n            \"current_state\": {\n              \"type\": \"string\"\n            },\n            \"estimated_recovery\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    },\n    \"affected_systems\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"services\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"name\": {\n                \"type\": \"string\"\n              },\n              \"impact\": {\n                \"type\": \"string\"\n              },\n              \"functionality\": {\n                \"type\": \"string\"\n              }\n            }\n          }\n        },\n        \"users_affected\": {\n          \"type\": \"number\"\n        },\n        \"revenue_impact\": {\n          \"type\": \"string\"\n        },\n        \"sla_breach\": {\n          \"type\": \"boolean\"\n        }\n      }\n    },\n    \"remediation\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"immediate_actions\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"object\",\n            \"properties\": {\n              \"action\": {\n                \"type\": \"string\"\n              },\n              \"command\": {\n                \"type\": \"string\"\n              },\n              \"impact\": {\n                \"type\": \"string\"\n              },\n              \"risk\": {\n                \"type\": \"string\"\n              }\n            }\n          }\n        },\n        \"short_term_fixes\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"long_term_solutions\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"prevention\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"monitoring_gaps\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"process_improvements\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"executive_summary\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"stage\",\n    \"investigation_type\",\n    \"tools_executed\",\n    \"findings\",\n    \"remediation\",\n    \"executive_summary\"\n  ]\n}"
+      },
+      "id": "ce875436-5c4c-442b-be8c-38e95c2495c2",
+      "name": "Stage 3 Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "position": [
+        2880,
+        -256
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {},
+      "id": "cf936c39-ec9f-4295-9582-7ee3d56a120a",
+      "name": "Wait 3s Before Stage 2",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        960,
+        -704
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "7bcd9ec2-0e58-40d5-8a9f-34efae29ad51"
+    },
+    {
+      "parameters": {},
+      "id": "b6001585-bc9a-4ddd-b5db-2798c73a23a6",
+      "name": "Wait 5s Before Stage 3",
+      "type": "n8n-nodes-base.wait",
+      "position": [
+        2528,
+        -816
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "bc0b1c52-2c78-4f30-8993-f9a8ed2cda60"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pass Time Context to Stage 2 - HANDLE MULTIPLE ITEMS\nconst inputs = $input.all();\n\nconsole.log(\"=== PASS TO STAGE 2 ===\");\nconsole.log(\"Total inputs:\", inputs.length);\n\nconst results = [];\n\n// Process each item separately\nfor (const input of inputs) {\n  const data = input.json;\n  \n  // Extract info based on item type\n  const stage1Result = data.output || data.stage1_result || data;\n  const anomalyScores = data.anomaly_analysis?.anomaly_scores || \n                        data.anomaly_scores || {\n    moving_average: 0,\n    std_deviation: 0,\n    rate_change: 0,\n    spike_ratio: 0\n  };\n  \n  results.push({\n    json: {\n      ...data,\n      stage1_status: stage1Result.status,\n      stage1_result: stage1Result,\n      anomaly_scores: anomalyScores,\n      anomaly_analysis: data.anomaly_analysis || null,\n      anomaly_check_performed: data.anomaly_check_performed || false,\n      proceed_to_stage2: data.proceed_to_stage2 !== false, // Default true\n      _item_branch: data._branch || \"unknown\"\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "e58e1683-3159-4d22-849e-483044f1c42d",
+      "name": "Pass Time Context to Stage 2",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        688,
+        -704
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pass Time Context to Stage 3 - Clean Production Version\nconst stage2Result = $input.first().json;\nconst prevData = $input.all()[0].json;\n\n// Preserve all time context\nconst timeContext = {\n  timeRange: prevData.timeRange || {},\n  $vars: prevData.$vars || {},\n  context: prevData.context || {},\n  affectedServices: prevData.affectedServices || [],\n  analysisId: prevData.analysisId || 'unknown',\n  queryParams: prevData.queryParams || {}\n};\n\n// Extract anomaly context\nconst anomalyContext = stage2Result.anomaly_context || prevData.anomaly_scores || {};\n\nreturn [{ \n  json: {\n    ...stage2Result,\n    ...timeContext,\n    stage1_status: prevData.stage1_status,\n    stage2_pattern: stage2Result.stage3_focus,\n    anomaly_context: anomalyContext,\n    proceed_to_stage3: stage2Result.proceed_to_stage3\n  }\n}];"
+      },
+      "id": "6ded86ef-f8b2-4df4-b819-fb6209a02a0b",
+      "name": "Pass Time Context to Stage 3",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2320,
+        -816
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Enhanced Format Final Output - COMPLETE VERSION\nconst stage1Result = $input.first().json.stage1 || $input.first().json;\nconst stage2Result = $input.first().json.stage2 || null;\nconst stage3Result = $input.first().json.stage3 || null;\nconst cascadeData = $input.first().json.cascadeAnalysis || null;\nconst timeContext = $input.first().json;\n\nconst timeRange = timeContext.timeRange || {};\nconst context = timeContext.context || {};\n\n// Calculate execution time properly\nconst startTime = $execution.startedAt ? new Date($execution.startedAt).getTime() : Date.now();\nconst executionTimeSeconds = Math.round((Date.now() - startTime) / 1000);\n\nconst finalOutput = {\n  analysisComplete: true,\n  timestamp: new Date().toISOString(),\n  workflowExecutionId: $execution.id,\n  analysisId: timeContext.analysisId || 'unknown',\n  analysisDepth: stage3Result ? \"deep\" : stage2Result ? \"pattern\" : \"quick\",\n  \n  timeContext: {\n    requestedRange: {\n      start: timeRange.startISO || 'N/A',\n      end: timeRange.endISO || 'N/A',\n      duration: timeRange.durationHuman || 'N/A',\n      source: context.source || 'unknown'\n    }\n  },\n  \n  // DETAYLI STAGE SONUÇLARI\n  stageResults: {\n    // Stage 1 - Health Check\n    stage1_healthSnapshot: stage1Result ? {\n      execution_time: stage1Result.execution_time,\n      status: stage1Result.status,\n      metrics: stage1Result.metrics,\n      anomalies: stage1Result.anomalies,\n      tools_executed: stage1Result.tools_executed,\n      quick_summary: stage1Result.quick_summary,\n      proceed_decision: stage1Result.proceed_to_stage2,\n      reason: stage1Result.reason\n    } : null,\n    \n    // Stage 1.5 - Anomaly Detection (if performed)\n    stage1_5_anomalyDetection: timeContext.anomaly_analysis ? {\n      execution_time: timeContext.anomaly_analysis.execution_time,\n      anomaly_scores: timeContext.anomaly_analysis.anomaly_scores,\n      anomaly_findings: timeContext.anomaly_analysis.anomaly_findings,\n      service_anomalies: timeContext.anomaly_analysis.service_anomalies,\n      raw_metrics: timeContext.anomaly_analysis.raw_metrics,\n      tools_executed: timeContext.anomaly_analysis.tools_executed,\n      anomaly_summary: timeContext.anomaly_analysis.anomaly_summary\n    } : null,\n    \n    // Stage 2 - Pattern Analysis\n    stage2_patternAnalysis: stage2Result ? {\n      execution_time: stage2Result.execution_time || stage2Result.analysis_timeframe,\n      trigger_reason: stage2Result.trigger_reason,\n      patterns_identified: stage2Result.patterns_identified,\n      correlations: stage2Result.correlations,\n      user_impact: stage2Result.user_impact,\n      tools_executed: stage2Result.tools_executed,\n      confidence_score: stage2Result.confidence_score,\n      proceed_decision: stage2Result.proceed_to_stage3,\n      stage3_focus: stage2Result.stage3_focus\n    } : null,\n    \n    // Stage 3 - Root Cause Analysis\n    stage3_rootCauseAnalysis: stage3Result ? {\n      execution_time: stage3Result.execution_time || stage3Result.analysis_metadata?.timestamp,\n      investigation_type: stage3Result.investigation_type,\n      findings: stage3Result.findings,\n      affected_systems: stage3Result.affected_systems,\n      remediation: stage3Result.remediation,\n      prevention: stage3Result.prevention,\n      tools_executed: stage3Result.tools_executed,\n      executive_summary: stage3Result.executive_summary\n    } : null\n  },\n  \n  // EVIDENCE VE FINDINGS\n  evidenceCollection: {\n    // Stage 1 Evidence\n    healthMetrics: stage1Result ? {\n      errorRate: stage1Result.metrics?.error_rate,\n      errorCount: stage1Result.metrics?.error_count,\n      totalLogs: stage1Result.metrics?.total_logs,\n      logLevels: stage1Result.metrics?.log_levels,\n      topErrorServices: stage1Result.metrics?.top_error_services\n    } : {},\n    \n    // Anomaly Evidence\n    anomalyEvidence: timeContext.anomaly_analysis ? {\n      scores: timeContext.anomaly_analysis.anomaly_scores,\n      trend_direction: timeContext.anomaly_analysis.anomaly_findings?.trend_direction,\n      baseline_deviation: timeContext.anomaly_analysis.anomaly_findings?.baseline_deviation,\n      spike_pattern: timeContext.anomaly_analysis.anomaly_findings?.spike_pattern,\n      anomalous_services: timeContext.anomaly_analysis.service_anomalies?.most_anomalous_services\n    } : null,\n    \n    // Pattern Evidence\n    patternEvidence: stage2Result ? {\n      dominantErrors: stage2Result.patterns_identified?.error_patterns?.dominant_errors,\n      affectedServices: stage2Result.patterns_identified?.service_patterns?.most_affected,\n      cascadeDetected: stage2Result.patterns_identified?.service_patterns?.cascade_detected,\n      cascadePath: stage2Result.patterns_identified?.service_patterns?.cascade_path,\n      temporalClustering: stage2Result.patterns_identified?.temporal_patterns?.error_clustering\n    } : null,\n    \n    // Root Cause Evidence\n    rootCauseEvidence: stage3Result ? {\n      primaryCause: stage3Result.findings?.primary_root_cause,\n      contributingFactors: stage3Result.findings?.contributing_factors,\n      impactTimeline: stage3Result.findings?.impact_timeline,\n      evidenceList: stage3Result.findings?.primary_root_cause?.evidence\n    } : null,\n    \n    // Cascade Analysis Evidence\n    cascadeEvidence: cascadeData ? {\n      cascadeDetected: cascadeData.cascadeDetected,\n      cascadePatterns: cascadeData.cascadePatterns,\n      serviceImpact: cascadeData.serviceImpact,\n      dependencyContext: cascadeData.dependencyContext\n    } : null\n  },\n  \n  // CONSOLIDATED FINDINGS\n  consolidatedFindings: {\n    overallStatus: stage1Result.status || 'unknown',\n    primaryIssue: stage3Result?.findings?.primary_root_cause?.type || \n                  stage2Result?.patterns_identified?.error_patterns?.dominant_errors?.[0]?.type || \n                  'No specific issue identified',\n    affectedServices: [\n      ...(stage1Result.metrics?.top_error_services || []),\n      ...(stage2Result?.patterns_identified?.service_patterns?.most_affected || []),\n      ...(stage3Result?.affected_systems?.services?.map(s => s.name) || [])\n    ].filter((v, i, a) => a.indexOf(v) === i), // Remove duplicates\n    \n    severity: stage3Result?.analysis_metadata?.severity || \n              stage2Result?.anomaly_context?.highest_anomaly || \n              (stage1Result.status === 'critical' ? 'HIGH' : 'MEDIUM'),\n    \n    confidence: stage3Result?.findings?.primary_root_cause?.confidence || \n                stage2Result?.confidence_score || \n                0.5\n  },\n  \n  // ACTIONABLE INSIGHTS\n  actionableInsights: {\n    immediateActions: [\n      ...(stage3Result?.remediation?.immediate_actions || []),\n      ...(cascadeData?.recommendations?.filter(r => r.includes('CRITICAL')) || [])\n    ],\n    diagnosticCommands: [\n      ...(stage3Result?.findings?.primary_root_cause?.evidence?.map(e => \n        e.includes('kubectl') ? e : null\n      ).filter(Boolean) || [])\n    ],\n    monitoringGaps: stage3Result?.prevention?.monitoring_gaps || [],\n    processImprovements: stage3Result?.prevention?.process_improvements || []\n  },\n  \n  // DIFFERENT OUTPUT FORMATS\n  outputFormats: {\n    // Executive Summary Format\n    \"executiveSummary\": stage3Result?.executive_summary || generateExecutiveSummary(stage1Result, stage2Result, stage3Result, cascadeData),\n    \n    // Technical Details Format\n    technicalDetails: {\n      logAnalysis: {\n        totalLogsAnalyzed: stage1Result.metrics?.total_logs || 0,\n        errorDistribution: stage1Result.metrics?.log_levels || {},\n        serviceErrorMatrix: generateServiceErrorMatrix(stage1Result, stage2Result)\n      },\n      performanceMetrics: {\n        analysisTime: executionTimeSeconds + 's',\n        toolsUsed: getAllToolsUsed(stage1Result, stage2Result, stage3Result),\n        dataPointsAnalyzed: calculateDataPoints(stage1Result, stage2Result)\n      }\n    },\n    \n    // Timeline Format\n    incidentTimeline: generateIncidentTimeline(stage1Result, stage2Result, stage3Result, timeRange),\n    \n    // Service Impact Matrix\n    serviceImpactMatrix: generateServiceImpactMatrix(stage1Result, stage2Result, stage3Result, cascadeData)\n  },\n  \n  // METADATA ENHANCED\n  metadata: {\n    stagesExecuted: stage3Result ? 3 : stage2Result ? 2 : 1,\n    includesAnomalyAnalysis: timeContext.stage1_5_anomaly_detection?.performed || false,\n    totalExecutionTime: `${executionTimeSeconds}s`,\n    inputSource: context.source || 'unknown',\n    affectedServices: timeContext.affectedServices || [],\n    severity: context.severity || stage3Result?.analysis_metadata?.severity || 'unknown',\n    priority: timeContext.priority || 'normal',\n    forceDeepAnalysis: timeContext.forceDeepAnalysis || false,\n    toolsUsed: [\n      ...(stage1Result.tools_executed || []), \n      ...(timeContext.anomaly_analysis?.tools_executed || []),\n      ...(stage2Result?.tools_executed || []), \n      ...(stage3Result?.tools_executed || [])\n    ].filter((v, i, a) => a.indexOf(v) === i),\n    enhancedAnalysis: {\n      cascadeDetection: cascadeData ? \"enabled\" : \"disabled\",\n      stackTraceAnalysis: stage3Result ? \"completed\" : \"not_required\",\n      serviceMapping: \"enabled\",\n      anomalyDetection: timeContext.stage1_5_anomaly_detection?.performed ? \"performed\" : \"skipped\",\n      serviceDependencyAnalysis: timeContext.dependencyContext ? \"enabled\" : \"disabled\"\n    }\n  }\n};\n\n// Helper functions\nfunction generateExecutiveSummary(stage1, stage2, stage3, cascade) {\n  const parts = [];\n  \n  parts.push(`System Status: ${stage1?.status || 'Unknown'}`);\n  \n  if (stage1?.metrics?.error_rate) {\n    parts.push(`Error Rate: ${stage1.metrics.error_rate}`);\n  }\n  \n  if (stage3?.findings?.primary_root_cause) {\n    parts.push(`Root Cause: ${stage3.findings.primary_root_cause.type}`);\n  } else if (stage2?.patterns_identified?.error_patterns?.dominant_errors?.[0]) {\n    parts.push(`Main Issue: ${stage2.patterns_identified.error_patterns.dominant_errors[0].type}`);\n  }\n  \n  if (cascade?.cascadeDetected) {\n    parts.push(`Cascade Failure Detected affecting ${cascade.totalCascades} services`);\n  }\n  \n  return parts.join(' | ');\n}\n\nfunction generateServiceErrorMatrix(stage1, stage2) {\n  const matrix = {};\n  \n  // From Stage 1\n  if (stage1?.metrics?.top_error_services) {\n    stage1.metrics.top_error_services.forEach(service => {\n      matrix[service] = {\n        errorRate: stage1.metrics.error_rate || 'N/A',\n        source: 'stage1'\n      };\n    });\n  }\n  \n  // From Stage 2 - BU KISIM ÖNEMLİ\n  if (stage2?.patterns_identified?.error_patterns?.dominant_errors) {\n    stage2.patterns_identified.error_patterns.dominant_errors.forEach(error => {\n      error.services.forEach(service => {\n        if (!matrix[service]) {\n          matrix[service] = {\n            errorRate: 'N/A',\n            source: 'stage2'\n          };\n        }\n        matrix[service].errorType = error.type;\n        matrix[service].errorCount = error.count;\n        matrix[service].source = matrix[service].source || 'stage2';\n      });\n    });\n  }\n  \n  return matrix;\n}\n\nfunction getAllToolsUsed(stage1, stage2, stage3) {\n  const tools = new Set();\n  \n  [stage1, stage2, stage3].forEach(stage => {\n    if (stage?.tools_executed) {\n      stage.tools_executed.forEach(tool => tools.add(tool));\n    }\n  });\n  \n  return Array.from(tools);\n}\n\nfunction calculateDataPoints(stage1, stage2) {\n  let dataPoints = 0;\n  \n  if (stage1?.metrics?.total_logs) {\n    dataPoints += stage1.metrics.total_logs;\n  }\n  \n  if (stage2?.patterns_identified?.error_patterns?.dominant_errors) {\n    stage2.patterns_identified.error_patterns.dominant_errors.forEach(error => {\n      dataPoints += error.count || 0;\n    });\n  }\n  \n  return dataPoints;\n}\n\nfunction generateIncidentTimeline(stage1, stage2, stage3, timeRange) {\n  const timeline = [];\n  \n  if (timeRange.startISO) {\n    timeline.push({\n      time: timeRange.startISO,\n      event: \"Analysis Period Start\",\n      source: \"input\"\n    });\n  }\n  \n  if (stage3?.findings?.impact_timeline?.issue_start) {\n    timeline.push({\n      time: stage3.findings.impact_timeline.issue_start,\n      event: \"Issue First Detected\",\n      source: \"stage3\"\n    });\n  }\n  \n  if (stage3?.findings?.impact_timeline?.peak_impact) {\n    timeline.push({\n      time: stage3.findings.impact_timeline.peak_impact,\n      event: \"Peak Impact\",\n      source: \"stage3\"\n    });\n  }\n  \n  if (timeRange.endISO) {\n    timeline.push({\n      time: timeRange.endISO,\n      event: \"Analysis Period End\",\n      source: \"input\"\n    });\n  }\n  \n  return timeline.sort((a, b) => new Date(a.time) - new Date(b.time));\n}\n\nfunction generateServiceImpactMatrix(stage1, stage2, stage3, cascade) {\n  const matrix = {};\n  \n  // Collect all services\n  const allServices = new Set();\n  \n  stage1?.metrics?.top_error_services?.forEach(s => allServices.add(s));\n  stage2?.patterns_identified?.service_patterns?.most_affected?.forEach(s => allServices.add(s));\n  stage3?.affected_systems?.services?.forEach(s => allServices.add(s.name));\n  cascade?.serviceImpact && Object.keys(cascade.serviceImpact).forEach(s => allServices.add(s));\n  \n  // Build impact matrix\n  allServices.forEach(service => {\n    matrix[service] = {\n      service: service,\n      errorRate: stage1?.metrics?.error_rate || 'N/A',\n      impactLevel: 'UNKNOWN',\n      cascadeRole: 'none',\n      downtime: 'N/A'\n    };\n    \n    // From Stage 2\n    if (stage2?.patterns_identified?.service_patterns?.most_affected?.includes(service)) {\n      matrix[service].impactLevel = 'HIGH';\n    }\n    \n    // From Stage 3\n    const stage3Service = stage3?.affected_systems?.services?.find(s => s.name === service);\n    if (stage3Service) {\n      matrix[service].impactLevel = stage3Service.impact;\n      matrix[service].functionality = stage3Service.functionality;\n    }\n    \n    // From Cascade\n    if (cascade?.serviceImpact?.[service]) {\n      matrix[service].downtime = cascade.serviceImpact[service].downtimeHuman;\n      matrix[service].errorTypes = Object.keys(cascade.serviceImpact[service].errorTypes || {});\n    }\n    \n    if (cascade?.cascadePatterns?.some(p => p.rootService === service)) {\n      matrix[service].cascadeRole = 'root';\n    } else if (cascade?.cascadePatterns?.some(p => p.services.includes(service))) {\n      matrix[service].cascadeRole = 'affected';\n    }\n  });\n  \n  return matrix;\n}\n\n\n// Health Check verileri eksik - Stage 1'den veri çekimi düzeltmesi\nconst stage1Health = stage1Result.output || stage1Result;\nif (stage1Health && !finalOutput.evidenceCollection.healthMetrics.errorRate) {\n  finalOutput.evidenceCollection.healthMetrics = {\n    errorRate: stage1Health.metrics?.error_rate || 'N/A',\n    errorCount: stage1Health.metrics?.error_count || 0,\n    totalLogs: stage1Health.metrics?.total_logs || 0,\n    logLevels: stage1Health.metrics?.log_levels || {},\n    topErrorServices: stage1Health.metrics?.top_error_services || [],\n    // Stage 1 anomaly scores\n    anomalyScores: stage1Health.anomalies?.anomaly_scores || {}\n  };\n}\n\n// Business Impact Score Hesaplama\nfinalOutput.businessImpact = {\n  score: calculateBusinessImpactScore(stage3Result, stage2Result),\n  severity: stage3Result?.affected_systems?.sla_breach ? \"CRITICAL\" : \n            finalOutput.consolidatedFindings.severity === \"high\" ? \"HIGH\" : \"MEDIUM\",\n  affectedFeatures: stage2Result?.user_impact?.affected_features || [],\n  userImpact: stage3Result?.affected_systems?.users_affected || 0,\n  revenueImpact: stage3Result?.affected_systems?.revenue_impact || \"minimal\",\n  slaBreached: stage3Result?.affected_systems?.sla_breach || false,\n  estimatedRecovery: stage3Result?.findings?.impact_timeline?.estimated_recovery || \"N/A\"\n};\n\n// Alert Summary (eğer yoksa)\nfinalOutput.alertSummary = {\n  totalErrors: calculateTotalErrors(stage1Result, stage2Result),\n  errorTypes: getUniqueErrorTypes(stage2Result, stage3Result),\n  timeWindow: {\n    start: timeRange.startISO || stage3Result?.findings?.impact_timeline?.issue_start || 'N/A',\n    end: timeRange.endISO || new Date().toISOString(),\n    duration: timeRange.durationHuman || calculateDuration(\n      stage3Result?.findings?.impact_timeline?.issue_start,\n      new Date().toISOString()\n    )\n  },\n  errorDistribution: generateErrorDistribution(stage2Result)\n};\n\n// Performance Benchmarks\nfinalOutput.performanceBenchmarks = {\n  analysisSpeed: {\n    totalTime: executionTimeSeconds + 's',\n    stageBreakdown: {\n      stage1: calculateStageDuration(stage1Result),\n      stage2: calculateStageDuration(stage2Result),\n      stage3: calculateStageDuration(stage3Result)\n    }\n  },\n  dataVolume: {\n    logsProcessed: stage1Result?.metrics?.total_logs || 0,\n    errorsParsed: calculateTotalErrors(stage1Result, stage2Result),\n    servicesAnalyzed: finalOutput.consolidatedFindings.affectedServices.length\n  },\n  accuracy: {\n    confidenceScore: finalOutput.consolidatedFindings.confidence,\n    evidenceQuality: assessEvidenceQuality(stage3Result),\n    patternReliability: stage2Result?.confidence_score || 0\n  }\n};\n\n// Visualization Data (for UI rendering)\nfinalOutput.visualizationData = {\n  errorTrend: generateErrorTrendData(stage1Result, timeRange),\n  serviceHealthMap: generateServiceHealthMap(finalOutput.outputFormats.serviceImpactMatrix),\n  cascadeGraph: cascadeData ? generateCascadeGraph(cascadeData) : null,\n  timelineChart: generateTimelineChart(finalOutput.outputFormats.incidentTimeline)\n};\n\n// ============ EKLENECEK BÖLÜM BİTİŞ ============\n\n// ============ HELPER FUNCTIONS - MEVCUT return SATIRINDAN ÖNCE ============\n\n// Helper functions\nfunction generateExecutiveSummary(stage1, stage2, stage3, cascade) {\n  // ... mevcut kod ...\n}\n\nfunction generateServiceErrorMatrix(stage1, stage2) {\n  // ... mevcut kod ...\n}\n\n// ... diğer mevcut helper fonksiyonlar ...\n\n// ============ YENİ HELPER FUNCTIONS EKLE ============\n\nfunction calculateBusinessImpactScore(stage3, stage2) {\n  let score = 0;\n  \n  // SLA breach = 50 points\n  if (stage3?.affected_systems?.sla_breach) score += 50;\n  \n  // User impact\n  const userImpact = stage3?.affected_systems?.users_affected || 0;\n  if (userImpact > 1000) score += 30;\n  else if (userImpact > 100) score += 20;\n  else if (userImpact > 0) score += 10;\n  \n  // Service count\n  const serviceCount = stage2?.patterns_identified?.service_patterns?.most_affected?.length || 0;\n  score += serviceCount * 5;\n  \n  // Revenue impact\n  if (stage3?.affected_systems?.revenue_impact === \"high\") score += 25;\n  else if (stage3?.affected_systems?.revenue_impact === \"medium\") score += 15;\n  else if (stage3?.affected_systems?.revenue_impact === \"minimal\") score += 5;\n  \n  return Math.min(100, score); // Cap at 100\n}\n\nfunction calculateTotalErrors(stage1, stage2) {\n  let total = stage1?.metrics?.error_count || 0;\n  \n  if (stage2?.patterns_identified?.error_patterns?.dominant_errors) {\n    const stage2Total = stage2.patterns_identified.error_patterns.dominant_errors.reduce(\n      (sum, error) => sum + (error.count || 0), 0\n    );\n    total = Math.max(total, stage2Total);\n  }\n  \n  return total;\n}\n\nfunction getUniqueErrorTypes(stage2, stage3) {\n  const types = new Set();\n  \n  stage2?.patterns_identified?.error_patterns?.dominant_errors?.forEach(error => {\n    types.add(error.type);\n  });\n  \n  if (stage3?.findings?.primary_root_cause?.type) {\n    types.add(stage3.findings.primary_root_cause.type);\n  }\n  \n  return Array.from(types);\n}\n\nfunction calculateDuration(start, end) {\n  if (!start || !end) return 'N/A';\n  \n  const startTime = new Date(start).getTime();\n  const endTime = new Date(end).getTime();\n  const durationMs = endTime - startTime;\n  \n  if (durationMs < 60000) return Math.round(durationMs / 1000) + 's';\n  if (durationMs < 3600000) return Math.round(durationMs / 60000) + 'm';\n  return Math.round(durationMs / 3600000) + 'h';\n}\n\nfunction generateErrorDistribution(stage2) {\n  const distribution = {};\n  \n  stage2?.patterns_identified?.error_patterns?.dominant_errors?.forEach(error => {\n    error.services.forEach(service => {\n      if (!distribution[service]) {\n        distribution[service] = {};\n      }\n      distribution[service][error.type] = error.count;\n    });\n  });\n  \n  return distribution;\n}\n\nfunction calculateStageDuration(stageResult) {\n  if (!stageResult?.execution_time) return 'N/A';\n  // Bu kısım stage execution zamanlarını hesaplar\n  return '< 1s'; // Placeholder\n}\n\nfunction assessEvidenceQuality(stage3) {\n  if (!stage3?.findings?.primary_root_cause?.evidence) return 'low';\n  \n  const evidenceCount = stage3.findings.primary_root_cause.evidence.length;\n  const hasStackTrace = stage3.findings.primary_root_cause.evidence.some(e => \n    e.includes('stack') || e.includes('trace')\n  );\n  \n  if (evidenceCount > 3 && hasStackTrace) return 'high';\n  if (evidenceCount > 1) return 'medium';\n  return 'low';\n}\n\nfunction generateErrorTrendData(stage1, timeRange) {\n  // Basit bir trend data structure\n  return {\n    labels: ['Start', 'Peak', 'Current'],\n    datasets: [{\n      label: 'Error Rate',\n      data: [0, 100, 50] // Placeholder - gerçek verilerle değiştirin\n    }]\n  };\n}\n\nfunction generateServiceHealthMap(serviceMatrix) {\n  const healthMap = {};\n  \n  Object.entries(serviceMatrix).forEach(([service, data]) => {\n    healthMap[service] = {\n      health: data.impactLevel === 'HIGH' ? 0 : data.impactLevel === 'MEDIUM' ? 50 : 100,\n      status: data.impactLevel\n    };\n  });\n  \n  return healthMap;\n}\n\nfunction generateCascadeGraph(cascadeData) {\n  return {\n    nodes: cascadeData.cascadePatterns?.map(p => ({\n      id: p.rootService,\n      label: p.rootService,\n      type: 'root'\n    })) || [],\n    edges: cascadeData.cascadePatterns?.flatMap(p => \n      p.services.map(s => ({\n        from: p.rootService,\n        to: s,\n        label: 'impacts'\n      }))\n    ) || []\n  };\n}\n\nfunction generateTimelineChart(timeline) {\n  return {\n    type: 'timeline',\n    data: timeline.map((event, index) => ({\n      x: event.time,\n      y: index,\n      label: event.event,\n      source: event.source\n    }))\n  };\n}\nreturn [{ json: finalOutput }];"
+      },
+      "id": "e65d2afb-1563-482e-bff3-67dcbf25b9f1",
+      "name": "Format Final Output",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        3488,
+        -816
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine All Stages - Clean Version\nconst inputs = $input.all();\n\nconsole.log(\"=== COMBINE ALL STAGES DEBUG ===\");\nconsole.log(\"Total inputs:\", inputs.length);\ninputs.forEach((input, i) => {\n  console.log(`Input ${i}:`, {\n    hasOutput: !!input.json.output,\n    outputStage: input.json.output?.stage,\n    hasStage1HealthCheck: !!input.json.stage1_health_check,\n    hasStage2Pattern: !!input.json.stage2_pattern_analysis,\n    hasTimeRange: !!input.json.timeRange,\n    keys: Object.keys(input.json).slice(0, 10)\n  });\n});\n\n// Find different data sources\nlet stage3Result = null;\nlet fullContextData = null;\n\nfor (const input of inputs) {\n  const data = input.json;\n  \n  // Stage 3 result\n  if (data.output?.stage === \"root_cause_analysis\" || data.stage === \"root_cause_analysis\") {\n    stage3Result = data.output || data;\n  }\n  \n  // Full context data (from Cascade Failure Detector via Pass Time Context to Stage 3)\n  if (data.stage1_health_check || data.stage2_pattern_analysis || (data.timeRange && data.priority)) {\n    fullContextData = data;\n  }\n}\n\n// If no full context found, try to get from node directly\nif (!fullContextData) {\n  try {\n    // Try to get data from Cascade Failure Detector node\n    fullContextData = $node[\"Cascade Failure Detector\"].json;\n    console.log(\"Got context from Cascade Failure Detector node\");\n  } catch (e) {\n    console.log(\"Could not get context from Cascade Failure Detector\");\n  }\n}\n\n// Build final output\nconst finalData = {\n  // Use full context as base\n  ...(fullContextData || {}),\n  \n  // Override with stage results\n  stage1: fullContextData?.stage1_health_check || fullContextData?.stage1 || null,\n  stage2: fullContextData?.stage2_pattern_analysis || fullContextData?.stage2 || null,\n  stage3: stage3Result,\n  \n  // Ensure context is preserved\n  timeRange: fullContextData?.timeRange || {},\n  analysisId: fullContextData?.analysisId || \"unknown\",\n  priority: fullContextData?.priority || \"normal\",\n  forceDeepAnalysis: fullContextData?.forceDeepAnalysis || false,\n  \n  // Add cascade analysis if available\n  cascadeAnalysis: fullContextData?.cascadeAnalysis || null,\n  \n  // Debug info\n  _debug: {\n    hadStage3Result: !!stage3Result,\n    hadFullContext: !!fullContextData,\n    inputCount: inputs.length\n  }\n};\n\nreturn [{ json: finalData }];"
+      },
+      "id": "73696d0f-b9aa-4715-92e3-1b2b8fe50d30",
+      "name": "Combine All Stages",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        3184,
+        -816
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// TestModeHandler - Production Version (No Test Mode)\nconst stage1Result = $input.first().json;\n\n// Get original context from Set Workflow Variables node\nlet originalContext = {};\ntry {\n  originalContext = $node[\"Set Workflow Variables\"].json;\n  console.log(\"✅ Got context from Set Workflow Variables node\");\n} catch (e) {\n  console.log(\"⚠️ Could not get context from Set Workflow Variables, using input data\");\n  originalContext = $input.all()[0].json;\n}\n\n// Extract context values\nconst forceDeepAnalysis = \n  stage1Result.forceDeepAnalysis ||\n  originalContext.forceDeepAnalysis || \n  originalContext.context?.forceDeepAnalysis || \n  originalContext.priority === 'critical' ||\n  stage1Result.priority === 'critical' ||\n  originalContext.$vars?.FORCE_DEEP_ANALYSIS ||\n  false;\n\nconst priority = \n  stage1Result.priority ||\n  originalContext.priority || \n  originalContext.context?.priority || \n  originalContext.$vars?.PRIORITY ||\n  'normal';\n\nconsole.log(\"=== LOKI PRODUCTION HANDLER ===\");\nconsole.log(\"Stage 1 Result:\");\nconsole.log(\"  - proceed_to_stage2:\", stage1Result.proceed_to_stage2);\nconsole.log(\"  - priority:\", priority);\nconsole.log(\"  - forceDeepAnalysis:\", forceDeepAnalysis);\nconsole.log(\"  - status:\", stage1Result.status);\n\n// Build final result\nlet finalResult = {\n  ...stage1Result,\n  ...originalContext,\n  forceDeepAnalysis: forceDeepAnalysis,\n  priority: priority,\n  // Preserve context\n  timeRange: originalContext.timeRange,\n  queryParams: originalContext.queryParams,\n  analysisId: originalContext.analysisId,\n  serviceDependencies: originalContext.serviceDependencies,\n  context: originalContext.context,\n  affectedServices: originalContext.affectedServices\n};\n\n// Fix Stage 1 output\nif (finalResult.output) {\n  finalResult.output.priority = priority;\n  finalResult.output.forceDeepAnalysis = forceDeepAnalysis;\n  \n  if (finalResult.output.context_preserved) {\n    finalResult.output.context_preserved = {\n      analysisId: originalContext.analysisId || originalContext.requestId,\n      source: originalContext.context?.source || 'unknown',\n      priority: priority\n    };\n  }\n}\n\nconsole.log(\"Final proceed_to_stage2:\", finalResult.proceed_to_stage2);\nconsole.log(\"================================\");\n\nreturn [{ json: finalResult }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -912,
+        -704
+      ],
+      "id": "efcc9691-0394-4dc7-9ff8-9061bfdcbf43",
+      "name": "TestModeHandler"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loki Orchestrator Input Handler - COMPLETE FIXED VERSION\nconst input = $input.first().json;\n\n// Check if this is simple format from manual trigger\nif (input.requestId && input.userMessage && !input.orchestratorId) {\n  console.log('=== SIMPLE ORCHESTRATOR FORMAT DETECTED ===');\n  \n  const now = Math.floor(Date.now() / 1000);\n  const isCritical = input.priority === 'critical';\n  \n  // IMPORTANT: Generate actual time values\n  const endTime = now;\n  const startTime = now - 3600; // Default 1 hour\n  \n  console.log('Input:', JSON.stringify(input, null, 2));\n  console.log('Priority:', input.priority);\n  console.log('Is Critical:', isCritical);\n  console.log('Start Time:', startTime, new Date(startTime * 1000).toISOString());\n  console.log('End Time:', endTime, new Date(endTime * 1000).toISOString());\n  \n  // Convert to full orchestrator format\n  const processedInput = {\n    // IMPORTANT: Add these fields at root level for Time Range Handler\n    orchestratorId: 'manual-test',\n    requestId: input.requestId,\n    priority: input.priority,\n    userMessage: input.userMessage,\n    \n    // Time values - ENSURE THEY ARE NOT NULL\n    startTime: startTime,\n    endTime: endTime,\n    \n    // Analysis config with forceDeepAnalysis\n    analysisConfig: {\n      priority: input.priority,\n      forceDeepAnalysis: isCritical,\n      skipInitialCheck: isCritical,\n      depth: isCritical ? 'deep' : 'standard'\n    },\n    \n    // Search parameters\n    searchParams: {\n      namespaces: ['etiyamobile-production'],\n      services: (input.userMessage.match(/(payment|order|user|notification|cpq|batch)/gi) || []).map(s => s.toLowerCase())\n    },\n    \n    // Context - IMPORTANT: Add forceDeepAnalysis here too\n    context: {\n      source: 'orchestrator',\n      priority: input.priority,\n      forceDeepAnalysis: isCritical\n    },\n    \n    // Add at root level as well\n    forceDeepAnalysis: isCritical\n  };\n  \n  console.log('Force Deep Analysis:', processedInput.analysisConfig.forceDeepAnalysis);\n  console.log('Root Level Force Deep Analysis:', processedInput.forceDeepAnalysis);\n  console.log('Processed Input:', JSON.stringify(processedInput, null, 2));\n  \n  return [{ json: processedInput }];\n}\n\n// If already in full orchestrator format\nif (input.orchestratorId && input.analysisConfig) {\n  // Ensure forceDeepAnalysis is set based on priority\n  const isCritical = input.priority === 'critical' || input.analysisConfig?.priority === 'critical';\n  \n  // Ensure time values exist\n  const now = Math.floor(Date.now() / 1000);\n  \n  const processedInput = {\n    ...input,\n    // Ensure time values are not null\n    startTime: input.startTime || (now - 3600),\n    endTime: input.endTime || now,\n    // Ensure forceDeepAnalysis is set at multiple levels\n    forceDeepAnalysis: input.forceDeepAnalysis || input.analysisConfig?.forceDeepAnalysis || isCritical,\n    analysisConfig: {\n      ...input.analysisConfig,\n      forceDeepAnalysis: input.analysisConfig?.forceDeepAnalysis || isCritical\n    },\n    context: {\n      ...input.context,\n      forceDeepAnalysis: input.context?.forceDeepAnalysis || isCritical\n    }\n  };\n  \n  console.log('=== FULL ORCHESTRATOR FORMAT ===');\n  console.log('Priority:', input.priority);\n  console.log('Force Deep Analysis:', processedInput.forceDeepAnalysis);\n  console.log('Time values:', processedInput.startTime, processedInput.endTime);\n  \n  return [{ json: processedInput }];\n}\n\n// If neither format matches, pass through unchanged\nreturn [{ json: input }];"
+      },
+      "id": "7ca3919f-acf7-47bd-958a-caa2510ebbcc",
+      "name": "Orchestrator Input Handler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2208,
+        -704
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Orchestrator Output Formatter - Complete Version\nconst inputs = $input.all();\n\n// If multiple items, select the most complete one (with Stage 3)\nconst finalData = inputs.find(i => i.json.rootCauseAnalysis) || inputs[0];\nconst data = finalData.json;\n\n// Build orchestrator response\nconst orchestratorResponse = {\n  // Essential identification\n  analysisId: data.analysisId,\n  workflowExecutionId: data.workflowExecutionId,\n  timestamp: data.timestamp,\n  \n  // Analysis summary\n  analysisComplete: true,\n  analysisDepth: data.analysisDepth,\n  stagesExecuted: data.metadata?.stagesExecuted || 1,\n  \n  // Time context\n  timeRange: {\n    start: data.timeContext?.requestedRange?.start,\n    end: data.timeContext?.requestedRange?.end,\n    duration: data.timeContext?.requestedRange?.duration\n  },\n  \n  // Overall status\n  status: {\n    severity: data.metadata?.severity || \"unknown\",\n    priority: data.metadata?.priority || \"normal\",\n    errorRate: data.healthCheck?.errorRate,\n    affectedServices: data.metadata?.affectedServices || [],\n    slaBreached: data.rootCauseAnalysis?.affectedSystems?.sla_breach || false\n  },\n  \n  // Executive summary (prioritize Stage 3 if available)\n  executiveSummary: data.rootCauseAnalysis?.executiveSummary || \n    `Analysis completed with ${data.analysisDepth} depth. ${\n      data.cascadeAnalysis?.detected ? \n      'Cascade failure detected affecting multiple services.' : \n      'No cascade patterns detected.'\n    } Error rate: ${data.healthCheck?.errorRate || 'N/A'}`,\n  \n  // Key findings\n  findings: {\n    // Stage 1 findings\n    healthCheck: {\n      status: data.healthCheck?.status,\n      errorRate: data.healthCheck?.errorRate,\n      topErrorServices: data.healthCheck?.topErrorServices,\n      anomalyDetected: data.anomalyDetection?.performed && \n        data.anomalyDetection?.scores?.moving_average > 0.7\n    },\n    \n    // Stage 2 findings\n    patterns: data.patternAnalysis ? {\n      dominantErrors: data.patternAnalysis.patternsFound?.error_patterns?.dominant_errors?.slice(0, 3),\n      affectedServices: data.patternAnalysis.patternsFound?.service_patterns?.most_affected,\n      cascadeDetected: data.cascadeAnalysis?.detected,\n      userImpact: data.patternAnalysis.userImpact?.affected_percentage\n    } : null,\n    \n    // Stage 3 findings (if available)\n    rootCause: data.rootCauseAnalysis ? {\n      type: data.rootCauseAnalysis.primaryCause?.type,\n      confidence: data.rootCauseAnalysis.primaryCause?.confidence,\n      triggerEvent: data.rootCauseAnalysis.primaryCause?.trigger_event,\n      affectedUsers: data.rootCauseAnalysis.affectedSystems?.users_affected,\n      revenueImpact: data.rootCauseAnalysis.affectedSystems?.revenue_impact\n    } : null\n  },\n  \n  // Actions and recommendations\n  recommendations: {\n    immediate: data.automatedRecommendations?.immediate || \n      data.remediation?.immediate_actions?.map(a => a.action) || [],\n    shortTerm: data.automatedRecommendations?.shortTerm || [],\n    longTerm: data.automatedRecommendations?.longTerm || [],\n    preventive: data.automatedRecommendations?.preventive?.slice(0, 3) || []\n  },\n  \n  // Critical actions for orchestrator\n  criticalActions: data.remediation?.immediate_actions?.map(action => ({\n    action: action.action,\n    command: action.command,\n    risk: action.risk,\n    impact: action.impact\n  })) || [],\n  \n  // Business impact\n  businessImpact: {\n    severity: data.businessImpact?.severity || \"UNKNOWN\",\n    affectedUsers: data.businessImpact?.affectedUsers || 0,\n    revenueImpact: data.businessImpact?.revenueImpact || \"N/A\",\n    estimatedRecovery: data.rootCauseAnalysis?.timeline?.estimated_recovery || \"N/A\"\n  },\n  \n  // Cascade information (if relevant)\n  cascadeInfo: data.cascadeAnalysis?.detected ? {\n    detected: true,\n    criticalServices: data.cascadeAnalysis.dependencyContext?.criticalServices?.slice(0, 3),\n    cascadeCount: data.cascadeAnalysis.totalCascades,\n    recommendations: data.cascadeAnalysis.recommendations\n  } : null,\n  \n  // Metadata for tracking\n  metadata: {\n    toolsUsed: data.metadata?.toolsUsed?.length || 0,\n    anomalyDetectionPerformed: data.metadata?.includesAnomalyAnalysis || false,\n    cascadeDetectionEnabled: data.metadata?.enhancedAnalysis?.cascadeDetection === \"enabled\",\n    executionTime: data.metadata?.totalExecutionTime,\n    dataCompleteness: data.analysisDepth === \"deep\" ? \"full\" : \n      data.analysisDepth === \"pattern\" ? \"partial\" : \"minimal\"\n  },\n  \n  // Debug info (optional - remove in production)\n  _debug: {\n    inputCount: inputs.length,\n    selectedItemDepth: data.analysisDepth,\n    hasRootCause: !!data.rootCauseAnalysis,\n    originalPriority: data.metadata?.priority\n  }\n};\n\n// Add alert flag for critical situations\nif (data.metadata?.severity === \"critical\" || \n    data.businessImpact?.severity === \"HIGH\" ||\n    data.rootCauseAnalysis?.affectedSystems?.sla_breach) {\n  orchestratorResponse.alert = {\n    level: \"critical\",\n    message: \"Immediate action required - SLA breach detected\",\n    autoEscalate: true\n  };\n}\n\nreturn [{ json: orchestratorResponse }];"
+      },
+      "id": "1ee43f36-60f8-431b-a6ad-dcf36bbb000f",
+      "name": "Orchestrator Output Formatter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3968,
+        -896
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Service Dependency Loader - Enhanced with Graph Analysis\nconst input = $input.first().json;\n\n// Embedded service dependencies from your file\nconst serviceDependencies = {\n  \"cpq-ntf-integrator-service\": {\n    \"dependencies\": [\"domain-config-service\", \"ntf-engine-service\", \"ntf-history-service\", \"crm-customer-information\", \"bss-mc-ntf-engine-t4\"]\n  },\n  \"ntf-batch-service\": {\n    \"dependencies\": [\"domain-config-service\", \"ntf-engine-service\"]\n  },\n  \"activity\": {\n    \"dependencies\": [\"domain-config-service\"]\n  },\n  \"ui-authz-mc-backend\": {\n    \"dependencies\": [\"domain-config-service\"]\n  },\n  \"crm-ntf-integrator-service\": {\n    \"dependencies\": [\"domain-config-service\", \"ntf-engine-service\", \"crm-customer-information\", \"search-integrator-mc-backend\"]\n  },\n  \"search-integrator-mc-backend\": {\n    \"dependencies\": [\"crm-customer-information\"]\n  },\n  \"crm-customer-information\": {\n    \"dependencies\": [\"crm-asset\", \"domain-config-service\", \"bstp-pcm-product-catalog\", \"eca-t4\", \"bss-services-service.etiyamobile-production-eom\", \"bss-mc-domain-config-t4\", \"bss-mc-asset-management-t4\", \"bss-mc-ntf-engine-t4\", \"bss-mc-crm-customer-information-t4\", \"bss-mc-pcm-product-catalog-t4\"]\n  },\n  \"crm-mash-up\": {\n    \"dependencies\": [\"crm-customer-information\", \"cpq-ordercapture\", \"bstp-pcm-product-catalog\", \"bstp-pcm-product-offer-detail\", \"bss-mc-cpq-t4\", \"bss-mc-crm-customer-information-t4\", \"bss-mc-asset-management-t4\", \"customer-search-mc-backend\", \"bstp-pcm-product-catalog\", \"bss-mc-pcm-product-catalog-t4\"]\n  },\n  \"bstp-pcm-product-catalog\": {\n    \"dependencies\": [\"domain-config-service\"]\n  },\n  \"cpq-ordercapture\": {\n    \"dependencies\": [\"bstp-pcm-product-catalog\", \"bstp-pcm-product-offer-detail\", \"domain-config-service\", \"activity\"]\n  },\n  \"bstp-pcm-product-offer-detail\": {\n    \"dependencies\": [\"crm-asset\"]\n  },\n  \"ntf-engine-service\": {\n    \"dependencies\": [\"ntf-history-service\", \"bss-services-service.etiyamobile-production-eom\", \"bss-mc-domain-config-t4\"]\n  },\n  \"domain-config-service\": {\n    \"dependencies\": [\"ntf-engine-service\", \"ntf-history-service\", \"bss-mc-ntf-engine-t4\"]\n  },\n  \"ntf-history-service\": {\n    \"dependencies\": []\n  },\n  \"crm-asset\": {\n    \"dependencies\": []\n  },\n  \"bstp-cpq-batch\": {\n    \"dependencies\": [\"bss-mc-domain-config-t4\", \"eca-t4\"]\n  },\n  \"bstp-id-service\": {\n    \"dependencies\": []\n  },\n  \"em-b2c-wsc-new-ui\": {\n    \"dependencies\": [\"eca-t4\"]\n  },\n  \"APIGateway\": {\n    \"dependencies\": [\"crm-mash-up\", \"crm-customer-information\", \"cpq-ordercapture\"]\n  },\n  \"bss-services-service.etiyamobile-production-eom\": {\n    \"dependencies\": []\n  },\n  \"eca-t4\": {\n    \"dependencies\": []\n  },\n  \"bss-mc-domain-config-t4\": {\n    \"dependencies\": [\"eca-t4\"]\n  },\n  \"bss-mc-cpq-t4\": {\n    \"dependencies\": []\n  },\n  \"bss-mc-crm-customer-information-t4\": {\n    \"dependencies\": []\n  },\n  \"bss-mc-ntf-engine-t4\": {\n    \"dependencies\": []\n  },\n  \"bss-mc-pcm-product-catalog-t4\": {\n    \"dependencies\": []\n  },\n  \"bss-mc-asset-management-t4\": {\n    \"dependencies\": []\n  },\n  \"customer-search-mc-backend\": {\n    \"dependencies\": []\n  }\n};\n\n// Build reverse dependencies (which services depend on this service)\nconst reverseDependencies = {};\nObject.keys(serviceDependencies).forEach(service => {\n  reverseDependencies[service] = [];\n});\n\nObject.entries(serviceDependencies).forEach(([service, data]) => {\n  data.dependencies.forEach(dep => {\n    if (!reverseDependencies[dep]) {\n      reverseDependencies[dep] = [];\n    }\n    reverseDependencies[dep].push(service);\n  });\n});\n\n// Calculate service criticality scores\nconst serviceCriticality = {};\n\n// Helper function to calculate total impact (recursive)\nfunction calculateTotalImpact(service, reverseDeps, visited) {\n  if (visited.has(service)) return 0;\n  visited.add(service);\n  \n  let impact = (reverseDeps[service] || []).length;\n  (reverseDeps[service] || []).forEach(dependent => {\n    impact += calculateTotalImpact(dependent, reverseDeps, visited);\n  });\n  \n  return impact;\n}\n\nObject.keys(serviceDependencies).forEach(service => {\n  const directDependents = reverseDependencies[service] || [];\n  const totalImpact = calculateTotalImpact(service, reverseDependencies, new Set());\n  \n  serviceCriticality[service] = {\n    directDependents: directDependents.length,\n    totalImpact: totalImpact,\n    criticalityScore: Math.min(100, totalImpact * 10), // Scale to 0-100\n    tier: totalImpact >= 10 ? 'critical' : totalImpact >= 5 ? 'high' : totalImpact >= 2 ? 'medium' : 'low'\n  };\n});\n\n// Identify service groups (clusters of tightly coupled services)\nconst serviceGroups = {\n  \"notification\": [\"ntf-engine-service\", \"ntf-history-service\", \"ntf-batch-service\", \"cpq-ntf-integrator-service\", \"crm-ntf-integrator-service\", \"bss-mc-ntf-engine-t4\"],\n  \"customer\": [\"crm-customer-information\", \"crm-mash-up\", \"crm-asset\", \"customer-search-mc-backend\", \"bss-mc-crm-customer-information-t4\"],\n  \"product\": [\"bstp-pcm-product-catalog\", \"bstp-pcm-product-offer-detail\", \"bss-mc-pcm-product-catalog-t4\"],\n  \"order\": [\"cpq-ordercapture\", \"bss-mc-cpq-t4\", \"bstp-cpq-batch\"],\n  \"config\": [\"domain-config-service\", \"bss-mc-domain-config-t4\"],\n  \"auth\": [\"eca-t4\", \"ui-authz-mc-backend\"],\n  \"integration\": [\"APIGateway\", \"search-integrator-mc-backend\", \"bss-services-service.etiyamobile-production-eom\"]\n};\n\n// Find most critical services\nconst mostCritical = Object.entries(serviceCriticality)\n  .sort((a, b) => b[1].criticalityScore - a[1].criticalityScore)\n  .slice(0, 5)\n  .map(([s, data]) => ({service: s, score: data.criticalityScore}));\n\n// IMPORTANT: Return as an array with json property\nreturn [{\n  json: {\n    ...input, // PRESERVE ALL EXISTING DATA\n    serviceDependencies: {\n      raw: serviceDependencies,\n      reverse: reverseDependencies,\n      criticality: serviceCriticality,\n      serviceGroups: serviceGroups,\n      metadata: {\n        totalServices: Object.keys(serviceDependencies).length,\n        avgDependencies: Object.values(serviceDependencies).reduce((sum, s) => sum + s.dependencies.length, 0) / Object.keys(serviceDependencies).length,\n        mostCritical: mostCritical\n      }\n    }\n  }\n}];"
+      },
+      "id": "661ca91f-5ab0-48ae-ad42-638c0bb39fec",
+      "name": "Service Dependency Loader",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1536,
+        -704
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "3f8ef9d4-e598-4dd5-a595-62f2d5397a9f",
+              "leftValue": "={{ $json.timeRange.durationMinutes }}",
+              "rightValue": 360,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            },
+            {
+              "id": "1f563c70-e10f-4aff-8226-2d9e7373fd25",
+              "leftValue": "={{ $json.output.status }}",
+              "rightValue": "warning",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "a1b54ddd-f09b-4e54-a0d0-ee81fdfd20fa",
+              "leftValue": "={{ $json.forceDeepAnalysis }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "2e8e1ff4-252a-456a-9a56-5573fedf2824",
+              "leftValue": "={{ parseFloat($json.output.metrics.error_rate) }}",
+              "rightValue": 0.3,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "id": "c9334669-5146-4211-91e5-c19f600e2237",
+      "name": "Check If Anomaly Needed",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -1072,
+        -1824
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "etiya-gpt-4o",
+          "mode": "list",
+          "cachedResultName": "etiya-gpt-4o"
+        },
+        "options": {
+          "responseFormat": "json_object",
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -384,
+        -816
+      ],
+      "id": "1b3281d4-b618-4fb5-a81b-0b034870e2e4",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "rYdB8nNsS7m67tcr",
+          "name": "OpenAi account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"stage\": {\n      \"type\": \"string\",\n      \"enum\": [\"anomaly_detection\"]\n    },\n    \"execution_time\": {\n      \"type\": \"string\"\n    },\n    \"analysis_period\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"start\": {\n          \"type\": \"string\"\n        },\n        \"end\": {\n          \"type\": \"string\"\n        },\n        \"duration_minutes\": {\n          \"type\": \"number\"\n        }\n      },\n      \"required\": [\"start\", \"end\", \"duration_minutes\"]\n    },\n    \"tools_executed\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"raw_metrics\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"data_points_analyzed\": {\n          \"type\": \"number\"\n        },\n        \"mean_error_rate\": {\n          \"type\": \"number\"\n        },\n        \"max_error_rate\": {\n          \"type\": \"number\"\n        },\n        \"std_deviation\": {\n          \"type\": \"number\"\n        }\n      }\n    },\n    \"anomaly_scores\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"moving_average\": {\n          \"type\": \"number\",\n          \"minimum\": 0,\n          \"maximum\": 1\n        },\n        \"std_deviation\": {\n          \"type\": \"number\",\n          \"minimum\": 0,\n          \"maximum\": 1\n        },\n        \"rate_change\": {\n          \"type\": \"number\",\n          \"minimum\": 0,\n          \"maximum\": 1\n        },\n        \"spike_ratio\": {\n          \"type\": \"number\",\n          \"minimum\": 0,\n          \"maximum\": 1\n        }\n      },\n      \"required\": [\"moving_average\", \"std_deviation\", \"rate_change\", \"spike_ratio\"]\n    },\n    \"anomaly_findings\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"trend_direction\": {\n          \"type\": \"string\",\n          \"enum\": [\"increasing\", \"decreasing\", \"stable\", \"fluctuating\"]\n        },\n        \"trend_severity\": {\n          \"type\": \"string\",\n          \"enum\": [\"none\", \"minor\", \"moderate\", \"severe\"]\n        },\n        \"baseline_deviation\": {\n          \"type\": \"string\",\n          \"enum\": [\"within_normal\", \"minor_deviation\", \"major_deviation\"]\n        },\n        \"spike_pattern\": {\n          \"type\": \"string\",\n          \"enum\": [\"none\", \"periodic\", \"random\", \"escalating\"]\n        },\n        \"anomaly_period\": {\n          \"type\": [\"object\", \"null\"],\n          \"properties\": {\n            \"start\": {\n              \"type\": \"string\"\n            },\n            \"end\": {\n              \"type\": \"string\"\n            },\n            \"peak\": {\n              \"type\": \"string\"\n            }\n          }\n        }\n      }\n    },\n    \"service_anomalies\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"most_anomalous_services\": {\n          \"type\": \"array\",\n          \"items\": {\n            \"type\": \"string\"\n          }\n        },\n        \"anomaly_distribution\": {\n          \"type\": \"string\",\n          \"enum\": [\"concentrated\", \"distributed\", \"isolated\"]\n        }\n      }\n    },\n    \"proceed_to_stage2\": {\n      \"type\": \"boolean\"\n    },\n    \"anomaly_summary\": {\n      \"type\": \"string\"\n    },\n    \"recommended_focus\": {\n      \"type\": \"string\"\n    }\n  },\n  \"required\": [\n    \"stage\",\n    \"execution_time\",\n    \"analysis_period\",\n    \"tools_executed\",\n    \"anomaly_scores\",\n    \"anomaly_findings\",\n    \"proceed_to_stage2\",\n    \"anomaly_summary\"\n  ],\n  \"additionalProperties\": true\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        -832
+      ],
+      "id": "814979ce-0698-4474-92cd-24a209e81b51",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pass Context to Anomaly Stage - FINAL FIXED VERSION\nconst input = $input.first().json;\n\nconsole.log(\"=== PASS TO ANOMALY INPUT ===\");\nconsole.log(\"Input keys:\", Object.keys(input));\nconsole.log(\"Has output?\", input.output ? \"YES\" : \"NO\");\nconsole.log(\"Has timeRange?\", input.timeRange ? \"YES\" : \"NO\");\n\n// CRITICAL: Pass EVERYTHING to anomaly stage\nreturn [{\n  json: {\n    // Pass ALL input data as-is\n    ...input,\n    // Mark that this needs anomaly check\n    requireAnomalyCheck: true,\n    // Stage 1 result reference for the anomaly agent prompt\n    stage1_result: input.output || input\n  }\n}];"
+      },
+      "id": "919ae326-f73f-4aba-a5e9-5c6526b36f5b",
+      "name": "Pass Context to Anomaly Stage",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -576,
+        -704
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# Stage 1.5: Anomaly Detection Analysis\n\nYou are specialized in detecting anomalies and trends in system metrics.\n\n## 🎯 MANDATORY EXECUTION:\nExecute ALL 4 anomaly tools to get time-series data, then calculate anomaly scores:\n1. Anomaly - Moving Average (get error rates, calculate moving average)\n2. Anomaly - Standard Deviation (get error rates, calculate std deviation)\n3. Anomaly - Rate Change (get rate changes over time)\n4. Anomaly - Spike Detection (identify sudden spikes)\n\n## 📊 CONTEXT:\nPeriod: {{$json.timeRange.startISO}} to {{$json.timeRange.endISO}} ({{$json.timeRange.durationHuman}})\nStage 1 Status: {{$json.stage1_result.status}}\nError Rate: {{$json.stage1_result.metrics.error_rate}}\nTop Services: {{$json.stage1_result.metrics.top_error_services.join(',')}}\n\n## 🧮 ANOMALY CALCULATIONS:\nFor each tool's data:\n1. **Moving Average**: Calculate 5-point moving average, compare current vs average\n   - Score = (current - avg) / avg\n2. **Standard Deviation**: Calculate mean and std dev\n   - Score = |current - mean| / std_dev (normalize to 0-1)\n3. **Rate Change**: Compare consecutive time windows\n   - Score = max(rate_change) / baseline_rate\n4. **Spike Detection**: Find outliers > 2 std dev from mean\n   - Score = spike_count / total_points\n\n## 🔍 ANOMALY DETECTION FOCUS:\n- Gradual increase patterns (moving average shows upward trend)\n- Deviation from normal baseline (values > 2 std dev)\n- Sudden rate changes (>50% change between windows)\n- Periodic spikes (regular pattern in time series)\n\n## 📊 ANALYSIS CRITERIA:\nNormalize all scores to 0-1 range:\n- 0.0-0.3: Normal behavior\n- 0.3-0.6: Minor anomaly\n- 0.6-0.8: Significant anomaly\n- 0.8-1.0: Critical anomaly\n\n## 🎯 DECISION LOGIC:\nproceed_to_stage2 = TRUE if:\n- ANY anomaly score > 0.6\n- Multiple scores > 0.4\n- Clear increasing trend detected\n- Periodic pattern found (spikes at regular intervals)\n- OR forceDeepAnalysis is true\n- OR priority is \"critical\"\n\n## 📋 JSON OUTPUT:\n{\n  \"stage\": \"anomaly_detection\",\n  \"execution_time\": \"{{new Date().toISOString()}}\",\n  \"analysis_period\": {\n    \"start\": \"{{$json.timeRange.startISO}}\",\n    \"end\": \"{{$json.timeRange.endISO}}\",  \n    \"duration_minutes\": {{$json.timeRange.durationMinutes}}\n  },\n  \"tools_executed\": [\"Anomaly - Moving Average\", \"Anomaly - Standard Deviation\", \"Anomaly - Rate Change\", \"Anomaly - Spike Detection\"],\n  \"raw_metrics\": {\n    \"data_points_analyzed\": 0,\n    \"mean_error_rate\": 0.0,\n    \"max_error_rate\": 0.0,\n    \"std_deviation\": 0.0\n  },\n  \"anomaly_scores\": {\n    \"moving_average\": 0.0,\n    \"std_deviation\": 0.0,\n    \"rate_change\": 0.0,\n    \"spike_ratio\": 0.0\n  },\n  \"anomaly_findings\": {\n    \"trend_direction\": \"increasing|decreasing|stable|fluctuating\",\n    \"trend_severity\": \"none|minor|moderate|severe\",\n    \"baseline_deviation\": \"within_normal|minor_deviation|major_deviation\",\n    \"spike_pattern\": \"none|periodic|random|escalating\",\n    \"anomaly_period\": {\n      \"start\": \"ISO timestamp of anomaly start\",\n      \"end\": \"ISO timestamp of anomaly end\",\n      \"peak\": \"ISO timestamp of peak anomaly\"\n    }\n  },\n  \"service_anomalies\": {\n    \"most_anomalous_services\": [],\n    \"anomaly_distribution\": \"concentrated|distributed|isolated\"\n  },\n  \"proceed_to_stage2\": false,\n  \"anomaly_summary\": \"Clear description of anomaly findings\",\n  \"recommended_focus\": \"What Stage 2 should focus on based on anomalies\"\n}\n\n!!! IMPORTANT\nAfter getting data from each tool, perform the calculations described above to generate anomaly scores.",
+        "hasOutputParser": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        -704
+      ],
+      "id": "a3164aea-cd33-4789-a340-6fdcf954afbb",
+      "name": "Anomaly Detection"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Merge Anomaly Results - Clean Version\nconst inputs = $input.all();\n\nconsole.log(\"=== MERGE ANOMALY RESULTS ===\");\nconsole.log(\"Total inputs:\", inputs.length);\n\n// Debug inputs\ninputs.forEach((input, i) => {\n  console.log(`Input ${i}:`, {\n    hasOutput: !!input.json.output,\n    outputStage: input.json.output?.stage,\n    hasTimeRange: !!input.json.timeRange,\n    requireAnomalyCheck: input.json.requireAnomalyCheck,\n    branch: input.json._branch\n  });\n});\n\n// Single input - probably from FALSE branch\nif (inputs.length === 1) {\n  const data = inputs[0].json;\n  \n  // Make sure we have Stage 1 data\n  if (data.stage1_result?.stage === \"health_snapshot\" || data.output?.stage === \"health_snapshot\") {\n    return [{\n      json: {\n        ...data,\n        anomaly_check_performed: false,\n        anomaly_reason_skipped: \"Conditions not met for anomaly check\",\n        _branch: \"no_anomaly\"\n      }\n    }];\n  }\n}\n\n// Multiple inputs - need to merge\nconst passContextItem = inputs.find(i => \n  i.json.requireAnomalyCheck === true && \n  i.json.timeRange && \n  (i.json.stage1_result?.stage === \"health_snapshot\" || i.json.output?.stage === \"health_snapshot\")\n);\n\nconst anomalyResultItem = inputs.find(i => \n  i.json.output?.stage === \"anomaly_detection\" || \n  i.json.stage === \"anomaly_detection\"\n);\n\nif (passContextItem && anomalyResultItem) {\n  const contextData = passContextItem.json;\n  const anomalyData = anomalyResultItem.json.output || anomalyResultItem.json;\n  \n  const shouldProceed = contextData.forceDeepAnalysis || \n                       contextData.priority === 'critical' ||\n                       anomalyData.proceed_to_stage2;\n  \n  return [{\n    json: {\n      ...contextData,\n      anomaly_analysis: anomalyData,\n      anomaly_scores: anomalyData.anomaly_scores,\n      anomaly_check_performed: true,\n      proceed_to_stage2: shouldProceed,\n      output: contextData.output || contextData.stage1_result, // Keep Stage 1!\n      _branch: \"with_anomaly\"\n    }\n  }];\n}\n\n// Fallback\nconsole.log(\"WARNING: Could not properly merge, returning first input\");\nreturn [inputs[0]];"
+      },
+      "id": "e66ab9a9-c728-4c2b-8a04-2ec9033186d8",
+      "name": "Merge Anomaly Results",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        304,
+        -704
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Preserve Context After Stage 2 - Fixed for both branches\nconst inputs = $input.all();\nconst results = [];\n\nfor (const input of inputs) {\n  const stage2Output = input.json;\n  \n  // Get original context - it might come from different sources\n  let originalContext = {};\n  \n  // Option 1: Context is already embedded in the input (from either branch)\n  if (stage2Output.timeRange && stage2Output.stage1_result) {\n    console.log(\"Using embedded context from input\");\n    originalContext = stage2Output;\n  }\n  // Option 2: Try to get from the anomaly branch node\n  else {\n    try {\n      const passContextItems = $items(\"Pass Time Context to Stage 2\");\n      if (passContextItems && passContextItems.length > 0) {\n        originalContext = passContextItems[0].json;\n        console.log(\"Got context from Pass Time Context to Stage 2\");\n      }\n    } catch (e) {\n      // This node didn't run (FALSE branch)\n      try {\n        const passWithoutAnomalyItems = $items(\"Pass Context Without Anomaly\");\n        if (passWithoutAnomalyItems && passWithoutAnomalyItems.length > 0) {\n          originalContext = passWithoutAnomalyItems[0].json;\n          console.log(\"Got context from Pass Context Without Anomaly\");\n        }\n      } catch (e2) {\n        console.log(\"No context nodes found, using input data\");\n        originalContext = stage2Output;\n      }\n    }\n  }\n  \n  // Merge Stage 2 output with original context\n  results.push({\n    json: {\n      // First, preserve all original context\n      ...originalContext,\n      \n      // Then add/override with Stage 2 output\n      output: stage2Output.output || stage2Output,\n      \n      // Ensure critical fields are preserved\n      timeRange: originalContext.timeRange || stage2Output.timeRange,\n      priority: originalContext.priority || stage2Output.priority,\n      forceDeepAnalysis: originalContext.forceDeepAnalysis || stage2Output.forceDeepAnalysis,\n      stage1_result: originalContext.stage1_result || originalContext.output,\n      anomaly_analysis: originalContext.anomaly_analysis || null,\n      anomaly_check_performed: originalContext.anomaly_check_performed !== undefined ? \n        originalContext.anomaly_check_performed : false,\n      analysisId: originalContext.analysisId || stage2Output.analysisId,\n      context: originalContext.context || stage2Output.context,\n      affectedServices: originalContext.affectedServices || stage2Output.affectedServices,\n      serviceDependencies: originalContext.serviceDependencies || stage2Output.serviceDependencies,\n      \n      // Add Stage 2 reference\n      stage2_output: stage2Output,\n      \n      // Debug info\n      _contextSource: originalContext.timeRange ? \"preserved\" : \"reconstructed\",\n      _branch: originalContext._branch || \"unknown\"\n    }\n  });\n}\n\nconsole.log(`Preserved context for ${results.length} items`);\nreturn results;"
+      },
+      "id": "155230ae-27c2-4a0e-a292-eab0d8c9e64f",
+      "name": "Preserve Context After Stage 2",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1840,
+        -816
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Orchestrator Output Formatter - Complete with Full Details\nconst inputs = $input.all();\n\n// If multiple items, select the most complete one (with Stage 3)\nconst finalData = inputs.find(i => i.json.rootCauseAnalysis) || inputs[0];\nconst data = finalData.json;\n\n// Build orchestrator response\nconst orchestratorResponse = {\n  // Essential identification\n  analysisId: data.analysisId,\n  workflowExecutionId: data.workflowExecutionId,\n  timestamp: data.timestamp,\n  \n  // Analysis summary\n  analysisComplete: true,\n  analysisDepth: data.analysisDepth,\n  stagesExecuted: data.metadata?.stagesExecuted || 1,\n  \n  // Time context\n  timeRange: {\n    start: data.timeContext?.requestedRange?.start,\n    end: data.timeContext?.requestedRange?.end,\n    duration: data.timeContext?.requestedRange?.duration\n  },\n  \n  // Overall status\n  status: {\n    severity: data.metadata?.severity || \"unknown\",\n    priority: data.metadata?.priority || \"normal\",\n    errorRate: data.healthCheck?.errorRate,\n    affectedServices: data.metadata?.affectedServices || [],\n    slaBreached: data.rootCauseAnalysis?.affectedSystems?.sla_breach || false\n  },\n  \n  // Executive summary (prioritize Stage 3 if available)\n  executiveSummary: data.rootCauseAnalysis?.executiveSummary || \n    `Analysis completed with ${data.analysisDepth} depth. ${\n      data.cascadeAnalysis?.detected ? \n      'Cascade failure detected affecting multiple services.' : \n      'No cascade patterns detected.'\n    } Error rate: ${data.healthCheck?.errorRate || 'N/A'}`,\n  \n  // Key findings (summary)\n  findings: {\n    // Stage 1 findings\n    healthCheck: {\n      status: data.healthCheck?.status,\n      errorRate: data.healthCheck?.errorRate,\n      topErrorServices: data.healthCheck?.topErrorServices,\n      anomalyDetected: data.anomalyDetection?.performed && \n        data.anomalyDetection?.scores?.moving_average > 0.7\n    },\n    \n    // Stage 2 findings\n    patterns: data.patternAnalysis ? {\n      dominantErrors: data.patternAnalysis.patternsFound?.error_patterns?.dominant_errors?.slice(0, 3),\n      affectedServices: data.patternAnalysis.patternsFound?.service_patterns?.most_affected,\n      cascadeDetected: data.cascadeAnalysis?.detected,\n      userImpact: data.patternAnalysis.userImpact?.affected_percentage\n    } : null,\n    \n    // Stage 3 findings (if available)\n    rootCause: data.rootCauseAnalysis ? {\n      type: data.rootCauseAnalysis.primaryCause?.type,\n      confidence: data.rootCauseAnalysis.primaryCause?.confidence,\n      triggerEvent: data.rootCauseAnalysis.primaryCause?.trigger_event,\n      affectedUsers: data.rootCauseAnalysis.affectedSystems?.users_affected,\n      revenueImpact: data.rootCauseAnalysis.affectedSystems?.revenue_impact\n    } : null\n  },\n  \n  // Actions and recommendations\n  recommendations: {\n    immediate: data.automatedRecommendations?.immediate || \n      data.remediation?.immediate_actions?.map(a => a.action) || [],\n    shortTerm: data.automatedRecommendations?.shortTerm || [],\n    longTerm: data.automatedRecommendations?.longTerm || [],\n    preventive: data.automatedRecommendations?.preventive?.slice(0, 3) || []\n  },\n  \n  // Critical actions for orchestrator\n  criticalActions: data.remediation?.immediate_actions?.map(action => ({\n    action: action.action,\n    command: action.command,\n    risk: action.risk,\n    impact: action.impact\n  })) || [],\n  \n  // Business impact\n  businessImpact: {\n    severity: data.businessImpact?.severity || \"UNKNOWN\",\n    affectedUsers: data.businessImpact?.affectedUsers || 0,\n    revenueImpact: data.businessImpact?.revenueImpact || \"N/A\",\n    estimatedRecovery: data.rootCauseAnalysis?.timeline?.estimated_recovery || \"N/A\"\n  },\n  \n  // Cascade information (if relevant)\n  cascadeInfo: data.cascadeAnalysis?.detected ? {\n    detected: true,\n    criticalServices: data.cascadeAnalysis.dependencyContext?.criticalServices?.slice(0, 3),\n    cascadeCount: data.cascadeAnalysis.totalCascades,\n    recommendations: data.cascadeAnalysis.recommendations\n  } : null,\n  \n  // Metadata for tracking\n  metadata: {\n    toolsUsed: data.metadata?.toolsUsed?.length || 0,\n    anomalyDetectionPerformed: data.metadata?.includesAnomalyAnalysis || false,\n    cascadeDetectionEnabled: data.metadata?.enhancedAnalysis?.cascadeDetection === \"enabled\",\n    executionTime: data.metadata?.totalExecutionTime,\n    dataCompleteness: data.analysisDepth === \"deep\" ? \"full\" : \n      data.analysisDepth === \"pattern\" ? \"partial\" : \"minimal\"\n  },\n  \n  // Alert flag for critical situations\n  alert: (data.metadata?.severity === \"critical\" || \n    data.businessImpact?.severity === \"HIGH\" ||\n    data.rootCauseAnalysis?.affectedSystems?.sla_breach) ? {\n      level: \"critical\",\n      message: \"Immediate action required - SLA breach detected\",\n      autoEscalate: true\n    } : null,\n  \n  // ========== FULL ANALYSIS DETAILS ==========\n  fullAnalysisDetails: {\n    // Complete Stage 1 Data\n    stage1_healthCheck: data.healthCheck || null,\n    \n    // Complete Stage 1.5 Anomaly Data\n    stage1_5_anomalyDetection: data.anomalyDetection || null,\n    \n    // Complete Stage 2 Pattern Analysis\n    stage2_patternAnalysis: data.patternAnalysis || null,\n    \n    // Complete Cascade Analysis\n    cascadeAnalysis: data.cascadeAnalysis || null,\n    \n    // Complete Stage 3 Root Cause Analysis\n    stage3_rootCauseAnalysis: data.rootCauseAnalysis || null,\n    \n    // All remediation details\n    remediation: data.remediation || null,\n    \n    // All prevention details\n    prevention: data.prevention || null,\n    \n    // Service dependencies\n    serviceDependencies: data.serviceDependencies || null,\n    \n    // Service matrix details\n    serviceMatrix: data.serviceMatrix || null,\n    \n    // All automated recommendations\n    allRecommendations: data.automatedRecommendations || null,\n    \n    // Complete metadata\n    completeMetadata: data.metadata || null,\n    \n    // Original context\n    originalContext: {\n      timeContext: data.timeContext,\n      analysisConfig: data.analysisConfig,\n      requestDetails: {\n        source: data.metadata?.inputSource,\n        priority: data.metadata?.priority,\n        forceDeepAnalysis: data.metadata?.forceDeepAnalysis,\n        affectedServices: data.metadata?.affectedServices\n      }\n    },\n    \n    // Raw workflow data (opsiyonel - çok detaylı istiyorsanız)\n    _rawWorkflowData: data\n  }\n};\norchestratorResponse.fullAnalysisDetails._rawWorkflowData = data;\nreturn [{ json: orchestratorResponse }];"
+      },
+      "id": "07a4b6cd-0883-4e29-9451-8e2f10d7f23c",
+      "name": "Orchestrator Output Formatter Details",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3824,
+        -688
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate Human Readable Report\nconst data = $input.first().json;\n\nconst humanReport = `\n================================================================================\nLOKI LOG ANALYSIS REPORT\n================================================================================\n\nReport ID: ${data.analysisId}\nGenerated: ${new Date().toISOString()}\nAnalysis Depth: ${data.analysisDepth}\n\nEXECUTIVE SUMMARY\n──────────────────────────────────────────────────\n${data.outputFormats.executiveSummary}\n\nKEY FINDINGS\n──────────────────────────────────────────────────\nOverall Status: ${data.consolidatedFindings.overallStatus.toUpperCase()}\nPrimary Issue: ${data.consolidatedFindings.primaryIssue}\nAffected Services: ${data.consolidatedFindings.affectedServices.join(', ')}\nSeverity: ${data.consolidatedFindings.severity}\nConfidence: ${(data.consolidatedFindings.confidence * 100).toFixed(0)}%\n\nANALYSIS TIMELINE\n──────────────────────────────────────────────────\n${data.outputFormats.incidentTimeline.map(event => \n  `${event.time} - ${event.event} (${event.source})`\n).join('\\n')}\n\nEVIDENCE SUMMARY\n──────────────────────────────────────────────────\n${data.evidenceCollection.rootCauseEvidence ? \n  `Root Cause Type: ${data.evidenceCollection.rootCauseEvidence.primaryCause.type}\nEvidence:\n${data.evidenceCollection.rootCauseEvidence.evidenceList.map(e => `- ${e}`).join('\\n')}` : \n  'No root cause identified'}\n\nIMMEDIATE ACTIONS REQUIRED\n──────────────────────────────────────────────────\n${data.actionableInsights.immediateActions.map((action, i) => \n  `${i + 1}. ${typeof action === 'string' ? action : `${action.action}\n   Command: ${action.command}\n   Risk: ${action.risk}`}`\n).join('\\n\\n')}\n\nSERVICE IMPACT ANALYSIS\n──────────────────────────────────────────────────\n${Object.entries(data.outputFormats.serviceImpactMatrix).map(([service, impact]) => \n  `${service}: ${impact.impactLevel} impact | ${impact.errorRate} error rate | ${impact.downtime} downtime`\n).join('\\n')}\n\nANALYSIS METADATA\n──────────────────────────────────────────────────\nStages Executed: ${data.metadata.stagesExecuted}\nExecution Time: ${data.metadata.totalExecutionTime}\nTools Used: ${data.metadata.toolsUsed.length}\nPriority: ${data.metadata.priority}\n\n================================================================================\nEND OF REPORT\n================================================================================\n`;\n\nreturn [{ json: { humanReadable: humanReport } }];"
+      },
+      "id": "9c013f6f-d091-4f75-ba60-c2ead7b7b22c",
+      "name": "Report For Human",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3808,
+        -480
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate JSON Report\nconst input = $input.first().json;\n\nconst jsonReport = {\n  metadata: {\n    reportType: \"technical_json\",\n    generatedAt: new Date().toISOString(),\n    version: \"1.0\"\n  },\n  analysis: input\n};\n\nreturn [{ json: jsonReport }];"
+      },
+      "id": "43b5729a-3cc6-4abf-a900-ac5ad042e4a7",
+      "name": "Json Reporter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3824,
+        -1008
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Generate Markdown Report\nconst data = $input.first().json;\n\nconst markdownReport = `# Loki Log Analysis Report\n\n## Executive Summary\n- **Analysis ID:** ${data.analysisId}\n- **Status:** ${data.consolidatedFindings.overallStatus}\n- **Primary Issue:** ${data.consolidatedFindings.primaryIssue}\n- **Severity:** ${data.consolidatedFindings.severity}\n- **Confidence:** ${(data.consolidatedFindings.confidence * 100).toFixed(0)}%\n\n## Time Context\n- **Start:** ${data.timeContext.requestedRange.start}\n- **End:** ${data.timeContext.requestedRange.end}\n- **Duration:** ${data.timeContext.requestedRange.duration}\n\n## Stage Results\n\n### Stage 1: Health Check\n${data.stageResults.stage1_healthSnapshot ? `\n- Execution Time: ${data.stageResults.stage1_healthSnapshot.execution_time}\n- Tools Used: ${data.stageResults.stage1_healthSnapshot.tools_executed?.join(', ') || 'N/A'}\n- Status: ${data.evidenceCollection.healthMetrics?.status || 'N/A'}\n- Error Rate: ${data.evidenceCollection.healthMetrics?.errorRate || 'N/A'}\n- Total Logs: ${data.evidenceCollection.healthMetrics?.totalLogs || 0}\n` : 'Not performed'}\n\n### Stage 2: Pattern Analysis\n${data.stageResults.stage2_patternAnalysis ? `\n- Execution Time: ${data.stageResults.stage2_patternAnalysis.execution_time}\n- Patterns Found: ${data.stageResults.stage2_patternAnalysis.patterns_identified?.error_patterns?.dominant_errors?.length || 0}\n- Confidence: ${data.stageResults.stage2_patternAnalysis.confidence_score || 'N/A'}\n- Tools Used: ${data.stageResults.stage2_patternAnalysis.tools_executed?.join(', ') || 'N/A'}\n` : 'Not performed'}\n\n### Stage 3: Root Cause Analysis\n${data.stageResults.stage3_rootCauseAnalysis ? `\n- Investigation Type: ${data.stageResults.stage3_rootCauseAnalysis.investigation_type}\n- Root Cause: ${data.stageResults.stage3_rootCauseAnalysis.findings?.primary_root_cause?.type || 'Unknown'}\n- Confidence: ${(data.stageResults.stage3_rootCauseAnalysis.findings?.primary_root_cause?.confidence * 100).toFixed(0)}%\n- Affected Systems: ${data.stageResults.stage3_rootCauseAnalysis.affected_systems?.services?.length || 0}\n- Tools Used: ${data.stageResults.stage3_rootCauseAnalysis.tools_executed?.join(', ') || 'N/A'}\n` : 'Not performed'}\n\n## Evidence Collection\n\n### Health Metrics\n- **Error Count:** ${data.evidenceCollection.healthMetrics?.errorCount || 0}\n- **Total Logs:** ${data.evidenceCollection.healthMetrics?.totalLogs || 0}\n- **Top Error Services:** ${data.evidenceCollection.healthMetrics?.topErrorServices?.join(', ') || 'N/A'}\n\n### Pattern Evidence\n${data.evidenceCollection.patternEvidence ? `\n- **Cascade Detected:** ${data.evidenceCollection.patternEvidence.cascadeDetected ? 'Yes' : 'No'}\n- **Affected Services:** ${data.evidenceCollection.patternEvidence.affectedServices?.join(', ') || 'N/A'}\n- **Temporal Clustering:** ${data.evidenceCollection.patternEvidence.temporalClustering || 'N/A'}\n\n**Dominant Errors:**\n${data.evidenceCollection.patternEvidence.dominantErrors?.map((error, i) => \n  `${i + 1}. **${error.type}**\n   - Count: ${error.count}\n   - Services: ${error.services.join(', ')}`\n).join('\\n') || 'No dominant errors found'}\n` : 'No patterns detected'}\n\n### Root Cause Evidence\n${data.evidenceCollection.rootCauseEvidence ? `\n- **Primary Cause:** ${data.evidenceCollection.rootCauseEvidence.primaryCause?.type || 'Unknown'}\n- **Confidence:** ${(data.evidenceCollection.rootCauseEvidence.primaryCause?.confidence * 100).toFixed(0)}%\n- **Trigger Event:** ${data.evidenceCollection.rootCauseEvidence.primaryCause?.trigger_event || 'Unknown'}\n\n**Evidence:**\n${data.evidenceCollection.rootCauseEvidence.evidenceList?.map((evidence, i) => \n  `${i + 1}. ${evidence}`\n).join('\\n') || 'No evidence available'}\n\n**Contributing Factors:**\n${data.evidenceCollection.rootCauseEvidence.contributingFactors?.map((factor, i) => \n  `${i + 1}. **${factor.factor}**\n   - Impact: ${factor.impact}\n   - Evidence: ${factor.evidence}`\n).join('\\n') || 'No contributing factors identified'}\n` : 'No root cause analysis performed'}\n\n## Business Impact\n- **Score:** ${data.businessImpact?.score || 0}/100\n- **Severity:** ${data.businessImpact?.severity || 'Unknown'}\n- **Users Affected:** ${data.businessImpact?.userImpact || 0}\n- **Revenue Impact:** ${data.businessImpact?.revenueImpact || 'Unknown'}\n- **SLA Breached:** ${data.businessImpact?.slaBreached ? 'Yes ⚠️' : 'No ✅'}\n- **Estimated Recovery:** ${data.businessImpact?.estimatedRecovery || 'Unknown'}\n\n## Alert Summary\n- **Total Errors:** ${data.alertSummary?.totalErrors || 0}\n- **Time Window:** ${data.alertSummary?.timeWindow?.start || 'N/A'} to ${data.alertSummary?.timeWindow?.end || 'N/A'}\n- **Duration:** ${data.alertSummary?.timeWindow?.duration || 'N/A'}\n\n### Error Types\n${data.alertSummary?.errorTypes?.map((type, i) => \n  `${i + 1}. ${type}`\n).join('\\n') || 'No error types identified'}\n\n### Error Distribution by Service\n${data.alertSummary?.errorDistribution ? Object.entries(data.alertSummary.errorDistribution).map(([service, errors]) => \n  `**${service}:**\\n${Object.entries(errors).map(([errorType, count]) => \n    `  - ${errorType}: ${count} occurrences`\n  ).join('\\n')}`\n).join('\\n\\n') : 'No error distribution data available'}\n\n## Recommendations\n\n### Immediate Actions\n${data.actionableInsights?.immediateActions?.length > 0 ? \n  data.actionableInsights.immediateActions.map((action, i) => {\n    if (typeof action === 'string') {\n      return `${i + 1}. ${action}`;\n    } else if (action && action.action) {\n      let result = `${i + 1}. **${action.action}**`;\n      if (action.command) result += `\\n   - Command: \\`${action.command}\\``;\n      if (action.risk) result += `\\n   - Risk: ${action.risk}`;\n      if (action.impact) result += `\\n   - Impact: ${action.impact}`;\n      return result;\n    }\n    return `${i + 1}. Action details not available`;\n  }).join('\\n\\n') : \n  'No immediate actions identified'\n}\n\n### Monitoring Gaps\n${data.actionableInsights?.monitoringGaps?.length > 0 ?\n  data.actionableInsights.monitoringGaps.map((gap, i) => \n    `${i + 1}. ${gap}`\n  ).join('\\n') :\n  'No monitoring gaps identified'\n}\n\n### Process Improvements\n${data.actionableInsights?.processImprovements?.length > 0 ?\n  data.actionableInsights.processImprovements.map((improvement, i) => \n    `${i + 1}. ${improvement}`\n  ).join('\\n') :\n  'No process improvements identified'\n}\n\n## Service Impact Matrix\n${data.outputFormats?.serviceImpactMatrix ? \n  Object.entries(data.outputFormats.serviceImpactMatrix).map(([service, impact]) => \n    `### ${service}\n- **Impact Level:** ${impact.impactLevel || 'N/A'}\n- **Error Rate:** ${impact.errorRate || 'N/A'}\n- **Downtime:** ${impact.downtime || 'N/A'}\n- **Cascade Role:** ${impact.cascadeRole || 'none'}\n${impact.functionality ? `- **Functionality:** ${impact.functionality}` : ''}`\n  ).join('\\n\\n') :\n  'No service impact data available'\n}\n\n## Performance Benchmarks\n### Analysis Speed\n- **Total Time:** ${data.performanceBenchmarks?.analysisSpeed?.totalTime || 'N/A'}\n- **Stage Breakdown:**\n  - Stage 1: ${data.performanceBenchmarks?.analysisSpeed?.stageBreakdown?.stage1 || 'N/A'}\n  - Stage 2: ${data.performanceBenchmarks?.analysisSpeed?.stageBreakdown?.stage2 || 'N/A'}\n  - Stage 3: ${data.performanceBenchmarks?.analysisSpeed?.stageBreakdown?.stage3 || 'N/A'}\n\n### Data Volume\n- **Logs Processed:** ${data.performanceBenchmarks?.dataVolume?.logsProcessed || 0}\n- **Errors Parsed:** ${data.performanceBenchmarks?.dataVolume?.errorsParsed || 0}\n- **Services Analyzed:** ${data.performanceBenchmarks?.dataVolume?.servicesAnalyzed || 0}\n\n### Accuracy\n- **Confidence Score:** ${((data.performanceBenchmarks?.accuracy?.confidenceScore || 0) * 100).toFixed(0)}%\n- **Evidence Quality:** ${data.performanceBenchmarks?.accuracy?.evidenceQuality || 'Unknown'}\n- **Pattern Reliability:** ${((data.performanceBenchmarks?.accuracy?.patternReliability || 0) * 100).toFixed(0)}%\n\n## Metadata\n- **Stages Executed:** ${data.metadata?.stagesExecuted || 0}\n- **Total Execution Time:** ${data.metadata?.totalExecutionTime || 'N/A'}\n- **Input Source:** ${data.metadata?.inputSource || 'Unknown'}\n- **Priority:** ${data.metadata?.priority || 'Normal'}\n- **Force Deep Analysis:** ${data.metadata?.forceDeepAnalysis ? 'Yes' : 'No'}\n\n### Enhanced Analysis Features\n- **Cascade Detection:** ${data.metadata?.enhancedAnalysis?.cascadeDetection || 'Disabled'}\n- **Stack Trace Analysis:** ${data.metadata?.enhancedAnalysis?.stackTraceAnalysis || 'Not performed'}\n- **Service Mapping:** ${data.metadata?.enhancedAnalysis?.serviceMapping || 'Disabled'}\n- **Anomaly Detection:** ${data.metadata?.enhancedAnalysis?.anomalyDetection || 'Not performed'}\n- **Service Dependency Analysis:** ${data.metadata?.enhancedAnalysis?.serviceDependencyAnalysis || 'Disabled'}\n\n---\n\n*Report generated at ${new Date().toISOString()}*\n`;\n\nreturn [{ json: { markdown: markdownReport } }];"
+      },
+      "id": "a3846f0a-0a65-4669-941b-3730ef4ee246",
+      "name": "Markdown Reporter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3840,
+        -1232
+      ],
+      "disabled": true
+    }
+  ],
+  "pinData": {
+    "Manual Trigger": [
+      {
+        "json": {}
+      }
+    ]
+  },
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Orchestrator Input Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Time Range Handler": {
+      "main": [
+        [
+          {
+            "node": "Set Workflow Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Workflow Variables": {
+      "main": [
+        [
+          {
+            "node": "Service Dependency Loader",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage 1: Quick Health Check": {
+      "main": [
+        [
+          {
+            "node": "TestModeHandler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass Time Context to Stage 2": {
+      "main": [
+        [
+          {
+            "node": "Wait 3s Before Stage 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 3s Before Stage 2": {
+      "main": [
+        [
+          {
+            "node": "Stage 2: Pattern Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage 2: Pattern Analysis": {
+      "main": [
+        [
+          {
+            "node": "Preserve Context After Stage 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cascade Failure Detector": {
+      "main": [
+        [
+          {
+            "node": "Pass Time Context to Stage 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass Time Context to Stage 3": {
+      "main": [
+        [
+          {
+            "node": "Wait 5s Before Stage 3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait 5s Before Stage 3": {
+      "main": [
+        [
+          {
+            "node": "Stage 3: Root Cause Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage 3: Root Cause Analysis": {
+      "main": [
+        [
+          {
+            "node": "Combine All Stages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine All Stages": {
+      "main": [
+        [
+          {
+            "node": "Format Final Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anomaly - Moving Average": {
+      "ai_tool": [
+        [
+          {
+            "node": "Anomaly Detection",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anomaly - Standard Deviation": {
+      "ai_tool": [
+        [
+          {
+            "node": "Anomaly Detection",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anomaly - Rate Change": {
+      "ai_tool": [
+        [
+          {
+            "node": "Anomaly Detection",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anomaly - Spike Detection": {
+      "ai_tool": [
+        [
+          {
+            "node": "Anomaly Detection",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Rate Check": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 1: Quick Health Check",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Critical Errors Check": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 1: Quick Health Check",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Service Health Check": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 1: Quick Health Check",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Thread Correlation Analyzer": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Pattern Analysis",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cascade Timeline Reconstructor": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Pattern Analysis",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Error Pattern Analyzer": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Pattern Analysis",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Service Error Distribution": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Pattern Analysis",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Request ID Correlation": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Pattern Analysis",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DB Connection Analysis": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 3: Root Cause Analysis",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slow Query Logs": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 3: Root Cause Analysis",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory Dump Analysis": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 3: Root Cause Analysis",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pod Restart Logs": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 3: Root Cause Analysis",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stack Trace Pattern Analyzer": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 3: Root Cause Analysis",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Integration Health Monitor": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 3: Root Cause Analysis",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model - Stage 1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Stage 1: Quick Health Check",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model - Stage 2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Stage 2: Pattern Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model - Stage 3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Stage 3: Root Cause Analysis",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage 1 Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Stage 1: Quick Health Check",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage 2 Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Stage 2: Pattern Analysis",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage 3 Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Stage 3: Root Cause Analysis",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TestModeHandler": {
+      "main": [
+        [
+          {
+            "node": "Pass Context to Anomaly Stage",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orchestrator Input Handler": {
+      "main": [
+        [
+          {
+            "node": "Time Range Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Final Output": {
+      "main": [
+        [
+          {
+            "node": "Orchestrator Output Formatter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Orchestrator Output Formatter Details",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Report For Human",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Json Reporter",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Markdown Reporter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Service Dependency Loader": {
+      "main": [
+        [
+          {
+            "node": "Stage 1: Quick Health Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check If Anomaly Needed": {
+      "main": [
+        [],
+        []
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Anomaly Detection",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Anomaly Detection",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pass Context to Anomaly Stage": {
+      "main": [
+        [
+          {
+            "node": "Anomaly Detection",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anomaly Detection": {
+      "main": [
+        [
+          {
+            "node": "Merge Anomaly Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Anomaly Results": {
+      "main": [
+        [
+          {
+            "node": "Pass Time Context to Stage 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preserve Context After Stage 2": {
+      "main": [
+        [
+          {
+            "node": "Cascade Failure Detector",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9329e49d-6c4a-4097-9124-f6db7b337f3f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c12c7bb55b80ebd9de9957d4bb20d1c257c60ff78d5439f6278d6225d0d15a7b"
+  },
+  "id": "ryE6NaIe6kvlIeRF",
+  "tags": []
+}

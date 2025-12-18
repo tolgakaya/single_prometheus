@@ -1,0 +1,400 @@
+
+// DEBUG: Check what we're receiving
+console.log("=== CASCADE DETECTOR INPUT DEBUG ===");
+// Cascade Failure Detector başına ekle:
+const allInputs = $input.all();
+
+// Debug bilgisini ilk item'a ekle
+const debugInfo = {
+  totalInputs: allInputs.length,
+  inputs: allInputs.map((input, idx) => ({
+    index: idx,
+    topLevelKeys: Object.keys(input.json).slice(0, 10),
+    hasOutput: !!input.json.output,
+    outputStage: input.json.output?.stage,
+    hasStage1Result: !!input.json.stage1_result,
+    stage1ResultStage: input.json.stage1_result?.stage,
+    hasAnomalyAnalysis: !!input.json.anomaly_analysis,
+    hasTimeRange: !!input.json.timeRange,
+    priority: input.json.priority,
+    forceDeepAnalysis: input.json.forceDeepAnalysis
+  }))
+};
+console.log("Total inputs:", allInputs.length);
+
+allInputs.forEach((input, idx) => {
+  console.log(`\n--- Input ${idx} ---`);
+  console.log("Top level keys:", Object.keys(input.json).slice(0, 15));
+  console.log("Has output?", !!input.json.output);
+  console.log("Output stage:", input.json.output?.stage);
+  console.log("Has stage1_result?", !!input.json.stage1_result);
+  console.log("Stage1_result stage:", input.json.stage1_result?.stage);
+  console.log("Has anomaly_analysis?", !!input.json.anomaly_analysis);
+  console.log("Has timeRange?", !!input.json.timeRange);
+  console.log("Priority:", input.json.priority);
+  console.log("ForceDeepAnalysis:", input.json.forceDeepAnalysis);
+});
+console.log("=== END DEBUG ===\n");
+
+// Rest of the cascade detection code...
+
+// Enhanced Cascade Failure Detection with Dependency Awareness AND Stage Data Preservation
+const logs = $input.all().map(item => item.json);
+const timelineData = logs.find(l => l.toolName === 'Cascade Timeline Reconstructor')?.data?.result || [];
+const threadData = logs.find(l => l.toolName === 'Thread Correlation Analyzer')?.data?.result || [];
+
+// Get service dependencies from Service Dependency Loader node
+let dependencies = {};
+let serviceDeps = {};
+let reverseDeps = {};
+let criticality = {};
+
+try {
+  // Try to get from the Service Dependency Loader node
+  const depData = $node["Service Dependency Loader"].json;
+  if (depData && depData.serviceDependencies) {
+    dependencies = depData.serviceDependencies;
+    serviceDeps = dependencies.raw || {};
+    reverseDeps = dependencies.reverse || {};
+    criticality = dependencies.criticality || {};
+    console.log("✅ Service dependencies loaded successfully");
+  }
+} catch (e) {
+  console.log("⚠️ Service dependencies not available, using defaults");
+}
+
+// Helper functions for dependency analysis
+function isInDependencyChain(serviceA, serviceB, deps) {
+  const visited = new Set();
+  const queue = [serviceA];
+  
+  while (queue.length > 0) {
+    const current = queue.shift();
+    if (visited.has(current)) continue;
+    visited.add(current);
+    
+    const currentDeps = deps[current]?.dependencies || [];
+    if (currentDeps.includes(serviceB)) return true;
+    
+    queue.push(...currentDeps);
+  }
+  
+  return false;
+}
+
+function getDependencyPath(fromService, toService, deps) {
+  const queue = [[fromService]];
+  const visited = new Set();
+  
+  while (queue.length > 0) {
+    const path = queue.shift();
+    const current = path[path.length - 1];
+    
+    if (current === toService) return path;
+    if (visited.has(current)) continue;
+    visited.add(current);
+    
+    const currentDeps = deps[current]?.dependencies || [];
+    currentDeps.forEach(dep => {
+      queue.push([...path, dep]);
+    });
+  }
+  
+  return [];
+}
+
+function generateRestartOrder(services, deps) {
+  const visited = new Set();
+  const result = [];
+  
+  function visit(service) {
+    if (visited.has(service)) return;
+    visited.add(service);
+    
+    const serviceDeps = deps[service]?.dependencies || [];
+    serviceDeps.forEach(dep => {
+      if (services.includes(dep)) {
+        visit(dep);
+      }
+    });
+    
+    result.push(service);
+  }
+  
+  services.forEach(service => visit(service));
+  return result;
+}
+
+function identifyCircuitBreakerPoints(cascade, deps) {
+  const points = [];
+  cascade.propagations.forEach(prop => {
+    if (prop.isDependency && prop.dependencyPath?.length > 1) {
+      const from = prop.dependencyPath[prop.dependencyPath.length - 2];
+      const to = prop.dependencyPath[prop.dependencyPath.length - 1];
+      points.push(`${from} → ${to}`);
+    }
+  });
+  return [...new Set(points)];
+}
+
+// Parse timeline data
+const events = timelineData.flatMap(stream => 
+  stream.values.map(([timestamp, logLine]) => {
+    const [ts, service, thread, errorType, message] = logLine.split('|');
+    return {
+      timestamp: new Date(parseInt(timestamp) / 1000000),
+      timestampMs: parseInt(timestamp) / 1000000,
+      service,
+      thread,
+      errorType,
+      message
+    };
+  })
+).sort((a, b) => a.timestampMs - b.timestampMs);
+
+// Enhanced cascade detection with dependency analysis
+const cascades = [];
+let currentCascade = null;
+
+events.forEach((event, index) => {
+  // Start new cascade on auth failure or critical errors
+  if (event.message?.includes('Invalid client secret') || 
+      event.message?.includes('unauthorized_client') ||
+      event.message?.includes('401 Unauthorized')) {
+    
+    if (currentCascade) cascades.push(currentCascade);
+    
+    currentCascade = {
+      id: `cascade-${Date.now()}-${index}`,
+      rootCause: event,
+      propagations: [],
+      duration: 0,
+      affectedServices: new Set([event.service]),
+      dependencyChain: [event.service],
+      cascadeType: 'authentication',
+      criticalityScore: criticality[event.service]?.criticalityScore || 0
+    };
+  } 
+  // Check if error is in dependent service within time window
+  else if (currentCascade) {
+    const timeDiff = event.timestampMs - currentCascade.rootCause.timestampMs;
+    
+    // Check if this service depends on the root cause service
+    const isDependentService = serviceDeps && Object.keys(serviceDeps).length > 0 ? 
+      isInDependencyChain(event.service, currentCascade.rootCause.service, serviceDeps) : false;
+    
+    // Extended time window for dependent services
+    const timeWindow = isDependentService ? 2000 : 500; // 2s for deps, 500ms for others
+    
+    if (timeDiff < timeWindow) {
+      currentCascade.propagations.push({
+        ...event,
+        propagationDelay: timeDiff,
+        isDependency: isDependentService,
+        dependencyPath: isDependentService ? getDependencyPath(currentCascade.rootCause.service, event.service, serviceDeps) : []
+      });
+      currentCascade.affectedServices.add(event.service);
+      currentCascade.duration = timeDiff;
+      
+      // Update criticality score
+      if (criticality[event.service]) {
+        currentCascade.criticalityScore += criticality[event.service].criticalityScore || 0;
+      }
+    }
+  }
+});
+
+if (currentCascade) cascades.push(currentCascade);
+
+// Analyze cascade patterns with dependency context
+const cascadeAnalysis = {
+  totalCascades: cascades.length,
+  averageDuration: cascades.reduce((sum, c) => sum + c.duration, 0) / cascades.length || 0,
+  maxDuration: Math.max(...cascades.map(c => c.duration)) || 0,
+  affectedServicesPerCascade: cascades.map(c => c.affectedServices.size),
+  cascadePatterns: cascades.map(c => {
+    const rootService = c.rootCause.service;
+    const rootCriticality = criticality[rootService] || {};
+    
+    return {
+      rootService: rootService,
+      rootError: c.rootCause.errorType,
+      rootCriticality: rootCriticality.tier || 'unknown',
+      rootImpact: rootCriticality.totalImpact || 0,
+      propagationCount: c.propagations.length,
+      duration: c.duration + 'ms',
+      services: Array.from(c.affectedServices),
+      dependencyPropagations: c.propagations.filter(p => p.isDependency).length,
+      cascadeCriticality: c.criticalityScore,
+      longestDependencyChain: Math.max(...c.propagations.map(p => p.dependencyPath?.length || 0), 0)
+    };
+  }),
+  criticalCascades: cascades.filter(c => c.criticalityScore > 50).length,
+  dependencyBasedCascades: cascades.filter(c => 
+    c.propagations.some(p => p.isDependency)
+  ).length
+};
+
+// Service impact analysis with dependency context
+const serviceImpact = {};
+events.forEach(event => {
+  if (!serviceImpact[event.service]) {
+    serviceImpact[event.service] = {
+      totalErrors: 0,
+      errorTypes: {},
+      firstError: event.timestampMs,
+      lastError: event.timestampMs,
+      criticality: criticality[event.service] || {},
+      dependencies: serviceDeps[event.service]?.dependencies || [],
+      dependents: reverseDeps[event.service] || []
+    };
+  }
+  serviceImpact[event.service].totalErrors++;
+  serviceImpact[event.service].errorTypes[event.errorType] = 
+    (serviceImpact[event.service].errorTypes[event.errorType] || 0) + 1;
+  serviceImpact[event.service].lastError = event.timestampMs;
+});
+
+// Calculate service downtime and blast radius
+Object.keys(serviceImpact).forEach(service => {
+  const impact = serviceImpact[service];
+  impact.downtimeMs = impact.lastError - impact.firstError;
+  impact.downtimeHuman = impact.downtimeMs < 1000 ? 
+    impact.downtimeMs + 'ms' : 
+    (impact.downtimeMs / 1000).toFixed(2) + 's';
+  
+  // Calculate potential blast radius
+  impact.blastRadius = {
+    direct: impact.dependents.length,
+    total: impact.criticality.totalImpact || 0,
+    affectedServices: impact.dependents
+  };
+});
+
+// Generate dependency-aware recommendations
+const recommendations = [];
+if (cascades.length > 0) {
+  // Find the most critical cascade
+  const mostCriticalCascade = cascades.sort((a, b) => b.criticalityScore - a.criticalityScore)[0];
+  const rootService = mostCriticalCascade.rootCause.service;
+  
+  recommendations.push(
+    `1. CRITICAL: Focus on ${rootService} (criticality: ${criticality[rootService]?.tier || 'unknown'}) - Root cause of cascade affecting ${mostCriticalCascade.affectedServices.size} services`,
+    `2. Check ${rootService}'s dependencies: ${serviceDeps[rootService]?.dependencies.join(', ') || 'none'}`,
+    `3. Restart order based on dependencies: ${generateRestartOrder(Array.from(mostCriticalCascade.affectedServices), serviceDeps).join(' → ')}`,
+    `4. Implement circuit breaker between: ${identifyCircuitBreakerPoints(mostCriticalCascade, serviceDeps).join(', ') || 'No critical paths identified'}`,
+    `5. Monitor critical services: ${dependencies.metadata?.mostCritical?.map(s => s.service).slice(0, 3).join(', ') || 'N/A'}`
+  );
+} else {
+  recommendations.push(
+    "1. No cascade detected in the analyzed time range",
+    "2. Continue monitoring critical services: " + (dependencies.metadata?.mostCritical?.map(s => s.service).slice(0, 3).join(', ') || 'N/A'),
+    "3. Review service dependencies for potential improvements"
+  );
+}
+
+// Get Stage 2 results from input
+let stage2Result = {};
+let proceed_to_stage3 = cascades.length > 0;
+
+// Extract input data - handle wrapped output
+const inputJson = $input.first().json;
+const actualInputData = inputJson.output || inputJson;
+
+// NEW: Process all inputs to preserve stage data
+const results = [];
+
+for (const input of $input.all()) {
+  const inputData = input.json;
+  const stage2Data = inputData.output || inputData;
+  
+  // Find Stage 1 data
+  const stage1Data = inputData.stage1_result || 
+                     (inputData.output?.stage === "health_snapshot" ? inputData.output : null);
+  
+  // Find anomaly data
+  const anomalyData = inputData.anomaly_analysis || 
+                      (inputData.output?.stage === "anomaly_detection" ? inputData.output : null);
+  
+  // Override proceed_to_stage3 based on multiple factors
+  const shouldProceed = inputData.forceDeepAnalysis || 
+                       inputData.priority === 'critical' ||
+                       stage2Data.proceed_to_stage3 || 
+                       cascades.length > 0;
+  
+  // Build comprehensive output
+  const comprehensiveOutput = {
+    // Preserve ALL original data
+    ...inputData,
+    
+    // Add Stage-specific sections
+    stage1_health_check: stage1Data ? {
+      status: stage1Data.status,
+      execution_time: stage1Data.execution_time,
+      metrics: stage1Data.metrics,
+      anomalies: stage1Data.anomalies,
+      summary: stage1Data.quick_summary,
+      tools_executed: stage1Data.tools_executed
+    } : null,
+    
+    stage1_5_anomaly_detection: anomalyData ? {
+      performed: true,
+      execution_time: anomalyData.execution_time,
+      anomaly_scores: anomalyData.anomaly_scores,
+      anomaly_findings: anomalyData.anomaly_findings,
+      service_anomalies: anomalyData.service_anomalies,
+      raw_metrics: anomalyData.raw_metrics,
+      summary: anomalyData.anomaly_summary,
+      tools_executed: anomalyData.tools_executed
+    } : {
+      performed: inputData.anomaly_check_performed || false,
+      reason_skipped: inputData.anomaly_reason_skipped || "Not performed"
+    },
+    
+    stage2_pattern_analysis: stage2Data.stage === "pattern_analysis" ? {
+      execution_time: stage2Data.execution_time || new Date().toISOString(),
+      patterns_identified: stage2Data.patterns_identified,
+      correlations: stage2Data.correlations,
+      user_impact: stage2Data.user_impact,
+      confidence_score: stage2Data.confidence_score,
+      tools_executed: stage2Data.tools_executed,
+      anomaly_context: stage2Data.anomaly_context
+    } : null,
+    
+    // Add enhanced cascade analysis
+    cascadeDetected: cascades.length > 0,
+    cascadeAnalysis,
+    serviceImpact,
+    timeline: events.slice(0, 50),
+    recommendation: cascades.length > 0 ? 
+      "CRITICAL: Dependency-aware cascade detected. See detailed recommendations." :
+      "No cascade pattern detected in the time range.",
+    suggestedActions: recommendations,
+    dependencyContext: {
+      criticalServices: dependencies.metadata?.mostCritical || [],
+      serviceGroups: dependencies.serviceGroups || {},
+      totalServices: dependencies.metadata?.totalServices || 0,
+      averageDependencyDepth: dependencies.metadata?.avgDependencies || 0
+    },
+    
+    // Preserve context
+    analysis_context: {
+      timeRange: inputData.timeRange,
+      analysisId: inputData.analysisId,
+      priority: inputData.priority,
+      forceDeepAnalysis: inputData.forceDeepAnalysis,
+      source: inputData.context?.source
+    },
+    
+    // CRITICAL: proceed_to_stage3
+    proceed_to_stage3: shouldProceed,
+    
+    // Keep the current stage output for compatibility
+    output: stage2Data
+  };
+  
+  results.push({ json: comprehensiveOutput });
+}
+results[0].json._debugInfo = debugInfo;
+// Return all processed items
+return results;

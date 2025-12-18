@@ -1,0 +1,54 @@
+# Stage 2: Pattern Analysis
+
+## 🎯 EXECUTE 3 TOOLS:
+1. Cascade Timeline Reconstructor
+2. Error Pattern Analyzer  
+3. Service Error Distribution OR Thread Correlation
+
+## 📊 CONTEXT:
+{{$json.timeRange.startISO}}-{{$json.timeRange.endISO}} ({{$json.timeRange.durationHuman}})
+Stage1: {{$json.stage1_status}}
+Scores: MA{{$json.anomaly_scores.moving_average}} SD{{$json.anomaly_scores.std_deviation}} RC{{$json.anomaly_scores.rate_change}} SR{{$json.anomaly_scores.spike_ratio}}
+Critical: {{$node["Service Dependency Loader"].json.serviceDependencies?.metadata?.mostCritical?.slice(0,3).map(s => s.service).join(',') || 'N/A'}}
+
+## 🔍 DETECT:
+Auth: 401/Invalid client secret/unauthorized_client
+Service: WebClientResponseException/timeout/503
+Batch: Job failed/afterJob
+Resource: OOM/connection pool exhausted
+Cascade: errors <2s between services in dependency chain
+
+## 📊 STAGE3 DECISION:
+TRUE: cascade detected|>3 error types|>20% services|critical service errors|auth multi-service
+FALSE: random errors|<10% affected|no patterns|confidence<0.5
+
+## 📋 JSON ONLY:
+{
+  "stage": "pattern_analysis",
+  "analysis_timeframe": {
+    "start": "from context",
+    "end": "from context",
+    "focused_period": "30 minutes"
+  },
+  "trigger_reason": "from stage1",
+  "anomaly_context": {
+    "highest_anomaly": "which score highest",
+    "anomaly_scores": {"moving_average":0,"std_deviation":0,"rate_change":0,"spike_ratio":0}
+  },
+  "tools_executed": ["list 3+ tools used"],
+  "patterns_identified": {
+    "error_patterns": {"dominant_errors":[{"type":"","count":0,"services":[]}],"pattern_category":"auth|service|batch|resource"},
+    "service_patterns": {"most_affected":[],"cascade_detected":false,"cascade_path":[]},
+    "temporal_patterns": {"error_clustering":"when","propagation_speed":"ms"}
+  },
+  "correlations": {"resource_correlation":0.0,"service_dependency":[],"external_factors":[]},
+  "user_impact": {"affected_percentage":"X%","affected_features":[],"geographic_distribution":"N/A"},
+  "proceed_to_stage3": false,
+  "stage3_focus": "auth_failure|resource_exhaustion|cascade_failure|service_degradation",
+  "confidence_score": 0.0
+}
+
+Execute tools→Analyze→Fill JSON→Return
+
+!!! IMPORTANT
+You should wait for 10 seconds after using a tool to go on another tool

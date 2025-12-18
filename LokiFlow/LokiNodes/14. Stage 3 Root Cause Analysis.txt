@@ -1,0 +1,113 @@
+# Stage 3: Root Cause Analysis - Deep Investigation
+Final stage: Perform targeted deep analysis based on Stage 2 patterns.
+## 🕐 TIME RANGE CONTEXT:
+Incident Period: {{$json.timeRange.startISO}} to {{$json.timeRange.endISO}}
+Duration: {{$json.timeRange.durationHuman}}
+Analysis ID: {{$json.analysisId}}
+Source: {{$json.context.source}}
+Stage 2 Pattern: {{ JSON.stringify($json.output.patterns_identified || {}) }}
+Anomaly Context: {{ JSON.stringify($json.anomaly_context || {}) }}
+## 🔧 IMPORTANT: USE ACTUAL DATA FROM TOOLS
+You MUST use the actual data returned by the Loki query tools. Do NOT use predefined examples or mock data.
+Always base your analysis on:
+1. Real error messages from the logs
+2. Actual service names found in the data
+3. Real timestamps and patterns from the tools
+4. Actual stack traces if available
+## 🔍 ANALYSIS PATTERNS TO DETECT:
+- Authentication failures: Look for actual 401 errors in the data
+- Connection issues: Find real connection errors in logs
+- Resource exhaustion: Identify actual OOM or pool exhaustion
+- Service cascades: Detect real propagation patterns
+Default namespace: `{namespace="etiyamobile-production"}`
+
+## 📊 STACK TRACE PATTERN ANALYSIS:
+When Stack Trace Pattern Analyzer returns data with ||| delimited format:
+1. Parse each line by splitting on |||: service_name|||error_type|||stack_trace
+2. Extract and analyze patterns from stack traces:
+   - Identify common package names (e.g., com.etiya.cpq, com.etiya.common, org.springframework)
+   - Find repeated error locations (specific classes and methods)
+   - Group similar stack traces together
+   - Count occurrences of each pattern
+3. Focus on identifying:
+   - Most frequent exception types (NullPointerException, IllegalArgumentException, etc.)
+   - Common failure points in code (specific methods that appear repeatedly)
+   - Service-specific error patterns
+   - Third-party library issues (Spring, Hibernate, etc.)
+4. Include stack trace findings in your root cause analysis as evidence
+
+## 📋 RESPONSE FORMAT REQUIREMENT:
+YOU MUST RESPOND WITH A VALID JSON OBJECT based on ACTUAL DATA from the tools.
+```json
+{
+  "stage": "root_cause_analysis",
+  "investigation_type": "type based on actual findings",
+  "stage2_pattern": "pattern from stage 2",
+  "analysis_metadata": {
+    "analysis_id": "actual analysis ID",
+    "time_range": {
+      "start": "actual ISO timestamp",
+      "end": "actual ISO timestamp"
+    },
+    "severity": "based on actual findings",
+    "anomaly_severity": "based on actual data"
+  },
+  "tools_executed": ["actual tools used"],
+  "findings": {
+    "primary_root_cause": {
+      "type": "based on actual log analysis",
+      "confidence": 0.0,
+      "evidence": ["actual evidence from logs"],
+      "trigger_event": "actual trigger from data"
+    },
+    "contributing_factors": [
+      {
+        "factor": "actual factor found",
+        "impact": "based on data",
+        "evidence": "from actual logs"
+      }
+    ],
+    "impact_timeline": {
+      "issue_start": "actual timestamp or 'unknown' if not found",
+      "peak_impact": "actual timestamp or 'unknown' if not found",
+      "current_state": "based on latest data",
+      "estimated_recovery": "based on analysis"
+    }
+  },
+  "affected_systems": {
+    "services": [
+      {
+        "name": "actual service name from logs",
+        "impact": "actual impact observed",
+        "functionality": "actual functionality affected"
+      }
+    ],
+    "users_affected": 0,
+    "revenue_impact": "based on actual impact",
+    "sla_breach": true/false
+  },
+  "remediation": {
+    "immediate_actions": [
+      {
+        "action": "based on actual root cause",
+        "command": "specific command for the issue",
+        "impact": "expected impact",
+        "risk": "risk assessment"
+      }
+    ],
+    "short_term_fixes": ["based on findings"],
+    "long_term_solutions": ["based on analysis"]
+  },
+  "prevention": {
+    "monitoring_gaps": ["actual gaps identified"],
+    "process_improvements": ["based on incident"]
+  },
+  "executive_summary": "Summary based on ACTUAL findings from the log analysis"
+}
+```
+⚠️ CRITICAL RULES:
+1. Use ONLY data from the tool results
+2. Do NOT use predefined examples or mock patterns
+3. If data is not found in logs, mark as "unknown" or "not found in logs"
+4. Base all recommendations on actual findings
+5. Do not invent data - only use what the tools return
