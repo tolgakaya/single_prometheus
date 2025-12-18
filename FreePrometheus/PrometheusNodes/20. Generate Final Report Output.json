@@ -1,13 +1,13 @@
 [
   {
-    "timestamp": "2025-12-18T11:39:42.086Z",
+    "timestamp": "2025-12-18T13:24:27.074Z",
     "duration": "NaNs",
     "cluster": "unknown",
     "contextTracking": {
-      "contextId": "ctx-1766057897586-rbc3f4kxa",
+      "contextId": "ctx-1766064108910-lhormag5h",
       "contextPreserved": true,
       "contextJourney": {
-        "end": "2025-12-18T11:39:42.086Z",
+        "end": "2025-12-18T13:24:27.074Z",
         "durationMs": null,
         "stagesCompleted": [
           "stage3",
@@ -68,12 +68,13 @@
       "rootCause": {
         "identified": false,
         "component": "Memory Management",
-        "issue": "High memory usage leading to pod restarts",
+        "issue": "Memory pressure causing pod restarts",
         "evidence": [
-          "Pod restarts",
-          "High memory usage"
+          "Pod Status Check",
+          "Container Restarts",
+          "Pod Resource Usage"
         ],
-        "confidence": 0.55
+        "confidence": 0.6
       },
       "affectedServices": [
         "bss-mc-pcm-product-offer-detail",
@@ -85,16 +86,17 @@
           "related_alerts": [
             "KubeCPUOvercommit"
           ],
-          "correlation_score": 0.2,
+          "correlation_score": 0.1,
           "shared_labels": {}
         }
       ],
       "diagnosticEvidence": [
         {
-          "issue": "High memory usage leading to pod restarts",
+          "issue": "Memory pressure causing pod restarts",
           "evidence": [
-            "Pod restarts",
-            "High memory usage"
+            "Pod Status Check",
+            "Container Restarts",
+            "Pod Resource Usage"
           ],
           "severity": "critical",
           "impact": "Service bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 is experiencing issues",
@@ -174,24 +176,25 @@
         "namespaces_analyzed": []
       },
       "stage2_analysis": {
-        "investigation_id": "ctx-1766057897586-rbc3f4kxa-stage2",
+        "investigation_id": "ctx-1766064108910-lhormag5h-stage2",
         "root_cause": {
           "identified": false,
           "component": "Memory Management",
-          "issue": "High memory usage leading to pod restarts",
+          "issue": "Memory pressure causing pod restarts",
           "evidence": [
-            "Pod restarts",
-            "High memory usage"
+            "Pod Status Check",
+            "Container Restarts",
+            "Pod Resource Usage"
           ],
-          "confidence": 0.55
+          "confidence": 0.6
         },
         "correlation_matrix": {
-          "primary_chain": "Pod restarts linked to high memory usage",
+          "primary_chain": "Pod restarts linked to memory pressure",
           "affected_services": [
             "bss-mc-pcm-product-offer-detail",
             "bss-mc-asset-management"
           ],
-          "blast_radius": "Limited to specific pods",
+          "blast_radius": "Moderate impact across multiple services",
           "kubernetes_impact": {
             "evicted_pods": 0,
             "pending_pods": 0,
@@ -208,7 +211,7 @@
         ],
         "proceed_to_stage3": true,
         "alert_correlation_needed": true,
-        "confidence": 0.55
+        "confidence": 0.6
       },
       "stage3_alerts": {
         "active_alerts": [
@@ -259,7 +262,7 @@
             "related_alerts": [
               "KubeCPUOvercommit"
             ],
-            "correlation_score": 0.2,
+            "correlation_score": 0.1,
             "shared_labels": {}
           }
         ],
@@ -293,7 +296,7 @@
             "command": null
           }
         ],
-        "correlation_confidence": 0.8,
+        "correlation_confidence": 0.7,
         "auto_remediation_approved": false,
         "proceed_to_stage4": true,
         "kb_enriched_count": 0
@@ -317,7 +320,7 @@
                 "last_termination": {
                   "reason": "Unknown",
                   "exit_code": 1,
-                  "finished_at": "2025-12-18T11:39:18.246Z"
+                  "finished_at": "2025-12-18T13:23:50.079Z"
                 }
               },
               "error_logs": [],
@@ -325,8 +328,8 @@
                 {
                   "type": "Warning",
                   "reason": "BackOff",
-                  "message": "Pod restarts",
-                  "timestamp": "2025-12-18T11:39:18.246Z"
+                  "message": "Pod Status Check",
+                  "timestamp": "2025-12-18T13:23:50.079Z"
                 }
               ],
               "resource_usage": {
@@ -344,13 +347,13 @@
             "namespace": "bstp-cms-global-production",
             "version": "unknown",
             "replicas": "unknown",
-            "last_update": "2025-12-18T11:39:18.246Z",
+            "last_update": "2025-12-18T13:23:50.079Z",
             "update_strategy": "RollingUpdate"
           },
           "recent_changes": [
             {
               "type": "deployment",
-              "time": "2025-12-18T09:45:00.000Z",
+              "time": "2025-12-18T09:00:00.000Z",
               "change": "Scaled up replicas from 2 to 3",
               "user": "admin"
             }
@@ -374,10 +377,11 @@
         "diagnostic_summary": {
           "confirmed_issues": [
             {
-              "issue": "High memory usage leading to pod restarts",
+              "issue": "Memory pressure causing pod restarts",
               "evidence": [
-                "Pod restarts",
-                "High memory usage"
+                "Pod Status Check",
+                "Container Restarts",
+                "Pod Resource Usage"
               ],
               "severity": "critical",
               "impact": "Service bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 is experiencing issues",
@@ -388,10 +392,11 @@
         },
         "confirmed_issues": [
           {
-            "issue": "High memory usage leading to pod restarts",
+            "issue": "Memory pressure causing pod restarts",
             "evidence": [
-              "Pod restarts",
-              "High memory usage"
+              "Pod Status Check",
+              "Container Restarts",
+              "Pod Resource Usage"
             ],
             "severity": "critical",
             "impact": "Service bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 is experiencing issues",
@@ -399,14 +404,15 @@
           }
         ],
         "secondary_issues": [],
-        "remediation_confidence": 1,
+        "remediation_confidence": 0.9,
         "proceed_to_stage5": true,
         "kb_enhanced": false,
         "primary_diagnosis": {
-          "issue": "High memory usage leading to pod restarts",
+          "issue": "Memory pressure causing pod restarts",
           "evidence": [
-            "Pod restarts",
-            "High memory usage"
+            "Pod Status Check",
+            "Container Restarts",
+            "Pod Resource Usage"
           ],
           "severity": "critical",
           "impact": "Service bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 is experiencing issues",
@@ -414,7 +420,7 @@
         }
       },
       "stage5_remediation": {
-        "analysis_id": "ctx-1766057897586-rbc3f4kxa-stage5",
+        "analysis_id": "ctx-1766064108910-lhormag5h-stage5",
         "remediation_plan": {
           "immediate_actions": [
             {
@@ -527,12 +533,13 @@
       "rootCause": {
         "identified": false,
         "component": "Memory Management",
-        "issue": "High memory usage leading to pod restarts",
+        "issue": "Memory pressure causing pod restarts",
         "evidence": [
-          "Pod restarts",
-          "High memory usage"
+          "Pod Status Check",
+          "Container Restarts",
+          "Pod Resource Usage"
         ],
-        "confidence": 0.55
+        "confidence": 0.6
       },
       "affectedServices": [
         "bss-mc-pcm-product-offer-detail",
@@ -582,10 +589,11 @@
       ],
       "confirmedIssues": [
         {
-          "issue": "High memory usage leading to pod restarts",
+          "issue": "Memory pressure causing pod restarts",
           "evidence": [
-            "Pod restarts",
-            "High memory usage"
+            "Pod Status Check",
+            "Container Restarts",
+            "Pod Resource Usage"
           ],
           "severity": "critical",
           "impact": "Service bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 is experiencing issues",
@@ -593,34 +601,36 @@
         }
       ],
       "primaryDiagnosis": {
-        "issue": "High memory usage leading to pod restarts",
+        "issue": "Memory pressure causing pod restarts",
         "evidence": [
-          "Pod restarts",
-          "High memory usage"
+          "Pod Status Check",
+          "Container Restarts",
+          "Pod Resource Usage"
         ],
         "severity": "critical",
         "impact": "Service bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 is experiencing issues",
         "namespace": "bstp-cms-global-production"
       },
-      "remediationConfidence": 1
+      "remediationConfidence": 0.9
     },
     "primaryDiagnosis": {
-      "issue": "High memory usage leading to pod restarts",
+      "issue": "Memory pressure causing pod restarts",
       "evidence": [
-        "Pod restarts",
-        "High memory usage"
+        "Pod Status Check",
+        "Container Restarts",
+        "Pod Resource Usage"
       ],
       "severity": "critical",
       "impact": "Service bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 is experiencing issues",
       "namespace": "bstp-cms-global-production",
       "stage": "Stage 4",
-      "timestamp": "2025-12-18T11:39:18.250Z"
+      "timestamp": "2025-12-18T13:23:50.083Z"
     },
     "preservedContext": {
-      "contextId": "ctx-1766057897586-rbc3f4kxa",
+      "contextId": "ctx-1766064108910-lhormag5h",
       "initialParams": {
-        "startTime": 1766054297,
-        "endTime": 1766057897
+        "startTime": 1766060508,
+        "endTime": 1766064108
       },
       "stageResults": {
         "stage3": {
@@ -673,7 +683,7 @@
                 "related_alerts": [
                   "KubeCPUOvercommit"
                 ],
-                "correlation_score": 0.2,
+                "correlation_score": 0.1,
                 "shared_labels": {}
               }
             ],
@@ -716,11 +726,11 @@
                 "command": null
               }
             ],
-            "correlation_confidence": 0.8,
+            "correlation_confidence": 0.7,
             "proceed_to_stage4": true,
             "auto_remediation_approved": false
           },
-          "completedAt": "2025-12-18T11:38:54.492Z",
+          "completedAt": "2025-12-18T13:23:16.679Z",
           "decision": true
         },
         "stage4": {
@@ -743,7 +753,7 @@
                     "last_termination": {
                       "reason": "Unknown",
                       "exit_code": 1,
-                      "finished_at": "2025-12-18T11:39:18.246Z"
+                      "finished_at": "2025-12-18T13:23:50.079Z"
                     }
                   },
                   "error_logs": [],
@@ -751,8 +761,8 @@
                     {
                       "type": "Warning",
                       "reason": "BackOff",
-                      "message": "Pod restarts",
-                      "timestamp": "2025-12-18T11:39:18.246Z"
+                      "message": "Pod Status Check",
+                      "timestamp": "2025-12-18T13:23:50.079Z"
                     }
                   ],
                   "resource_usage": {
@@ -770,13 +780,13 @@
                 "namespace": "bstp-cms-global-production",
                 "version": "unknown",
                 "replicas": "unknown",
-                "last_update": "2025-12-18T11:39:18.246Z",
+                "last_update": "2025-12-18T13:23:50.079Z",
                 "update_strategy": "RollingUpdate"
               },
               "recent_changes": [
                 {
                   "type": "deployment",
-                  "time": "2025-12-18T09:45:00.000Z",
+                  "time": "2025-12-18T09:00:00.000Z",
                   "change": "Scaled up replicas from 2 to 3",
                   "user": "admin"
                 }
@@ -800,10 +810,11 @@
             "diagnostic_summary": {
               "confirmed_issues": [
                 {
-                  "issue": "High memory usage leading to pod restarts",
+                  "issue": "Memory pressure causing pod restarts",
                   "evidence": [
-                    "Pod restarts",
-                    "High memory usage"
+                    "Pod Status Check",
+                    "Container Restarts",
+                    "Pod Resource Usage"
                   ],
                   "severity": "critical",
                   "impact": "Service bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 is experiencing issues",
@@ -813,15 +824,15 @@
               "secondary_issues": []
             },
             "proceed_to_stage5": true,
-            "remediation_confidence": 1
+            "remediation_confidence": 0.9
           },
-          "completedAt": "2025-12-18T11:39:18.247Z",
+          "completedAt": "2025-12-18T13:23:50.080Z",
           "decision": true,
-          "primaryIssue": "High memory usage leading to pod restarts"
+          "primaryIssue": "Memory pressure causing pod restarts"
         },
         "stage5": {
           "output": {
-            "analysis_id": "ctx-1766057897586-rbc3f4kxa-stage5",
+            "analysis_id": "ctx-1766064108910-lhormag5h-stage5",
             "remediation_plan": {
               "immediate_actions": [
                 {
@@ -918,7 +929,7 @@
               "validation": "Verify previous version number before rollback"
             }
           },
-          "completedAt": "2025-12-18T11:39:34.600Z"
+          "completedAt": "2025-12-18T13:24:19.371Z"
         },
         "stage1": {
           "output": {
@@ -943,29 +954,30 @@
             "services_count": 0,
             "namespaces_analyzed": []
           },
-          "completedAt": "2025-12-18T11:39:42.085Z",
+          "completedAt": "2025-12-18T13:24:27.074Z",
           "status": "degraded"
         },
         "stage2": {
           "output": {
-            "investigation_id": "ctx-1766057897586-rbc3f4kxa-stage2",
+            "investigation_id": "ctx-1766064108910-lhormag5h-stage2",
             "root_cause": {
               "identified": false,
               "component": "Memory Management",
-              "issue": "High memory usage leading to pod restarts",
+              "issue": "Memory pressure causing pod restarts",
               "evidence": [
-                "Pod restarts",
-                "High memory usage"
+                "Pod Status Check",
+                "Container Restarts",
+                "Pod Resource Usage"
               ],
-              "confidence": 0.55
+              "confidence": 0.6
             },
             "correlation_matrix": {
-              "primary_chain": "Pod restarts linked to high memory usage",
+              "primary_chain": "Pod restarts linked to memory pressure",
               "affected_services": [
                 "bss-mc-pcm-product-offer-detail",
                 "bss-mc-asset-management"
               ],
-              "blast_radius": "Limited to specific pods",
+              "blast_radius": "Moderate impact across multiple services",
               "kubernetes_impact": {
                 "evicted_pods": 0,
                 "pending_pods": 0,
@@ -982,9 +994,9 @@
             ],
             "proceed_to_stage3": true,
             "alert_correlation_needed": true,
-            "confidence": 0.55
+            "confidence": 0.6
           },
-          "completedAt": "2025-12-18T11:39:42.085Z",
+          "completedAt": "2025-12-18T13:24:27.074Z",
           "decision": true,
           "rootCauseIdentified": false
         }
@@ -999,9 +1011,9 @@
       },
       "stage2_root_cause": {
         "identified": false,
-        "issue": "High memory usage leading to pod restarts",
+        "issue": "Memory pressure causing pod restarts",
         "component": "Memory Management",
-        "confidence": 0.55,
+        "confidence": 0.6,
         "affected_services": [
           "bss-mc-pcm-product-offer-detail",
           "bss-mc-asset-management"
@@ -1011,14 +1023,14 @@
         "active_alerts": 2,
         "alert_groups": 1,
         "kb_matches": 0,
-        "correlation_confidence": 0.8,
+        "correlation_confidence": 0.7,
         "slo_status": "green"
       },
       "stage4_diagnostics": {
         "diagnostics_executed": 1,
         "confirmed_issues": 1,
-        "remediation_confidence": 1,
-        "primary_issue": "High memory usage leading to pod restarts"
+        "remediation_confidence": 0.9,
+        "primary_issue": "Memory pressure causing pod restarts"
       },
       "stage5_remediation": {
         "plan_created": true,
@@ -1038,29 +1050,29 @@
         "field": "proceed_to_stage2",
         "value": false,
         "reason": "",
-        "timestamp": "2025-12-18T11:39:42.085Z"
+        "timestamp": "2025-12-18T13:24:27.074Z"
       },
       "stage2_decision": {
         "field": "proceed_to_stage3",
         "value": true,
-        "confidence": 0.55,
-        "timestamp": "2025-12-18T11:39:42.085Z"
+        "confidence": 0.6,
+        "timestamp": "2025-12-18T13:24:27.074Z"
       },
       "stage3_decision": {
         "field": "proceed_to_stage4",
         "value": true,
-        "correlation_confidence": 0.8,
-        "timestamp": "2025-12-18T11:38:54.492Z"
+        "correlation_confidence": 0.7,
+        "timestamp": "2025-12-18T13:23:16.679Z"
       },
       "stage4_decision": {
         "field": "proceed_to_stage5",
         "value": true,
-        "remediation_confidence": 1,
-        "timestamp": "2025-12-18T11:39:18.247Z"
+        "remediation_confidence": 0.9,
+        "timestamp": "2025-12-18T13:23:50.080Z"
       },
       "stage5_completion": {
         "remediation_plan_created": true,
-        "timestamp": "2025-12-18T11:39:34.600Z"
+        "timestamp": "2025-12-18T13:24:19.371Z"
       },
       "stage6_completion": {
         "prevention_implemented": false,
@@ -1068,15 +1080,15 @@
       }
     },
     "confidenceProgression": {
-      "stage2_root_cause_confidence": 0.55,
-      "stage3_correlation_confidence": 0.8,
-      "stage4_remediation_confidence": 1,
+      "stage2_root_cause_confidence": 0.6,
+      "stage3_correlation_confidence": 0.7,
+      "stage4_remediation_confidence": 0.9,
       "stage6_prevention_quality": 0,
-      "overall_confidence": 0.5875
+      "overall_confidence": 0.5499999999999999
     },
     "learningSummary": {
       "what_happened": {
-        "root_cause": "High memory usage leading to pod restarts",
+        "root_cause": "Memory pressure causing pod restarts",
         "affected_services": [
           "bss-mc-pcm-product-offer-detail",
           "bss-mc-asset-management"
@@ -1091,7 +1103,7 @@
       ],
       "what_didnt_work": [],
       "key_insights": [
-        "Primary issue: High memory usage leading to pod restarts"
+        "Primary issue: Memory pressure causing pod restarts"
       ]
     },
     "recommendationPriority": {
@@ -1112,22 +1124,22 @@
       ],
       "preventive_ongoing": []
     },
-    "summary": "🔍 **Kubernetes Cluster Analizi**\n\n📊 **Cluster:** unknown\n🆔 **Context ID:** ctx-1766057897586-rbc3f4kxa\n⏱️ **Süre:** NaNs\n\n**📈 Genel Durum:**\n- Sağlık Durumu: degraded\n- Aktif Alert: 6 (0 kritik)\n- Çalışan Stage: 7/6\n\n**🔧 Önerilen Aksiyonlar:**\n1. Rollback deployment to previous version\n   - Risk: low\n   - Süre: 2-5 minutes\n   - Komut: `kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production`\n\n**📊 SLO Durumu:**\n- Mevcut: 100%\n- Hedef: 99.9%\n- Durum: green\n\n**📈 Güven Skoru İlerlemesi:**\n- Stage 2 (Kök Neden): 55%\n- Stage 3 (Alert Korelasyon): 80%\n- Stage 4 (Remediation): 100%\n- Stage 6 (Prevention Kalitesi): 0%\n- **Genel Güven: 59%**\n\n**🔄 Karar Yolculuğu:**\n- Stage 1→2: ❌ Dur\n- Stage 2→3: ✅ Devam\n- Stage 3→4: ✅ Devam\n- Stage 4→5: ✅ Devam\n\n**💡 Önemli Bulgular:**\n- Primary issue: High memory usage leading to pod restarts\n\n**✅ İşe Yarayan:**\n- Stage 3 strongly correlated alerts to root cause\n- Stage 5 generated 1 actionable remediation steps\n\n**📋 Özet:**\n7 aşama tamamlandı, 0 karar takip edildi.\n",
-    "markdownReport": "<div style=\"border: 2px solid #d32f2f; border-radius: 8px; padding: 20px; background-color: #ffebee; font-family: Arial, sans-serif; max-width: 800px;\"><h2 style=\"color: #d32f2f; margin-top: 0;\">🔴 Unknown Alert</h2><p style=\"font-size: 14px; color: #666;\"><strong>Context ID:</strong> ctx-1766057897586-rbc3f4kxa</p><hr style=\"border: none; border-top: 1px solid #ddd; margin: 15px 0;\"><h3 style=\"color: #333;\">🎯 Issue Summary</h3><p><strong>Component:</strong> Memory Management</p><p><strong>Issue:</strong> High memory usage leading to pod restarts</p><p><strong>Confidence:</strong> 55%</p><p><strong>Severity:</strong> <span style=\"color: #d32f2f; font-weight: bold;\">CRITICAL</span></p><p><strong>Affected Services:</strong> bss-mc-pcm-product-offer-detail, bss-mc-asset-management</p><h3 style=\"color: #333;\">📊 SLO Impact</h3><p><strong>Availability SLO:</strong> 100% (Target: 99.9%) - Status: <strong>GREEN</strong></p><h3 style=\"color: #333;\">🔧 Recommended Actions</h3><ol style=\"margin: 10px 0; padding-left: 20px;\"><li style=\"margin-bottom: 10px;\"><strong>Rollback deployment to previous version</strong><br><span style=\"font-size: 12px; color: #666;\">Risk: low | Time: 2-5 minutes</span><br><code style=\"background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 12px;\">kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production</code></li></ol><hr style=\"border: none; border-top: 1px solid #ddd; margin: 15px 0;\"><p style=\"font-size: 12px; color: #999;\">Generated at 2025-12-18T11:39:42.088Z</p></div>",
+    "summary": "🔍 **Kubernetes Cluster Analizi**\n\n📊 **Cluster:** unknown\n🆔 **Context ID:** ctx-1766064108910-lhormag5h\n⏱️ **Süre:** NaNs\n\n**📈 Genel Durum:**\n- Sağlık Durumu: degraded\n- Aktif Alert: 6 (0 kritik)\n- Çalışan Stage: 7/6\n\n**🔧 Önerilen Aksiyonlar:**\n1. Rollback deployment to previous version\n   - Risk: low\n   - Süre: 2-5 minutes\n   - Komut: `kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production`\n\n**📊 SLO Durumu:**\n- Mevcut: 100%\n- Hedef: 99.9%\n- Durum: green\n\n**📈 Güven Skoru İlerlemesi:**\n- Stage 2 (Kök Neden): 60%\n- Stage 3 (Alert Korelasyon): 70%\n- Stage 4 (Remediation): 90%\n- Stage 6 (Prevention Kalitesi): 0%\n- **Genel Güven: 55%**\n\n**🔄 Karar Yolculuğu:**\n- Stage 1→2: ❌ Dur\n- Stage 2→3: ✅ Devam\n- Stage 3→4: ✅ Devam\n- Stage 4→5: ✅ Devam\n\n**💡 Önemli Bulgular:**\n- Primary issue: Memory pressure causing pod restarts\n\n**✅ İşe Yarayan:**\n- Stage 3 strongly correlated alerts to root cause\n- Stage 5 generated 1 actionable remediation steps\n\n**📋 Özet:**\n7 aşama tamamlandı, 0 karar takip edildi.\n",
+    "markdownReport": "<div style=\"border: 2px solid #d32f2f; border-radius: 8px; padding: 20px; background-color: #ffebee; font-family: Arial, sans-serif; max-width: 800px;\"><h2 style=\"color: #d32f2f; margin-top: 0;\">🔴 Unknown Alert</h2><p style=\"font-size: 14px; color: #666;\"><strong>Context ID:</strong> ctx-1766064108910-lhormag5h</p><hr style=\"border: none; border-top: 1px solid #ddd; margin: 15px 0;\"><h3 style=\"color: #333;\">🎯 Issue Summary</h3><p><strong>Component:</strong> Memory Management</p><p><strong>Issue:</strong> Memory pressure causing pod restarts</p><p><strong>Confidence:</strong> 60%</p><p><strong>Severity:</strong> <span style=\"color: #d32f2f; font-weight: bold;\">CRITICAL</span></p><p><strong>Affected Services:</strong> bss-mc-pcm-product-offer-detail, bss-mc-asset-management</p><h3 style=\"color: #333;\">📊 SLO Impact</h3><p><strong>Availability SLO:</strong> 100% (Target: 99.9%) - Status: <strong>GREEN</strong></p><h3 style=\"color: #333;\">🔧 Recommended Actions</h3><ol style=\"margin: 10px 0; padding-left: 20px;\"><li style=\"margin-bottom: 10px;\"><strong>Rollback deployment to previous version</strong><br><span style=\"font-size: 12px; color: #666;\">Risk: low | Time: 2-5 minutes</span><br><code style=\"background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 12px;\">kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production</code></li></ol><hr style=\"border: none; border-top: 1px solid #ddd; margin: 15px 0;\"><p style=\"font-size: 12px; color: #999;\">Generated at 2025-12-18T13:24:27.077Z</p></div>",
     "oncallTicket": {
       "title": "🔴 CRITICAL Unknown Alert: Memory Management",
-      "description": "<div style=\"font-family: Arial, sans-serif; max-width: 700px;\"><h3 style=\"color: #d32f2f;\">🔴 Alert: Unknown Alert</h3><p><strong>Component:</strong> Memory Management</p><p><strong>Namespace:</strong> bss-mc-pcm-product-offer-detail</p><p><strong>Root Cause:</strong> High memory usage leading to pod restarts</p><p><strong>Affected Services:</strong> bss-mc-pcm-product-offer-detail, bss-mc-asset-management</p><h4>Recommended Actions:</h4><ul><li><strong>Rollback deployment to previous version</strong> (Risk: low)</li></ul><p style=\"font-size: 12px; color: #999;\">Context ID: ctx-1766057897586-rbc3f4kxa</p></div>",
+      "description": "<div style=\"font-family: Arial, sans-serif; max-width: 700px;\"><h3 style=\"color: #d32f2f;\">🔴 Alert: Unknown Alert</h3><p><strong>Component:</strong> Memory Management</p><p><strong>Namespace:</strong> bss-mc-pcm-product-offer-detail</p><p><strong>Root Cause:</strong> Memory pressure causing pod restarts</p><p><strong>Affected Services:</strong> bss-mc-pcm-product-offer-detail, bss-mc-asset-management</p><h4>Recommended Actions:</h4><ul><li><strong>Rollback deployment to previous version</strong> (Risk: low)</li></ul><p style=\"font-size: 12px; color: #999;\">Context ID: ctx-1766064108910-lhormag5h</p></div>",
       "priority": "Critical",
       "customFields": {
-        "contextId": "ctx-1766057897586-rbc3f4kxa",
+        "contextId": "ctx-1766064108910-lhormag5h",
         "oncallFriendly": true,
         "symptoms": 6,
-        "rootCause": "Diagnosis: High memory usage leading to pod restarts"
+        "rootCause": "Diagnosis: Memory pressure causing pod restarts"
       }
     },
     "jiraTicket": {
-      "title": "[Unknown Alert] Memory Management - High memory usage leading to pod restarts (KB-Available)",
-      "description": "\n<div style=\"border: 2px solid #d32f2f; border-radius: 8px; margin: 10px 0; background: #ffebee;\">\n  <div style=\"background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n    🚨 INCIDENT SUMMARY\n  </div>\n  <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n    <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n      <tr><td style=\"font-weight: bold; width: 130px; padding: 5px;\">Alert:</td><td style=\"padding: 5px;\">Unknown Alert</td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Severity:</td><td style=\"padding: 5px;\"><span style=\"color: #d32f2f; font-weight: bold;\">🔴 CRITICAL</span></td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Service:</td><td style=\"padding: 5px;\">Memory Management</td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Namespace:</td><td style=\"padding: 5px;\">bss-mc-pcm-product-offer-detail</td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Detection:</td><td style=\"padding: 5px;\">Invalid Date</td></tr>\n      <tr><td style=\"font-weight: bold; padding: 5px;\">Duration:</td><td style=\"padding: 5px;\">NaN minutes</td></tr>\n    </table>\n  </div>\n</div>\n\n<h2 style=\"color: #1976d2; margin-top: 20px;\">📊 INCIDENT DETAILS</h2>\n\n<div style=\"border: 1px solid #e0e0e0; border-radius: 6px; margin: 10px 0; overflow: hidden;\">\n  <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n    <tr style=\"background: #f5f5f5;\">\n      <td style=\"padding: 10px; font-weight: bold; border-bottom: 1px solid #e0e0e0;\">Field</td>\n      <td style=\"padding: 10px; font-weight: bold; border-bottom: 1px solid #e0e0e0;\">Details</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Alert Type</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Unknown Alert</td>\n    </tr>\n    <tr style=\"background: #fafafa;\">\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Pod Name</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;\">bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Deployment</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;\">Memory Management</td>\n    </tr>\n    <tr style=\"background: #fafafa;\">\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0;\">Namespace</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;\">bss-mc-pcm-product-offer-detail</td>\n    </tr>\n    <tr>\n      <td style=\"padding: 8px;\">Context ID</td>\n      <td style=\"padding: 8px; font-family: monospace; color: #666;\">ctx-1766057897586-rbc3f4kxa</td>\n    </tr>\n  </table>\n</div>\n\n---\n\n## 📚 KNOWLEDGE BASE INTELLIGENCE\n\n\n<div style=\"border: 1px solid #9c27b0; border-radius: 6px; margin: 10px 0; background: #f3e5f5;\">\n  <div style=\"background: #9c27b0; color: white; padding: 10px; font-weight: bold; border-radius: 5px 5px 0 0;\">\n    📚 Knowledge Base Integration Status\n  </div>\n  <div style=\"padding: 12px; background: white; border-radius: 0 0 5px 5px;\">\n    <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n      <tr>\n        <td style=\"padding: 6px; font-weight: bold; width: 180px;\">KB Integration:</td>\n        <td style=\"padding: 6px;\"><span style=\"color: #2e7d32; font-weight: bold;\">✅ ENABLED</span></td>\n      </tr>\n      <tr style=\"background: #fafafa;\">\n        <td style=\"padding: 6px; font-weight: bold;\">KB Entries Loaded:</td>\n        <td style=\"padding: 6px;\">42 alerts</td>\n      </tr>\n      <tr>\n        <td style=\"padding: 6px; font-weight: bold;\">Current Alert in KB:</td>\n        <td style=\"padding: 6px;\"><span style=\"color: #d32f2f; font-weight: bold;\">❌ NO</span></td>\n      </tr>\n      \n    </table>\n  </div>\n</div>\n\n---\n\n## 🔍 ISSUE IDENTIFICATION\n\n### High memory usage leading to pod restarts\n\n**Confidence Level**: 55%\n\n**Business Impact**: Service bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 is experiencing issues\n\n### 📊 EVIDENCE SUMMARY\n\n**Evidence 1:**\n- 0: \"Pod restarts\"\n- 1: \"High memory usage\"\n\n\n---\n\n## 📊 SLO IMPACT\n\n\n- **Availability SLO**: 100% (Target: 99.9%)\n- **Status**: **GREEN**\n\n\n---\n\n## 🚀 ACTION PLAN\n\n### 🔴 IMMEDIATE ACTIONS (Execute NOW)\n\n\n#### 1. Rollback deployment to previous version\n\n**Command to execute:**\n```bash\nkubectl rollout undo deployment/[object Object] -n bstp-cms-global-production\n```\n\n\n\n- **Risk Level**: low\n- **Estimated Time**: 2-5 minutes\n- **Expected Outcome**: Restore service to previous stable version\n\n---\n\n\n\n### 🟠 SHORT-TERM FIXES (Within 24 hours)\n\n\n1. **Increase memory limits temporarily**\n   - Priority: Unknown\n   - Timeline: 1-2 days\n\n\n\n\n\n---\n\n## 📎 Additional Information\n\n- **Analysis Context ID**: ctx-1766057897586-rbc3f4kxa\n- **Alert Source**: Unknown Alert\n- **Analysis Completed**: 2025-12-18T11:39:42.089Z\n- **Total Analysis Time**: NaN minutes\n- **System**: FreePrometheus Analysis Engine v2.0\n- **Stages Executed**: 7/6\n- **KB Integration**: ENABLED (42 alerts loaded)\n- **KB Enhanced**: NO - Alert not in KB\n\n\n---\n\n*This report was automatically generated by the FreePrometheus Analysis System*\n*Report Version: 2.0 | KB-Enhanced: NO | Generated: 2025-12-18T11:39:42.089Z*\n",
+      "title": "[Unknown Alert] Memory Management - Memory pressure causing pod restarts (KB-Available)",
+      "description": "\n<div style=\"font-family: Arial, sans-serif; max-width: 800px;\">\n  <div style=\"background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;\">\n    <h1 style=\"margin: 0; font-size: 24px;\">CRITICAL Unknown Alert</h1>\n  </div>\n\n  <div style=\"border: 2px solid #0288d1; border-radius: 8px; margin: 15px 0; background: #e1f5fe;\">\n    <div style=\"background: #0288d1; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      ⚡ QUICK FINDINGS\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <div style=\"margin: 8px 0; padding-left: 10px;\">• Pod bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7 is restarting.</div><div style=\"margin: 8px 0; padding-left: 10px;\">• 6 alerts detected (0 critical).</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Cluster health is degraded due to pod instability.</div>\n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #d32f2f; border-radius: 8px; margin: 15px 0; background: #ffebee;\">\n    <div style=\"background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🔥 SYMPTOMS (What's Happening)\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <div style=\"margin: 8px 0; padding-left: 10px;\">• Memory Management service experiencing issues</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Pod status: Running</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Pod restarting (Restart count: 5)</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Memory: 950Mi/1024Mi</div><div style=\"margin: 8px 0; padding-left: 10px;\">• Latest event: Pod Status Check (Warning)</div>\n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #ff9800; border-radius: 8px; margin: 15px 0; background: #fff3e0;\">\n    <div style=\"background: #ff9800; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🔍 ROOT CAUSE (Why It's Happening)\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <p style=\"margin: 0 0 10px 0;\"><strong>Root Cause:</strong> Memory pressure causing pod restarts</p>\n\n      <div style=\"background: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 10px;\">\n        <strong>Evidence:</strong>\n        <div style=\"margin-top: 8px;\">\n          • <strong>Pod Status:</strong> <code>Running</code><br/>\n          • <strong>Last Error:</strong> Unknown (Exit Code: 1)<br/>\n          • <strong>Memory Usage:</strong> 950Mi / 1024Mi<br/>\n          • <strong>CPU Usage:</strong> 0.85<br/>\n          \n          • <strong>Latest Event:</strong> Pod Status Check (Warning)<br/>\n        </div>\n        \n      </div>\n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #4caf50; border-radius: 8px; margin: 15px 0; background: #e8f5e8;\">\n    <div style=\"background: #4caf50; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      ✅ SOLUTION (What To Do)\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 15px 0; padding: 15px; background: #fafafa;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #d32f2f;\">1. IMMEDIATE ACTION</h4>\n          <p style=\"margin: 10px 0;\"><strong>Action Required:</strong> Rollback deployment to previous version</p>\n          <p style=\"margin: 10px 0;\"><strong>Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl rollout undo deployment/[object Object] -n bstp-cms-global-production</code>\n          </div>\n          <div style=\"margin-top: 10px;\">\n            <span style=\"margin-right: 15px;\">⏱️ <strong>Duration:</strong> 2-5 minutes</span>\n            <span style=\"margin-right: 15px;\">⚠️ <strong>Risk:</strong> low</span>\n            <div style=\"margin-top: 5px;\">🎯 <strong>Expected Result:</strong> Restore service to previous stable version</div>\n          </div>\n        </div>\n      \n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #2196f3; border-radius: 8px; margin: 15px 0; background: #e3f2fd;\">\n    <div style=\"background: #2196f3; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      📋 VERIFY SOLUTION EFFECTIVENESS\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: #f9f9f9;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">1. Check pod status</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl get pods -n bss-mc-pcm-product-offer-detail | grep Memory Management</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> STATUS: Running (all pods in running state)</p>\n        </div>\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: white;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">2. Check service response</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl get svc -n bss-mc-pcm-product-offer-detail | grep Memory Management</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> Service available and responding</p>\n        </div>\n      \n        <div style=\"border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: #f9f9f9;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #2196f3;\">3. Check for restarts</h4>\n          <p style=\"margin: 10px 0;\"><strong>Run Command:</strong></p>\n          <div style=\"background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;\">\n            <code>kubectl describe pod -l app=Memory Management -n bss-mc-pcm-product-offer-detail | grep \"Restart Count\"</code>\n          </div>\n          <p style=\"margin: 10px 0 0 0;\"><strong>Expected Result:</strong> Restart Count: 0 (should not increase, no new restarts)</p>\n        </div>\n      \n    </div>\n  </div>\n\n  <div style=\"border: 2px solid #607d8b; border-radius: 8px; margin: 15px 0; background: #eceff1;\">\n    <div style=\"background: #607d8b; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🔧 SUPPORT INFORMATION\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n        <tr><td style=\"font-weight: bold; width: 150px; padding: 5px;\">Incident ID:</td><td style=\"padding: 5px; font-family: monospace;\">ctx-1766064108910-lhormag5h</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Timestamp:</td><td style=\"padding: 5px;\">12/18/2025, 4:24:27 PM</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Namespace:</td><td style=\"padding: 5px; font-family: monospace;\">bss-mc-pcm-product-offer-detail</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Pod:</td><td style=\"padding: 5px; font-family: monospace;\">bss-mc-pcm-product-offer-detail-6fbfbddf94-g58q7</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Deployment:</td><td style=\"padding: 5px; font-family: monospace;\">Memory Management</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Cluster Status:</td><td style=\"padding: 5px;\">degraded</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Total Alerts:</td><td style=\"padding: 5px;\">6 (0 critical)</td></tr>\n      </table>\n      <div style=\"margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 4px; border-left: 4px solid #ff9800;\">\n        <strong>If issue persists:</strong> Escalate to Development Team\n      </div>\n    </div>\n  </div>\n\n  <div style=\"text-align: center; margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666;\">\n    <div>This report was auto-generated by FreePrometheus | 12/18/2025, 4:24:27 PM</div>\n    <div>KB Integration: 42 alerts loaded | Generic Analysis</div>\n  </div>\n</div>\n",
       "priority": "Critical",
       "labels": [
         "Unknown Alert",
@@ -1144,13 +1156,13 @@
       ],
       "issueType": "Incident",
       "customFields": {
-        "contextId": "ctx-1766057897586-rbc3f4kxa",
+        "contextId": "ctx-1766064108910-lhormag5h",
         "analysisTime": null,
-        "automationConfidence": 0.55,
+        "automationConfidence": 0.6,
         "analysisEngine": "FreePrometheus Analysis Engine",
         "engineVersion": "2.0",
         "stagesExecuted": 7,
-        "rootCauseConfidence": 0.55,
+        "rootCauseConfidence": 0.6,
         "affectedServices": 2,
         "sloImpact": "green",
         "kbIntegrationEnabled": true,
@@ -1168,7 +1180,7 @@
         "utilizationRate": "0.0%",
         "matchedEntries": 0,
         "totalEntries": 42,
-        "lastUpdated": "2025-12-18T11:39:42.089Z"
+        "lastUpdated": "2025-12-18T13:24:27.079Z"
       },
       "categoryAnalysis": {
         "category": "UNKNOWN",
@@ -1179,7 +1191,7 @@
       "kbEntryDetails": null
     },
     "_debug": {
-      "contextId": "ctx-1766057897586-rbc3f4kxa",
+      "contextId": "ctx-1766064108910-lhormag5h",
       "executionFlow": {
         "stagesExecuted": 7,
         "stageCompletions": {
@@ -1202,7 +1214,7 @@
         "contextPreserved": true,
         "allStagesHaveData": true
       },
-      "timestamp": "2025-12-18T11:39:42.089Z"
+      "timestamp": "2025-12-18T13:24:27.080Z"
     }
   }
 ]
