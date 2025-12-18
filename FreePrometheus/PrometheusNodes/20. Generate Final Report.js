@@ -667,7 +667,7 @@ function generateMarkdownReport(allStageData, masterContext, config) {
 }
 
 // Generate Enhanced Jira Description (Rich HTML format like File 26)
-function generateEnhancedJiraDescription(allStageData, masterContext) {
+function generateEnhancedJiraDescription(allStageData, masterContext, analysisTimeline) {
   const severity = safeGet(allStageData, 'primaryDiagnosis.severity', 'unknown');
   const style = getSeverityStyle(severity);
   const alertName = safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', 'Unknown Alert');
@@ -864,6 +864,21 @@ ${evidenceList.length > 0 ? evidenceList.map((ev, idx) => `
 
 ---
 
+## 🕐 INCIDENT TIMELINE
+
+| Time | Stage | Finding | Status |
+|------|-------|---------|--------|
+${(analysisTimeline || []).map(entry =>
+  `| ${entry.time} | ${entry.stage} | ${entry.finding} | ${
+    entry.severity === 'critical' ? '🔴 Critical' :
+    entry.severity === 'warning' ? '🟡 Warning' :
+    entry.severity === 'success' ? '✅ Ready' :
+    '🔵 Info'
+  } |`
+).join('\n')}
+
+---
+
 ## 📊 SLO IMPACT
 
 ${sloStatus !== 'unknown' ? `
@@ -992,7 +1007,7 @@ function generateOncallTicket(allStageData, masterContext) {
 }
 
 // Generate Enhanced Jira Ticket (matching File 26 format but without KB)
-function generateJiraTicket(allStageData, masterContext) {
+function generateJiraTicket(allStageData, masterContext, analysisTimeline) {
   const severity = safeGet(allStageData, 'primaryDiagnosis.severity', 'unknown');
   const alertName = safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', 'Unknown Alert');
   const component = safeGet(allStageData, 'stage2.root_cause.component', 'unknown-component');
@@ -1016,8 +1031,8 @@ function generateJiraTicket(allStageData, masterContext) {
   const kbInsights = generateKnowledgeBaseInsights(allStageData);
   const hasKBEntry = kbInsights.kbEnhanced;
 
-  // Generate rich HTML description
-  const description = generateEnhancedJiraDescription(allStageData, masterContext);
+  // Generate rich HTML description with timeline
+  const description = generateEnhancedJiraDescription(allStageData, masterContext, analysisTimeline || []);
 
   // Enhanced title format with KB indicator
   const title = hasKBEntry
@@ -1441,8 +1456,74 @@ finalReport.markdownReport = generateMarkdownReport(allStageData, masterContext,
 // Add oncallTicket (oncall-friendly ticket)
 finalReport.oncallTicket = generateOncallTicket(allStageData, masterContext);
 
-// Add jiraTicket (Jira-ready ticket)
-finalReport.jiraTicket = generateJiraTicket(allStageData, masterContext);
+// Build analysis timeline for Jira ticket (matching File 26 format)
+const alertStartTime = new Date(masterContext.createdAt).getTime() / 1000;
+const alertStartDate = new Date(masterContext.createdAt).toLocaleString('en-US');
+const analysisTimeline = [];
+
+// Alert triggered
+analysisTimeline.push({
+  time: alertStartDate,
+  stage: "Alert Triggered",
+  finding: `${safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', 'Unknown Alert')} detected`,
+  severity: "critical"
+});
+
+// Stage 1: Health Snapshot
+if (allStageData.stage1?.overall_status) {
+  analysisTimeline.push({
+    time: new Date((alertStartTime + 30) * 1000).toLocaleString('en-US'),
+    stage: "Health Snapshot",
+    finding: `Cluster: ${allStageData.stage1.overall_status}, ${allStageData.stage1.alerts?.total || 0} alerts (${allStageData.stage1.alerts?.critical || 0} critical)`,
+    severity: allStageData.stage1.overall_status
+  });
+}
+
+// Stage 2: Root Cause Analysis
+if (allStageData.stage2?.root_cause) {
+  analysisTimeline.push({
+    time: new Date((alertStartTime + 60) * 1000).toLocaleString('en-US'),
+    stage: "Root Cause Analysis",
+    finding: allStageData.stage2.root_cause.identified ?
+             `Root cause identified: ${allStageData.stage2.root_cause.issue}` :
+             "Analyzing system correlations",
+    severity: allStageData.stage2.root_cause.identified ? "warning" : "info"
+  });
+}
+
+// Stage 3: Alert Intelligence
+if (allStageData.stage3?.active_alerts?.length > 0) {
+  analysisTimeline.push({
+    time: new Date((alertStartTime + 90) * 1000).toLocaleString('en-US'),
+    stage: "Alert Intelligence",
+    finding: `${allStageData.stage3.active_alerts.length} active alerts correlated, SLO: ${allStageData.stage3.slo_impact?.availability_slo?.current || "N/A"}`,
+    severity: "info"
+  });
+}
+
+// Stage 4: Automated Diagnosis
+if (allStageData.stage4?.diagnostics_executed?.length > 0) {
+  const confirmedIssue = safeGet(allStageData, 'stage2.root_cause.issue', 'Issue confirmed');
+  analysisTimeline.push({
+    time: new Date((alertStartTime + 120) * 1000).toLocaleString('en-US'),
+    stage: "Automated Diagnosis",
+    finding: `Confirmed: ${confirmedIssue}`,
+    severity: "critical"
+  });
+}
+
+// Stage 5: Remediation Plan Ready
+if (allStageData.stage5?.remediation_plan?.immediate_actions?.length > 0) {
+  analysisTimeline.push({
+    time: new Date((alertStartTime + 150) * 1000).toLocaleString('en-US'),
+    stage: "Remediation Plan Ready",
+    finding: allStageData.stage5.remediation_plan.immediate_actions[0]?.action || "Action plan prepared",
+    severity: "success"
+  });
+}
+
+// Add jiraTicket (Jira-ready ticket with timeline)
+finalReport.jiraTicket = generateJiraTicket(allStageData, masterContext, analysisTimeline);
 
 // Add knowledgeBaseInsights (placeholder without KB nodes)
 finalReport.knowledgeBaseInsights = generateKnowledgeBaseInsights(allStageData);
