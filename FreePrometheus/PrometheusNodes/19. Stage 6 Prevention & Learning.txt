@@ -64,82 +64,40 @@ Review all stages to create accurate incident summary:
 **CRITICAL**: Generate SPECIFIC prevention actions based on ACTUAL root cause, not generic templates.
 
 **IF root cause is OOMKilled or memory-related**:
-```json
-{
-  "type": "monitoring",
-  "action": "Add memory leak detection alert for {{ actual namespace }}",
-  "implementation": {
-    "alert_rule": "rate(container_memory_usage_bytes[5m]) > 0.1 and container_memory_usage_bytes > 0.8 * container_spec_memory_limit_bytes",
-    "threshold": "10% growth in 5 minutes",
-    "severity": "warning"
-  },
-  "status": "planned"
-},
-{
-  "type": "code_fix",
-  "action": "Fix memory leak in {{ actual component from Stage 2 }}",
-  "status": "in_progress"
-},
-{
-  "type": "configuration",
-  "action": "Increase memory limits for {{ actual services }}",
-  "implementation": {
-    "yaml_patch": "Based on actual memory usage from Stage 4",
-    "applied_to": {{ actual affected services }}
-  },
-  "status": "planned"
-}
-```
+Generate 3-4 actions including:
+- Type "monitoring": Add memory leak detection alert for actual namespace
+  - Implementation: alert_rule with rate calculation and threshold
+  - Status: "planned"
+- Type "code_fix": Fix memory leak in actual component from Stage 2
+  - Status: "in_progress"
+- Type "configuration": Increase memory limits for actual services
+  - Implementation: yaml_patch based on actual memory usage from Stage 4
+  - Applied_to: actual affected services array
+  - Status: "planned"
 
 **IF root cause is CrashLoopBackOff or configuration error**:
-```json
-{
-  "type": "configuration",
-  "action": "Fix configuration issue in {{ actual component }}",
-  "implementation": {
-    "config_update": "Based on actual error from Stage 4 logs",
-    "applied_to": {{ actual affected services }}
-  },
-  "status": "planned"
-},
-{
-  "type": "monitoring",
-  "action": "Add configuration validation alert",
-  "implementation": {
-    "alert_rule": "Based on actual configuration that failed",
-    "severity": "warning"
-  },
-  "status": "planned"
-}
-```
+Generate 2-3 actions including:
+- Type "configuration": Fix configuration issue in actual component
+  - Implementation: config_update based on actual error from Stage 4 logs
+  - Applied_to: actual affected services
+  - Status: "planned"
+- Type "monitoring": Add configuration validation alert
+  - Implementation: alert_rule based on actual configuration that failed
+  - Status: "planned"
 
 **IF root cause is node-related**:
-```json
-{
-  "type": "monitoring",
-  "action": "Add node health monitoring for {{ actual node }}",
-  "status": "planned"
-},
-{
-  "type": "process",
-  "action": "Implement node auto-replacement for {{ actual node condition }}",
-  "status": "planned"
-}
-```
+Generate 2-3 actions including:
+- Type "monitoring": Add node health monitoring for actual node name
+  - Status: "planned"
+- Type "process": Implement node auto-replacement for actual node condition
+  - Status: "planned"
 
 **ALWAYS include process improvement action**:
-```json
-{
-  "type": "process",
-  "action": "Add automated testing for {{ actual issue type }} priority issues",
-  "implementation": {
-    "pipeline_update": "Based on actual failure pattern",
-    "threshold": "Based on actual metrics that triggered issue",
-    "owner": "platform-team"
-  },
-  "status": "planned"
-}
-```
+- Type "process": Add automated testing for actual issue type priority issues
+  - Implementation: pipeline_update based on actual failure pattern
+  - Threshold: based on actual metrics that triggered issue
+  - Owner: "platform-team"
+  - Status: "planned"
 
 ### STEP 3: KNOWLEDGE BASE UPDATE
 
@@ -154,22 +112,17 @@ Review all stages to create accurate incident summary:
 - kb_updated: false (no new patterns)
 - Note: "All alerts already in KB"
 
-**Generate KB entry**:
-```json
-"knowledge_base_update": {
-  "alert_name": "<Actual alert name from Stage 3 or 'General-Kubernetes-Issue'>",
-  "new_entry": {
-    "pattern": "<Actual root cause from Stage 2>",
-    "diagnostic_shortcut": "<Actual diagnostic command that helped from Stage 4>",
-    "quick_fix": "<Actual immediate action from Stage 5>",
-    "prevention": "<Specific prevention based on root cause>",
-    "context_id": "{{ $json._context.contextId }}",
-    "priority_level": "{{ $json._debug?.priority || 'normal' }}"
-  },
-  "kb_updated": <true if new pattern, false if already in KB>,
-  "entry_id": "KB-{{ $json._context.contextId }}"
-}
-```
+**Generate KB entry structure**:
+- alert_name: Actual alert name from Stage 3 or "General-Kubernetes-Issue"
+- new_entry (only if new pattern found):
+  - pattern: Actual root cause from Stage 2
+  - diagnostic_shortcut: Actual diagnostic command that helped from Stage 4
+  - quick_fix: Actual immediate action from Stage 5
+  - prevention: Specific prevention based on root cause
+  - context_id: Use contextId from _context
+  - priority_level: Use priority from _debug
+- kb_updated: true if new pattern, false if already in KB
+- entry_id: Generate as "KB-" + contextId
 
 ### STEP 4: RUNBOOK UPDATES
 
