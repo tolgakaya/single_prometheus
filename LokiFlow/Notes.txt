@@ -1,0 +1,14 @@
+Daha önceki flowlar gibi bir n8n agent ai flowum var. LokiFlow.json Bu flowu incelemeni istiyorum.
+Bu flowdaki her bir node dosyaları LokiFlow\LokiNodes klasörü içinde js dosyalarında ve agentların promptları txt dosyası olarak mevcut
+Her bir stage'te http tool'lar var. Agentların analiz için bu toolları doğru kullanmasını bekliyorum. Her bir agent'ın ismi ve toolları ilgili parametreleri ile birlikte LokiFlow\AgentTools.txt dosyasında mevcut.
+Flowum uçtan uca her bir stageteki amaca  uygun olarak veri akışının doğru çalışmasını garanti etmen ve her bir node ve prompta gerekli düzenlemeyi yapmanı istiyorum
+Toollarda ve promptlarda ve node içeriklerinde tek namespace yapısı var bunun çoklu namespace olarak düzenlenmesini istiyorum. Namespace listesi şu şekilde:
+
+Namespace listesi:
+"bstp-cms-global-production","bstp-cms-prod-v3","em-global-prod-3pp","em-global-prod-eom","em-global-prod-flowe",
+"em-global-prod","em-prod-3pp","em-prod-eom","em-prod-flowe","em-prod","etiyamobile-production","etiyamobile-prod"
+
+Ayrıca tek servis ismi kullanılıyorsa, yada bir yerlerde servis ismi kullanıyorsa yeni ve gerçek servis listesini buradan bulabilirsin services.txt
+
+Hiçbir prompt'ta mock ve hardcoded data istemiyorum. Doğrudan agent AI'dan gelen cevapların kullanılmasını istiyorum.
+
