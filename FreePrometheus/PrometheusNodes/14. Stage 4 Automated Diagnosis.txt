@@ -26,6 +26,89 @@ Based on findings, generate realistic diagnostics:
 - Use exact timestamps from context
 - Simulate realistic kubectl/diagnostic command output based on actual metrics
 
+## 🎯 CRITICAL: WHICH POD/NODE TO DIAGNOSE
+
+**YOU MUST DIAGNOSE THE COMPONENT FROM STAGE 2 ROOT CAUSE, NOT RANDOM PODS**
+
+### Step 1: Identify Target Component
+
+Look at Stage 2 root cause:
+- Component: {{ $json.stage2Data.root_cause.component }}
+- Issue: {{ $json.stage2Data.root_cause.issue }}
+
+**CRITICAL**: The component field from Stage 2 tells you EXACTLY which service/deployment to diagnose.
+
+### Step 2: Generate Realistic Pod Name
+
+Based on Stage 2 component, generate pod name following Kubernetes naming conventions:
+
+**For Deployments** (most common):
+- Pattern: `<component>-<random-hash>-<random-suffix>`
+- Example: "bss-mc-pcm-product-offer-detail" → "bss-mc-pcm-product-offer-detail-7d8f9c-xk2mz"
+- Example: "api-gateway" → "api-gateway-65b4f8c-ppvqf"
+
+**For StatefulSets**:
+- Pattern: `<component>-<ordinal>`
+- Example: "elasticsearch-data" → "elasticsearch-data-0"
+- Example: "kafka" → "kafka-2"
+
+**Hash format**: 6-7 lowercase alphanumeric characters (e.g., 7d8f9c, 65b4f8c)
+**Suffix format**: 5 lowercase alphanumeric characters (e.g., xk2mz, ppvqf)
+
+### Step 3: Use Component Name in deployment_info
+
+**CRITICAL**: The deployment_info.name MUST match Stage 2's root_cause.component EXACTLY.
+
+```json
+{
+  "enriched_context": {
+    "deployment_info": {
+      "name": "{{ $json.stage2Data.root_cause.component }}"
+    }
+  }
+}
+```
+
+### Step 4: Validation Rules
+
+**NEVER analyze monitoring/infrastructure pods UNLESS Stage 2 specifically identified them:**
+
+❌ **WRONG Examples** (DO NOT DO THIS):
+```json
+// Stage 2 says: "component": "bss-mc-pcm-product-offer-detail"
+// You analyze: "target": "kube-prometheus-stack-kube-state-metrics-84c7c44c96-ppvqf"
+// WRONG! This is a monitoring pod, not the problem component!
+
+// Stage 2 says: "component": "api-gateway"
+// You analyze: "target": "prometheus-server-6d8f9c-xk2mz"
+// WRONG! This is not the component Stage 2 identified!
+```
+
+✅ **CORRECT Examples** (DO THIS):
+```json
+// Stage 2 says: "component": "bss-mc-pcm-product-offer-detail"
+// You analyze: "target": "bss-mc-pcm-product-offer-detail-7d8f9c-xk2mz"
+// CORRECT! Pod name starts with the component from Stage 2
+
+// Stage 2 says: "component": "elasticsearch-data-0"
+// You analyze: "target": "elasticsearch-data-0"
+// CORRECT! StatefulSet pod matches component exactly
+
+// Stage 2 says: "component": "api-gateway"
+// You analyze: "target": "api-gateway-65b4f8c-ppvqf"
+// deployment_info.name: "api-gateway"
+// CORRECT! Both match Stage 2 component
+```
+
+### Step 5: Namespace Selection
+
+Use the namespace from Stage 2 or Stage 3 findings:
+- Primary: {{ $json.stage2Data.root_cause.namespace }} (if available)
+- Fallback: {{ $json.stage3Data.active_alerts[0].namespace }} (if available)
+- Last resort: Use namespace from affected_services context
+
+**DO NOT use random namespaces like "em-control-plane-prod" unless Stage 2/3 specifically mentioned them**
+
 ## 🎯 DECISION LOGIC - HOW TO SET proceed_to_stage5:
 
 **Set proceed_to_stage5 = true IF ANY OF THESE CONDITIONS:**
@@ -82,11 +165,16 @@ Calculate remediation_confidence (0.0 - 1.0) as SUM of these factors:
 ## 🚨 OUTPUT REQUIREMENT:
 **RETURN ONLY VALID JSON WITH ACTUAL DATA**
 
+**CRITICAL VALIDATION BEFORE OUTPUTTING:**
+1. Check: Does "target" pod name start with Stage 2 component? ({{ $json.stage2Data.root_cause.component }})
+2. Check: Does "deployment_info.name" EXACTLY match Stage 2 component?
+3. If NO to either → YOU ARE ANALYZING THE WRONG POD → Start over with correct component
+
 {
   "stage": "automated_diagnosis",
   "diagnostics_executed": [
     {
-      "target": "<actual pod/node/service name>",
+      "target": "<MUST start with {{ $json.stage2Data.root_cause.component }}>",
       "type": "<pod|node|service>",
       "commands_run": [<simulated but realistic commands>],
       "findings": {
@@ -119,7 +207,7 @@ Calculate remediation_confidence (0.0 - 1.0) as SUM of these factors:
   ],
   "enriched_context": {
     "deployment_info": {
-      "name": "<actual deployment name>",
+      "name": "<MUST be {{ $json.stage2Data.root_cause.component }}>",
       "version": "<from actual labels>",
       "replicas": "<actual ready/total>",
       "last_update": "<actual update timestamp>",
