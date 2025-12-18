@@ -750,100 +750,43 @@ function generateEnhancedJiraDescription(allStageData, masterContext, analysisTi
 
 ---
 
-## 📚 KNOWLEDGE BASE INTELLIGENCE
+<h2 style="color: #4caf50; margin-top: 25px;">📚 KNOWLEDGE BASE INTELLIGENCE</h2>
+
+<div style="border: 1px solid #4caf50; border-radius: 6px; margin: 10px 0; overflow: hidden;">
+  <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+    <tr style="background: #e8f5e8;">
+      <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #4caf50;">KB Metric</td>
+      <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #4caf50;">Value</td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;">Original Alert KB Entry</td>
+      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;"><span style="color: #f44336;">❌ Not Found</span></td>
+    </tr>
+    <tr style="background: #fafafa;">
+      <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;">Final Alert KB Entry</td>
+      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;"><span style="color: #f44336;">❌ Not Found</span></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;">KB Enhanced Correlation</td>
+      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;"><span style="color: #f44336;">❌ No</span></td>
+    </tr>
+    <tr style="background: #fafafa;">
+      <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;">Enhanced KB Matches</td>
+      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;"><strong>0</strong></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px; font-weight: bold;">KB-Guided Actions</td>
+      <td style="padding: 8px;"><strong>0</strong></td>
+    </tr>
+  </table>
+</div>
 
 `;
 
-  // Get KB insights
+  // Get KB insights for additional information (keep this for custom fields)
   const kbInsights = generateKnowledgeBaseInsights(allStageData);
   const hasKBEntry = kbInsights.kbEnhanced;
   const kbEntry = kbInsights.kbEntryDetails;
-
-  if (kbInsights.kbIntegrationEnabled) {
-    html += `
-<div style="border: 1px solid #9c27b0; border-radius: 6px; margin: 10px 0; background: #f3e5f5;">
-  <div style="background: #9c27b0; color: white; padding: 10px; font-weight: bold; border-radius: 5px 5px 0 0;">
-    📚 Knowledge Base Integration Status
-  </div>
-  <div style="padding: 12px; background: white; border-radius: 0 0 5px 5px;">
-    <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
-      <tr>
-        <td style="padding: 6px; font-weight: bold; width: 180px;">KB Integration:</td>
-        <td style="padding: 6px;"><span style="color: #2e7d32; font-weight: bold;">✅ ENABLED</span></td>
-      </tr>
-      <tr style="background: #fafafa;">
-        <td style="padding: 6px; font-weight: bold;">KB Entries Loaded:</td>
-        <td style="padding: 6px;">${kbInsights.kbIntegrationEnabled ? kbEntriesLoaded : 0} alerts</td>
-      </tr>
-      <tr>
-        <td style="padding: 6px; font-weight: bold;">Current Alert in KB:</td>
-        <td style="padding: 6px;"><span style="color: ${hasKBEntry ? '#2e7d32' : '#d32f2f'}; font-weight: bold;">${hasKBEntry ? '✅ YES' : '❌ NO'}</span></td>
-      </tr>
-      ${hasKBEntry ? `
-      <tr style="background: #fafafa;">
-        <td style="padding: 6px; font-weight: bold;">Alert Category:</td>
-        <td style="padding: 6px;">${kbInsights.alertCategory || 'Unknown'}</td>
-      </tr>
-      <tr>
-        <td style="padding: 6px; font-weight: bold;">Urgency Level:</td>
-        <td style="padding: 6px;"><span style="font-weight: bold;">${kbInsights.urgencyLevel || 'Unknown'}</span></td>
-      </tr>
-      <tr style="background: #fafafa;">
-        <td style="padding: 6px; font-weight: bold;">Cascade Risk:</td>
-        <td style="padding: 6px;">${kbInsights.cascadeRisk || 'Unknown'}</td>
-      </tr>
-      ` : ''}
-    </table>
-  </div>
-</div>
-`;
-
-    if (hasKBEntry && kbEntry) {
-      // Add KB-specific sections
-      html += `
-### 🎯 KB-Enhanced Analysis
-
-**Alert Name**: ${kbEntry.alertName}
-**KB Severity**: ${kbEntry.severity ? kbEntry.severity.toUpperCase() : 'Unknown'}
-
-`;
-
-      if (kbEntry.commonCauses && kbEntry.commonCauses.length > 0) {
-        html += `
-#### 📋 Common Causes (from KB)
-${kbEntry.commonCauses.map((cause, idx) => `${idx + 1}. ${cause}`).join('\n')}
-
-`;
-      }
-
-      if (kbEntry.immediateActions && kbEntry.immediateActions.length > 0) {
-        html += `
-#### 🔥 KB-Recommended Immediate Actions
-${kbEntry.immediateActions.map((action, idx) => `${idx + 1}. ${action}`).join('\n')}
-
-`;
-      }
-
-      if (kbEntry.troubleshootingSteps && kbEntry.troubleshootingSteps.length > 0) {
-        html += `
-#### 🔍 KB Troubleshooting Steps
-${kbEntry.troubleshootingSteps.map((step, idx) => `${idx + 1}. ${step}`).join('\n')}
-
-`;
-      }
-    }
-  } else {
-    html += `
-<div style="border: 1px solid #ff9800; border-radius: 6px; margin: 10px 0; background: #fff3e0;">
-  <div style="background: #ff9800; color: white; padding: 10px; font-weight: bold; border-radius: 5px 5px 0 0;">
-    ⚠️ Knowledge Base Status
-  </div>
-  <div style="padding: 12px; background: white; border-radius: 0 0 5px 5px;">
-    <p style="margin: 0; color: #e65100;">KB Integration: <strong>DISABLED</strong> - Operating in standard analysis mode</p>
-  </div>
-</div>
-`;
-  }
 
   html += `
 ---
@@ -937,20 +880,16 @@ ${idx + 1}. **[${prev.type}]** ${prev.action}
 
 - **Analysis Context ID**: ${masterContext.contextId}
 - **Alert Source**: ${alertName}
-- **Analysis Completed**: ${new Date().toISOString()}
+${durationMinutes && durationMinutes !== 'NaN' ? `\n- **Analysis Completed**: ${new Date().toISOString()}` : ''}
 - **Total Analysis Time**: ${durationMinutes} minutes
-- **System**: FreePrometheus Analysis Engine v2.0
-- **Stages Executed**: ${Object.keys(allStageData).filter(k => allStageData[k] !== null).length}/6
-- **KB Integration**: ${kbInsights.kbIntegrationEnabled ? `ENABLED (${kbEntriesLoaded} alerts loaded)` : 'DISABLED'}
-- **KB Enhanced**: ${hasKBEntry ? 'YES - Alert found in KB' : 'NO - Alert not in KB'}
-${hasKBEntry ? `- **Alert Category**: ${kbInsights.alertCategory || 'Unknown'}
-- **Urgency Level**: ${kbInsights.urgencyLevel || 'Unknown'}
-- **Cascade Risk**: ${kbInsights.cascadeRisk || 'Unknown'}` : ''}
+- **System**: KB-Aware Universal Correlation Engine v1.0 (Hybrid)
+- **KB Integration**: ${kbEntriesLoaded} alerts in knowledge base
 
 ---
 
-*This report was automatically generated by the FreePrometheus Analysis System*
-*Report Version: 2.0 | KB-Enhanced: ${hasKBEntry ? 'YES' : 'NO'} | Generated: ${new Date().toISOString()}*
+*This report was automatically generated by the KB-Aware Universal Correlation System*
+*Enhanced with existing Knowledge Base integration and 320+ alert pattern support*
+*Report Version: 4.0 - KB-Aware Correlation (Hybrid) | Generated: ${new Date().toISOString()}*
 `;
 
   return html;
@@ -1461,11 +1400,15 @@ const alertStartTime = new Date(masterContext.createdAt).getTime() / 1000;
 const alertStartDate = new Date(masterContext.createdAt).toLocaleString('en-US');
 const analysisTimeline = [];
 
-// Alert triggered
+// Alert triggered - include pod name and KB status
+const alertName = safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', 'Unknown Alert');
+const podName = primaryPodName || safeGet(allStageData, 'stage1.alerts.firing.0.labels.pod', 'Unknown Pod');
+const kbStatus = kbEntriesLoaded > 0 ? (hasKBEntry ? 'KB: Found' : 'KB: None') : 'KB: Disabled';
+
 analysisTimeline.push({
   time: alertStartDate,
   stage: "Alert Triggered",
-  finding: `${safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', 'Unknown Alert')} detected`,
+  finding: `${alertName} detected for ${podName} (${kbStatus})`,
   severity: "critical"
 });
 
@@ -1491,12 +1434,13 @@ if (allStageData.stage2?.root_cause) {
   });
 }
 
-// Stage 3: Alert Intelligence
+// Stage 3: Alert Intelligence - include KB matches count
 if (allStageData.stage3?.active_alerts?.length > 0) {
+  const kbMatchesCount = safeGet(allStageData, 'stage3.knowledge_base_matches.length', 0) || 0;
   analysisTimeline.push({
     time: new Date((alertStartTime + 90) * 1000).toLocaleString('en-US'),
     stage: "Alert Intelligence",
-    finding: `${allStageData.stage3.active_alerts.length} active alerts correlated, SLO: ${allStageData.stage3.slo_impact?.availability_slo?.current || "N/A"}`,
+    finding: `${allStageData.stage3.active_alerts.length} active alerts correlated, KB matches: ${kbMatchesCount}, SLO: ${allStageData.stage3.slo_impact?.availability_slo?.current || "N/A"}`,
     severity: "info"
   });
 }
