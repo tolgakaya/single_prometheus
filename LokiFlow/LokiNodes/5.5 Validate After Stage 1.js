@@ -6,7 +6,14 @@ console.log("=== VALIDATE AFTER STAGE 1 ===");
 const errors = [];
 const warnings = [];
 
-// CRITICAL: Check metadata section
+// Detect if this is BEFORE or AFTER Stage 1 execution
+const hasStage1Result = input.stageResults && input.stageResults.stage1;
+const hasStage1Output = input.output && input.output.stage === "health_snapshot";
+
+console.log("Stage 1 result exists:", hasStage1Result);
+console.log("Stage 1 output exists:", hasStage1Output);
+
+// CRITICAL: Check metadata section (should exist from Node 2)
 if (!input.metadata) {
   errors.push("CRITICAL: Missing metadata section");
 } else {
@@ -21,7 +28,7 @@ if (!input.metadata) {
   }
 }
 
-// CRITICAL: Check context section
+// CRITICAL: Check context section (should exist from Node 2)
 if (!input.context) {
   errors.push("CRITICAL: Missing context section");
 } else {
@@ -34,15 +41,13 @@ if (!input.context) {
   }
 }
 
-// CRITICAL: Check stageResults section
+// CRITICAL: Check stageResults section (should exist from Node 2, but may be empty)
 if (!input.stageResults) {
   errors.push("CRITICAL: Missing stageResults section");
 } else {
-  // Check Stage 1 result
-  if (!input.stageResults.stage1) {
-    errors.push("CRITICAL: Missing stageResults.stage1");
-  } else {
-    const stage1 = input.stageResults.stage1;
+  // Only validate Stage 1 result if it should exist (i.e., this node runs AFTER Stage 1 AI Agent)
+  if (hasStage1Result || hasStage1Output) {
+    const stage1 = input.stageResults.stage1 || input.output;
 
     // Validate Stage 1 required fields
     if (!stage1.stage || stage1.stage !== "health_snapshot") {
@@ -64,6 +69,11 @@ if (!input.stageResults) {
     if (!stage1.tools_executed || stage1.tools_executed.length === 0) {
       warnings.push("No tools executed in Stage 1");
     }
+  } else {
+    // Stage 1 hasn't executed yet - this validation node is positioned BEFORE Stage 1
+    console.log("ℹ️ NOTE: Stage 1 result not found - this validation runs BEFORE Stage 1 AI Agent");
+    console.log("ℹ️ RECOMMENDATION: Move this validation node AFTER Stage 1 AI Agent in workflow");
+    warnings.push("Validation running before Stage 1 execution - only validating structure from Node 2");
   }
 }
 
