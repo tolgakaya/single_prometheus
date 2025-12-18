@@ -1,0 +1,869 @@
+{
+  "name": "tttt",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "33f6b68a-30d8-4d0b-bb51-3c5c2f111048",
+      "name": "Manual Test Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -1984,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// =====================================\n// PROCESS AI OUTPUT - BACKWARD COMPATIBLE CHAOS ENHANCED\n// =====================================\n// Bu version Execute Orchestrator Analysis hanging sorununu çözer\n// Tüm chaos enhancement'ları korur ama Orchestrator'ın beklediği structure kullanır\n\nconst aiOutput = $input.item.json.output || $input.item.json.text || $input.item.json;\nconst normalizedAlert = $node[\"Normalize Alerts\"].json;\n\nconsole.log('🎯 Process AI Output v2 - Backward Compatible Chaos Enhanced');\nconsole.log('📊 Alert name:', normalizedAlert.alertname);\nconsole.log('🔍 Container from alert:', normalizedAlert.container);\nconsole.log('🔍 Pod from alert:', normalizedAlert.pod);\nconsole.log('🔍 Service from alert:', normalizedAlert.service);\nconsole.log('🔍 Namespace from alert:', normalizedAlert.namespace);\n\n// Detect if this is a chaos engineering tatbikat\nconst isChaosTest = detectChaosEngineering(normalizedAlert);\nconsole.log('🧪 Chaos Engineering Detected:', isChaosTest);\n\n// Default production namespaces (12 total: 10 application + 1 monitoring + 1 control-plane)\n// Infrastructure alerts (like KubeAPIDown) don't have namespace labels - this is NORMAL\n// When namespace is missing/default, we search across ALL these namespaces\nconst DEFAULT_NAMESPACES = [\n  'bss-prod-eks-monitoring',      // 45 services: Prometheus, Grafana, Loki, Alertmanager\n  'bstp-cms-global-production',\n  'bstp-cms-prod-v3',\n  'em-global-prod-3pp',\n  'em-global-prod-eom',\n  'em-global-prod-flowe',\n  'em-global-prod',\n  'em-prod-3pp',\n  'em-prod-eom',\n  'em-prod-flowe',\n  'em-prod',\n  'em-control-plane-prod'          // 5 services: control plane components\n];\n\n// Extract key Kubernetes filters (critical for targeting)\n// Multi-namespace support: infrastructure alerts without namespace → search ALL production namespaces\nconst hasSpecificNamespace = normalizedAlert.namespace && normalizedAlert.namespace !== 'default';\nconst kubernetesFilters = {\n    container: normalizedAlert.container || null,\n    pod: normalizedAlert.pod || null,\n    namespace: hasSpecificNamespace ? normalizedAlert.namespace : null,  // Single namespace (app alerts)\n    namespaces: hasSpecificNamespace ? [normalizedAlert.namespace] : DEFAULT_NAMESPACES,  // Multi-namespace (infra alerts)\n    service: normalizedAlert.service || null,\n    deployment: normalizedAlert.deployment || null,\n    node: normalizedAlert.node || null,\n    persistentvolumeclaim: normalizedAlert.persistentvolumeclaim || null,\n    volumename: normalizedAlert.volumename || null,\n    useSpecificFilters: !!(normalizedAlert.container || normalizedAlert.pod || normalizedAlert.service),\n    useMultiNamespace: !hasSpecificNamespace  // Flag for query builders\n};\n\n// Determine focus areas based on alert type and chaos context\nconst focusAreas = determineFocusAreas(normalizedAlert, isChaosTest);\nconst errorPatterns = buildErrorPatterns(normalizedAlert, isChaosTest);\nconst affectedServices = extractAffectedServices(normalizedAlert);\n\n// Build simplified but enhanced analysis - FLATTENED STRUCTURE\nconst alertAnalysis = {\n    alertId: `alert-${Date.now()}`,\n    analyzedAt: new Date().toISOString(),\n    \n    // Incident timing info (flattened)\n    incidentTimeRange: {\n        detectedAt: normalizedAlert.timestamp || new Date().toISOString(),\n        startedAt: new Date(Date.now() - 30*60*1000).toISOString(),\n        isOngoing: true,\n        duration: \"30 minutes\"\n    },\n    \n    // Affected components (simplified)\n    affectedComponents: buildAffectedComponents(normalizedAlert, affectedServices, isChaosTest),\n    \n    // Pattern analysis (chaos-aware)\n    pattern: {\n        type: determineIncidentPattern(normalizedAlert, isChaosTest),\n        description: buildPatternDescription(normalizedAlert),\n        frequency: isChaosTest ? \"triggered\" : \"continuous\", \n        trend: isChaosTest ? \"test-induced\" : \"stable\"\n    },\n    \n    // Technical indicators (enhanced but flattened)\n    technicalIndicators: {\n        errorRates: [],\n        latencyMetrics: [],\n        resourceUtilization: extractResourceUtilization(normalizedAlert, aiOutput),\n        errorMessages: errorPatterns,\n        httpCodes: [],\n        thresholdsBreached: []\n    },\n    \n    // Severity assessment (chaos-aware)\n    severity: {\n        level: determineSeverityLevel(normalizedAlert, isChaosTest),\n        reasoning: buildSeverityReasoning(normalizedAlert, isChaosTest),\n        businessImpact: determineBusinessImpact(normalizedAlert, isChaosTest),\n        estimatedAffectedUsers: isChaosTest ? \"Test Environment\" : \"Unknown\",\n        financialImpact: isChaosTest ? \"No Impact\" : \"TBD\"\n    },\n    \n    // Correlations and root cause hints\n    correlations: {\n        relatedAlerts: [],\n        commonPatterns: [],\n        rootCauseHints: buildRootCauseHints(normalizedAlert, isChaosTest)\n    },\n    \n    // Orchestrator parameters (CRITICAL for targeting)\n    orchestratorParams: {\n        priority: determinePriority(normalizedAlert, isChaosTest),\n        forceDeepAnalysis: shouldForceDeepAnalysis(normalizedAlert, isChaosTest),\n        suggestedAgents: [\"tempo\", \"prometheus\", \"loki\"],\n        focusAreas: focusAreas,\n        timeWindowMinutes: isChaosTest ? 30 : 60,\n        kubernetesFilters: kubernetesFilters\n    },\n    \n    // Action requirements (chaos-aware)\n    actionRequired: {\n        immediate: determineImmediateAction(normalizedAlert, isChaosTest),\n        escalation: determineEscalation(normalizedAlert, isChaosTest),\n        suggestedActions: buildSuggestedActions(normalizedAlert, isChaosTest)\n    }\n};\n\n// Add chaos-specific context if detected\nif (isChaosTest) {\n    alertAnalysis.chaosContext = {\n        testType: detectChaosTestType(normalizedAlert),\n        expectedBehavior: describeChaosExpectedBehavior(normalizedAlert),\n        recoveryMetrics: {\n            expectedRecoveryTime: estimateRecoveryTime(normalizedAlert),\n            autoHealingCapability: assessAutoHealing(normalizedAlert)\n        },\n        monitoringFocus: buildMonitoringFocus(normalizedAlert),\n        successCriteria: defineChaosSuccessCriteria(normalizedAlert)\n    };\n}\n\nconsole.log('🎯 Enhanced Analysis Summary:');\nconsole.log('   Alert Type:', normalizedAlert.alertname);\nconsole.log('   Chaos Test:', isChaosTest);\nconsole.log('   Impact Level:', alertAnalysis.severity.level);\nconsole.log('   Affected Components:', alertAnalysis.affectedComponents.length);\nconsole.log('   Focus Areas:', focusAreas.join(', '));\nconsole.log('   Use Specific Filters:', kubernetesFilters.useSpecificFilters);\nconsole.log('   Analysis Mode:', kubernetesFilters.useSpecificFilters ? 'TARGETED' : 'GENERAL');\n\n// BACKWARD COMPATIBLE RETURN FORMAT - What Execute Orchestrator Analysis expects\nreturn {\n    // 1. Keep normalizedAlert at ROOT LEVEL (critical!)\n    normalizedAlert: normalizedAlert,\n    \n    // 2. Flattened alertAnalysis \n    alertAnalysis: alertAnalysis,\n    \n    // 3. Essential fields at root level for Orchestrator compatibility\n    alertId: alertAnalysis.alertId,\n    \n    // 4. Quick access to key targeting info\n    kubernetesFilters: kubernetesFilters,\n    focusAreas: focusAreas,\n    affectedServices: affectedServices,\n    \n    // 5. Chaos context flag for downstream processing\n    isChaosTest: isChaosTest,\n    chaosEnhanced: true,\n    \n    // 6. Metadata\n    processedAt: new Date().toISOString(),\n    version: \"v2-backward-compatible-chaos-enhanced\"\n};\n\n// === HELPER FUNCTIONS ===\n\nfunction detectChaosEngineering(alert) {\n    const indicators = [\n        alert.body?.toLowerCase().includes('chaos'),\n        alert.body?.toLowerCase().includes('tatbikat'), \n        alert.body?.toLowerCase().includes('drill'),\n        alert.body?.toLowerCase().includes('test'),\n        alert.namespace?.includes('test'),\n        alert.namespace?.includes('chaos'),\n        // Time-based detection (if alerts are coming during planned hours)\n        isPlannedTestingWindow()\n    ];\n    \n    return indicators.filter(Boolean).length > 0;\n}\n\nfunction determineFocusAreas(alert, isChaos) {\n    const areas = [];\n    \n    // Base focus areas by alert type\n    if (alert.alertname?.includes('Pod') || alert.alertname?.includes('Container')) {\n        areas.push('pod-analysis', 'container-logs');\n    }\n    if (alert.alertname?.includes('Node')) {\n        areas.push('node-health', 'system-resources');\n    }\n    if (alert.alertname?.includes('etcd')) {\n        areas.push('etcd-health', 'cluster-state');\n    }\n    if (alert.alertname?.includes('Memory') || alert.alertname?.includes('OOM')) {\n        areas.push('resource-analysis', 'memory-analysis');\n    }\n    if (alert.alertname?.includes('Storage') || alert.alertname?.includes('Volume')) {\n        areas.push('storage-analysis', 'volume-health');\n    }\n    \n    // Chaos-specific focus areas\n    if (isChaos) {\n        areas.push('chaos-recovery', 'resilience-testing');\n        \n        if (alert.alertname?.includes('Node')) {\n            areas.push('node-failure-simulation', 'pod-rescheduling');\n        }\n        if (alert.alertname?.includes('etcd')) {\n            areas.push('cluster-recovery', 'leader-election');\n        }\n    }\n    \n    return [...new Set(areas)];\n}\n\nfunction buildErrorPatterns(alert, isChaos) {\n    const patterns = [];\n    \n    if (alert.alertname?.includes('CrashLoop')) {\n        patterns.push('Pod is crash looping', 'Container startup failure');\n    }\n    if (alert.alertname?.includes('NotReady')) {\n        patterns.push('Node connectivity issues', 'System resource exhaustion');\n    }\n    if (alert.alertname?.includes('etcd')) {\n        patterns.push('Cluster state inconsistency', 'etcd performance degradation');\n    }\n    if (alert.alertname?.includes('OOM')) {\n        patterns.push('Out of memory detected', 'Memory limit exceeded');\n    }\n    \n    if (isChaos) {\n        patterns.push('Chaos engineering test pattern');\n    }\n    \n    return patterns.length > 0 ? patterns : ['Alert pattern detected'];\n}\n\nfunction extractAffectedServices(alert) {\n    const services = [];\n    \n    if (alert.service && !services.includes(alert.service)) {\n        services.push(alert.service);\n    }\n    if (alert.job && !services.includes(alert.job)) {\n        services.push(alert.job);\n    }\n    if (alert.container && !services.includes(alert.container)) {\n        services.push(alert.container);\n    }\n    \n    return services;\n}\n\nfunction buildAffectedComponents(alert, services, isChaos) {\n    if (services.length > 0) {\n        return services.map(service => ({\n            name: service,\n            type: \"kubernetes-service\",\n            pod: alert.pod || null,\n            namespace: alert.namespace || null,\n            node: alert.node || null,\n            instance: alert.instance || null,\n            impact: determineImpactLevel(alert.severity, alert.alertname),\n            confidence: \"high\",\n            source: alert.service ? \"service-field\" : \"container-field\"\n        }));\n    }\n    \n    // Fallback to namespace if no specific services\n    return [{\n        name: alert.namespace || 'unknown-namespace',\n        type: \"namespace\",\n        impact: determineImpactLevel(alert.severity, alert.alertname),\n        confidence: \"low\",\n        source: \"fallback\"\n    }];\n}\n\nfunction extractResourceUtilization(alert, aiOutput) {\n    const utilization = {};\n    \n    // Extract from alert body\n    const body = alert.body || '';\n    \n    const cpuMatch = body.match(/(\\d+)%?\\s*(cpu|processor)/i);\n    if (cpuMatch) {\n        utilization.cpu = cpuMatch[1] + \"%\";\n    }\n    \n    const memoryMatch = body.match(/(\\d+)%?\\s*(memory|ram|oom)/i);\n    if (memoryMatch) {\n        utilization.memory = memoryMatch[1] + \"%\";\n    }\n    \n    return utilization;\n}\n\nfunction determineIncidentPattern(alert, isChaos) {\n    if (isChaos) return \"chaos-induced\";\n    \n    if (alert.alertname?.includes('CrashLoop')) return \"restart-loop\";\n    if (alert.alertname?.includes('OOM')) return \"resource-exhaustion\";\n    if (alert.alertname?.includes('Node')) return \"infrastructure-failure\";\n    if (alert.alertname?.includes('etcd')) return \"cluster-disruption\";\n    \n    return \"sudden\";\n}\n\nfunction buildPatternDescription(alert) {\n    const namespace = alert.namespace || 'unknown namespace';\n    const pod = alert.pod || 'unknown pod';\n    const node = alert.node || 'unknown node';\n    const service = alert.service || 'unknown service';\n    \n    const descriptions = {\n        'KubePodCrashLooping': `Pod ${namespace}/${pod} (${alert.container}) is in waiting state (reason: \"CrashLoopBackOff\").`,\n        'KubeNodeNotReady': `Node ${node} is not ready for more than 15 minutes`,\n        'etcdNoLeader': `etcd cluster has no leader - cluster functionality compromised`,\n        'KubeAPIErrorBudgetBurn': `API server error rate exceeding SLI budget`,\n        'TargetDown': `Service endpoint ${service} is unreachable`\n    };\n    \n    return descriptions[alert.alertname] || `${alert.alertname} detected in ${namespace}`;\n}\n\nfunction determineSeverityLevel(alert, isChaos) {\n    if (isChaos) {\n        // For chaos tests, severity represents test impact, not business impact\n        const blockerAlerts = ['etcdNoLeader', 'etcdInsufficientMembers', 'KubeAPIDown'];\n        if (blockerAlerts.includes(alert.alertname)) return 'critical';\n        \n        const majorAlerts = ['KubeNodeNotReady', 'KubePodCrashLooping'];\n        if (majorAlerts.includes(alert.alertname)) return 'high';\n        \n        return 'medium';\n    }\n    \n    // Production severity mapping\n    if (alert.severity === 'Critical') return 'critical';\n    if (alert.severity === 'High') return 'high';\n    if (alert.severity === 'Warning') return 'medium';\n    if (alert.severity === 'Info') return 'low';\n    \n    return 'medium';\n}\n\nfunction buildSeverityReasoning(alert, isChaos) {\n    if (isChaos) {\n        return `Chaos engineering test impact assessment for ${alert.alertname}`;\n    }\n    \n    return `Based on ${alert.alertname} type`;\n}\n\nfunction determineBusinessImpact(alert, isChaos) {\n    if (isChaos) return \"Test Environment - No Business Impact\";\n    \n    const criticalAlerts = ['etcdNoLeader', 'KubeAPIDown', 'etcdInsufficientMembers'];\n    if (criticalAlerts.includes(alert.alertname)) {\n        return \"High - Core platform functionality affected\";\n    }\n    \n    const highAlerts = ['KubeNodeNotReady', 'TargetDown'];\n    if (highAlerts.includes(alert.alertname)) {\n        return \"Medium - Service availability may be impacted\";\n    }\n    \n    return \"Under assessment\";\n}\n\nfunction buildRootCauseHints(alert, isChaos) {\n    if (isChaos) {\n        return [\n            \"This is a planned chaos engineering test\",\n            \"Monitor system recovery behavior\",\n            \"Validate auto-healing mechanisms\",\n            \"Document observed failure patterns\"\n        ];\n    }\n    \n    const hints = {\n        'KubePodCrashLooping': [\n            \"Check pod logs for startup errors\",\n            \"Review recent deployments\"\n        ],\n        'KubeNodeNotReady': [\n            \"Check node system resources\",\n            \"Verify kubelet service status\"\n        ],\n        'etcdNoLeader': [\n            \"Check etcd cluster member connectivity\",\n            \"Verify etcd disk performance\"\n        ]\n    };\n    \n    return hints[alert.alertname] || [\"Investigate alert-specific metrics and logs\"];\n}\n\nfunction determinePriority(alert, isChaos) {\n    if (isChaos) return \"medium\"; // Chaos tests shouldn't trigger critical escalations\n    \n    return determineSeverityLevel(alert, false);\n}\n\nfunction shouldForceDeepAnalysis(alert, isChaos) {\n    if (isChaos) return true; // Always do deep analysis for chaos tests\n    \n    const criticalAlerts = ['etcdNoLeader', 'KubeAPIDown', 'etcdInsufficientMembers'];\n    return criticalAlerts.includes(alert.alertname) || alert.severity === 'Critical';\n}\n\nfunction determineImmediateAction(alert, isChaos) {\n    if (isChaos) return false; // No immediate action for planned tests\n    \n    const emergencyAlerts = ['etcdNoLeader', 'etcdInsufficientMembers', 'KubeAPIDown'];\n    return emergencyAlerts.includes(alert.alertname);\n}\n\nfunction determineEscalation(alert, isChaos) {\n    if (isChaos) return \"test-team\";\n    \n    if (alert.severity === 'Critical') return \"management\";\n    if (alert.severity === 'High') return \"team-lead\";\n    return \"team\";\n}\n\nfunction buildSuggestedActions(alert, isChaos) {\n    if (isChaos) {\n        return [\n            \"Monitor system recovery patterns\",\n            \"Document observed behaviors\",\n            \"Validate auto-healing mechanisms\",\n            \"Measure recovery times\",\n            \"Update runbooks based on findings\"\n        ];\n    }\n    \n    const actions = {\n        'KubePodCrashLooping': [\n            \"Immediately check service health and logs\",\n            \"Review recent changes and deployments\",\n            \"Check resource utilization (CPU, Memory, Disk)\",\n            \"Verify upstream dependencies\",\n            \"Consider rollback if recent deployment\"\n        ],\n        'KubeNodeNotReady': [\n            \"SSH to node and check system status\",\n            \"Cordon node and drain workloads\",\n            \"Investigate kubelet and system logs\",\n            \"Plan node replacement if needed\"\n        ],\n        'etcdNoLeader': [\n            \"Check etcd cluster member status\",\n            \"Restart etcd members if needed\",\n            \"Verify network connectivity\",\n            \"Monitor cluster recovery\"\n        ]\n    };\n    \n    return actions[alert.alertname] || [\"Investigate and monitor situation\"];\n}\n\nfunction determineImpactLevel(severity, alertname) {\n    const downAlerts = ['KubePodCrashLooping', 'KubeNodeNotReady', 'KubeAPIDown', 'etcdNoLeader'];\n    if (downAlerts.includes(alertname)) return 'down';\n    \n    if (severity === 'Critical') return 'down';\n    if (severity === 'High') return 'degraded';\n    return 'affected';\n}\n\nfunction isPlannedTestingWindow() {\n    const now = new Date();\n    const hour = now.getHours();\n    // Assume chaos tests typically run during business hours\n    return hour >= 9 && hour <= 17;\n}\n\n// Chaos-specific helper functions\nfunction detectChaosTestType(alert) {\n    if (alert.alertname?.includes('Pod')) return \"pod-failure\";\n    if (alert.alertname?.includes('Node')) return \"node-failure\";\n    if (alert.alertname?.includes('etcd')) return \"etcd-resilience\";\n    if (alert.alertname?.includes('Memory')) return \"memory-pressure\";\n    return \"unknown-chaos-test\";\n}\n\nfunction describeChaosExpectedBehavior(alert) {\n    const behaviors = {\n        'KubePodCrashLooping': \"Pod should be restarted by Kubernetes, service should remain available via other replicas\",\n        'KubeNodeNotReady': \"Pods should be rescheduled to healthy nodes, no service interruption expected\",\n        'etcdNoLeader': \"New leader should be elected, cluster should recover within minutes\"\n    };\n    \n    return behaviors[alert.alertname] || \"System should demonstrate resilience and recover automatically\";\n}\n\nfunction estimateRecoveryTime(alert) {\n    const times = {\n        'KubePodCrashLooping': \"2-5 minutes\",\n        'KubeNodeNotReady': \"5-10 minutes\", \n        'etcdNoLeader': \"30-60 seconds\"\n    };\n    \n    return times[alert.alertname] || \"5-15 minutes\";\n}\n\nfunction assessAutoHealing(alert) {\n    const capabilities = {\n        'KubePodCrashLooping': \"Kubernetes will restart crashed pods automatically\",\n        'KubeNodeNotReady': \"Kubernetes will reschedule pods to healthy nodes\",\n        'etcdNoLeader': \"etcd will elect new leader automatically\"\n    };\n    \n    return capabilities[alert.alertname] || \"Standard Kubernetes self-healing expected\";\n}\n\nfunction buildMonitoringFocus(alert) {\n    return [\n        `Monitor ${alert.alertname} recovery pattern`,\n        \"Track pod rescheduling times\",\n        \"Measure service availability impact\",\n        \"Document recovery behavior\"\n    ];\n}\n\nfunction defineChaosSuccessCriteria(alert) {\n    return [\n        \"System recovers automatically within expected timeframe\",\n        \"No permanent data loss\",\n        \"Service availability maintained above SLI thresholds\",\n        \"No manual intervention required\"\n    ];\n}"
+      },
+      "id": "469a7297-1f24-4a9a-b55b-93e02ce4883c",
+      "name": "Process AI Output",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        112,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Process test input - either manual trigger or chat\nconst input = $input.item.json;\nlet testAlert = {};\n\n// Check if it's from chat (with text or image)\nif (input.chatInput) {\n  const message = input.chatInput.toLowerCase();\n  \n  // Check for predefined test scenarios\n  if (message.includes('test critical') || message.includes('critical alert')) {\n    testAlert = {\n      alertType: 'infrastructure',\n      severity: 'critical',\n      title: 'CRITICAL: Database Connection Pool Exhausted',\n      message: 'MySQL connection pool has been at 100% capacity for the last 15 minutes. Multiple services are experiencing timeouts. Error rate increased from 0.1% to 15%. Response time degraded from 200ms to 5000ms.',\n      timestamp: new Date().toISOString(),\n      source: 'prometheus',\n      metrics: {\n        connectionPoolUsage: 100,\n        errorRate: 15,\n        responseTime: 5000\n      },\n      affectedServices: ['payment-api', 'user-service', 'order-service'],\n      pattern: 'sudden spike at 10:15 AM'\n    };\n  } else if (message.includes('test high') || message.includes('high priority')) {\n    testAlert = {\n      alertType: 'performance',\n      severity: 'high',\n      title: 'HIGH: API Response Time Degradation',\n      message: 'API endpoint /api/v1/users showing increased latency. 95th percentile response time increased from 500ms to 2500ms. CPU usage at 85%. Memory usage normal.',\n      timestamp: new Date().toISOString(),\n      source: 'grafana',\n      metrics: {\n        p95ResponseTime: 2500,\n        cpuUsage: 85,\n        memoryUsage: 45\n      },\n      affectedServices: ['user-service'],\n      pattern: 'gradual increase over 30 minutes'\n    };\n  } else if (message.includes('test medium')) {\n    testAlert = {\n      alertType: 'warning',\n      severity: 'medium',\n      title: 'WARNING: Disk Space Running Low',\n      message: 'Server prod-web-03 disk usage at 78%. Logs are consuming significant space. Cleanup recommended.',\n      timestamp: new Date().toISOString(),\n      source: 'nagios',\n      metrics: {\n        diskUsage: 78,\n        freeSpace: '22GB'\n      },\n      affectedServices: ['logging-service'],\n      pattern: 'gradual increase'\n    };\n  } else {\n    // Try to parse custom JSON from chat\n    try {\n      testAlert = JSON.parse(message);\n    } catch (e) {\n      // Default test alert\n      testAlert = {\n        alertType: 'test',\n        severity: 'medium',\n        title: 'Test Alert: ' + message.substring(0, 50),\n        message: message,\n        timestamp: new Date().toISOString(),\n        source: 'manual-test'\n      };\n    }\n  }\n} else if (input.binary?.data) {\n  // Image uploaded - simulate OCR or image analysis\n  testAlert = {\n    alertType: 'screenshot',\n    severity: 'high',\n    title: 'Alert from Screenshot Analysis',\n    message: 'Alert detected from uploaded image. Multiple error indicators found in monitoring dashboard. Red status indicators visible. Error count: 247. Response time graphs showing spikes.',\n    timestamp: new Date().toISOString(),\n    source: 'image-analysis',\n    imageAnalysis: {\n      detected: 'monitoring dashboard screenshot',\n      errorIndicators: 3,\n      statusColor: 'red',\n      extractedText: ['Error: 247', 'Response Time: 3.5s', 'CPU: 92%']\n    }\n  };\n} else {\n  // Manual trigger - provide sample alerts\n  const sampleAlerts = [\n    {\n      alertType: 'infrastructure',\n      severity: 'critical',\n      title: 'CRITICAL: Kubernetes Node Down',\n      message: 'Node k8s-worker-03 is not responding. 15 pods need to be rescheduled. Services affected: payment-api (3 replicas), user-service (2 replicas).',\n      timestamp: new Date().toISOString(),\n      source: 'kubernetes',\n      metrics: {\n        nodesDown: 1,\n        podsAffected: 15,\n        servicesImpacted: 2\n      }\n    },\n    {\n      alertType: 'application',\n      severity: 'high',\n      title: 'HIGH: Authentication Service Errors',\n      message: '401 Unauthorized errors spiked to 1500/min. Normal rate is 10/min. Started at 14:30 UTC. Possible authentication service issue or token validation problem.',\n      timestamp: new Date().toISOString(),\n      source: 'elasticsearch',\n      metrics: {\n        errorRate: 1500,\n        normalRate: 10,\n        httpCode: 401\n      }\n    },\n    {\n      alertType: 'database',\n      severity: 'critical',\n      title: 'CRITICAL: Database Replication Lag',\n      message: 'MySQL replication lag increased to 45 seconds. Write operations may be affected. Slave server is struggling with large transaction.',\n      timestamp: new Date().toISOString(),\n      source: 'mysql-monitor',\n      metrics: {\n        replicationLag: 45,\n        slaveStatus: 'lagging'\n      }\n    }\n  ];\n  \n  // Pick a random sample alert\n  testAlert = sampleAlerts[Math.floor(Math.random() * sampleAlerts.length)];\n}\n\n// Add test flag\ntestAlert.isTest = true;\ntestAlert.testTimestamp = new Date().toISOString();\n\nreturn { json: testAlert };"
+      },
+      "id": "83263648-2f56-44a7-95b2-eab1effbed82",
+      "name": "Generate Test Alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1536,
+        672
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Enhanced Normalize Alerts - Supports all AlertManager webhook formats\nconst input = $input.item.json;\nlet normalizedAlert = {};\n\n// === Priority Extractors ===\nfunction extractPriorityFromEmail(email) {\n  const subject = (email.subject || '').toLowerCase();\n  const body = (email.textContent || '').toLowerCase();\n\n  if (subject.includes('[critical]') || subject.includes('[p1]') || body.includes('critical')) {\n    return 'critical';\n  } else if (subject.includes('[high]') || subject.includes('[p2]') || body.includes('high priority')) {\n    return 'high';\n  } else if (subject.includes('[low]') || subject.includes('[p4]')) {\n    return 'low';\n  }\n  return 'medium';\n}\n\nfunction extractPriorityFromTeams(message) {\n  const content = (message.body?.content || '').toLowerCase();\n\n  if (content.includes('critical') || content.includes('urgent')) {\n    return 'critical';\n  } else if (content.includes('warning')) {\n    return 'high';\n  }\n  return 'medium';\n}\n\n// === Title Extractor ===\nfunction extractTitleFromTeams(message) {\n  const content = message.body?.content || '';\n  const firstLine = content.split('\\n')[0];\n  return firstLine.substring(0, 100) || 'Teams Alert';\n}\n\n// === AlertManager Priority Mapper ===\nfunction mapAlertManagerSeverity(severity) {\n  const severityLower = (severity || '').toLowerCase();\n  \n  // Map different severity formats\n  if (severityLower.includes('blocker') || severityLower.includes('critical')) {\n    return 'critical';\n  } else if (severityLower.includes('major') || severityLower.includes('high')) {\n    return 'high';\n  } else if (severityLower.includes('warning') || severityLower.includes('minor')) {\n    return 'medium';\n  } else if (severityLower.includes('info') || severityLower.includes('low')) {\n    return 'low';\n  }\n  \n  return 'medium'; // default\n}\n\n// === Service Extractor ===\nfunction extractServiceFromPod(podName) {\n  if (!podName) return null;\n  \n  // Remove common suffixes: -<hash>-<pod-id>\n  // Example: bss-ntf-batch-t3-645d68cbc8-4h88r -> bss-ntf-batch-t3\n  const parts = podName.split('-');\n  \n  // If it looks like a deployment pod (has hash pattern)\n  if (parts.length >= 3) {\n    // Check if last two parts look like hash and pod-id\n    const lastPart = parts[parts.length - 1];\n    const secondLastPart = parts[parts.length - 2];\n    \n    // If secondLastPart looks like a hash (8+ alphanumeric chars)\n    if (secondLastPart && /^[a-z0-9]{8,}$/i.test(secondLastPart)) {\n      return parts.slice(0, -2).join('-');\n    }\n  }\n  \n  // Fallback: return first part as service name\n  return parts[0];\n}\n\n// === Parse AlertManager Format ===\nfunction parseAlertManagerData(data) {\n  let alert = null;\n  let labels = {};\n  let annotations = {};\n  \n  // Handle different AlertManager formats\n  if (data.alerts && Array.isArray(data.alerts) && data.alerts.length > 0) {\n    // Standard AlertManager webhook format\n    alert = data.alerts[0];\n    labels = alert.labels || {};\n    annotations = alert.annotations || {};\n  } else if (data.commonLabels) {\n    // AlertManager format with commonLabels\n    labels = data.commonLabels || {};\n    annotations = data.commonAnnotations || {};\n    alert = {\n      status: data.status || 'firing',\n      startsAt: data.alerts?.[0]?.startsAt,\n      endsAt: data.alerts?.[0]?.endsAt,\n      generatorURL: data.alerts?.[0]?.generatorURL,\n      fingerprint: data.alerts?.[0]?.fingerprint\n    };\n  } else if (data.labels) {\n    // Direct alert object\n    alert = data;\n    labels = data.labels || {};\n    annotations = data.annotations || {};\n  }\n  \n  return { alert, labels, annotations };\n}\n\n// === Input Parsing ===\n\n// 1. Check for AlertManager webhook body format\nif (input.body && (input.body.alerts || input.body.commonLabels || input.body.version)) {\n  const { alert, labels, annotations } = parseAlertManagerData(input.body);\n  \n  console.log('=== ALERTMANAGER WEBHOOK FORMAT DETECTED ===');\n  console.log('AlertName:', labels.alertname || 'UNKNOWN');\n  console.log('Container:', labels.container || 'NONE');\n  console.log('Pod:', labels.pod || 'NONE');\n  console.log('Namespace:', labels.namespace || 'NONE');\n  \n  // Extract service from pod name if service not provided\n  const service = labels.service || extractServiceFromPod(labels.pod);\n  \n  normalizedAlert = {\n    source: 'alertmanager',\n    sourceId: 'alertmanager-' + Date.now(),\n    timestamp: alert?.startsAt || new Date().toISOString(),\n    title: labels.alertname || 'AlertManager Alert',\n    body: annotations.description || annotations.summary || JSON.stringify(input.body),\n    sender: 'AlertManager',\n    priority: mapAlertManagerSeverity(labels.severity),\n\n    // Kubernetes fields\n    // NOTE: Infrastructure alerts (KubeAPIDown) don't have namespace labels - this is NORMAL\n    // We keep namespace as null here, and Node 5 will handle multi-namespace queries\n    container: labels.container || null,\n    pod: labels.pod || null,\n    namespace: labels.namespace || null,\n    service: service,\n    deployment: labels.deployment || null,\n    \n    // Additional fields from various alert types\n    instance: labels.instance || null,\n    job: labels.job || null,\n    node: labels.node || null,\n    persistentvolumeclaim: labels.persistentvolumeclaim || null,\n    volumename: labels.volumename || null,\n    cluster: labels.cluster || null,\n    \n    // Alert metadata\n    alertname: labels.alertname || null,\n    status: alert?.status || input.body.status || 'firing',\n    reason: labels.reason || null,\n    uid: labels.uid || null,\n    fingerprint: alert?.fingerprint || null,\n    generatorURL: alert?.generatorURL || null,\n    runbook_url: annotations.runbook_url || null,\n    \n    // Store original for debugging\n    raw: input\n  };\n}\n\n// 2. Check for simple AlertManager array format (backward compatibility)\nelse if (Array.isArray(input) && input[0]?.labels) {\n  const alert = input[0];\n  console.log('=== ALERTMANAGER ARRAY FORMAT DETECTED ===');\n  \n  const service = alert.labels?.service || extractServiceFromPod(alert.labels?.pod);\n  \n  normalizedAlert = {\n    source: 'alertmanager',\n    sourceId: 'alertmanager-' + Date.now(),\n    timestamp: alert.startsAt || new Date().toISOString(),\n    title: alert.labels?.alertname || alert.annotations?.summary || 'AlertManager Alert',\n    body: alert.annotations?.description || JSON.stringify(alert),\n    sender: 'AlertManager',\n    priority: mapAlertManagerSeverity(alert.labels?.severity),\n    container: alert.labels?.container || null,\n    pod: alert.labels?.pod || null,\n    namespace: alert.labels?.namespace || null,  // Keep null for infrastructure alerts\n    service: service,\n    deployment: alert.labels?.deployment || null,\n    alertname: alert.labels?.alertname || null,\n    status: alert.status || 'firing',\n    raw: input\n  };\n}\n\n// 3. Email format\nelse if (input.from && input.subject && input.textContent) {\n  normalizedAlert = {\n    source: 'email',\n    sourceId: input.id,\n    timestamp: input.date || new Date().toISOString(),\n    title: input.subject,\n    body: input.textContent || input.htmlContent || '',\n    sender: input.from?.value?.[0]?.address || input.from,\n    priority: extractPriorityFromEmail(input),\n    container: null,\n    pod: null,\n    namespace: null,\n    service: null,\n    raw: input\n  };\n}\n\n// 4. Teams format\nelse if (input.body?.content && input.channelIdentity) {\n  normalizedAlert = {\n    source: 'teams',\n    sourceId: input.id,\n    timestamp: input.createdDateTime || new Date().toISOString(),\n    title: extractTitleFromTeams(input),\n    body: input.body.content,\n    sender: input.from?.user?.displayName || 'Teams Alert',\n    priority: extractPriorityFromTeams(input),\n    container: null,\n    pod: null,\n    namespace: null,\n    service: null,\n    raw: input\n  };\n}\n\n// 5. Generic webhook format\nelse if (input.alertType || input.alert || input.webhook) {\n  normalizedAlert = {\n    source: 'webhook',\n    sourceId: input.id || ('webhook-' + Date.now()),\n    timestamp: input.timestamp || new Date().toISOString(),\n    title: input.title || input.alertName || 'Webhook Alert',\n    body: input.message || input.description || JSON.stringify(input),\n    sender: input.source || 'Webhook',\n    priority: input.priority || input.severity || 'medium',\n    container: input.container || input.labels?.container || null,\n    pod: input.pod || input.labels?.pod || null,\n    namespace: input.namespace || input.labels?.namespace || null,\n    service: input.service || input.labels?.service || null,\n    raw: input\n  };\n}\n\n// 6. Unknown format\nelse {\n  normalizedAlert = {\n    source: 'unknown',\n    sourceId: 'unknown-' + Date.now(),\n    timestamp: new Date().toISOString(),\n    title: 'Unknown Alert',\n    body: JSON.stringify(input),\n    sender: 'Unknown',\n    priority: 'medium',\n    container: null,\n    pod: null,\n    namespace: null,\n    service: null,\n    raw: input\n  };\n}\n\n// === Final Output ===\nconsole.log('=== NORMALIZED ALERT OUTPUT ===');\nconsole.log('Source:', normalizedAlert.source);\nconsole.log('AlertName:', normalizedAlert.alertname || 'NONE');\nconsole.log('Container:', normalizedAlert.container || 'NONE');\nconsole.log('Pod:', normalizedAlert.pod || 'NONE');\nconsole.log('Service:', normalizedAlert.service || 'NONE');\nconsole.log('Namespace:', normalizedAlert.namespace || 'NONE');\nconsole.log('Priority:', normalizedAlert.priority);\n\nreturn { json: normalizedAlert };"
+      },
+      "id": "3f8622a4-064c-4287-ac6e-e0f5862b67b9",
+      "name": "Normalize Alerts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1488,
+        1056
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Analyze this alert and provide a structured analysis.\n\nAlert Details:\n- Source: {{ $('Normalize Alerts').item.json.source }}\n- Timestamp: {{ $('Normalize Alerts').item.json.timestamp }}\n- Title: {{ $('Normalize Alerts').item.json.title }}\n- Body: {{ $('Normalize Alerts').item.json.body }}\n- Sender: {{ $('Normalize Alerts').item.json.sender }}\n- Priority: {{ $('Normalize Alerts').item.json.priority }}\n\nYou MUST provide your response as a valid JSON object that matches the schema exactly. Do not include any text before or after the JSON.\n\nExtract:\n1. Time range when incident occurred\n2. Affected services and components\n3. Severity and business impact\n4. Technical indicators and patterns\n\nProvide analysis in a structured format with these sections:\n- Alert identification\n- Time analysis\n- Affected components\n- Severity assessment\n- Technical details\n- Recommendations",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "You are an alert analysis expert. Provide detailed technical analysis of alerts to help with incident response."
+        }
+      },
+      "id": "5bb81e86-364d-4946-bf8f-c98ea5f48301",
+      "name": "AI Alert Analyzer",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -208,
+        448
+      ],
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "etiya-gpt-4o",
+          "mode": "list",
+          "cachedResultName": "etiya-gpt-4o"
+        },
+        "options": {}
+      },
+      "id": "a48ff5e1-4df8-4695-925a-7908ca77d853",
+      "name": "Alert AI Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -208,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"alertId\": { \"type\": \"string\" },\n    \"analyzedAt\": { \"type\": \"string\" },\n    \"incidentTimeRange\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"detectedAt\": { \"type\": \"string\" },\n        \"startedAt\": { \"type\": \"string\" },\n        \"isOngoing\": { \"type\": \"boolean\" },\n        \"duration\": { \"type\": \"string\" }\n      }\n    },\n    \"affectedComponents\": { \"type\": \"array\" },\n    \"pattern\": { \"type\": \"object\" },\n    \"technicalIndicators\": { \"type\": \"object\" },\n    \"severity\": { \"type\": \"object\" },\n    \"correlations\": { \"type\": \"object\" },\n    \"orchestratorParams\": { \"type\": \"object\" },\n    \"actionRequired\": { \"type\": \"object\" }\n  }\n}"
+      },
+      "id": "48793826-ce03-490f-b608-39ad741ce927",
+      "name": "Alert JSON Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        -64,
+        624
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Process Kubernetes Analysis Results - Jira Integration\nconst analysisResult = $input.item.json;\nconst alertData = $node[\"Prepare Prometheus Input\"].json;\nconst dedupInfo = $node[\"Redis State Check\"].json;\n\n// Analysis result'tan Jira ticket bilgilerini al\n//const jiraTicketInfo = analysisResult.jiraTicket || {};\nconst jiraTicketInfo = analysisResult.oncallTicket || {};\nconst executiveSummary = analysisResult.executiveSummary || {};\n\n// Extract analysis report - yeni yapıda markdownReport kullanıyoruz\nlet analysisReport = null;\nif (analysisResult.markdownReport) {\n analysisReport = analysisResult.markdownReport;\n} else if (analysisResult.chatResponse) {\n analysisReport = analysisResult.chatResponse;\n} else if (analysisResult.summary) {\n analysisReport = analysisResult.summary;\n} else {\n analysisReport = 'Analysis completed - no detailed report available';\n}\n\n// Extract severity - yeni yapıda direkt severity field'ı var\nconst severity = analysisResult.severity || \n               executiveSummary.severity ||\n               alertData.priority || \n               'medium';\n\n// Extract alert info from new structure\nconst alertName = analysisResult.alert || \n                alertData.alertContext?.alertName || \n                'Unknown Alert';\n\nconst deployment = jiraTicketInfo.components?.[0] || \n                 analysisResult.deployment || \n                 'unknown';\n\nconst namespace = jiraTicketInfo.labels?.find(l => l.includes('production') || l.includes('staging')) || \n                analysisResult.namespace || \n                'unknown';\n\n// Determine if we need to create a Jira ticket\nconst needsJiraTicket = shouldCreateJiraTicket(analysisResult, alertData, dedupInfo);\n\n// Prepare the output\nconst output = {\n needsJiraTicket: needsJiraTicket && dedupInfo.dedupStatus === 'new',\n alertSummary: {\n   alertId: alertData.alertContext?.alertId || analysisResult.contextId,\n   source: alertData.source || 'kubernetes',\n   title: alertName,\n   detectedAt: new Date().toISOString(),\n   severity: severity,\n   businessImpact: analysisResult.impact || 'Service degradation detected',\n   identifiedIssue: analysisResult.identifiedIssue || 'Issue under investigation'\n },\n kubernetesAnalysis: {\n   contextId: analysisResult.contextId || executiveSummary.contextId,\n   confidence: analysisResult.confidence || 0.5,\n   deployment: deployment,\n   namespace: namespace,\n   pod: analysisResult.pod || 'unknown',\n   timeline: analysisResult.timeline || [],\n   metrics: analysisResult.metrics || {},\n   evidence: analysisResult.evidence || {},\n   actions: analysisResult.actions || []\n },\n report: analysisReport,\n jiraTicketData: needsJiraTicket && dedupInfo.dedupStatus === 'new' ? \n   prepareJiraTicketData(analysisResult, alertData, jiraTicketInfo) : null\n};\n\n// Existing ticket update case\nif (dedupInfo.dedupStatus === 'existing' && dedupInfo.existingTicket?.key) {\n output.jiraTicketData = {\n   ...output.jiraTicketData,\n   existingKey: dedupInfo.existingTicket.key,\n   isUpdate: true,\n   updateComment: createUpdateComment(analysisResult)\n };\n}\n\n// Helper functions\nfunction shouldCreateJiraTicket(result, alertData, dedupInfo) {\n const severity = result.severity;\n const confidence = result.confidence || 0;\n \n return (\n   severity === 'critical' ||\n   severity === 'high' ||\n   confidence >= 0.75 ||\n   result.identifiedIssue !== 'Issue Under Investigation' ||\n   alertData.priority === 'critical' ||\n   (result.metrics && Object.keys(result.metrics).length > 0)\n );\n}\n\nfunction prepareJiraTicketData(result, alertData, jiraTicketInfo) {\n // Use the pre-formatted title and description from analysis\n const title = jiraTicketInfo.title || \n              `[${result.alert || alertData.alertContext?.alertName}] ${result.deployment || 'Service'} - ${result.identifiedIssue || 'Investigation Required'}`;\n \n const description = jiraTicketInfo.description || \n                    result.markdownReport || \n                    createBasicDescription(result, alertData);\n \n // Combine labels from analysis and alert data\n const labels = [\n   ...(jiraTicketInfo.labels || []),\n   `alert-${alertData.source || 'kubernetes'}`,\n   `confidence-${Math.round((result.confidence || 0.5) * 100)}`,\n   result.contextId ? `context-${result.contextId}` : null,\n   'k8s-analysis',\n   'auto-generated'\n ].filter(Boolean);\n \n // Map components\n const components = jiraTicketInfo.components || [];\n if (result.deployment && result.deployment !== 'unknown') {\n   components.push(result.deployment);\n }\n \n return {\n   project: 'INCIDENT',\n   issueType: jiraTicketInfo.issueType || 'Incident',\n   summary: title,\n   description: description,\n   priority: mapSeverityToJiraPriority(result.severity || alertData.priority),\n   labels: [...new Set(labels)], // Remove duplicates\n   components: [...new Set(components)], // Remove duplicates\n   customFields: {\n     // Add any custom field mappings your Jira instance needs\n     ...(jiraTicketInfo.customFields || {}),\n     'customfield_10001': result.contextId, // Context ID\n     'customfield_10002': result.confidence, // Confidence level\n     'customfield_10003': result.namespace, // Kubernetes namespace\n     'customfield_10004': result.pod, // Pod name\n     'customfield_10005': result.identifiedIssue, // Root cause\n     'customfield_10006': result.actions?.[0]?.command || '', // Remediation command\n     'customfield_10007': result.timeline?.length || 0, // Analysis stages\n     'customfield_10008': new Date().toISOString(), // Analysis timestamp\n   },\n   // Additional fields for remediation tracking\n   duedate: calculateDueDate(result.severity),\n   environment: result.namespace?.includes('production') ? 'Production' : \n               result.namespace?.includes('staging') ? 'Staging' : 'Development',\n   // Attachments - remediation commands as text file\n   attachments: createAttachments(result)\n };\n}\n\nfunction mapSeverityToJiraPriority(severity) {\n const mapping = {\n   'critical': 'Highest',\n   'high': 'High',\n   'medium': 'Medium',\n   'low': 'Low',\n   'warning': 'Low'\n };\n return mapping[severity] || 'Medium';\n}\n\nfunction calculateDueDate(severity) {\n const now = new Date();\n const hoursToAdd = {\n   'critical': 4,\n   'high': 24,\n   'medium': 72,\n   'low': 168 // 1 week\n };\n \n now.setHours(now.getHours() + (hoursToAdd[severity] || 72));\n return now.toISOString().split('T')[0]; // YYYY-MM-DD format\n}\n\nfunction createBasicDescription(result, alertData) {\n return `\n# Kubernetes Incident Report\n\n## Alert Information\n- **Alert**: ${result.alert || alertData.alertContext?.alertName}\n- **Severity**: ${result.severity}\n- **Confidence**: ${(result.confidence * 100).toFixed(0)}%\n- **Issue**: ${result.identifiedIssue || 'Under investigation'}\n\n## Impact\n${result.impact || 'Service degradation detected'}\n\n## Evidence\n${typeof result.evidence === 'string' ? result.evidence : JSON.stringify(result.evidence, null, 2)}\n\n## Recommended Actions\n${result.actions?.map((action, idx) => \n `${idx + 1}. ${action.action}\\n   Command: ${action.command}\\n   Risk: ${action.risk}`\n).join('\\n\\n') || 'No automated actions available'}\n\n## Timeline\n${result.timeline?.map(entry => \n `- ${entry.time}: ${entry.stage} - ${entry.finding}`\n).join('\\n') || 'No timeline available'}\n\n---\nGenerated: ${new Date().toISOString()}\nContext ID: ${result.contextId || 'N/A'}\n`;\n}\n\nfunction createUpdateComment(result) {\n return `\n## 🔄 Incident Update\n\n**Analysis Re-run at**: ${new Date().toISOString()}\n**Context ID**: ${result.contextId}\n\n### Current Status\n- **Issue**: ${result.identifiedIssue}\n- **Confidence**: ${(result.confidence * 100).toFixed(0)}%\n- **Severity**: ${result.severity}\n\n### Latest Metrics\n${Object.entries(result.metrics || {}).slice(0, 5).map(([key, value]) => \n `- ${key}: ${value}`\n).join('\\n')}\n\n### Recommended Action\n${result.actions?.[0] ? \n `${result.actions[0].action}\\nCommand: \\`${result.actions[0].command}\\`` : \n 'Continue monitoring'}\n`;\n}\n\nfunction createAttachments(result) {\n const attachments = [];\n \n // Create remediation commands file\n if (result.actions && result.actions.length > 0) {\n   const commandsContent = result.actions.map(action => \n     `# ${action.action}\\n${action.command}\\n\\n# Expected outcome: ${action.expected_outcome || 'N/A'}\\n# Risk: ${action.risk || 'Unknown'}\\n# ETA: ${action.estimated_time || 'Unknown'}\\n\\n`\n   ).join('---\\n\\n');\n   \n   attachments.push({\n     filename: 'remediation-commands.sh',\n     content: commandsContent,\n     mimeType: 'text/plain'\n   });\n }\n \n // Create monitoring commands file if quickActions exist\n if (result.executiveSummary?.quickActions) {\n   const monitoringContent = Object.entries(result.executiveSummary.quickActions)\n     .map(([action, command]) => `# ${action}\\n${command}\\n\\n`)\n     .join('');\n   \n   attachments.push({\n     filename: 'monitoring-commands.sh',\n     content: monitoringContent,\n     mimeType: 'text/plain'\n   });\n }\n \n // Create full analysis report\n if (result.markdownReport) {\n   attachments.push({\n     filename: 'full-analysis-report.md',\n     content: result.markdownReport,\n     mimeType: 'text/markdown'\n   });\n }\n \n return attachments;\n}\n\nreturn { json: output };"
+      },
+      "id": "91bba7a1-57ff-42cb-9e70-d2cac2232693",
+      "name": "Process Results & Decision",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "leftValue": "={{ $json.needsJiraTicket }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              },
+              "id": "dbfe5a8a-a7ad-47e5-903a-6d1caa197fc6"
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "97b16581-fd98-4d1d-8bb9-ca6f76795fbf",
+      "name": "Create Jira Ticket?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        656,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "jiraVersion": "server",
+        "project": {
+          "__rl": true,
+          "value": "13601",
+          "mode": "list",
+          "cachedResultName": "Etiya Mobile MVNO"
+        },
+        "issueType": {
+          "__rl": true,
+          "value": "10200",
+          "mode": "list",
+          "cachedResultName": "Task"
+        },
+        "summary": "={{ $json.jiraTicketData.summary }}",
+        "additionalFields": {
+          "assignee": {
+            "__rl": true,
+            "value": "platform_support@etiya.com",
+            "mode": "list",
+            "cachedResultName": "Platform_Support"
+          },
+          "description": "={{ $json.jiraTicketData.description }}",
+          "customFieldsUi": {
+            "customFieldsValues": [
+              {
+                "fieldId": {
+                  "__rl": true,
+                  "value": "customfield_10100",
+                  "mode": "list",
+                  "cachedResultName": "Epic Link"
+                },
+                "fieldValue": "EM-5364"
+              }
+            ]
+          },
+          "serverLabels": [],
+          "priority": {
+            "__rl": true,
+            "value": "2",
+            "mode": "list",
+            "cachedResultName": "High"
+          }
+        }
+      },
+      "id": "62086c16-be0c-4e8c-848c-2e424a7bee2b",
+      "name": "Create Jira Incident",
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        816,
+        512
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({status: 'received', fingerprint: $json.fingerprint, alertId: $json.sourceId}) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "756d6714-6fa6-4cc4-876b-d4b5b58ea6a1",
+      "name": "Webhook Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        -1216,
+        816
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Alert Deduplication & Fingerprinting Node - SIMPLE VERSION\nconst alert = $input.item.json;\n\n// Alert için unique fingerprint oluştur\nfunction createFingerprint(alert) {\n  // Temizlenmiş title\n  const cleanTitle = alert.title\n    .replace(/\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}[.\\d]*Z?/g, 'TIMESTAMP')\n    .replace(/\\d+\\s?(seconds?|minutes?|hours?)\\s?ago/gi, 'TIME_AGO')\n    .replace(/\\d+(\\.\\d+)?%/g, 'X_PERCENT')\n    .replace(/\\d+(\\.\\d+)?(ms|s)/g, 'X_MS')\n    .trim();\n  \n  // Key components for fingerprint\n  const components = [\n    alert.source,\n    cleanTitle,\n    alert.priority\n  ];\n  \n  // Extract service names from body\n  const serviceMatches = alert.body.match(/([\\w-]+)-(api|service|app|server)/gi);\n  if (serviceMatches) {\n    components.push(serviceMatches.sort().join('-'));\n  }\n  \n  // Extract error types\n  const errorTypes = [];\n  if (/connection/i.test(alert.body)) errorTypes.push('conn');\n  if (/timeout/i.test(alert.body)) errorTypes.push('timeout');\n  if (/401|unauthorized/i.test(alert.body)) errorTypes.push('auth');\n  if (/500|internal/i.test(alert.body)) errorTypes.push('server');\n  \n  if (errorTypes.length > 0) {\n    components.push(errorTypes.join('-'));\n  }\n  \n  // Create a simple fingerprint\n  const fingerprint = components\n    .join('|')\n    .toLowerCase()\n    .replace(/[^a-z0-9|-]/g, '') // Remove special chars\n    .substring(0, 64); // Limit length\n  \n  return fingerprint;\n}\n\n// Generate fingerprint\nconst fingerprint = createFingerprint(alert);\nalert.fingerprint = fingerprint;\n\n// Add debug info\nalert.debug = {\n  originalTitle: alert.title,\n  fingerprint: fingerprint,\n  timestamp: new Date().toISOString()\n};\n\nreturn { json: alert };"
+      },
+      "id": "d687afee-2fcf-4100-b134-7f27812ba484",
+      "name": "Alert Deduplication",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1456,
+        1408
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.alert.dedupStatus }}",
+                    "rightValue": "=new",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "4694ce54-6cbd-4af4-b9ec-640958fb4cb8"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "3d36f92c-3d30-44fe-8fa7-4b4ad392e37e",
+                    "leftValue": "={{ $json.alert.actions.skipAnalysis }}",
+                    "rightValue": "",
+                    "operator": {
+                      "type": "boolean",
+                      "operation": "true",
+                      "singleValue": true
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "4aafca4d-6f28-4609-97dc-8a5967c99d29",
+                    "leftValue": "={{ $json.alert.dedupStatus }}",
+                    "rightValue": "=existing",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        -416,
+        800
+      ],
+      "id": "862cbee2-022e-4cb0-819b-e9606a535aff",
+      "name": "Decision Router"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Redis State Check Node - FIXED VERSION\n// Alert Deduplication node'undan orijinal alert'i al\nconst originalAlert = $node[\"Alert Deduplication\"].json;\nconst fingerprint = originalAlert.fingerprint;\n\n// Redis GET node'undan gelen value'yu al\nlet redisValue = null;\ntry {\n  // Redis Get node'undan gelen data\n  const redisData = $input.item.json;\n  redisValue = redisData.value || redisData.fingerprint || null;\n} catch (e) {\n  redisValue = null;\n}\n\n// Redis'ten gelen data'yı parse et\nlet existingData = null;\nif (redisValue !== undefined && redisValue !== null && redisValue !== '') {\n  try {\n    existingData = JSON.parse(redisValue);\n  } catch (e) {\n    // JSON parse edilemezse null bırak\n    existingData = null;\n  }\n}\n\nif (existingData) {\n  // Alert daha önce görülmüş\n  const now = Date.now();\n  const lastSeen = parseInt(existingData.last_seen || '0');\n  const timeSinceLastSeen = (now - lastSeen) / 1000; // saniye\n  const occurrenceCount = parseInt(existingData.occurrence_count || '0') + 1;\n  const callCount = parseInt(existingData.call_count || '0');\n  const lastCallTime = parseInt(existingData.last_call_time || '0');\n  const timeSinceLastCall = (now - lastCallTime) / 1000;\n  \n  // Karar verme\n  const shouldSkipAnalysis = timeSinceLastSeen < 600; // 10 dakika\n  const shouldEscalate = occurrenceCount > 5 && existingData.severity !== 'critical';\n  const shouldCallAgain = callCount < 3 && timeSinceLastCall > 1800 && originalAlert.priority === 'critical';\n  \n  return {\n    json: {\n      ...originalAlert,  // Orijinal alert verilerini koru\n      fingerprint: fingerprint,  // Fingerprint'i ekle\n      dedupStatus: 'existing',\n      existingTicket: {\n        id: existingData.jira_ticket_id || null,\n        key: existingData.jira_ticket_key || null,\n        occurrences: occurrenceCount,\n        firstSeen: existingData.first_seen,\n        lastCallTime: existingData.last_call_time || null,\n        callCount: callCount\n      },\n      metrics: {\n        timeSinceLastSeen,\n        timeSinceLastCall,\n        totalOccurrences: occurrenceCount\n      },\n      actions: {\n        skipAnalysis: shouldSkipAnalysis,\n        updateTicket: true,\n        escalate: shouldEscalate,\n        makeCall: shouldCallAgain\n      }\n    }\n  };\n} else {\n  // Yeni alert - Redis'te bulunamadı\n  return {\n    json: {\n      ...originalAlert,  // Orijinal alert verilerini koru\n      fingerprint: fingerprint,  // Fingerprint'i ekle\n      dedupStatus: 'new',\n      actions: {\n        skipAnalysis: false,\n        updateTicket: false,\n        escalate: false,\n        makeCall: originalAlert.priority === 'critical'\n      }\n    }\n  };\n}"
+      },
+      "id": "f0eda22c-4f4f-4af6-b5cb-483d18bd2e6d",
+      "name": "Redis State Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -912,
+        816
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json.key }}",
+        "value": "={{ $json.value }}",
+        "expire": true,
+        "ttl": "={{ $json.ttl }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -608,
+        816
+      ],
+      "id": "5cd9eed8-d1e7-4524-8ebe-36c9d358c63e",
+      "name": "Redis Set"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Prepare Redis Data Node - FIXED VERSION\nconst alert = $input.item.json;\nconst now = Date.now();\n\n// Fingerprint'in var olduğundan emin ol\nif (!alert.fingerprint) {\n  throw new Error('Fingerprint is missing! Check Alert Deduplication node.');\n}\n\nconst redisData = {\n  alert_fingerprint: alert.fingerprint,\n  first_seen: alert.dedupStatus === 'new' ? now.toString() : (alert.existingTicket?.firstSeen || now.toString()),\n  last_seen: now.toString(),\n  occurrence_count: alert.dedupStatus === 'new' ? '1' : (alert.existingTicket?.occurrences || 1).toString(),\n  status: 'active',\n  severity: alert.priority,\n  title: alert.title,\n  source: alert.source,\n  jira_ticket_id: alert.existingTicket?.id || '',\n  jira_ticket_key: alert.existingTicket?.key || '',\n  call_count: (alert.existingTicket?.callCount || 0).toString(),\n  updated_at: new Date().toISOString()\n};\n\nreturn {\n  json: {\n    key: `alert:${alert.fingerprint}`,\n    value: JSON.stringify(redisData),\n    ttl: 604800, // 7 days in seconds\n    alert: alert, // Pass through the alert data\n    fingerprint: alert.fingerprint // Explicitly pass fingerprint\n  }\n};"
+      },
+      "id": "2b7f9433-1f6f-48e9-bca9-217583745b3e",
+      "name": "Prepare Redis Data",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -752,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Prepare Jira Update\nconst alert = $json.alert;\n\nconst updateComment = `## 🔄 Alert Recurrence Update\n\n**Occurrence #${alert.existingTicket.occurrences}**\n**Time Since Last:** ${Math.round(alert.metrics.timeSinceLastSeen / 60)} minutes\n\n### Status\n- Pattern: Recurring (${alert.existingTicket.occurrences} times)\n- Severity: ${alert.priority}\n\n${alert.existingTicket.occurrences > 5 ? \n  '⚠️ **HIGH RECURRENCE**: Consider root cause analysis.' : ''}\n\n${alert.actions.escalate ? \n  '🔺 **ESCALATION REQUIRED**: Increasing priority.' : ''}\n\n### Latest Alert\n${alert.body}\n\n---\n*Alert Deduplication System*`;\n\nreturn {\n  json: {\n    ticketKey: alert.existingTicket.key,\n    comment: updateComment,\n    escalate: alert.actions.escalate,\n    alert: alert\n  }\n};"
+      },
+      "id": "aeee1c49-b512-486d-9eb3-1695f22e780c",
+      "name": "Update Jira Comment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        64,
+        1120
+      ]
+    },
+    {
+      "parameters": {
+        "jiraVersion": "server",
+        "resource": "issueComment",
+        "issueKey": "={{ $json.ticketKey }}",
+        "comment": "={{ $json.comment }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        368,
+        1120
+      ],
+      "id": "a4e5fb84-2fb4-4172-aeee-71532bc12cfe",
+      "name": "Add a comment"
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{ $json.redisKey }}",
+        "value": "={{ $json.redisValue }}",
+        "expire": true,
+        "ttl": "={{ $json.redisTTL }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        624
+      ],
+      "id": "cd8a98b5-726d-4267-9f33-223902b5955c",
+      "name": "Redis Set1"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "propertyName": "fingerprint",
+        "key": "=alert:{{ $node[\"Alert Deduplication\"].json.fingerprint }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -1056,
+        1120
+      ],
+      "id": "d332e67a-ab88-459f-b31c-5a6ca7617446",
+      "name": "Redis Get"
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "LBDqj72azAqepcuC",
+          "mode": "id",
+          "cachedResultUrl": "/workflow/LBDqj72azAqepcuC"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true,
+          "values": {
+            "value1": {
+              "key": "requestId",
+              "type": "String",
+              "value": "={{ $json.orchestratorInput.requestId }}"
+            },
+            "value2": {
+              "key": "orchestratorId",
+              "type": "String",
+              "value": "={{ $json.orchestratorInput.orchestratorId }}"
+            },
+            "value3": {
+              "key": "timestamp",
+              "type": "String",
+              "value": "={{ $json.orchestratorInput.timestamp }}"
+            },
+            "value4": {
+              "key": "requestType",
+              "type": "String",
+              "value": "={{ $json.orchestratorInput.requestType }}"
+            },
+            "value5": {
+              "key": "timeRange",
+              "type": "String",
+              "value": "={{ JSON.stringify($json.orchestratorInput.timeRange) }}"
+            },
+            "value6": {
+              "key": "context",
+              "type": "String",
+              "value": "={{ JSON.stringify($json.orchestratorInput.context) }}"
+            },
+            "value7": {
+              "key": "metadata",
+              "type": "String",
+              "value": "={{ JSON.stringify($json.orchestratorInput.metadata) }}"
+            },
+            "value8": {
+              "key": "priority",
+              "type": "String",
+              "value": "={{ $json.orchestratorInput.priority }}"
+            }
+          }
+        },
+        "options": {
+          "waitForSubWorkflow": true
+        }
+      },
+      "id": "950b4a60-33fb-472e-9d6b-748bbb2b3f26",
+      "name": "Execute Prometheus Analysis",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        224,
+        688
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Enhanced Prepare Prometheus Input - Direct Flow Execution\nconst normalizedAlert = $node[\"Normalize Alerts\"].json;\nconst aiAnalysis = $node[\"Process AI Output\"].json;\n\nconsole.log('=== PREPARE PROMETHEUS INPUT - DIRECT EXECUTION ===');\nconsole.log('Alert Type:', normalizedAlert.alertname || 'UNKNOWN');\nconsole.log('Container:', normalizedAlert.container);\nconsole.log('Pod:', normalizedAlert.pod);\nconsole.log('Service:', normalizedAlert.service);\nconsole.log('Namespace:', normalizedAlert.namespace);\n\n// Extract data from AI analysis\nconst alertAnalysisData = aiAnalysis.alertAnalysis || aiAnalysis;\nconst kubernetesFilters = aiAnalysis.kubernetesFilters || {};\nconst focusAreas = aiAnalysis.focusAreas || [];\n\n// Calculate time range (Unix timestamps in seconds)\nconst now = Math.floor(Date.now() / 1000);\nconst startTime = now - 3600; // 1 hour ago\nconst endTime = now;\n\n// Build Prometheus-specific input\nconst prometheusInput = {\n  // Request identification\n  workflowId: `alert-${Date.now()}`,\n  source: 'alert-listener',\n  orchestratorId: `direct-${Date.now()}`,\n  requestId: `alert-${aiAnalysis.alertId}-${Date.now()}`,\n  \n  // Time range in Unix timestamps (seconds)\n  startTime: startTime,\n  endTime: endTime,\n  \n  // Priority from alert\n  priority: normalizedAlert.priority || 'medium',\n  analysisType: 'alert-driven',\n  \n  // Alert context for Prometheus\n  alertContext: {\n    alertName: normalizedAlert.alertname || normalizedAlert.title,\n    alertId: aiAnalysis.alertId,\n    priority: normalizedAlert.priority,\n    source: normalizedAlert.source,\n    \n    // Affected services from AI analysis\n    affectedServices: alertAnalysisData.affectedComponents?.map(c => c?.name).filter(name => name) || [],\n    errorPatterns: alertAnalysisData.technicalIndicators?.errorMessages || [],\n    focusAreas: focusAreas,\n    \n    // Normalized alert for reference\n    normalizedAlert: {\n      alertname: normalizedAlert.alertname,\n      priority: normalizedAlert.priority,\n      container: normalizedAlert.container,\n      pod: normalizedAlert.pod,\n      namespace: normalizedAlert.namespace,\n      service: normalizedAlert.service,\n      node: normalizedAlert.node,\n      status: normalizedAlert.status\n    }\n  },\n  \n  // Kubernetes filters for Prometheus queries (from Node 5 Process AI Output)\n  // Multi-namespace support: infrastructure alerts → query ALL production namespaces\n  kubernetesFilters: kubernetesFilters,\n  \n  // Prometheus context\n  prometheusContext: {\n    nodeFilter: normalizedAlert.node,\n    containerFilter: normalizedAlert.container,\n    podFilter: normalizedAlert.pod,\n    useSpecificFilters: !!(normalizedAlert.container || normalizedAlert.pod || normalizedAlert.service)\n  },\n  \n  // Focus areas for analysis\n  focusAreas: focusAreas,\n\n  // Namespaces for analysis (multi-namespace support from Node 5)\n  namespaces: kubernetesFilters.namespaces || [normalizedAlert.namespace || 'em-prod'],\n  \n  // Metadata\n  metadata: {\n    alertSource: normalizedAlert.source,\n    alertDetails: {\n      id: aiAnalysis.alertId,\n      title: normalizedAlert.title,\n      alertname: normalizedAlert.alertname,\n      detectedAt: normalizedAlert.timestamp,\n      isOngoing: true\n    },\n    analysisMode: kubernetesFilters.useSpecificFilters ? 'TARGETED' : 'GENERAL'\n  },\n  \n  // Context for Prometheus Query Builder compatibility\n  context: {\n    alertName: normalizedAlert.alertname,\n    alertId: aiAnalysis.alertId,\n    alertPriority: normalizedAlert.priority,\n    source: normalizedAlert.source,\n    \n    kubernetes: {\n      container: normalizedAlert.container,\n      pod: normalizedAlert.pod,\n      namespace: kubernetesFilters.namespace,  // null for infrastructure alerts\n      namespaces: kubernetesFilters.namespaces,  // array of namespaces to query\n      service: normalizedAlert.service,\n      deployment: normalizedAlert.deployment,\n      node: normalizedAlert.node,\n      persistentvolumeclaim: normalizedAlert.persistentvolumeclaim,\n      volumename: normalizedAlert.volumename,\n      useSpecificFilters: kubernetesFilters.useSpecificFilters,\n      useMultiNamespace: kubernetesFilters.useMultiNamespace\n    },\n    \n    affectedServices: alertAnalysisData.affectedComponents?.map(c => c?.name).filter(name => name) || [],\n    errorPatterns: alertAnalysisData.technicalIndicators?.errorMessages || [],\n    \n    alerts: [{\n      alertname: normalizedAlert.alertname,\n      severity: normalizedAlert.priority\n    }]\n  }\n};\n\nconsole.log('=== PROMETHEUS INPUT SUMMARY ===');\nconsole.log('Request ID:', prometheusInput.requestId);\nconsole.log('Alert Name:', prometheusInput.alertContext.alertName);\nconsole.log('Namespace (single):', prometheusInput.kubernetesFilters.namespace || 'null');\nconsole.log('Namespaces (multi):', prometheusInput.kubernetesFilters.namespaces?.join(', ') || 'none');\nconsole.log('Use Multi-Namespace:', prometheusInput.kubernetesFilters.useMultiNamespace);\nconsole.log('Use Specific Filters:', prometheusInput.kubernetesFilters.useSpecificFilters);\nconsole.log('Analysis Mode:', prometheusInput.metadata.analysisMode);\nconsole.log('Time Range:', `${startTime} to ${endTime}`);\nconsole.log('Focus Areas:', focusAreas.join(', '));\n\nreturn { json: prometheusInput };"
+      },
+      "id": "6ad877cb-721f-4dc6-9e11-b154ae4244a8",
+      "name": "Prepare Prometheus Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        320,
+        496
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Update Redis After Call - FIXED VERSION\nconst alertData = $node[\"Process Results & Decision\"].json;\nconst dedupInfo = $node[\"Redis State Check\"].json;\n\n// Her zaman bir output döndür\nconst output = {\n  redisKey: `alert:${dedupInfo.fingerprint || 'unknown'}`,\n  redisValue: JSON.stringify({\n    alert_fingerprint: dedupInfo.fingerprint,\n    first_seen: dedupInfo.existingTicket?.firstSeen || Date.now().toString(),\n    last_seen: Date.now().toString(),\n    occurrence_count: dedupInfo.existingTicket?.occurrences || '1',\n    status: 'active',\n    severity: dedupInfo.priority || alertData.alertSummary?.severity || 'medium',\n    title: alertData.alertSummary?.title || 'Unknown Alert',\n    source: alertData.alertSummary?.source || 'unknown',\n    jira_ticket_id:$json.id || alertData.jiraTicketData?.existingKey || '',\n    jira_ticket_key:$json.key || alertData.jiraTicketData?.existingKey || '',\n    updated_at: new Date().toISOString()\n  }),\n  redisTTL: 604800, // 7 days\n};\n\nreturn { json: output };"
+      },
+      "id": "44e33f38-e985-4b30-88c6-fa6061399360",
+      "name": "Update Redis Before Call",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1088,
+        624
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "2206192c-e800-4792-85bf-d0cb391efdbc",
+        "responseMode": "responseNode",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1792,
+        1472
+      ],
+      "id": "3249e61a-f7d4-4f0e-922c-dc41315963bb",
+      "name": "New Alert Webhook",
+      "webhookId": "2206192c-e800-4792-85bf-d0cb391efdbc"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Prepare Notification - YENİ FORMAT İÇİN\nconst orchestratorData = $node[\"Process Results & Decision\"]?.json;\n//const callData = $node[\"Process Call Response\"]?.json || null;  --call düzelince açılcak\n\n// Orchestrator'dan gelen yeni format data'yı al\nconst orchestratorResult = $node[\"Execute Prometheus Analysis\"].json;\nlet incidentData = null;\nif (Array.isArray(orchestratorResult) && orchestratorResult.length > 0) {\n  incidentData = orchestratorResult[0];\n}\n\n// Jira ticket bilgisini al\nlet jiraTicket = null;\ntry {\n  const jiraNode = $node[\"Create Jira Incident\"]?.json;\n  if (jiraNode && jiraNode.key) {\n    jiraTicket = jiraNode;\n  }\n} catch (e) {\n  jiraTicket = null;\n}\n\n// Slack format'ı hazır olarak kullan\nconst slackNotification = incidentData?.formats?.slack || null;\n\n// Chat summary'yi kullan\nconst chatSummary = incidentData?.formats?.chatSummary || null;\n\nconst notification = {\n  timestamp: new Date().toISOString(),\n  status: 'completed',\n  \n  // Alert bilgileri\n  alert: {\n  id: orchestratorData?.alertSummary?.alertId ?? \"unknown\",\n  source: orchestratorData?.alertSummary?.source ?? \"unknown\",\n  title: orchestratorData?.alertSummary?.title ?? \"unknown\",\n  severity: orchestratorData?.alertSummary?.severity ?? \"unknown\"\n},\n  \n  // Incident report bilgileri\n  incidentReport: {\n    reportId: incidentData?.quickInfo?.reportId || 'N/A',\n    title: incidentData?.quickInfo?.title || orchestratorData.alertSummary.title,\n    severity: incidentData?.quickInfo?.severity || orchestratorData.alertSummary.severity,\n    rootCause: incidentData?.quickInfo?.rootCause || 'Under investigation',\n    affectedServicesCount: incidentData?.quickInfo?.affectedServicesCount || 0,\n    hasImmediateActions: incidentData?.quickInfo?.hasImmediateActions || false\n  },\n  \n  // Jira ticket bilgileri\n  jiraTicket: jiraTicket ? {\n    created: true,\n    key: jiraTicket.key,\n    url: `https://your-jira.atlassian.net/browse/${jiraTicket.key}`,\n    id: jiraTicket.id\n  } : {\n    created: false,\n    reason: orchestratorData.needsJiraTicket ? 'Failed to create ticket' : 'Severity threshold not met'\n  },\n  \n  // Phone call bilgileri -- call düzelince geri açılcak\n // phoneCall: callData ? {\n  //  attempted: true,\n  //  success: callData.callStatus.success,\n  //  callId: callData.callStatus.callId,\n  //  error: callData.callStatus.error\n // } : {\n //   attempted: false,\n//    reason: 'Not critical/high severity'\n // },\n  \n  // Formatted notifications\n  formats: {\n    slack: slackNotification,\n    chatSummary: chatSummary,\n    markdown: incidentData?.formats?.markdown || null\n  },\n  \n  // Summary\n    summary: generateSummary(orchestratorData, jiraTicket, incidentData)\n  //summary: generateSummary(orchestratorData, jiraTicket, callData, incidentData) --call düzelince açılcak\n};\n\nfunction generateSummary(orchestratorData, jiraTicket, callData, incidentData) {\n  let summary = `Alert ${orchestratorData.alertSummary.alertId} analyzed. `;\n  \n  if (incidentData?.quickInfo) {\n    summary += `Incident Report ${incidentData.quickInfo.reportId} generated. `;\n    summary += `Severity: ${incidentData.quickInfo.severity}. `;\n    summary += `${incidentData.quickInfo.affectedServicesCount} services affected. `;\n  }\n  \n  if (jiraTicket) {\n    summary += `Jira ticket ${jiraTicket.key} created. `;\n  }\n  \n  if (callData) {\n    if (callData.callStatus.success) {\n      summary += `Emergency call placed successfully. `;\n    } else {\n      summary += `Emergency call failed - manual escalation required. `;\n    }\n  }\n  \n  return summary;\n}\n\nreturn { json: notification };"
+      },
+      "id": "f0436970-5947-40e5-8a1c-e17b7e98c18e",
+      "name": "Prepare Notification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2384,
+        704
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Test Trigger": {
+      "main": [
+        [
+          {
+            "node": "Generate Test Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate Test Alert": {
+      "main": [
+        [
+          {
+            "node": "Normalize Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Alerts": {
+      "main": [
+        [
+          {
+            "node": "Alert Deduplication",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Alert Analyzer": {
+      "main": [
+        [
+          {
+            "node": "Process AI Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process AI Output": {
+      "main": [
+        [
+          {
+            "node": "Prepare Prometheus Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert AI Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Alert Analyzer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Results & Decision": {
+      "main": [
+        [
+          {
+            "node": "Create Jira Ticket?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Jira Ticket?": {
+      "main": [
+        [
+          {
+            "node": "Create Jira Incident",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Jira Incident": {
+      "main": [
+        [
+          {
+            "node": "Update Redis Before Call",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert JSON Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Alert Analyzer",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Response": {
+      "main": [
+        [
+          {
+            "node": "Redis Get",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Deduplication": {
+      "main": [
+        [
+          {
+            "node": "Webhook Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis State Check": {
+      "main": [
+        [
+          {
+            "node": "Prepare Redis Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Redis Data": {
+      "main": [
+        [
+          {
+            "node": "Redis Set",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Set": {
+      "main": [
+        [
+          {
+            "node": "Decision Router",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decision Router": {
+      "main": [
+        [
+          {
+            "node": "AI Alert Analyzer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Jira Comment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Jira Comment": {
+      "main": [
+        [
+          {
+            "node": "Add a comment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add a comment": {
+      "main": [
+        [
+          {
+            "node": "Prepare Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Get": {
+      "main": [
+        [
+          {
+            "node": "Redis State Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Prometheus Analysis": {
+      "main": [
+        [
+          {
+            "node": "Process Results & Decision",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Prometheus Input": {
+      "main": [
+        [
+          {
+            "node": "Execute Prometheus Analysis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Redis Before Call": {
+      "main": [
+        [
+          {
+            "node": "Redis Set1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "New Alert Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "eae0754a-4e9e-4ef4-bbb4-43e6e5421533",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c12c7bb55b80ebd9de9957d4bb20d1c257c60ff78d5439f6278d6225d0d15a7b"
+  },
+  "id": "8IOC9lJbUFl3qttR",
+  "tags": []
+}
