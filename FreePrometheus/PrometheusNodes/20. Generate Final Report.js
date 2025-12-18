@@ -5,12 +5,16 @@
 const loadAlertKB = $node["Load Alert Knowledge Base"]?.json || {};
 
 // Extract KB information safely
-const alertKnowledgeBase = loadAlertKB.knowledgeBase?.alert || {};
+// FIXED: Use _alertKBData field which contains the full KB dictionary (320+ alerts)
+// NOT knowledgeBase.alert which only contains a single alert entry
+const alertKnowledgeBase = loadAlertKB._alertKBData || {};
 const kbEntriesLoaded = Object.keys(alertKnowledgeBase).length || 0;
 
 console.log("===== KB INTEGRATION =====");
 console.log("KB Entries Loaded:", kbEntriesLoaded);
 console.log("KB Integration:", kbEntriesLoaded > 0 ? "ENABLED" : "DISABLED");
+console.log("Load Alert KB Data:", loadAlertKB ? "Present" : "Missing");
+console.log("Full KB Dictionary:", Object.keys(alertKnowledgeBase).length, "entries");
 console.log("==========================");
 
 // Default production namespaces
