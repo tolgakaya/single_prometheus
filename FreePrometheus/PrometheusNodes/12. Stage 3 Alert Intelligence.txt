@@ -65,6 +65,8 @@ if (!sloValue || sloValue === "NaN" || sloValue === "") {
   return "100"; // No issues detected
 }
 return sloValue;
+```
+
 📊 COMPOSITE SLO CALCULATION:
 If multiple SLO tools are available, calculate a weighted composite:
 
@@ -209,6 +211,45 @@ When calling SLO tools, simply call them - no namespace parameter needed:
 Service filtering (optional) comes from Stage 2 data:
 - Service name: {{ $json.stage2Data?.correlation_matrix?.affected_services?.[0] || 'none detected' }}
 
+## 🎯 CRITICAL VALIDATION BEFORE OUTPUT:
+
+**KNOWLEDGE BASE QUALITY CHECK:**
+1. Does each kb_entry.root_causes contain SPECIFIC information from alert.labels?
+   - Check: Does it reference actual pod/deployment/namespace names from alert?
+   - Check: Does it include actual numeric values?
+   - ❌ WRONG: Based on alert type and previous incidents
+   - ✅ CORRECT: HPA bss-tenant-control-plane-batch maxed at 10 replicas in em-control-plane-prod
+
+2. Do diagnostic_commands use ACTUAL resource names from alert.labels?
+   - Check: Each kubectl command MUST have real pod/deployment/hpa/node names
+   - Check: Each command MUST include actual namespace from alert.labels.namespace
+   - ❌ WRONG: kubectl describe or kubectl logs
+   - ✅ CORRECT: kubectl describe hpa bss-tenant-control-plane-batch -n em-control-plane-prod
+
+3. Are immediate_actions SPECIFIC to this exact alert instance?
+   - Check: Do actions reference ACTUAL values from alert.labels?
+   - Check: Are numeric values included?
+   - ❌ WRONG: Check pod status or Review recent changes
+   - ✅ CORRECT: Increase HPA maxReplicas from 10 to 15 for bss-tenant-control-plane-batch
+
+4. Are long_term_solutions more than generic advice?
+   - Check: Do solutions reference actual service/deployment/component names?
+   - ❌ WRONG: Update resource limits or Fix application code
+   - ✅ CORRECT: Profile bss-tenant-control-plane-batch for memory leaks
+
+5. Are recommended_alert_actions actionable not just Monitor?
+   - For HPA maxed: action = Increase HPA maxReplicas, command = kubectl patch hpa ...
+   - For OOMKilled: action = Increase memory limits, command = kubectl set resources ...
+   - For Node NotReady: action = Drain and investigate node, command = kubectl drain ...
+   - ❌ WRONG: Generic Monitor action with null command
+   - ✅ CORRECT: Specific actionable remediation with kubectl command
+
+**IF ANY VALIDATION FAILS:**
+- Re-analyze the alert.labels object
+- Extract actual resource names
+- Regenerate that section using ACTUAL values from alert data
+- NEVER output generic template text
+
 🚨 CRITICAL OUTPUT REQUIREMENT:
 RETURN ONLY VALID JSON - NO MARKDOWN, NO CODE BLOCKS
 DO NOT WRAP YOUR RESPONSE IN json TAGS
@@ -236,14 +277,36 @@ Return ONLY this JSON structure:
 ],
 "knowledge_base_matches": [
 {
-"alert": "<alert name or 'none'>",
+"alert": "<actual alert name from tool response>",
 "kb_entry": {
-"root_causes": ["Based on alert type and previous incidents"],
-"diagnostic_commands": ["kubectl describe", "kubectl logs"],
-"immediate_actions": ["Check pod status", "Review recent changes"],
-"long_term_solutions": ["Update resource limits", "Fix application code"]
+"root_causes": [
+"ANALYZE alert labels and Stage 2 findings for SPECIFIC root causes",
+"MUST include actual pod/deployment/hpa/namespace names from alert.labels",
+"Example for KubeHpaMaxedOut: HPA {hpa_name} maxed at {replicas} in {namespace}",
+"Example for OOMKilled: Pod {pod} memory {used} exceeds limit {limit} in {ns}",
+"NEVER use generic 'Based on alert type and previous incidents'"
+],
+"diagnostic_commands": [
+"GENERATE SPECIFIC commands using ACTUAL resource names from alert.labels",
+"MUST reference alert.labels.pod, alert.labels.namespace, etc.",
+"Example: kubectl describe hpa {hpa_name} -n {namespace}",
+"Example: kubectl top pod {pod_name} -n {namespace}",
+"NEVER use generic 'kubectl describe' without actual resource names"
+],
+"immediate_actions": [
+"ANALYZE alert context for SPECIFIC actions with ACTUAL values",
+"Example for HPA maxed: Increase HPA maxReplicas from {N} to {M} for {hpa}",
+"Example for OOMKilled: Increase memory limit from {X}Gi to {Y}Gi for {pod}",
+"NEVER use generic 'Check pod status' or 'Review recent changes'"
+],
+"long_term_solutions": [
+"SUGGEST SPECIFIC long-term fixes based on root cause",
+"Example for HPA: Implement custom metrics auto-scaling for {deployment}",
+"Example for memory: Profile {service} for memory leaks in {component}",
+"NEVER use generic 'Update resource limits' or 'Fix application code'"
+]
 },
-"applicability_score": <0.0-1.0 based on match or 0>
+"applicability_score": <calculate based on alert-to-stage2 correlation>
 }
 ],
 "alert_patterns": {
