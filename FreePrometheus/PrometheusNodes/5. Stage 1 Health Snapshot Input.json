@@ -1,13 +1,13 @@
 [
   {
-    "timestamp": "2025-12-18T10:20:23.970Z",
+    "timestamp": "2025-12-18T11:21:07.440Z",
     "source": {
       "type": "manual",
       "priority": "normal"
     },
     "analysisParams": {
-      "startTime": 1766049623,
-      "endTime": 1766053223,
+      "startTime": 1766053267,
+      "endTime": 1766056867,
       "namespaces": [
         "bstp-cms-global-production",
         "bstp-cms-prod-v3",
@@ -42,20 +42,20 @@
     "forceDeepAnalysis": false,
     "metadata": {
       "workflowId": "ysMD5nc5K6RCPF0Q",
-      "executionId": "7182",
+      "executionId": "7202",
       "orchestratorId": null,
-      "requestId": "req-1766053223970"
+      "requestId": "req-1766056867440"
     },
     "_context": {
-      "contextId": "ctx-1766053223970-o67gn3tod",
-      "createdAt": "2025-12-18T10:20:23.970Z",
+      "contextId": "ctx-1766056867440-vifo7a247",
+      "createdAt": "2025-12-18T11:21:07.440Z",
       "source": {
         "type": "manual",
         "priority": "normal"
       },
       "initialParams": {
-        "startTime": 1766049623,
-        "endTime": 1766053223,
+        "startTime": 1766053267,
+        "endTime": 1766056867,
         "namespaces": [
           "bstp-cms-global-production",
           "bstp-cms-prod-v3",
@@ -90,375 +90,129 @@
       "forceDeepAnalysis": false,
       "workflowMetadata": {
         "workflowId": "ysMD5nc5K6RCPF0Q",
-        "executionId": "7182",
+        "executionId": "7202",
         "orchestratorId": null,
-        "requestId": "req-1766053223970"
+        "requestId": "req-1766056867440"
       },
       "stageResults": {},
       "decisions": {},
       "debug": {
         "contextVersion": "1.0",
-        "createdBy": "Unified Entry Point"
-      }
+        "createdBy": "Unified Entry Point",
+        "knowledgeBaseEnriched": true,
+        "alertNameFound": "none",
+        "alertCategory": "UNKNOWN",
+        "knowledgeBaseMatched": false,
+        "totalKnowledgeBaseEntries": 42,
+        "csvEnhanced": true,
+        "kbVersion": "2.0-CSV-Enhanced"
+      },
+      "requiredMetrics": [
+        "up",
+        "kube_node_status_condition"
+      ],
+      "cascadeCheckPoints": [
+        "general_health"
+      ],
+      "troubleshootingGuidance": [
+        "Check general cluster health",
+        "Review recent changes"
+      ],
+      "alertKnowledgeEnriched": false,
+      "usingGenericKnowledge": true,
+      "csvDataAvailable": true,
+      "alertCategory": "UNKNOWN"
     },
-    "_alertKB": {
-      "loaded": true,
-      "totalAlerts": 8,
-      "severityBreakdown": {
-        "blocker": 2,
-        "critical": 3,
-        "high": 1,
-        "medium": 1,
-        "warning": 1
-      },
-      "loadedAt": "2025-12-18T10:20:23.979Z"
-    },
-    "_alertKBData": {
-      "etcdInsufficientMembers": {
-        "severity": "blocker",
-        "description": "etcd cluster lost quorum",
-        "commonCauses": [
-          "AZ outage",
-          "EC2 instance failure",
-          "Network partition",
-          "Storage corruption"
-        ],
-        "troubleshootingSteps": [
-          "aws eks describe-cluster --name [cluster]",
-          "kubectl get ns -v=6",
-          "aws cloudwatch get-metric-data --metric-data-queries '{\"Id\":\"m1\",\"MetricStat\":{\"Metric\":{\"Namespace\":\"AWS/EKS\",\"MetricName\":\"EtcdMembers\"}}}'"
-        ],
-        "expectedResults": [
-          "API requests failing",
-          "AWS console shows etcd warnings",
-          "CloudWatch shows <3 members"
-        ],
-        "immediateActions": [
-          "IMMEDIATE AWS SUPPORT TICKET",
-          "Stop cluster changes",
-          "Prepare DR plan"
-        ],
-        "longTermSolutions": [
-          "Deploy multi-AZ etcd",
-          "Regular snapshots",
-          "Monitor etcd_health metrics"
-        ],
+    "knowledgeBase": {
+      "general": true,
+      "category": "UNKNOWN",
+      "availableAlerts": [
+        "etcdInsufficientMembers",
+        "etcdNoLeader",
+        "KubeAPIErrorBudgetBurn",
+        "etcdDatabaseQuotaLowSpace",
+        "etcdHighNumberOfLeaderChanges",
+        "etcdHighFsyncDurations",
+        "etcdHighCommitDurations",
+        "etcdHighNumberOfFailedProposals",
+        "etcdHighNumberOfFailedGRPCRequests",
+        "etcdGRPCRequestsSlow",
+        "etcdMemberCommunicationSlow",
+        "KubeNodeNotReady",
+        "KubeNodeUnreachable",
+        "KubeNodeMemoryPressure",
+        "NodeFilesystemSpaceFillingUp",
+        "NodeFilesystemAlmostOutOfSpace",
+        "NodeNetworkReceiveErrs",
+        "KubePodCrashLooping",
+        "KubePodNotReady",
+        "KubeDeploymentReplicasMismatch",
+        "KubeStatefulSetReplicasMismatch",
+        "KubeDeploymentRolloutStuck",
+        "AlertmanagerFailedToSendAlerts",
+        "TargetDown",
+        "PrometheusTargetDown",
+        "AlertmanagerClusterDown",
+        "KubePersistentVolumeFillingUp",
+        "KubePersistentVolumeErrors",
+        "VolumeAttachmentStuck",
+        "NodeNetworkTransmitErrs",
+        "NodeHighNumberConntrackEntriesUsed",
+        "KubeAPIDown",
+        "KubeProxyDown",
+        "KubeAPITerminatedRequests",
+        "KubeletClientCertificateExpiration",
+        "KubeletServerCertificateExpiration",
+        "KubeJobFailed",
+        "KubeHpaMaxedOut",
+        "KubeDaemonSetNotScheduled",
+        "KubeDaemonSetRolloutStuck",
+        "Watchdog",
+        "InfoInhibitor"
+      ],
+      "totalAvailableAlerts": 42,
+      "categoryKnowledge": {
         "requiredMetrics": [
-          "etcd_server_has_leader",
-          "etcd_cluster_size"
+          "up",
+          "kube_node_status_condition"
         ],
         "cascadeCheckPoints": [
-          "api_server_operations",
-          "cluster_state_changes"
-        ]
-      },
-      "etcdNoLeader": {
-        "severity": "blocker",
-        "description": "etcd cluster has no leader",
-        "commonCauses": [
-          "Network partitions",
-          "etcd process crashes",
-          "Clock skew",
-          "Storage corruption"
+          "general_health"
         ],
         "troubleshootingSteps": [
-          "aws eks describe-cluster --name [cluster]",
-          "kubectl get --raw /metrics | grep etcd_server_has_leader",
-          "aws cloudwatch get-metric-data --metric-data-queries '{\"Id\":\"m1\",\"MetricStat\":{\"Metric\":{\"Namespace\":\"AWS/EKS\",\"MetricName\":\"EtcdLeaderChanges\"}}}'"
-        ],
-        "expectedResults": [
-          "etcd_server_has_leader=0",
-          "High leader change rate",
-          "API server unresponsive"
-        ],
-        "immediateActions": [
-          "IMMEDIATE AWS SUPPORT",
-          "Stop all etcd writes",
-          "Prepare cluster restore"
-        ],
-        "longTermSolutions": [
-          "NTP time sync across nodes",
-          "Regular etcd health checks",
-          "Multi-AZ deployment"
-        ],
-        "requiredMetrics": [
-          "etcd_server_has_leader",
-          "etcd_server_leader_changes"
-        ],
-        "cascadeCheckPoints": [
-          "api_server_operations",
-          "cluster_operations"
+          "Check general cluster health",
+          "Review recent changes"
         ]
       },
-      "KubeAPIErrorBudgetBurn": {
-        "severity": "critical",
-        "description": "API server error rate >5% for 15min",
-        "commonCauses": [
-          "etcd performance issues",
-          "Excessive LIST requests",
-          "AWS control plane problems",
-          "Client throttling"
-        ],
-        "troubleshootingSteps": [
-          "kubectl get --raw /metrics | grep 'apiserver_request_total{code=~\"5..\"}'",
-          "kubectl get --raw /metrics | grep 'apiserver_request_count'",
-          "kubectl get --raw /metrics | grep 'etcd_request_duration_seconds'"
-        ],
-        "expectedResults": [
-          "5xx errors >5%",
-          "Single client >30% traffic",
-          "etcd latency >1s"
-        ],
-        "immediateActions": [
-          "Identify abusive clients",
-          "Scale API server",
-          "Open AWS case",
-          "Add rate limits"
-        ],
-        "longTermSolutions": [
-          "Implement client QPS limits",
-          "Optimize LIST queries",
-          "Add watch bookmarks"
-        ],
-        "requiredMetrics": [
-          "apiserver_request_total",
-          "apiserver_request_duration"
-        ],
-        "cascadeCheckPoints": [
-          "cluster_operations",
-          "kubectl_access"
-        ]
-      },
-      "KubeNodeNotReady": {
-        "severity": "critical",
-        "description": "Worker node unavailable >5min",
-        "commonCauses": [
-          "Kubelet process down",
-          "Instance terminated",
-          "Network loss",
-          "Resource exhaustion"
-        ],
-        "troubleshootingSteps": [
-          "kubectl get nodes -o wide",
-          "kubectl describe node [node]",
-          "aws ec2 describe-instances --instance-ids [id]",
-          "ssh [node] systemctl status kubelet"
-        ],
-        "expectedResults": [
-          "Node status \"NotReady\"",
-          "\"NodeLost\" events",
-          "EC2 instance stopped",
-          "Kubelet inactive"
-        ],
-        "immediateActions": [
-          "Drain node (kubectl drain)",
-          "Terminate instance",
-          "Scale up replacement"
-        ],
-        "longTermSolutions": [
-          "Implement node auto-repair",
-          "Configure cluster autoscaler",
-          "Node health checks"
-        ],
-        "requiredMetrics": [
-          "kube_node_status_condition",
-          "kubelet_up"
-        ],
-        "cascadeCheckPoints": [
-          "node_workloads",
-          "cluster_capacity",
-          "pod_scheduling"
-        ]
-      },
-      "KubePodCrashLooping": {
-        "severity": "critical",
-        "description": "Pod repeatedly crashes after starting",
-        "commonCauses": [
-          "Application bugs",
-          "Missing configs/secrets",
-          "Resource limits exceeded",
-          "Invalid probe settings"
-        ],
-        "troubleshootingSteps": [
-          "kubectl logs [pod] --previous",
-          "kubectl describe pod [pod]",
-          "kubectl get events --field-selector involvedObject.name=[pod]",
-          "kubectl top pod [pod]"
-        ],
-        "expectedResults": [
-          "Logs show application errors",
-          "RestartCount > 5",
-          "OOMKilled/ExitCode in status",
-          "FailedScheduling events"
-        ],
-        "immediateActions": [
-          "Rollback deployment",
-          "Increase memory limits",
-          "Fix probe configuration",
-          "Check secret mounts"
-        ],
-        "longTermSolutions": [
-          "Implement CI/CD health checks",
-          "Add resource quotas",
-          "Configure proper liveness probes"
-        ],
-        "requiredMetrics": [
-          "kube_pod_container_status_restarts_total",
-          "kube_pod_status_phase"
-        ],
-        "cascadeCheckPoints": [
-          "service_availability",
-          "deployment_health",
-          "application_performance"
-        ]
-      },
-      "KubePodNotReady": {
-        "severity": "high",
-        "description": "Pod not ready for >5min",
-        "commonCauses": [
-          "Readiness probe failures",
-          "Startup probe too short",
-          "Dependency issues",
-          "Node problems"
-        ],
-        "troubleshootingSteps": [
-          "kubectl get pod [pod] -o yaml | grep -A10 readinessProbe",
-          "kubectl logs [pod] -c [container]",
-          "kubectl describe node [node]",
-          "kubectl get events --sort-by=.metadata.creationTimestamp"
-        ],
-        "expectedResults": [
-          "Readiness probe failures",
-          "\"NotReady\" status",
-          "Node memory pressure",
-          "Dependency connection errors"
-        ],
-        "immediateActions": [
-          "Adjust probe timeouts",
-          "Check dependency services",
-          "Drain problem nodes",
-          "Restart pod"
-        ],
-        "longTermSolutions": [
-          "Implement pod disruption budgets",
-          "Configure pre-stop hooks",
-          "Dependency health checks"
-        ],
-        "requiredMetrics": [
-          "kube_pod_status_ready",
-          "kube_pod_container_status_ready"
-        ],
-        "cascadeCheckPoints": [
-          "service_endpoints",
-          "load_balancer_targets",
-          "traffic_routing"
-        ]
-      },
-      "KubeHpaMaxedOut": {
-        "severity": "medium",
-        "description": "HPA at maximum replica count",
-        "commonCauses": [
-          "High sustained load",
-          "Insufficient cluster capacity",
-          "HPA max replicas too low",
-          "Metrics server issues"
-        ],
-        "troubleshootingSteps": [
-          "Check HPA status",
-          "Review current metrics",
-          "Check cluster capacity",
-          "Verify metrics server"
-        ],
-        "expectedResults": [
-          "Load within acceptable range",
-          "HPA scaling normally",
-          "Sufficient cluster capacity"
-        ],
-        "immediateActions": [
-          "Increase max replicas temporarily",
-          "Add cluster capacity",
-          "Check metrics server",
-          "Review scaling policies"
-        ],
-        "longTermSolutions": [
-          "Capacity planning",
-          "Custom metrics scaling",
-          "Predictive scaling"
-        ],
-        "requiredMetrics": [
-          "kube_horizontalpodautoscaler_status_current_replicas",
-          "kube_horizontalpodautoscaler_spec_max_replicas"
-        ],
-        "cascadeCheckPoints": [
-          "service_capacity",
-          "application_performance",
-          "user_experience"
-        ]
-      },
-      "KubeCPUOvercommit": {
-        "severity": "warning",
-        "description": "CPU overcommit on cluster",
-        "commonCauses": [
-          "Too many pods scheduled",
-          "CPU requests too low",
-          "Lack of resource quotas",
-          "Insufficient node capacity"
-        ],
-        "troubleshootingSteps": [
-          "kubectl top nodes",
-          "kubectl describe nodes | grep -A5 Allocated",
-          "kubectl get pods --all-namespaces -o json | jq '.items[].spec.containers[].resources.requests.cpu'",
-          "kubectl get resourcequotas --all-namespaces"
-        ],
-        "expectedResults": [
-          "CPU requests > 80% of allocatable",
-          "Many pods with minimal requests",
-          "No resource quotas defined"
-        ],
-        "immediateActions": [
-          "Set resource quotas",
-          "Right-size pod requests",
-          "Add nodes to cluster",
-          "Enable cluster autoscaler"
-        ],
-        "longTermSolutions": [
-          "Implement resource quotas per namespace",
-          "Regular capacity planning",
-          "Pod resource optimization"
-        ],
-        "requiredMetrics": [
-          "kube_node_status_allocatable",
-          "kube_pod_container_resource_requests"
-        ],
-        "cascadeCheckPoints": [
-          "cluster_capacity",
-          "scheduling_decisions",
-          "performance_throttling"
-        ]
-      }
+      "message": "No alert specified",
+      "enrichedAt": "2025-12-18T11:21:07.454Z",
+      "csvEnhanced": false,
+      "suggestedSimilarAlerts": []
     },
     "_kbStats": {
-      "totalEntries": 8,
+      "totalEntries": 42,
       "severityBreakdown": {
-        "blocker": 2,
-        "critical": 3,
-        "high": 1,
-        "medium": 1,
-        "warning": 1
+        "blocker": 3,
+        "critical": 19,
+        "warning": 7,
+        "high": 8,
+        "medium": 3,
+        "info": 2
       },
-      "loadedAt": "2025-12-18T10:20:23.979Z"
+      "csvEnhanced": true,
+      "loadedAt": "2025-12-18T11:21:07.455Z"
     },
-    "contextId": "ctx-1766053223970-o67gn3tod",
+    "contextId": "ctx-1766056867440-vifo7a247",
     "contextData": {
-      "contextId": "ctx-1766053223970-o67gn3tod",
-      "createdAt": "2025-12-18T10:20:23.970Z",
+      "contextId": "ctx-1766056867440-vifo7a247",
+      "createdAt": "2025-12-18T11:21:07.440Z",
       "source": {
         "type": "manual",
         "priority": "normal"
       },
       "initialParams": {
-        "startTime": 1766049623,
-        "endTime": 1766053223,
+        "startTime": 1766053267,
+        "endTime": 1766056867,
         "namespaces": [
           "bstp-cms-global-production",
           "bstp-cms-prod-v3",
@@ -493,16 +247,38 @@
       "forceDeepAnalysis": false,
       "workflowMetadata": {
         "workflowId": "ysMD5nc5K6RCPF0Q",
-        "executionId": "7182",
+        "executionId": "7202",
         "orchestratorId": null,
-        "requestId": "req-1766053223970"
+        "requestId": "req-1766056867440"
       },
       "stageResults": {},
       "decisions": {},
       "debug": {
         "contextVersion": "1.0",
-        "createdBy": "Unified Entry Point"
-      }
+        "createdBy": "Unified Entry Point",
+        "knowledgeBaseEnriched": true,
+        "alertNameFound": "none",
+        "alertCategory": "UNKNOWN",
+        "knowledgeBaseMatched": false,
+        "totalKnowledgeBaseEntries": 42,
+        "csvEnhanced": true,
+        "kbVersion": "2.0-CSV-Enhanced"
+      },
+      "requiredMetrics": [
+        "up",
+        "kube_node_status_condition"
+      ],
+      "cascadeCheckPoints": [
+        "general_health"
+      ],
+      "troubleshootingGuidance": [
+        "Check general cluster health",
+        "Review recent changes"
+      ],
+      "alertKnowledgeEnriched": false,
+      "usingGenericKnowledge": true,
+      "csvDataAvailable": true,
+      "alertCategory": "UNKNOWN"
     },
     "queryHelpers": {
       "namespaceFilter": "namespace=~\"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod\"",
@@ -517,6 +293,6 @@
     "namespaceRegex": "bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod",
     "serviceRegex": ".*",
     "_inputPrepared": true,
-    "_preparedAt": "2025-12-18T10:20:23.989Z"
+    "_preparedAt": "2025-12-18T11:21:07.465Z"
   }
 ]

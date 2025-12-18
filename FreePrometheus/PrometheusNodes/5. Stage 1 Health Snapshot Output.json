@@ -2,11 +2,11 @@
   {
     "output": {
       "stage": "health_snapshot",
-      "timestamp": "2023-11-17T02:48:24.162Z",
+      "timestamp": "2023-11-17T12:09:07.453Z",
       "overall_status": "degraded",
       "proceed_to_stage2": true,
-      "urgency": "high",
-      "reason": "Active alerts detected, indicating potential issues in the cluster.",
+      "urgency": "medium",
+      "reason": "Active alerts detected despite no issues in quick cluster health check.",
       "alerts": {
         "total": 6,
         "critical": 0,
@@ -26,19 +26,19 @@
       "forceDeepAnalysis": false,
       "overridden": false,
       "_context": {
-        "contextId": "ctx-1766053223970-o67gn3tod",
+        "contextId": "ctx-1766056867440-vifo7a247",
         "contextPreserved": true,
         "receivedFromSource": "manual",
         "priority": "normal",
         "timeRangeUsed": {
-          "start": 1766049623,
-          "end": 1766053223
+          "start": 1766053267,
+          "end": 1766056867
         }
       },
       "_debug": {
         "nodeType": "Stage 1: Health Snapshot",
-        "processedAt": "2023-11-17T02:48:24.162Z",
-        "contextId": "ctx-1766053223970-o67gn3tod"
+        "processedAt": "2023-11-17T12:09:07.453Z",
+        "contextId": "ctx-1766056867440-vifo7a247"
       }
     }
   }
