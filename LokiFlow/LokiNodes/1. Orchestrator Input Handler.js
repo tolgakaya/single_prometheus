@@ -38,10 +38,15 @@ if (input.requestId && input.userMessage && !input.orchestratorId) {
       depth: isCritical ? 'deep' : 'standard'
     },
     
-    // Search parameters
+    // Search parameters - MULTI-NAMESPACE SUPPORT (12 production namespaces)
     searchParams: {
-      namespaces: ['etiyamobile-production'],
-      services: (input.userMessage.match(/(payment|order|user|notification|cpq|batch)/gi) || []).map(s => s.toLowerCase())
+      namespaces: [
+        'bstp-cms-global-production', 'bstp-cms-prod-v3',
+        'em-global-prod-3pp', 'em-global-prod-eom', 'em-global-prod-flowe', 'em-global-prod',
+        'em-prod-3pp', 'em-prod-eom', 'em-prod-flowe', 'em-prod',
+        'etiyamobile-production', 'etiyamobile-prod'
+      ],
+      services: (input.userMessage.match(/(payment|order|user|notification|cpq|batch|rim|pcm|ntf|crm|eom|fstp)/gi) || []).map(s => s.toLowerCase())
     },
     
     // Context - IMPORTANT: Add forceDeepAnalysis here too

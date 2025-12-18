@@ -24,6 +24,18 @@ Source: {{$json.context.source}}
 Critical Services: {{$json.serviceDependencies?.metadata?.mostCritical?.slice(0,3).map(s => s.service).join(',') || 'N/A'}}
 Total Services: {{$json.serviceDependencies?.metadata?.totalServices || 0}}
 
+## 🌐 MULTI-NAMESPACE CONTEXT:
+This analysis covers 12 production namespaces:
+- BSTP CMS: bstp-cms-global-production, bstp-cms-prod-v3
+- EM Global: em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod
+- EM Prod: em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod
+- Etiya Mobile: etiyamobile-production, etiyamobile-prod
+
+**IMPORTANT**: Tool results include data from ALL namespaces.
+- Error rates are aggregated across all namespaces
+- Top error services will show namespace information
+- Pay attention to which namespace each service belongs to
+
 ## 📊 STATUS CRITERIA (from tool results):
 0-0.1% → healthy → stage2=FALSE
 0.1-1% → normal → stage2=FALSE  

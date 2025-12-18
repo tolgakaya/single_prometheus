@@ -2,14 +2,16 @@ A) Stage 1: Quick Health Check
 
 Kullandığı http toolları ve parametreleri
 
+MULTI-NAMESPACE SUPPORT: All queries analyze 12 production namespaces
+
 1. Error Rate Check
-sum(rate({namespace="etiyamobile-production"} | json | __error__="" | log_level="ERROR" [5m])) by (service_name)
+sum(rate({namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} | json | __error__="" | log_level="ERROR" [5m])) by (service_name, namespace)
 
 2. Service Health Check
-sum by (pod) (rate({namespace="etiyamobile-production"} |~ "ERROR|WARN|FATAL" [5m]))
+sum by (pod, namespace) (rate({namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} |~ "ERROR|WARN|FATAL" [5m]))
 
 3. Critical Errors Check
-{namespace="etiyamobile-production"} |~ "(FATAL|PANIC|fatal|panic)"
+{namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} |~ "(FATAL|PANIC|fatal|panic)"
 
 
 B) Anomaly Detection
@@ -17,16 +19,16 @@ B) Anomaly Detection
 Kullandığı http toolları ve parametreleri
 
 1. Anomaly - Moving Average
-rate({namespace="etiyamobile-production"} |= "error"[1m])
+rate({namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} |= "error"[1m])
 
 2. Anomaly - Standard Deviation
-rate({namespace="etiyamobile-production"} |~ "error" [1m])
+rate({namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} |~ "error" [1m])
 
 3. Anomaly - Spike Detection
-rate({namespace="etiyamobile-production"} |~ "error" [1m])
+rate({namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} |~ "error" [1m])
 
 4. Anomaly - Rate Change
-rate({namespace="etiyamobile-production"} |~ "error" [2m])
+rate({namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} |~ "error" [2m])
 
 
 C) Stage 2: Pattern Analysis
@@ -34,38 +36,38 @@ C) Stage 2: Pattern Analysis
 Kullandığı http toolları ve parametreleri
 
 1. Thread Correlation Analyzer
-sum by (process_thread_name, service_name, error_type) (   count_over_time(     {namespace="etiyamobile-production"}      | json      | process_thread_name=~"taskScheduler-.*|Thread-.*"      | log_level="ERROR"      [1h]   ) )
+sum by (process_thread_name, service_name, namespace, error_type) (   count_over_time(     {namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"}      | json      | process_thread_name=~"taskScheduler-.*|Thread-.*"      | log_level="ERROR"      [1h]   ) )
 
 2. Service Error Distribution
-sum(rate({namespace="etiyamobile-production"} |~ "error" [1m])) by (service_name,pod)
+sum(rate({namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} |~ "error" [1m])) by (service_name,pod,namespace)
 
 3. Cascade Timeline Reconstructor
-{namespace="etiyamobile-production"} | json | __error__="" | log_level=~"ERROR|FATAL|WARN" | line_format "{{.timestamp}}|{{.service_name}}|{{.process_thread_name}}|{{.error_type}}|{{.message}}"
+{namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} | json | __error__="" | log_level=~"ERROR|FATAL|WARN" | line_format "{{.timestamp}}|{{.namespace}}|{{.service_name}}|{{.process_thread_name}}|{{.error_type}}|{{.message}}"
 
 4. Request ID Correlation
-{namespace="etiyamobile-production"} |~ "trace_id|traceID|correlation_id" |~ "error"
+{namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} |~ "trace_id|traceID|correlation_id" |~ "error"
 
 5. Error Pattern Analyzer
-topk(20,   sum by (error) (     count_over_time(       {namespace="etiyamobile-production"}        |~ "error"        | json        | error!=""        [5m]     )   ) )
+topk(20,   sum by (error, namespace) (     count_over_time(       {namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"}        |~ "error"        | json        | error!=""        [5m]     )   ) )
 
 
 D) Stage 3: Root Cause Analysis
 
 1. Stack Trace Pattern Analyzer
-{namespace="etiyamobile-production"} | json | error_stack_trace!="" | line_format "{{.service_name}}|||{{.error_type}}|||{{.error_stack_trace}}"|
+{namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} | json | error_stack_trace!="" | line_format "{{.namespace}}|||{{.service_name}}|||{{.error_type}}|||{{.error_stack_trace}}"|
 
 2. Integration Health Monitor
-sum by (target) (count_over_time({namespace="etiyamobile-production"} | json | error_message=~".*(eca-t4|domain-config-t4).*401.*" | regexp "(?P<target>eca-t4|[a-zA-Z-]+-config-t4)" [5m]))
+sum by (target, namespace) (count_over_time({namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} | json | error_message=~".*(eca-t4|domain-config-t4).*401.*" | regexp "(?P<target>eca-t4|[a-zA-Z-]+-config-t4)" [5m]))
 
 3. Slow Query Logs
-{namespace="etiyamobile-production"} |~ "(slow query|execution time).*(\\d{4,}ms|[2-9]\\d{3}ms)"
+{namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} |~ "(slow query|execution time).*(\\d{4,}ms|[2-9]\\d{3}ms)"
 
 4. DB Connection Analysis
-{namespace="etiyamobile-production",pod=~".*db.*|.*database.*|.*mysql.*|.*postgres.*"} |~ "connection|timeout|deadlock"
+{namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod",pod=~".*db.*|.*database.*|.*mysql.*|.*postgres.*|.*mariadb.*"} |~ "connection|timeout|deadlock"
 
 5. Memory Dump Analysis
-{namespace="etiyamobile-production"} |~ "OOM|OutOfMemory|memory limit|heap space"|
+{namespace=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"} |~ "OOM|OutOfMemory|memory limit|heap space"|
 
 6. Pod Restart Logs
- {job="kube-events"} |~ "namespace=\"etiyamobile-production\"" |~ "Restarted|CrashLoopBackOff|OOMKilled"
+{job="kube-events"} |~ "namespace=~\"(bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod)\"" |~ "Restarted|CrashLoopBackOff|OOMKilled"
  

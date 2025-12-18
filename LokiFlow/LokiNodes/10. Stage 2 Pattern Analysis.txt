@@ -11,6 +11,19 @@ Stage1: {{$json.stage1_status}}
 Scores: MA{{$json.anomaly_scores.moving_average}} SD{{$json.anomaly_scores.std_deviation}} RC{{$json.anomaly_scores.rate_change}} SR{{$json.anomaly_scores.spike_ratio}}
 Critical: {{$node["Service Dependency Loader"].json.serviceDependencies?.metadata?.mostCritical?.slice(0,3).map(s => s.service).join(',') || 'N/A'}}
 
+## 🌐 MULTI-NAMESPACE CONTEXT:
+This analysis covers 12 production namespaces:
+- BSTP CMS: bstp-cms-global-production, bstp-cms-prod-v3
+- EM Global: em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod
+- EM Prod: em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod
+- Etiya Mobile: etiyamobile-production, etiyamobile-prod
+
+**IMPORTANT**: Pattern analysis spans ALL namespaces.
+- Cascade Timeline tool returns: timestamp|namespace|service|thread|error|message
+- Error cascades can propagate ACROSS namespaces (e.g., em-global-prod → em-prod)
+- Include namespace information in cascade_path and service correlations
+- Cross-namespace cascades indicate inter-namespace dependencies
+
 ## 🔍 DETECT:
 Auth: 401/Invalid client secret/unauthorized_client
 Service: WebClientResponseException/timeout/503

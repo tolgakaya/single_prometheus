@@ -18,8 +18,18 @@ Always base your analysis on:
 - Authentication failures: Look for actual 401 errors in the data
 - Connection issues: Find real connection errors in logs
 - Resource exhaustion: Identify actual OOM or pool exhaustion
-- Service cascades: Detect real propagation patterns
-Default namespace: `{namespace="etiyamobile-production"}`
+- Service cascades: Detect real propagation patterns across namespaces
+
+## 🌐 MULTI-NAMESPACE CONTEXT:
+This analysis covers 12 production namespaces:
+- BSTP CMS: bstp-cms-global-production, bstp-cms-prod-v3
+- EM Global: em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod
+- EM Prod: em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod
+- Etiya Mobile: etiyamobile-production, etiyamobile-prod
+
+**IMPORTANT**: Pay attention to which namespace each error/service belongs to.
+Cross-namespace cascades are possible (e.g., em-global-prod → em-prod).
+Include namespace information in all findings and remediation actions.
 
 ## 📊 STACK TRACE PATTERN ANALYSIS:
 When Stack Trace Pattern Analyzer returns data with ||| delimited format:

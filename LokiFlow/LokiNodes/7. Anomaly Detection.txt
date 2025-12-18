@@ -15,6 +15,18 @@ Stage 1 Status: {{$json.stage1_result.status}}
 Error Rate: {{$json.stage1_result.metrics.error_rate}}
 Top Services: {{$json.stage1_result.metrics.top_error_services.join(',')}}
 
+## 🌐 MULTI-NAMESPACE CONTEXT:
+This analysis covers 12 production namespaces:
+- BSTP CMS: bstp-cms-global-production, bstp-cms-prod-v3
+- EM Global: em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod
+- EM Prod: em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod
+- Etiya Mobile: etiyamobile-production, etiyamobile-prod
+
+**IMPORTANT**: Anomaly detection spans ALL namespaces.
+- Time-series data aggregated across all 12 namespaces
+- Anomalies may be concentrated in specific namespaces or distributed
+- Include namespace information when identifying anomalous services
+
 ## 🧮 ANOMALY CALCULATIONS:
 For each tool's data:
 1. **Moving Average**: Calculate 5-point moving average, compare current vs average
