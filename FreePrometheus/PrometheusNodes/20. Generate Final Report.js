@@ -666,7 +666,7 @@ function generateMarkdownReport(allStageData, masterContext, config) {
   return html;
 }
 
-// Generate Enhanced Jira Description (Rich HTML format like File 26)
+// Generate Enhanced Jira Description (Rich HTML format matching File 26 - Alert Listener Flow)
 function generateEnhancedJiraDescription(allStageData, masterContext, analysisTimeline) {
   const severity = safeGet(allStageData, 'primaryDiagnosis.severity', 'unknown');
   const style = getSeverityStyle(severity);
@@ -699,198 +699,231 @@ function generateEnhancedJiraDescription(allStageData, masterContext, analysisTi
 
   // Evidence from Stage 4
   const confirmedIssues = safeGet(allStageData, 'stage4.diagnostic_summary.confirmed_issues', []);
-  const evidenceList = confirmedIssues.map(ci => ci.evidence || {});
+  const primaryIssue = confirmedIssues.length > 0 ? confirmedIssues[0] : {};
+  const evidenceList = primaryIssue.evidence || [];
 
-  let html = `
-<div style="border: 2px solid #d32f2f; border-radius: 8px; margin: 10px 0; background: #ffebee;">
-  <div style="background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;">
-    🚨 INCIDENT SUMMARY
-  </div>
-  <div style="padding: 15px; background: white; border-radius: 0 0 6px 6px;">
-    <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
-      <tr><td style="font-weight: bold; width: 130px; padding: 5px;">Alert:</td><td style="padding: 5px;">${alertName}</td></tr>
-      <tr><td style="font-weight: bold; padding: 5px;">Severity:</td><td style="padding: 5px;"><span style="color: ${style.text}; font-weight: bold;">${style.icon} ${severity.toUpperCase()}</span></td></tr>
-      <tr><td style="font-weight: bold; padding: 5px;">Service:</td><td style="padding: 5px;">${deployment}</td></tr>
-      <tr><td style="font-weight: bold; padding: 5px;">Namespace:</td><td style="padding: 5px;">${namespace}</td></tr>
-      <tr><td style="font-weight: bold; padding: 5px;">Detection:</td><td style="padding: 5px;">${alertStartDate}</td></tr>
-      <tr><td style="font-weight: bold; padding: 5px;">Duration:</td><td style="padding: 5px;">${durationMinutes} minutes</td></tr>
-    </table>
-  </div>
-</div>
+  // Get pod diagnostics details for evidence section
+  const podDiagnostics = safeGet(allStageData, 'stage4.diagnostics_executed.0.findings', {});
+  const podStatus = podDiagnostics.pod_status || {};
+  const resourceUsage = podDiagnostics.resource_usage || {};
+  const errorLogs = podDiagnostics.error_logs || [];
+  const events = podDiagnostics.events || [];
 
-<h2 style="color: #1976d2; margin-top: 20px;">📊 INCIDENT DETAILS</h2>
-
-<div style="border: 1px solid #e0e0e0; border-radius: 6px; margin: 10px 0; overflow: hidden;">
-  <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
-    <tr style="background: #f5f5f5;">
-      <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #e0e0e0;">Field</td>
-      <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #e0e0e0;">Details</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;">Alert Type</td>
-      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;">${alertName}</td>
-    </tr>
-    <tr style="background: #fafafa;">
-      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;">Pod Name</td>
-      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;">${podName}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;">Deployment</td>
-      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;">${deployment}</td>
-    </tr>
-    <tr style="background: #fafafa;">
-      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;">Namespace</td>
-      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0; font-family: monospace;">${namespace}</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px;">Context ID</td>
-      <td style="padding: 8px; font-family: monospace; color: #666;">${masterContext.contextId}</td>
-    </tr>
-  </table>
-</div>
-
----
-
-<h2 style="color: #4caf50; margin-top: 25px;">📚 KNOWLEDGE BASE INTELLIGENCE</h2>
-
-<div style="border: 1px solid #4caf50; border-radius: 6px; margin: 10px 0; overflow: hidden;">
-  <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
-    <tr style="background: #e8f5e8;">
-      <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #4caf50;">KB Metric</td>
-      <td style="padding: 10px; font-weight: bold; border-bottom: 1px solid #4caf50;">Value</td>
-    </tr>
-    <tr>
-      <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;">Original Alert KB Entry</td>
-      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;"><span style="color: #f44336;">❌ Not Found</span></td>
-    </tr>
-    <tr style="background: #fafafa;">
-      <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;">Final Alert KB Entry</td>
-      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;"><span style="color: #f44336;">❌ Not Found</span></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;">KB Enhanced Correlation</td>
-      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;"><span style="color: #f44336;">❌ No</span></td>
-    </tr>
-    <tr style="background: #fafafa;">
-      <td style="padding: 8px; font-weight: bold; border-bottom: 1px solid #f0f0f0;">Enhanced KB Matches</td>
-      <td style="padding: 8px; border-bottom: 1px solid #f0f0f0;"><strong>0</strong></td>
-    </tr>
-    <tr>
-      <td style="padding: 8px; font-weight: bold;">KB-Guided Actions</td>
-      <td style="padding: 8px;"><strong>0</strong></td>
-    </tr>
-  </table>
-</div>
-
-`;
-
-  // Get KB insights for additional information (keep this for custom fields)
+  // KB insights
   const kbInsights = generateKnowledgeBaseInsights(allStageData);
   const hasKBEntry = kbInsights.kbEnhanced;
   const kbEntry = kbInsights.kbEntryDetails;
 
-  html += `
----
+  // Dynamic title based on alert type (matching File 26 getOncallTitle logic)
+  let dynamicTitle = `${severity.toUpperCase()} ${alertName}`;
+  if (alertName.includes('Crash') || alertName.includes('CrashLoop')) {
+    dynamicTitle = `🟠 HIGH POD CRASH LOOP: ${deployment}`;
+  } else if (alertName.includes('NodeNotReady')) {
+    dynamicTitle = `🔴 CRITICAL NODE NOT READY`;
+  } else if (alertName.includes('MemoryPressure') || alertName.includes('Memory')) {
+    dynamicTitle = `🟠 HIGH MEMORY USAGE: ${deployment}`;
+  } else if (alertName.includes('HpaMaxedOut')) {
+    dynamicTitle = `🟡 MEDIUM HPA MAXED OUT: ${deployment}`;
+  }
 
-## 🔍 ISSUE IDENTIFICATION
+  // Build symptoms list from various stage data
+  const symptoms = [];
+  if (deployment && deployment !== 'unknown-component') {
+    symptoms.push(`${deployment} service experiencing issues`);
+  }
+  if (alertName && alertName !== 'Unknown Alert') {
+    symptoms.push(`Alert: ${alertName}`);
+  }
+  if (podStatus.phase) {
+    symptoms.push(`Pod status: ${podStatus.phase}`);
+  }
+  if (podStatus.restart_count > 0) {
+    symptoms.push(`Pod restarting (Restart count: ${podStatus.restart_count})`);
+  }
+  if (resourceUsage.memory_used && resourceUsage.memory_limit) {
+    symptoms.push(`Memory: ${resourceUsage.memory_used}/${resourceUsage.memory_limit}`);
+  }
+  if (events.length > 0) {
+    symptoms.push(`Latest event: ${events[0].message} (${events[0].type})`);
+  }
+  if (symptoms.length === 0) {
+    symptoms.push(`Issue detected in ${deployment || 'service'}`);
+  }
 
-### ${issue}
+  // Build verification criteria
+  const successCriteria = [];
+  successCriteria.push({
+    check: "Check pod status",
+    command: `kubectl get pods -n ${namespace} | grep ${deployment}`,
+    expected: "STATUS: Running (all pods in running state)"
+  });
+  if (podName && podName !== 'unknown') {
+    successCriteria.push({
+      check: "Check service response",
+      command: `kubectl get svc -n ${namespace} | grep ${deployment}`,
+      expected: "Service available and responding"
+    });
+  }
+  successCriteria.push({
+    check: "Check for restarts",
+    command: `kubectl describe pod -l app=${deployment} -n ${namespace} | grep "Restart Count"`,
+    expected: "Restart Count: 0 (should not increase, no new restarts)"
+  });
 
-**Confidence Level**: ${(confidence * 100).toFixed(0)}%
+  // Generate KB guidance info
+  const kbInfo = hasKBEntry && kbEntry ? `
+**📚 Knowledge Base Guidance:**
+**Alert Category:** ${kbInsights.alertCategory} | **Urgency:** ${kbInsights.urgencyLevel} | **Cascade Risk:** ${kbInsights.cascadeRisk}
+${kbEntry.troubleshootingSteps ? `**Troubleshooting Steps:**\n${kbEntry.troubleshootingSteps.slice(0,3).map(step => `- ${step}`).join('\n')}` : ''}
+` : '';
 
-**Business Impact**: ${safeGet(allStageData, 'primaryDiagnosis.impact', 'Service disruption detected')}
+  // Build quick findings from Stage 1 data
+  const quickFindings = [];
+  const stage1QuickFindings = safeGet(allStageData, 'stage1.quick_findings', []);
 
-### 📊 EVIDENCE SUMMARY
-${evidenceList.length > 0 ? evidenceList.map((ev, idx) => `
-**Evidence ${idx + 1}:**
-- ${Object.keys(ev).map(key => `${key}: ${JSON.stringify(ev[key])}`).join('\n- ')}
-`).join('\n') : 'No detailed evidence available'}
+  // Use Stage 1 quick_findings if available, otherwise build from Stage 1 data
+  if (stage1QuickFindings.length > 0) {
+    quickFindings.push(...stage1QuickFindings);
+  } else {
+    // Build quick findings from available Stage 1 and Stage 2 data
+    if (podName && podName !== 'unknown' && podStatus.restart_count > 0) {
+      quickFindings.push(`Pod ${podName} is ${podStatus.last_termination?.reason === 'OOMKilled' ? 'crash looping due to OOM' : 'restarting'}.`);
+    }
 
----
+    const totalAlerts = safeGet(allStageData, 'stage1.alerts.total', 0);
+    const criticalAlerts = safeGet(allStageData, 'stage1.alerts.critical', 0);
+    if (totalAlerts > 1) {
+      quickFindings.push(`${totalAlerts} alerts detected (${criticalAlerts} critical).`);
+    } else if (totalAlerts === 1) {
+      quickFindings.push('No other alerts detected in the same namespace.');
+    }
 
-## 🕐 INCIDENT TIMELINE
+    const clusterHealth = safeGet(allStageData, 'stage1.overall_status', 'unknown');
+    if (clusterHealth === 'degraded') {
+      quickFindings.push('Cluster health is degraded due to pod instability.');
+    } else if (clusterHealth === 'critical') {
+      quickFindings.push('Cluster health is CRITICAL - immediate action required.');
+    }
 
-| Time | Stage | Finding | Status |
-|------|-------|---------|--------|
-${(analysisTimeline || []).map(entry =>
-  `| ${entry.time} | ${entry.stage} | ${entry.finding} | ${
-    entry.severity === 'critical' ? '🔴 Critical' :
-    entry.severity === 'warning' ? '🟡 Warning' :
-    entry.severity === 'success' ? '✅ Ready' :
-    '🔵 Info'
-  } |`
-).join('\n')}
+    // Add root cause hint if identified
+    if (confidence > 0.7) {
+      quickFindings.push(`Root cause identified with ${Math.round(confidence * 100)}% confidence: ${issue}`);
+    }
+  }
 
----
+  // Start building the rich HTML
+  let html = `
+<div style="font-family: Arial, sans-serif; max-width: 800px;">
+  <div style="background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%); color: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h1 style="margin: 0; font-size: 24px;">${dynamicTitle}</h1>
+  </div>
 
-## 📊 SLO IMPACT
+  <div style="border: 2px solid #0288d1; border-radius: 8px; margin: 15px 0; background: #e1f5fe;">
+    <div style="background: #0288d1; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;">
+      ⚡ QUICK FINDINGS
+    </div>
+    <div style="padding: 15px; background: white; border-radius: 0 0 6px 6px;">
+      ${quickFindings.length > 0 ? quickFindings.map(finding => `<div style="margin: 8px 0; padding-left: 10px;">• ${finding}</div>`).join('') : '<div style="margin: 8px 0; padding-left: 10px;">• Initial analysis in progress...</div>'}
+    </div>
+  </div>
 
-${sloStatus !== 'unknown' ? `
-- **Availability SLO**: ${sloCurrent} (Target: ${sloTarget})
-- **Status**: **${sloStatus.toUpperCase()}**
-` : '- SLO data not available'}
+  <div style="border: 2px solid #d32f2f; border-radius: 8px; margin: 15px 0; background: #ffebee;">
+    <div style="background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;">
+      🔥 SYMPTOMS (What's Happening)
+    </div>
+    <div style="padding: 15px; background: white; border-radius: 0 0 6px 6px;">
+      ${symptoms.map(symptom => `<div style="margin: 8px 0; padding-left: 10px;">• ${symptom}</div>`).join('')}
+    </div>
+  </div>
 
----
+  <div style="border: 2px solid #ff9800; border-radius: 8px; margin: 15px 0; background: #fff3e0;">
+    <div style="background: #ff9800; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;">
+      🔍 ROOT CAUSE (Why It's Happening)
+    </div>
+    <div style="padding: 15px; background: white; border-radius: 0 0 6px 6px;">
+      <p style="margin: 0 0 10px 0;"><strong>Root Cause:</strong> ${issue}</p>
 
-## 🚀 ACTION PLAN
+      <div style="background: #f5f5f5; padding: 10px; border-radius: 4px; margin-top: 10px;">
+        <strong>Evidence:</strong>
+        <div style="margin-top: 8px;">
+          • <strong>Pod Status:</strong> <code>${podStatus.phase || 'Unknown'}</code><br/>
+          • <strong>Last Error:</strong> ${podStatus.last_termination?.reason || 'None'} (Exit Code: ${podStatus.last_termination?.exit_code || 'N/A'})<br/>
+          • <strong>Memory Usage:</strong> ${resourceUsage.memory_used || 'N/A'} / ${resourceUsage.memory_limit || 'N/A'}<br/>
+          ${resourceUsage.cpu_used ? `• <strong>CPU Usage:</strong> ${resourceUsage.cpu_used}<br/>` : ''}
+          ${errorLogs.length > 0 ? `• <strong>Latest Error:</strong> ${errorLogs[0].message}<br/>` : ''}
+          ${events.length > 0 ? `• <strong>Latest Event:</strong> ${events[0].message} (${events[0].type})<br/>` : ''}
+        </div>
+        ${kbInfo}
+      </div>
+    </div>
+  </div>
 
-### 🔴 IMMEDIATE ACTIONS (Execute NOW)
+  <div style="border: 2px solid #4caf50; border-radius: 8px; margin: 15px 0; background: #e8f5e8;">
+    <div style="background: #4caf50; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;">
+      ✅ SOLUTION (What To Do)
+    </div>
+    <div style="padding: 15px; background: white; border-radius: 0 0 6px 6px;">
+      ${immediateActions.length > 0 ? immediateActions.map((action, idx) => `
+        <div style="border: 1px solid #ddd; border-radius: 6px; margin: 15px 0; padding: 15px; background: ${idx % 2 === 0 ? '#fafafa' : 'white'};">
+          <h4 style="margin: 0 0 10px 0; color: #d32f2f;">${idx + 1}. IMMEDIATE ACTION</h4>
+          <p style="margin: 10px 0;"><strong>Action Required:</strong> ${action.action || 'Execute remediation step'}</p>
+          <p style="margin: 10px 0;"><strong>Command:</strong></p>
+          <div style="background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;">
+            <code>${action.command || `kubectl rollout undo deployment/${deployment} -n ${namespace}`}</code>
+          </div>
+          <div style="margin-top: 10px;">
+            <span style="margin-right: 15px;">⏱️ <strong>Duration:</strong> ${action.estimated_time || '2-5 minutes'}</span>
+            <span style="margin-right: 15px;">⚠️ <strong>Risk:</strong> ${action.risk || 'low'}</span>
+            <div style="margin-top: 5px;">🎯 <strong>Expected Result:</strong> ${action.expected_outcome || 'Service restored to stable state'}</div>
+          </div>
+        </div>
+      `).join('') : '<p style="margin: 10px 0;">No immediate actions recommended at this time. Please investigate manually.</p>'}
+    </div>
+  </div>
 
-${immediateActions.length > 0 ? immediateActions.map((action, idx) => `
-#### ${idx + 1}. ${action.action || 'No action description'}
+  <div style="border: 2px solid #2196f3; border-radius: 8px; margin: 15px 0; background: #e3f2fd;">
+    <div style="background: #2196f3; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;">
+      📋 VERIFY SOLUTION EFFECTIVENESS
+    </div>
+    <div style="padding: 15px; background: white; border-radius: 0 0 6px 6px;">
+      ${successCriteria.map((criteria, idx) => `
+        <div style="border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 15px; background: ${idx % 2 === 0 ? '#f9f9f9' : 'white'};">
+          <h4 style="margin: 0 0 10px 0; color: #2196f3;">${idx + 1}. ${criteria.check}</h4>
+          <p style="margin: 10px 0;"><strong>Run Command:</strong></p>
+          <div style="background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;">
+            <code>${criteria.command}</code>
+          </div>
+          <p style="margin: 10px 0 0 0;"><strong>Expected Result:</strong> ${criteria.expected}</p>
+        </div>
+      `).join('')}
+    </div>
+  </div>
 
-**Command to execute:**
-\`\`\`bash
-${action.command || 'No command provided'}
-\`\`\`
+  <div style="border: 2px solid #607d8b; border-radius: 8px; margin: 15px 0; background: #eceff1;">
+    <div style="background: #607d8b; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;">
+      🔧 SUPPORT INFORMATION
+    </div>
+    <div style="padding: 15px; background: white; border-radius: 0 0 6px 6px;">
+      <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+        <tr><td style="font-weight: bold; width: 150px; padding: 5px;">Incident ID:</td><td style="padding: 5px; font-family: monospace;">${masterContext.contextId}</td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Timestamp:</td><td style="padding: 5px;">${new Date().toLocaleString('en-US')}</td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Namespace:</td><td style="padding: 5px; font-family: monospace;">${namespace}</td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Pod:</td><td style="padding: 5px; font-family: monospace;">${podName}</td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Deployment:</td><td style="padding: 5px; font-family: monospace;">${deployment}</td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Cluster Status:</td><td style="padding: 5px;">${allStageData.stage1?.overall_status || 'Unknown'}</td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Total Alerts:</td><td style="padding: 5px;">${allStageData.stage1?.alerts?.total || 0} (${allStageData.stage1?.alerts?.critical || 0} critical)</td></tr>
+      </table>
+      <div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-radius: 4px; border-left: 4px solid #ff9800;">
+        <strong>If issue persists:</strong> Escalate to Development Team
+      </div>
+    </div>
+  </div>
 
-${action.verification_command ? `**Verification command:**
-\`\`\`bash
-${action.verification_command}
-\`\`\`` : ''}
-
-- **Risk Level**: ${action.risk || 'Unknown'}
-- **Estimated Time**: ${action.estimated_time || 'Unknown'}
-- **Expected Outcome**: ${action.expected_outcome || 'Restore service functionality'}
-
----
-`).join('\n') : '- No immediate actions recommended'}
-
-${allStageData.stage5?.remediation_plan?.short_term_fixes?.length > 0 ? `
-### 🟠 SHORT-TERM FIXES (Within 24 hours)
-
-${allStageData.stage5.remediation_plan.short_term_fixes.map((fix, idx) => `
-${idx + 1}. **${fix.action || 'Fix not specified'}**
-   - Priority: ${fix.priority || 'Unknown'}
-   - Timeline: ${fix.timeline || 'Unknown'}
-`).join('\n')}
-` : ''}
-
-${allStageData.stage6?.prevention_actions?.length > 0 ? `
-### 🟢 PREVENTION ACTIONS (Long-term)
-
-${allStageData.stage6.prevention_actions.map((prev, idx) => `
-${idx + 1}. **[${prev.type}]** ${prev.action}
-   - Status: ${prev.status || 'Planned'}
-`).join('\n')}
-` : ''}
-
----
-
-## 📎 Additional Information
-
-- **Analysis Context ID**: ${masterContext.contextId}
-- **Alert Source**: ${alertName}
-${durationMinutes && durationMinutes !== 'NaN' ? `\n- **Analysis Completed**: ${new Date().toISOString()}` : ''}
-- **Total Analysis Time**: ${durationMinutes} minutes
-- **System**: KB-Aware Universal Correlation Engine v1.0 (Hybrid)
-- **KB Integration**: ${kbEntriesLoaded} alerts in knowledge base
-
----
-
-*This report was automatically generated by the KB-Aware Universal Correlation System*
-*Enhanced with existing Knowledge Base integration and 320+ alert pattern support*
-*Report Version: 4.0 - KB-Aware Correlation (Hybrid) | Generated: ${new Date().toISOString()}*
+  <div style="text-align: center; margin-top: 20px; padding: 10px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666;">
+    <div>This report was auto-generated by FreePrometheus | ${new Date().toLocaleString('en-US')}</div>
+    <div>KB Integration: ${kbEntriesLoaded} alerts loaded | ${hasKBEntry ? 'KB-Enhanced' : 'Generic Analysis'}</div>
+  </div>
+</div>
 `;
 
   return html;
