@@ -677,11 +677,14 @@ function generateEnhancedJiraDescription(allStageData, masterContext, analysisTi
   const confidence = safeGet(allStageData, 'stage2.root_cause.confidence', 0);
   const affectedServices = safeGet(allStageData, 'stage2.affected_services', []);
 
-  // Extract pod/deployment info
+  // Extract pod/deployment info - FIX: Use actual deployment name from Stage 4, not component conceptual name
   const podName = safeGet(allStageData, 'stage4.diagnostics_executed.0.target', null) ||
                   safeGet(allStageData, 'stage2.critical_pods.0', null) ||
                   safeGet(allStageData, 'stage1.alerts.firing.0.labels.pod', 'unknown');
-  const deployment = component;
+
+  // Extract actual deployment name (NOT component which is conceptual like "Memory Management")
+  const deployment = safeGet(allStageData, 'stage4.enriched_context.deployment_info.name', null) ||
+                     safeGet(allStageData, 'stage2.affected_services.0', component);
 
   // Time calculations
   const startTime = new Date(masterContext.createdAt);
@@ -689,13 +692,24 @@ function generateEnhancedJiraDescription(allStageData, masterContext, analysisTi
   const durationMinutes = Math.round((endTime - startTime) / 60000);
   const alertStartDate = startTime.toLocaleString('en-US');
 
-  // Immediate actions
+  // Remediation plan from Stage 5 - Extract ALL sections for comprehensive solution
   const immediateActions = safeGet(allStageData, 'stage5.remediation_plan.immediate_actions', []);
+  const shortTermFixes = safeGet(allStageData, 'stage5.remediation_plan.short_term_fixes', []);
+  const longTermSolutions = safeGet(allStageData, 'stage5.remediation_plan.long_term_solutions', []);
+  const preventiveMeasures = safeGet(allStageData, 'stage5.remediation_plan.preventive_measures', []);
+  const riskAssessment = safeGet(allStageData, 'stage5.risk_assessment', null);
+  const implementationOrder = safeGet(allStageData, 'stage5.implementation_order', []);
+
+  // Stage 2 correlation matrix
+  const correlationMatrix = safeGet(allStageData, 'stage2.correlation_matrix', null);
+  const blastRadius = correlationMatrix?.blast_radius || null;
+  const primaryChain = correlationMatrix?.primary_chain || null;
 
   // SLO Impact
   const sloStatus = safeGet(allStageData, 'stage3.slo_impact.availability_slo.status', 'unknown');
   const sloCurrent = safeGet(allStageData, 'stage3.slo_impact.availability_slo.current', 'N/A');
   const sloTarget = safeGet(allStageData, 'stage3.slo_impact.availability_slo.target', 'N/A');
+  const errorBudgetUsed = safeGet(allStageData, 'stage3.slo_impact.availability_slo.error_budget_used', 'N/A');
 
   // Evidence from Stage 4
   const confirmedIssues = safeGet(allStageData, 'stage4.diagnostic_summary.confirmed_issues', []);
@@ -715,8 +729,14 @@ function generateEnhancedJiraDescription(allStageData, masterContext, analysisTi
   const kbEntry = kbInsights.kbEntryDetails;
 
   // Dynamic title based on alert type (matching File 26 getOncallTitle logic)
+  // FIX: When alertName is "Unknown Alert", use actual issue description instead
   let dynamicTitle = `${severity.toUpperCase()} ${alertName}`;
-  if (alertName.includes('Crash') || alertName.includes('CrashLoop')) {
+
+  if (alertName === 'Unknown Alert' || !alertName) {
+    // Not alert-based analysis - use actual issue description with severity emoji
+    const severityEmoji = severity === 'critical' ? '🔴' : severity === 'high' ? '🟠' : severity === 'medium' ? '🟡' : '🟢';
+    dynamicTitle = `${severityEmoji} ${severity.toUpperCase()}: ${issue}`;
+  } else if (alertName.includes('Crash') || alertName.includes('CrashLoop')) {
     dynamicTitle = `🟠 HIGH POD CRASH LOOP: ${deployment}`;
   } else if (alertName.includes('NodeNotReady')) {
     dynamicTitle = `🔴 CRITICAL NODE NOT READY`;
@@ -847,7 +867,7 @@ ${kbEntry.troubleshootingSteps ? `**Troubleshooting Steps:**\n${kbEntry.troubles
         <strong>Evidence:</strong>
         <div style="margin-top: 8px;">
           • <strong>Pod Status:</strong> <code>${podStatus.phase || 'Unknown'}</code><br/>
-          • <strong>Last Error:</strong> ${podStatus.last_termination?.reason || 'None'} (Exit Code: ${podStatus.last_termination?.exit_code || 'N/A'})<br/>
+          ${podStatus.last_termination?.reason ? `• <strong>Last Termination:</strong> ${podStatus.last_termination.reason} (Exit Code: ${podStatus.last_termination.exit_code || 'N/A'})<br/>` : ''}
           • <strong>Memory Usage:</strong> ${resourceUsage.memory_used || 'N/A'} / ${resourceUsage.memory_limit || 'N/A'}<br/>
           ${resourceUsage.cpu_used ? `• <strong>CPU Usage:</strong> ${resourceUsage.cpu_used}<br/>` : ''}
           ${errorLogs.length > 0 ? `• <strong>Latest Error:</strong> ${errorLogs[0].message}<br/>` : ''}
@@ -855,6 +875,18 @@ ${kbEntry.troubleshootingSteps ? `**Troubleshooting Steps:**\n${kbEntry.troubles
         </div>
         ${kbInfo}
       </div>
+
+      ${(blastRadius || primaryChain || affectedServices.length > 1 || sloStatus !== 'unknown') ? `
+        <div style="margin-top: 15px; padding: 12px; background: #fff3e0; border-radius: 6px; border-left: 4px solid #ff9800;">
+          <strong>📊 Impact Analysis:</strong>
+          <div style="margin-top: 8px;">
+            ${primaryChain ? `• <strong>Primary Issue Chain:</strong> ${primaryChain}<br/>` : ''}
+            ${blastRadius ? `• <strong>Blast Radius:</strong> ${blastRadius}<br/>` : ''}
+            ${affectedServices.length > 1 ? `• <strong>Affected Services:</strong> ${affectedServices.join(', ')}<br/>` : ''}
+            ${sloStatus !== 'unknown' ? `• <strong>SLO Status:</strong> ${sloStatus} (Current: ${sloCurrent}, Target: ${sloTarget}, Error Budget Used: ${errorBudgetUsed})<br/>` : ''}
+          </div>
+        </div>
+      ` : ''}
     </div>
   </div>
 
@@ -863,10 +895,9 @@ ${kbEntry.troubleshootingSteps ? `**Troubleshooting Steps:**\n${kbEntry.troubles
       ✅ SOLUTION (What To Do)
     </div>
     <div style="padding: 15px; background: white; border-radius: 0 0 6px 6px;">
-      ${immediateActions.length > 0 ? immediateActions.map((action, idx) => `
+      ${immediateActions.length > 0 ? `<h3 style="margin: 10px 0 15px 0; color: #d32f2f; font-size: 18px;">🚨 IMMEDIATE ACTIONS</h3>` + immediateActions.map((action, idx) => `
         <div style="border: 1px solid #ddd; border-radius: 6px; margin: 15px 0; padding: 15px; background: ${idx % 2 === 0 ? '#fafafa' : 'white'};">
-          <h4 style="margin: 0 0 10px 0; color: #d32f2f;">${idx + 1}. IMMEDIATE ACTION</h4>
-          <p style="margin: 10px 0;"><strong>Action Required:</strong> ${action.action || 'Execute remediation step'}</p>
+          <h4 style="margin: 0 0 10px 0; color: #d32f2f;">${idx + 1}. ${action.action || 'Execute remediation step'}</h4>
           <p style="margin: 10px 0;"><strong>Command:</strong></p>
           <div style="background: #2d2d2d; color: #f8f8f2; padding: 10px; border-radius: 4px; font-family: 'Courier New', monospace; overflow-x: auto;">
             <code>${action.command || `kubectl rollout undo deployment/${deployment} -n ${namespace}`}</code>
@@ -878,6 +909,60 @@ ${kbEntry.troubleshootingSteps ? `**Troubleshooting Steps:**\n${kbEntry.troubles
           </div>
         </div>
       `).join('') : '<p style="margin: 10px 0;">No immediate actions recommended at this time. Please investigate manually.</p>'}
+
+      ${shortTermFixes.length > 0 ? `
+        <h3 style="margin: 25px 0 15px 0; color: #ff9800; font-size: 18px;">⏱️ SHORT-TERM FIXES (${shortTermFixes[0].timeline || '1-2 days'})</h3>
+        ${shortTermFixes.map((fix, idx) => `
+          <div style="border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 12px; background: #fffaf0;">
+            <p style="margin: 0;"><strong>${idx + 1}. ${fix.action || 'Short-term fix'}</strong></p>
+            ${fix.details ? `<p style="margin: 8px 0 0 0; color: #666;">${fix.details}</p>` : ''}
+          </div>
+        `).join('')}
+      ` : ''}
+
+      ${longTermSolutions.length > 0 ? `
+        <h3 style="margin: 25px 0 15px 0; color: #2196f3; font-size: 18px;">🔧 LONG-TERM SOLUTIONS (${longTermSolutions[0].timeline || '1-2 weeks'})</h3>
+        ${longTermSolutions.map((solution, idx) => `
+          <div style="border: 1px solid #ddd; border-radius: 6px; margin: 10px 0; padding: 12px; background: #f0f8ff;">
+            <p style="margin: 0;"><strong>${idx + 1}. ${solution.action || 'Long-term solution'}</strong></p>
+            ${solution.details ? `<p style="margin: 8px 0 0 0; color: #666;">${solution.details}</p>` : ''}
+          </div>
+        `).join('')}
+      ` : ''}
+
+      ${preventiveMeasures.length > 0 ? `
+        <h3 style="margin: 25px 0 15px 0; color: #4caf50; font-size: 18px;">🛡️ PREVENTIVE MEASURES</h3>
+        <div style="border: 1px solid #4caf50; border-radius: 6px; padding: 12px; background: #f1f8e9;">
+          ${preventiveMeasures.map(measure => `<div style="margin: 6px 0; padding-left: 10px;">• ${measure}</div>`).join('')}
+        </div>
+      ` : ''}
+
+      ${riskAssessment ? `
+        <div style="margin-top: 20px; border: 1px solid #ff9800; border-radius: 6px; padding: 12px; background: #fff3e0;">
+          <h4 style="margin: 0 0 10px 0; color: #ff9800;">⚠️ RISK ASSESSMENT</h4>
+          <p style="margin: 5px 0;"><strong>Overall Risk:</strong> ${riskAssessment.overall_risk?.toUpperCase() || 'N/A'}</p>
+          ${riskAssessment.factors && riskAssessment.factors.length > 0 ? `
+            <p style="margin: 10px 0 5px 0;"><strong>Risk Factors:</strong></p>
+            ${riskAssessment.factors.map(factor => `<div style="margin: 4px 0; padding-left: 10px;">• ${factor}</div>`).join('')}
+          ` : ''}
+          ${riskAssessment.mitigation_steps && riskAssessment.mitigation_steps.length > 0 ? `
+            <p style="margin: 10px 0 5px 0;"><strong>Mitigation Steps:</strong></p>
+            ${riskAssessment.mitigation_steps.map(step => `<div style="margin: 4px 0; padding-left: 10px;">• ${step}</div>`).join('')}
+          ` : ''}
+        </div>
+      ` : ''}
+
+      ${implementationOrder.length > 0 ? `
+        <div style="margin-top: 20px; border: 1px solid #2196f3; border-radius: 6px; padding: 12px; background: #e3f2fd;">
+          <h4 style="margin: 0 0 10px 0; color: #2196f3;">🔢 IMPLEMENTATION ORDER</h4>
+          ${implementationOrder.map(step => `
+            <div style="margin: 8px 0; padding: 10px; background: white; border-radius: 4px;">
+              <strong>Step ${step.step}:</strong> ${step.action}
+              ${step.validation ? `<div style="margin-top: 5px; color: #666; font-size: 13px;">✓ Validation: ${step.validation}</div>` : ''}
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
     </div>
   </div>
 
