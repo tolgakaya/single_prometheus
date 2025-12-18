@@ -1,5 +1,18 @@
 // Generate Final Report - Orchestrator Support with Full Context Preservation
 
+// ============= KB NODE CONNECTION =============
+// Get KB data from Load Alert Knowledge Base node
+const loadAlertKB = $node["Load Alert Knowledge Base"]?.json || {};
+
+// Extract KB information safely
+const alertKnowledgeBase = loadAlertKB.knowledgeBase?.alert || {};
+const kbEntriesLoaded = Object.keys(alertKnowledgeBase).length || 0;
+
+console.log("===== KB INTEGRATION =====");
+console.log("KB Entries Loaded:", kbEntriesLoaded);
+console.log("KB Integration:", kbEntriesLoaded > 0 ? "ENABLED" : "DISABLED");
+console.log("==========================");
+
 // Default production namespaces
 const DEFAULT_NAMESPACES = [
   'bstp-cms-global-production',
@@ -733,6 +746,104 @@ function generateEnhancedJiraDescription(allStageData, masterContext) {
 
 ---
 
+## 📚 KNOWLEDGE BASE INTELLIGENCE
+
+`;
+
+  // Get KB insights
+  const kbInsights = generateKnowledgeBaseInsights(allStageData);
+  const hasKBEntry = kbInsights.kbEnhanced;
+  const kbEntry = kbInsights.kbEntryDetails;
+
+  if (kbInsights.kbIntegrationEnabled) {
+    html += `
+<div style="border: 1px solid #9c27b0; border-radius: 6px; margin: 10px 0; background: #f3e5f5;">
+  <div style="background: #9c27b0; color: white; padding: 10px; font-weight: bold; border-radius: 5px 5px 0 0;">
+    📚 Knowledge Base Integration Status
+  </div>
+  <div style="padding: 12px; background: white; border-radius: 0 0 5px 5px;">
+    <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+      <tr>
+        <td style="padding: 6px; font-weight: bold; width: 180px;">KB Integration:</td>
+        <td style="padding: 6px;"><span style="color: #2e7d32; font-weight: bold;">✅ ENABLED</span></td>
+      </tr>
+      <tr style="background: #fafafa;">
+        <td style="padding: 6px; font-weight: bold;">KB Entries Loaded:</td>
+        <td style="padding: 6px;">${kbInsights.kbIntegrationEnabled ? kbEntriesLoaded : 0} alerts</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px; font-weight: bold;">Current Alert in KB:</td>
+        <td style="padding: 6px;"><span style="color: ${hasKBEntry ? '#2e7d32' : '#d32f2f'}; font-weight: bold;">${hasKBEntry ? '✅ YES' : '❌ NO'}</span></td>
+      </tr>
+      ${hasKBEntry ? `
+      <tr style="background: #fafafa;">
+        <td style="padding: 6px; font-weight: bold;">Alert Category:</td>
+        <td style="padding: 6px;">${kbInsights.alertCategory || 'Unknown'}</td>
+      </tr>
+      <tr>
+        <td style="padding: 6px; font-weight: bold;">Urgency Level:</td>
+        <td style="padding: 6px;"><span style="font-weight: bold;">${kbInsights.urgencyLevel || 'Unknown'}</span></td>
+      </tr>
+      <tr style="background: #fafafa;">
+        <td style="padding: 6px; font-weight: bold;">Cascade Risk:</td>
+        <td style="padding: 6px;">${kbInsights.cascadeRisk || 'Unknown'}</td>
+      </tr>
+      ` : ''}
+    </table>
+  </div>
+</div>
+`;
+
+    if (hasKBEntry && kbEntry) {
+      // Add KB-specific sections
+      html += `
+### 🎯 KB-Enhanced Analysis
+
+**Alert Name**: ${kbEntry.alertName}
+**KB Severity**: ${kbEntry.severity ? kbEntry.severity.toUpperCase() : 'Unknown'}
+
+`;
+
+      if (kbEntry.commonCauses && kbEntry.commonCauses.length > 0) {
+        html += `
+#### 📋 Common Causes (from KB)
+${kbEntry.commonCauses.map((cause, idx) => `${idx + 1}. ${cause}`).join('\n')}
+
+`;
+      }
+
+      if (kbEntry.immediateActions && kbEntry.immediateActions.length > 0) {
+        html += `
+#### 🔥 KB-Recommended Immediate Actions
+${kbEntry.immediateActions.map((action, idx) => `${idx + 1}. ${action}`).join('\n')}
+
+`;
+      }
+
+      if (kbEntry.troubleshootingSteps && kbEntry.troubleshootingSteps.length > 0) {
+        html += `
+#### 🔍 KB Troubleshooting Steps
+${kbEntry.troubleshootingSteps.map((step, idx) => `${idx + 1}. ${step}`).join('\n')}
+
+`;
+      }
+    }
+  } else {
+    html += `
+<div style="border: 1px solid #ff9800; border-radius: 6px; margin: 10px 0; background: #fff3e0;">
+  <div style="background: #ff9800; color: white; padding: 10px; font-weight: bold; border-radius: 5px 5px 0 0;">
+    ⚠️ Knowledge Base Status
+  </div>
+  <div style="padding: 12px; background: white; border-radius: 0 0 5px 5px;">
+    <p style="margin: 0; color: #e65100;">KB Integration: <strong>DISABLED</strong> - Operating in standard analysis mode</p>
+  </div>
+</div>
+`;
+  }
+
+  html += `
+---
+
 ## 🔍 ISSUE IDENTIFICATION
 
 ### ${issue}
@@ -811,11 +922,16 @@ ${idx + 1}. **[${prev.type}]** ${prev.action}
 - **Total Analysis Time**: ${durationMinutes} minutes
 - **System**: FreePrometheus Analysis Engine v2.0
 - **Stages Executed**: ${Object.keys(allStageData).filter(k => allStageData[k] !== null).length}/6
+- **KB Integration**: ${kbInsights.kbIntegrationEnabled ? `ENABLED (${kbEntriesLoaded} alerts loaded)` : 'DISABLED'}
+- **KB Enhanced**: ${hasKBEntry ? 'YES - Alert found in KB' : 'NO - Alert not in KB'}
+${hasKBEntry ? `- **Alert Category**: ${kbInsights.alertCategory || 'Unknown'}
+- **Urgency Level**: ${kbInsights.urgencyLevel || 'Unknown'}
+- **Cascade Risk**: ${kbInsights.cascadeRisk || 'Unknown'}` : ''}
 
 ---
 
 *This report was automatically generated by the FreePrometheus Analysis System*
-*Report Version: 2.0 | Generated: ${new Date().toISOString()}*
+*Report Version: 2.0 | KB-Enhanced: ${hasKBEntry ? 'YES' : 'NO'} | Generated: ${new Date().toISOString()}*
 `;
 
   return html;
@@ -892,24 +1008,36 @@ function generateJiraTicket(allStageData, masterContext) {
     actualNamespace = DEFAULT_NAMESPACES[0];
   }
 
+  // Get KB insights first (needed for description and title)
+  const kbInsights = generateKnowledgeBaseInsights(allStageData);
+  const hasKBEntry = kbInsights.kbEnhanced;
+
   // Generate rich HTML description
   const description = generateEnhancedJiraDescription(allStageData, masterContext);
 
-  // Enhanced title format
-  const title = `[${alertName}] ${component} - ${issue}`;
+  // Enhanced title format with KB indicator
+  const title = hasKBEntry
+    ? `[${alertName}] ${component} - ${issue} (KB-Enhanced)`
+    : kbInsights.kbIntegrationEnabled
+      ? `[${alertName}] ${component} - ${issue} (KB-Available)`
+      : `[${alertName}] ${component} - ${issue}`;
 
   // Priority mapping
   const priority = mapSeverityToPriority(severity);
 
-  // Build labels array
+  // Build labels array with KB-related tags
   const labels = [
     alertName,
     severity.toLowerCase(),
     actualNamespace,
     component,
     "Auto-Detected",
-    "FreePrometheus-Analysis"
-  ].filter(Boolean);
+    "FreePrometheus-Analysis",
+    "KB-Aware-Analysis"
+  ].concat(kbInsights.kbIntegrationEnabled ? ["KB-Integration-Enabled"] : [])
+   .concat(hasKBEntry ? ["KB-Enhanced", "KB-Available"] : [])
+   .concat(hasKBEntry && kbInsights.alertCategory ? [`Category-${kbInsights.alertCategory}`] : [])
+   .filter(Boolean);
 
   // Build components array
   const components = [component].filter(c => c && c !== 'unknown-component');
@@ -919,7 +1047,7 @@ function generateJiraTicket(allStageData, masterContext) {
   const endTime = new Date();
   const durationMinutes = Math.round((endTime - startTime) / 60000);
 
-  // Build custom fields
+  // Build custom fields with KB information
   const customFields = {
     contextId: masterContext.contextId || 'unknown',
     analysisTime: durationMinutes,
@@ -929,7 +1057,16 @@ function generateJiraTicket(allStageData, masterContext) {
     stagesExecuted: Object.keys(allStageData).filter(k => allStageData[k] !== null).length,
     rootCauseConfidence: confidence,
     affectedServices: safeGet(allStageData, 'stage2.affected_services.length', 0),
-    sloImpact: safeGet(allStageData, 'stage3.slo_impact.availability_slo.status', 'unknown')
+    sloImpact: safeGet(allStageData, 'stage3.slo_impact.availability_slo.status', 'unknown'),
+    kbIntegrationEnabled: kbInsights.kbIntegrationEnabled,
+    kbEnhanced: hasKBEntry,
+    kbEntriesLoaded: kbInsights.kbIntegrationEnabled ? kbEntriesLoaded : 0,
+    ...(hasKBEntry && {
+      alertCategory: kbInsights.alertCategory,
+      urgencyLevel: kbInsights.urgencyLevel,
+      cascadeRisk: kbInsights.cascadeRisk,
+      kbAlertSeverity: kbInsights.kbEntryDetails?.severity || 'unknown'
+    })
   };
 
   return {
@@ -943,9 +1080,10 @@ function generateJiraTicket(allStageData, masterContext) {
   };
 }
 
-// Generate Knowledge Base Insights (placeholder without KB nodes)
+// Generate Knowledge Base Insights (with KB integration)
 function generateKnowledgeBaseInsights(allStageData) {
   const severity = safeGet(allStageData, 'primaryDiagnosis.severity', 'medium');
+  const alertName = safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', '');
 
   // Derive urgency from severity
   const urgencyMap = {
@@ -960,46 +1098,86 @@ function generateKnowledgeBaseInsights(allStageData) {
   };
   const urgencyLevel = urgencyMap[(severity || 'medium').toLowerCase()] || 'MEDIUM';
 
-  // Derive alert category from alert name or component
-  const alertName = safeGet(allStageData, 'stage1.alerts.firing.0.labels.alertname', '');
+  // Check if alert exists in KB
+  const kbEntry = alertKnowledgeBase[alertName] || null;
+  const hasKBEntry = !!kbEntry;
+
+  // Derive alert category from KB or heuristics
   let alertCategory = 'UNKNOWN';
-  if (alertName.toLowerCase().includes('pod')) {
-    alertCategory = 'APPLICATION';
-  } else if (alertName.toLowerCase().includes('node')) {
-    alertCategory = 'INFRASTRUCTURE';
-  } else if (alertName.toLowerCase().includes('disk') || alertName.toLowerCase().includes('memory')) {
-    alertCategory = 'RESOURCE';
-  } else if (alertName.toLowerCase().includes('network')) {
-    alertCategory = 'NETWORK';
+  if (hasKBEntry) {
+    // Use KB data if available
+    if (alertName.toLowerCase().includes('etcd') || alertName.toLowerCase().includes('api')) {
+      alertCategory = 'INFRASTRUCTURE';
+    } else if (alertName.toLowerCase().includes('pod') || alertName.toLowerCase().includes('container')) {
+      alertCategory = 'APPLICATION';
+    } else if (alertName.toLowerCase().includes('node')) {
+      alertCategory = 'INFRASTRUCTURE';
+    } else if (alertName.toLowerCase().includes('disk') || alertName.toLowerCase().includes('memory') || alertName.toLowerCase().includes('cpu')) {
+      alertCategory = 'RESOURCE';
+    } else if (alertName.toLowerCase().includes('network')) {
+      alertCategory = 'NETWORK';
+    }
+  } else {
+    // Fallback to heuristics
+    if (alertName.toLowerCase().includes('pod')) {
+      alertCategory = 'APPLICATION';
+    } else if (alertName.toLowerCase().includes('node')) {
+      alertCategory = 'INFRASTRUCTURE';
+    } else if (alertName.toLowerCase().includes('disk') || alertName.toLowerCase().includes('memory')) {
+      alertCategory = 'RESOURCE';
+    } else if (alertName.toLowerCase().includes('network')) {
+      alertCategory = 'NETWORK';
+    }
   }
 
-  // Cascade risk estimation
+  // Cascade risk from KB or estimation
   const affectedServicesCount = safeGet(allStageData, 'stage2.affected_services.length', 0);
   let cascadeRisk = 'LOW';
-  if (affectedServicesCount > 5) {
-    cascadeRisk = 'HIGH';
-  } else if (affectedServicesCount > 2) {
-    cascadeRisk = 'MEDIUM';
+  if (hasKBEntry && kbEntry.cascadeCheckPoints) {
+    // KB has cascade info
+    cascadeRisk = kbEntry.cascadeCheckPoints.length > 3 ? 'HIGH' : 'MEDIUM';
+  } else {
+    // Estimate from affected services
+    if (affectedServicesCount > 5) {
+      cascadeRisk = 'HIGH';
+    } else if (affectedServicesCount > 2) {
+      cascadeRisk = 'MEDIUM';
+    }
   }
 
+  // KB-enhanced data
+  const kbCommonCauses = hasKBEntry ? (kbEntry.commonCauses || []) : [];
+  const kbImmediateActions = hasKBEntry ? (kbEntry.immediateActions || []) : [];
+  const kbLongTermSolutions = hasKBEntry ? (kbEntry.longTermSolutions || []) : [];
+
   return {
-    kbIntegrationEnabled: false, // No KB nodes in Flow 2
-    kbEnhanced: false,
+    kbIntegrationEnabled: kbEntriesLoaded > 0,
+    kbEnhanced: hasKBEntry,
     alertCategory: alertCategory,
     urgencyLevel: urgencyLevel,
     cascadeRisk: cascadeRisk,
     kbUtilization: {
-      utilizationRate: '0%',
-      matchedEntries: 0,
-      totalEntries: 0,
-      lastUpdated: null
+      utilizationRate: kbEntriesLoaded > 0 ? `${((hasKBEntry ? 1 : 0) / kbEntriesLoaded * 100).toFixed(1)}%` : '0%',
+      matchedEntries: hasKBEntry ? 1 : 0,
+      totalEntries: kbEntriesLoaded,
+      lastUpdated: new Date().toISOString()
     },
     categoryAnalysis: {
       category: alertCategory,
-      typicalResolutionTime: 'Unknown',
-      commonCauses: [],
-      recommendedRunbooks: []
-    }
+      typicalResolutionTime: hasKBEntry ? 'Available in KB' : 'Unknown',
+      commonCauses: kbCommonCauses,
+      recommendedRunbooks: hasKBEntry ? [`KB Entry: ${alertName}`] : []
+    },
+    kbEntryDetails: hasKBEntry ? {
+      alertName: alertName,
+      severity: kbEntry.severity || 'unknown',
+      description: kbEntry.description || '',
+      commonCauses: kbCommonCauses,
+      immediateActions: kbImmediateActions,
+      longTermSolutions: kbLongTermSolutions,
+      troubleshootingSteps: kbEntry.troubleshootingSteps || [],
+      expectedResults: kbEntry.expectedResults || []
+    } : null
   };
 }
 
