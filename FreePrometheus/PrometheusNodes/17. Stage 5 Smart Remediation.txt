@@ -1,6 +1,6 @@
 # Stage 5: AI-Powered Remediation Plan - CONTEXT AWARE
 
-Generate remediation plan based on all findings.
+Generate context-aware remediation plan based on Stage 4 diagnostics and all previous findings.
 
 ## 🚨 CRITICAL OUTPUT REQUIREMENT:
 **YOU MUST RETURN ONLY VALID JSON - NO MARKDOWN, NO CODE BLOCKS, NO EXTRA TEXT**
@@ -15,9 +15,120 @@ Generate remediation plan based on all findings.
 - Context ID: {{ $json._context.contextId }}
 - Primary Issue: {{ $json.primaryDiagnosis.issue }}
 - Severity: {{ $json.primaryDiagnosis.severity }}
-- Affected Component: {{  $json.stage4Data.enriched_context.deployment_info.name}}
+- Affected Component: {{ $json.stage4Data.enriched_context.deployment_info.name }}
+- Namespace: {{ $json.primaryDiagnosis.namespace }}
 
-## 💾 OUTPUT FORMAT (MUST BE PURE JSON):
+## 📊 STAGE 4 DIAGNOSTIC DATA AVAILABLE:
+You have access to Stage 4 diagnostics containing:
+- **Pod Status**: {{ $json.stage4Data.diagnostics_executed[0].findings.pod_status }}
+- **Last Termination**: {{ $json.stage4Data.diagnostics_executed[0].findings.pod_status.last_termination }}
+- **Resource Usage**: {{ $json.stage4Data.diagnostics_executed[0].findings.resource_usage }}
+- **Recent Changes**: {{ $json.stage4Data.enriched_context.recent_changes }}
+- **Error Logs**: {{ $json.stage4Data.diagnostics_executed[0].findings.error_logs }}
+- **Events**: {{ $json.stage4Data.diagnostics_executed[0].findings.events }}
+
+## 🎯 YOUR TASK: GENERATE CONTEXT-AWARE REMEDIATION
+
+**CRITICAL**: Analyze Stage 4 diagnostics to determine the appropriate remediation strategy. DO NOT use generic templates.
+
+### STEP 1: ANALYZE TERMINATION REASON
+
+Check `last_termination.reason` from Stage 4:
+
+**IF termination_reason == "OOMKilled" OR memory_used > memory_limit:**
+- **IMMEDIATE ACTION**: Increase memory limits (NOT rollback)
+- **Example command**: `kubectl set resources deployment/{{ $json.stage4Data.enriched_context.deployment_info.name }} --limits=memory=<new_limit> -n {{ $json.primaryDiagnosis.namespace }}`
+- **Short-term**: Analyze memory usage patterns, identify memory leaks
+- **Long-term**: Fix memory leak in code, optimize memory usage
+
+**IF termination_reason == "Error" OR "CrashLoopBackOff":**
+- Check recent_changes for deployment updates
+- IF recent_changes contains "Deployed version X" within last 2 hours AND errors started after:
+  - **IMMEDIATE ACTION**: Consider rollback to previous version
+  - **Command**: `kubectl rollout undo deployment/{{ $json.stage4Data.enriched_context.deployment_info.name }} -n {{ $json.primaryDiagnosis.namespace }}`
+- ELSE IF no recent deployment changes:
+  - **IMMEDIATE ACTION**: Investigate logs and configuration
+  - **Command**: `kubectl logs deployment/{{ $json.stage4Data.enriched_context.deployment_info.name }} -n {{ $json.primaryDiagnosis.namespace }} --tail=100`
+  - **Short-term**: Fix configuration or code error identified in logs
+
+**IF termination_reason is null AND restart_count > 5:**
+- Analyze error_logs and events to determine cause
+- Generate remediation based on actual error patterns
+
+**IF issue is node-related (NodeNotReady, NodePressure):**
+- **IMMEDIATE ACTION**: Node-specific remediation (cordon, drain, replace)
+- **Command**: `kubectl cordon <node-name>` followed by appropriate node management
+
+**IF issue is resource-related (CPU throttling, disk pressure):**
+- **IMMEDIATE ACTION**: Scale resources or replicas
+- **Command**: Based on specific resource constraint identified
+
+### STEP 2: VERIFY RECENT CHANGES
+
+Check `recent_changes` array from Stage 4:
+- IF recent_changes contains "Deployed version" → Deployment change detected
+- IF recent_changes contains "Scaled replicas" → Scaling change detected
+- IF recent_changes contains "Updated configmap" → Configuration change detected
+
+**ONLY suggest rollback IF:**
+1. recent_changes shows actual deployment update (NOT just replica scaling)
+2. AND errors/crashes started AFTER the deployment
+3. AND termination reason is NOT resource exhaustion (OOMKilled, CPU throttling)
+
+### STEP 3: BUILD REMEDIATION PLAN
+
+Generate immediate_actions based on your analysis:
+- Use actual deployment name: {{ $json.stage4Data.enriched_context.deployment_info.name }}
+- Use actual namespace: {{ $json.primaryDiagnosis.namespace }}
+- Match action to root cause (memory issue → increase memory, deployment issue → rollback, config issue → fix config)
+- Provide realistic time estimates based on action complexity
+- Set risk level appropriately (rollback=low, resource changes=medium, node operations=high)
+
+Generate short_term_fixes:
+- Actions to stabilize the system within 1-2 days
+- Monitoring improvements, temporary workarounds
+
+Generate long_term_solutions:
+- Code fixes, architectural improvements
+- Timeline: 1-2 weeks for code fixes, 1-2 months for architectural changes
+
+Generate preventive_measures:
+- CI/CD improvements (testing, profiling, gradual rollouts)
+- Monitoring improvements (alerts, dashboards)
+- Process improvements (runbooks, postmortems)
+
+### STEP 4: RISK ASSESSMENT
+
+Evaluate overall_risk based on:
+- Service criticality (from Stage 2 affected_services)
+- Blast radius (from Stage 2 correlation_matrix)
+- Remediation complexity and risk level
+
+Set overall_risk: "low" | "medium" | "high" | "critical"
+
+Generate risk factors:
+- Service criticality and user impact
+- Remediation safety and testing status
+- Issue containment and blast radius
+
+Generate mitigation_steps:
+- Monitoring during remediation
+- Team coordination requirements
+- Rollback/escalation procedures
+
+### STEP 5: IMPLEMENTATION ORDER
+
+Create step-by-step implementation plan:
+- Step 1: Most urgent action (immediate remediation)
+- Step 2: Verification and monitoring
+- Step 3+: Follow-up actions as needed
+
+Each step must have:
+- Clear action description
+- Dependencies (which steps must complete first)
+- Validation criteria (how to verify success)
+
+## 💾 OUTPUT FORMAT (PURE JSON ONLY):
 
 {
   "stage": "ai_powered_analysis",
@@ -25,93 +136,85 @@ Generate remediation plan based on all findings.
   "remediation_plan": {
     "immediate_actions": [
       {
-        "action": "Rollback deployment to previous version",
-        "command": "kubectl rollout undo deployment/{{ $json.stage4Data.enriched_context.deployment_info}} -n {{ $json.primaryDiagnosis.namespace }}",
-        "risk": "low",
-        "estimated_time": "2-5 minutes",
-        "expected_outcome": "Restore service to previous stable version"
+        "action": "<Context-aware action based on Stage 4 diagnostics>",
+        "command": "<Actual kubectl command with real deployment name and namespace>",
+        "risk": "<low|medium|high based on action type>",
+        "estimated_time": "<Realistic estimate: 2-5 min for rollback, 5-10 min for resource changes, etc>",
+        "expected_outcome": "<Specific outcome based on action>"
       }
     ],
     "short_term_fixes": [
       {
-        "action": "Increase memory limits temporarily",
-        "timeline": "1-2 days",
-        "details": "Set memory limit to 2Gi while investigating root cause"
+        "action": "<Stabilization action based on root cause>",
+        "timeline": "<Realistic timeline: hours to days>",
+        "details": "<Specific details based on diagnostics>"
       }
     ],
     "long_term_solutions": [
       {
-        "action": "Fix memory leak in TransactionHandler",
-        "timeline": "1-2 weeks",
-        "details": "Review and fix the memory leak in payment processing code"
+        "action": "<Permanent fix based on root cause analysis>",
+        "timeline": "<Realistic timeline: days to weeks>",
+        "details": "<Implementation details based on issue type>"
       }
     ],
     "preventive_measures": [
-      "Implement memory profiling in CI/CD",
-      "Add memory leak detection tests",
-      "Set up gradual rollout strategy"
+      "<List of preventive actions based on issue type>",
+      "<CI/CD improvements relevant to root cause>",
+      "<Monitoring improvements to detect similar issues>"
     ]
   },
   "risk_assessment": {
-    "overall_risk": "medium",
+    "overall_risk": "<low|medium|high|critical based on analysis>",
     "factors": [
-      "Payment service is critical",
-      "Rollback is tested and safe",
-      "Memory issue is contained to specific pods"
+      "<Service criticality from Stage 2>",
+      "<Remediation safety assessment>",
+      "<Issue containment status>"
     ],
     "mitigation_steps": [
-      "Monitor closely after rollback",
-      "Keep team on standby",
-      "Prepare hotfix if needed"
+      "<Monitoring during remediation>",
+      "<Team coordination requirements>",
+      "<Escalation procedures>"
     ]
   },
   "implementation_order": [
     {
       "step": 1,
-      "action": "Execute rollback",
+      "action": "<First action from immediate_actions>",
       "dependencies": [],
-      "validation": "Check pod status and memory usage"
+      "validation": "<How to verify this step succeeded>"
     },
     {
       "step": 2,
-      "action": "Verify service health",
+      "action": "<Verification or next action>",
       "dependencies": ["step_1"],
-      "validation": "Check error rates and response times"
-    },
-    {
-      "step": 3,
-      "action": "Update monitoring alerts",
-      "dependencies": ["step_2"],
-      "validation": "Ensure alerts are firing correctly"
+      "validation": "<Verification criteria>"
     }
   ],
   "success_metrics": {
     "immediate": [
-      "Pod restart count = 0",
-      "Memory usage < 80% of limit",
-      "Error rate < 0.1%"
+      "<Metrics to check within minutes: pod status, restart count>",
+      "<Resource usage thresholds based on issue>",
+      "<Error rate targets>"
     ],
     "short_term": [
-      "No OOMKilled events in 24h",
-      "SLO compliance > 99.9%"
+      "<Metrics to check within hours/days>",
+      "<SLO compliance targets>"
     ],
     "long_term": [
-      "Memory leak fixed in code",
-      "Automated memory testing in place"
+      "<Permanent fix validation>",
+      "<Process improvements in place>"
     ]
   },
   "rollback_plan": {
     "trigger_conditions": [
-      "Error rate > 5%",
-      "Multiple pod failures",
-      "Memory usage continues to spike"
+      "<Conditions that indicate remediation failed>",
+      "<Thresholds for automatic rollback>"
     ],
     "steps": [
-      "Revert to current version",
-      "Scale up replicas",
-      "Enable circuit breaker"
+      "<Step-by-step rollback procedure>",
+      "<Escalation if rollback fails>"
     ],
-    "validation": "Verify previous version number before rollback"
+    "validation": "<How to verify rollback succeeded>"
   },
   "_context": {{ JSON.stringify($json._context) }},
   "_debug": {
@@ -127,8 +230,24 @@ Generate remediation plan based on all findings.
   }
 }
 
-## ⚠️ FINAL REMINDER:
-- **RETURN ONLY THE JSON OBJECT ABOVE**
-- **NO MARKDOWN FORMATTING**
-- **NO EXPLANATORY TEXT**
-- **NO CODE BLOCKS**
+## ⚠️ CRITICAL REMINDERS:
+
+1. **ANALYZE STAGE 4 DIAGNOSTICS**: Do NOT use generic templates. Read last_termination.reason, resource_usage, and recent_changes to determine appropriate action.
+
+2. **MATCH ACTION TO ROOT CAUSE**:
+   - OOMKilled → Increase memory limits
+   - Recent deployment + errors → Consider rollback
+   - Configuration error → Fix configuration
+   - Node issue → Node management
+
+3. **USE ACTUAL DATA**:
+   - Deployment name: {{ $json.stage4Data.enriched_context.deployment_info.name }}
+   - Namespace: {{ $json.primaryDiagnosis.namespace }}
+   - NO [object Object] bugs - use proper string extraction
+
+4. **VERIFY RECENT CHANGES BEFORE ROLLBACK**:
+   - Only suggest rollback if recent_changes shows actual deployment update
+   - Do NOT suggest rollback for replica scaling or configuration changes
+   - Do NOT suggest rollback for resource exhaustion issues
+
+5. **RETURN ONLY JSON**: No markdown, no code blocks, no explanatory text
