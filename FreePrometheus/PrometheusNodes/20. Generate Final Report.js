@@ -1093,11 +1093,10 @@ function generateJiraTicket(allStageData, masterContext, analysisTimeline) {
   const description = generateEnhancedJiraDescription(allStageData, masterContext, analysisTimeline || []);
 
   // Enhanced title format with KB indicator
-  const title = hasKBEntry
-    ? `[${alertName}] ${component} - ${issue} (KB-Enhanced)`
-    : kbInsights.kbIntegrationEnabled
-      ? `[${alertName}] ${component} - ${issue} (KB-Available)`
-      : `[${alertName}] ${component} - ${issue}`;
+  // FIX: Don't show "[Unknown Alert]" prefix for non-alert-based analysis
+  const titlePrefix = (alertName === 'Unknown Alert' || !alertName) ? '' : `[${alertName}] `;
+  const kbSuffix = hasKBEntry ? ' (KB-Enhanced)' : (kbInsights.kbIntegrationEnabled ? ' (KB-Available)' : '');
+  const title = `${titlePrefix}${component} - ${issue}${kbSuffix}`;
 
   // Priority mapping
   const priority = mapSeverityToPriority(severity);
