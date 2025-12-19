@@ -6,8 +6,10 @@ const metadata = timeData.metadata || {};
 const context = timeData.context || timeData;
 const timeRange = context.timeRange || timeData.timeRange;
 
-const anomalyStart = timeRange.start - 3600;
-const anomalyEnd = timeRange.end + 3600;
+// Anomaly Detection: Focus on recent 15 minutes (not ±1 hour)
+// This reduces token usage by ~80% while keeping relevant anomaly detection
+const anomalyStart = timeRange.end - 900;  // Last 15 minutes (was: timeRange.start - 3600)
+const anomalyEnd = timeRange.end;          // Current end (was: timeRange.end + 3600)
 
 // Extract forceDeepAnalysis flag from standardized metadata
 const forceDeepAnalysis =
@@ -27,7 +29,7 @@ const vars = {
   END_TIME: timeRange.end,
   START_ISO: timeRange.startISO,
   END_ISO: timeRange.endISO,
-  STEP: context.queryParams?.step || timeData.queryParams?.step,
+  STEP: context.queryParams?.step || timeData.queryParams?.step || 300,  // Default 300s (5min) for token efficiency
   DURATION_MINUTES: timeRange.durationMinutes,
   ANALYSIS_ID: metadata.analysisId || timeData.analysisId,  // Legacy fallback
   AFFECTED_SERVICES: context.affectedServices || timeData.affectedServices,
