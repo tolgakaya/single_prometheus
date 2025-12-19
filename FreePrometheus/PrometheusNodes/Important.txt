@@ -1,0 +1,15 @@
+Alert Listener n8n flow.json flowu Prometheus n8n flow.json flowunu tetikliyor ve Prometheus n8n flow.json flowundaki 
+PrometheusNodes\26. Generate Final Report.js node'u bir rapor üretiyor ve listener buradaki raporu kullanıyor. Bu raporda jira ticket oluşturuluyor. 
+ Buradaki kullanılan alert bilgisi de bu node'ta olmalı : PrometheusNodes\5. Load Alert Knowledge Base.js. 
+
+Diğer flow FreePrometheus\Scheduler Cluster Health Flow.json scheduled olarak FreePrometheus\FreePrometheusFlow.json flowunu tetikler ve dönen data ile jira ticket'ı oluşturur. 
+FreePrometheus\FreePrometheusFlow.json flowunun rapor üreten node'u ise FreePrometheus\PrometheusNodes\20. Generate Final Report.js node'udur. 
+Bu flowdaki alert bilgisi de  FreePrometheus\PrometheusNodes\3. Load Alert Knowledge Base.js node'unda olmalı. 
+Sen flow json dosyalaırnı okumaya çalışma, sadece nodelar üzerinde inceleme yapıp değişiklik yaparsan daha kolay olur. 
+Ayrıca ilgili başka node var mı kontrol etmek için node pathlerini verdiğim klasörde ilgili flowun diğer nodelarını da görüp okuyabilir ve değiştirebilirsin.
+
+Şimdi Prometheus n8n flow.json flowun node'ları PrometheusNodes klasörü içinde görebilirsin. Node dosyaları js ve txt doyaları ieklinde verildi. Ayrıca her bir node için Iput ve output'ları json dosyası şeklinde verildi.
+FreePrometheus\FreePrometheusFlow.json flowun node'ları FreePrometheus\PrometheusNodes klasörü içinde görebilirsin. Node dosyaları js ve txt doyaları ieklinde verildi. Ayrıca her bir node için Iput ve output'ları json dosyası şeklinde verildi.
+
+Bütün bu bilgileri unutma, kalıcı hafıza al. 
+Bütün node'ları ve input outputları inceleyerek report node'larının çıktılarının yanı olmaısnı sağla. Eksik varsa söyle. Çünkü son düzeltmelre rağmen aynı içerik yok.
