@@ -75,7 +75,63 @@ const contextData = $('Service Dependency Loader').first().json;
 
 **Not**: Merge node'a gerek yok! Node 5.1 otomatik olarak Node 4'ü `$('Service Dependency Loader').first().json` ile erişir.
 
-### Adım 3: Test Et
+---
+
+## Anomaly Detection İçin Aynı Düzeltme
+
+### Adım 1: Yeni Code Node Oluştur (Anomaly)
+
+1. **Anomaly Detection AI Agent** ile **7.5 Validate** arasına **yeni bir Code node** ekle
+2. Node'a şu ismi ver: **"7.1 Set Anomaly Result"**
+3. Aşağıdaki kodu yapıştır:
+
+```javascript
+// Kod 7.1 Set Anomaly Result.js dosyasından kopyala
+// Veya GitHub'dan indir: LokiFlow/LokiNodes/7.1 Set Anomaly Result.js
+```
+
+**Kod çok uzun, dosyadan kopyalayın**: [7.1 Set Anomaly Result.js](../LokiNodes/7.1%20Set%20Anomaly%20Result.js)
+
+**Önemli**: Kod, Node 6'dan context alır:
+```javascript
+const contextData = $('Pass Context to Anomaly Stage').first().json;
+```
+
+### Adım 2: Bağlantıları Düzenle (Anomaly)
+
+**Eski Workflow** (YANLIŞ):
+```
+6. Pass Context to Anomaly Stage
+  ↓
+7. Anomaly Detection AI Agent
+  ↓
+7.5 Validate ❌ (metadata/context kayboldu!)
+```
+
+**Yeni Workflow** (DOĞRU):
+```
+6. Pass Context to Anomaly Stage
+  ↓
+7. Anomaly Detection AI Agent
+  ↓
+7.1 Set Anomaly Result (Node 6'dan context alır, AI output ile birleştirir)
+  ↓
+7.5 Validate After Anomaly Detection ✅
+```
+
+**Adım Adım**:
+
+1. **Anomaly AI → Node 7.1** bağlantısı:
+   - Anomaly Detection AI Agent çıktısını
+   - "7.1 Set Anomaly Result" girişine bağla
+
+2. **Node 7.1 → Validation** bağlantısı:
+   - "7.1 Set Anomaly Result" çıktısını
+   - "7.5 Validate After Anomaly Detection" girişine bağla
+
+---
+
+### Adım 3: Test Et (Stage 1 & Anomaly)
 
 1. Workflow'u test modunda çalıştır
 
@@ -109,6 +165,24 @@ const contextData = $('Service Dependency Loader').first().json;
    - Errors: 0 ✅
    - Warnings: 0 ✅
    ✅ Stage 1 Validation PASSED
+   ```
+
+5. **"7.1 Set Anomaly Result"** console log'unu kontrol et:
+   ```
+   === SET ANOMALY RESULT ===
+   Anomaly AI output exists? YES
+   Context from Node 6 exists? YES
+   Should proceed to Stage 2: true/false
+   ```
+
+6. **"7.5 Validate After Anomaly Detection"** console log'unu kontrol et:
+   ```
+   === VALIDATE AFTER ANOMALY DETECTION ===
+   Anomaly result exists: true ✅
+   Validation Results:
+   - Errors: 0 ✅
+   - Warnings: 0 ✅
+   ✅ Anomaly Detection Validation PASSED
    ```
 
 ---
@@ -149,12 +223,12 @@ n8n'de **AI Agent node'lar** çıktıyı şu formatta verir:
 
 Aynı düzeltme **tüm AI Agent node'lardan sonra** gerekli:
 
-1. **Stage 1 sonrası**: ✅ "5.1 Set Stage 1 Result" (şimdi oluşturduk)
-2. **Anomaly sonrası**: Node 8 (Merge Anomaly Results) zaten bunu yapıyor ✅
+1. **Stage 1 sonrası**: ✅ "5.1 Set Stage 1 Result" (oluşturuldu)
+2. **Anomaly sonrası**: ✅ "7.1 Set Anomaly Result" (oluşturuldu)
 3. **Stage 2 sonrası**: Node 11 (Preserve Context After Stage 2) zaten bunu yapıyor ✅
 4. **Stage 3 sonrası**: Node 15 (Combine All Stages) zaten bunu yapıyor ✅
 
-**Sadece Stage 1 eksikti!** 🎯
+**Stage 1 ve Anomaly eksikti, şimdi düzeltildi!** 🎯
 
 ---
 

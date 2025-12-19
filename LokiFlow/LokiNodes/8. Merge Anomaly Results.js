@@ -25,7 +25,7 @@ if (inputs.length === 1) {
                     data.output?.stage === "health_snapshot";
 
   if (hasStage1) {
-    return [{
+    return {
       json: {
         ...data,  // Preserve standardized structure
 
@@ -43,7 +43,7 @@ if (inputs.length === 1) {
         anomaly_reason_skipped: "Conditions not met for anomaly check",
         _branch: "no_anomaly"
       }
-    }];
+    };
   }
 }
 
