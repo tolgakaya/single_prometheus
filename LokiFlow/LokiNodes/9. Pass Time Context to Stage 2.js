@@ -20,15 +20,39 @@ for (const input of inputs) {
     spike_ratio: 0
   };
   
+  // CRITICAL: Send ONLY summary data to Stage 2, not raw logs
+  // This prevents token overflow (Stage 1 + Anomaly raw data can be 200K+ tokens)
   results.push({
     json: {
-      ...data,
+      // Preserve metadata and context (small)
+      metadata: data.metadata,
+      context: data.context,
+      timeRange: data.timeRange || data.context?.timeRange,
+
+      // Stage results SUMMARY ONLY (no raw logs)
+      stageResults: {
+        stage1: {
+          stage: data.stageResults?.stage1?.stage || "health_snapshot",
+          status: data.stageResults?.stage1?.status || stage1Result.status,
+          metrics: data.stageResults?.stage1?.metrics || stage1Result.metrics || {},
+          critical_errors: data.stageResults?.stage1?.critical_errors?.slice(0, 5) || [], // Top 5 only
+          affected_services: data.stageResults?.stage1?.affected_services?.slice(0, 10) || [], // Top 10 only
+          quick_summary: data.stageResults?.stage1?.quick_summary || "",
+          proceed_to_anomaly: data.stageResults?.stage1?.proceed_to_anomaly || false
+        },
+        stage1_5_anomaly: data.stageResults?.stage1_5_anomaly || {
+          performed: data.anomaly_check_performed || false,
+          anomaly_scores: anomalyScores,
+          anomaly_summary: data.anomaly_analysis?.anomaly_summary || "",
+          proceed_to_stage2: data.proceed_to_stage2 !== false
+        }
+      },
+
+      // Legacy fields for prompt compatibility (SUMMARY ONLY)
       stage1_status: stage1Result.status,
-      stage1_result: stage1Result,
       anomaly_scores: anomalyScores,
-      anomaly_analysis: data.anomaly_analysis || null,
       anomaly_check_performed: data.anomaly_check_performed || false,
-      proceed_to_stage2: data.proceed_to_stage2 !== false, // Default true
+      proceed_to_stage2: data.proceed_to_stage2 !== false,
       _item_branch: data._branch || "unknown"
     }
   });
