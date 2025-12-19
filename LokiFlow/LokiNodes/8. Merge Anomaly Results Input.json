@@ -558,6 +558,50 @@
         ],
         "quick_summary": "The error rate across all namespaces is 1.77%, which is considered normal but close to warning thresholds for some critical services.",
         "proceed_to_anomaly": false
+      },
+      "stage1_5_anomaly": {
+        "performed": true,
+        "stage": "anomaly_detection",
+        "execution_time": "2025-12-19T11:06:27.054Z",
+        "anomaly_scores": {
+          "moving_average": 0.5,
+          "std_deviation": 0.6,
+          "rate_change": 0.5,
+          "spike_ratio": 0.25
+        },
+        "anomaly_findings": {
+          "trend_direction": "increasing",
+          "trend_severity": "moderate",
+          "baseline_deviation": "minor_deviation",
+          "spike_pattern": "random",
+          "anomaly_period": {
+            "start": "2025-12-19T10:30:00.000Z",
+            "end": "2025-12-19T11:00:00.000Z",
+            "peak": "2025-12-19T10:45:00.000Z"
+          }
+        },
+        "service_anomalies": {
+          "most_anomalous_services": [
+            "bstp-cpq-batch",
+            "ntf-engine-service",
+            "ui-authz-mc-backend"
+          ],
+          "anomaly_distribution": "distributed"
+        },
+        "raw_metrics": {
+          "data_points_analyzed": 32,
+          "mean_error_rate": 0.03333333333333333,
+          "max_error_rate": 0.06666666666666667,
+          "std_deviation": 0.016666666666666666
+        },
+        "anomaly_summary": "The analysis detected a moderate increasing trend in error rates with minor deviations from the baseline. Random spikes were observed, particularly affecting services like bstp-cpq-batch and ntf-engine-service. The anomalies were distributed across multiple namespaces.",
+        "tools_executed": [
+          "Anomaly - Moving Average",
+          "Anomaly - Standard Deviation",
+          "Anomaly - Rate Change",
+          "Anomaly - Spike Detection"
+        ],
+        "proceed_to_stage2": true
       }
     },
     "enrichments": {},
@@ -1088,13 +1132,65 @@
       }
     },
     "output": {
-      "stage": "health_snapshot",
-      "execution_time": "2025-12-19T11:06:12.662Z",
+      "stage": "anomaly_detection",
+      "execution_time": "2025-12-19T11:06:27.054Z",
       "analysis_period": {
         "start": "2025-12-19T10:06:12.000Z",
         "end": "2025-12-19T11:06:12.000Z",
         "duration_minutes": 60
       },
+      "tools_executed": [
+        "Anomaly - Moving Average",
+        "Anomaly - Standard Deviation",
+        "Anomaly - Rate Change",
+        "Anomaly - Spike Detection"
+      ],
+      "raw_metrics": {
+        "data_points_analyzed": 32,
+        "mean_error_rate": 0.03333333333333333,
+        "max_error_rate": 0.06666666666666667,
+        "std_deviation": 0.016666666666666666
+      },
+      "anomaly_scores": {
+        "moving_average": 0.5,
+        "std_deviation": 0.6,
+        "rate_change": 0.5,
+        "spike_ratio": 0.25
+      },
+      "anomaly_findings": {
+        "trend_direction": "increasing",
+        "trend_severity": "moderate",
+        "baseline_deviation": "minor_deviation",
+        "spike_pattern": "random",
+        "anomaly_period": {
+          "start": "2025-12-19T10:30:00.000Z",
+          "end": "2025-12-19T11:00:00.000Z",
+          "peak": "2025-12-19T10:45:00.000Z"
+        }
+      },
+      "service_anomalies": {
+        "most_anomalous_services": [
+          "bstp-cpq-batch",
+          "ntf-engine-service",
+          "ui-authz-mc-backend"
+        ],
+        "anomaly_distribution": "distributed"
+      },
+      "proceed_to_stage2": true,
+      "anomaly_summary": "The analysis detected a moderate increasing trend in error rates with minor deviations from the baseline. Random spikes were observed, particularly affecting services like bstp-cpq-batch and ntf-engine-service. The anomalies were distributed across multiple namespaces.",
+      "recommended_focus": "Stage 2 should focus on investigating the causes of the increasing error rates and random spikes, particularly in the bstp-cpq-batch and ntf-engine-service."
+    },
+    "_validation": {
+      "stage": "stage1_5_anomaly",
+      "validated_at": "2025-12-19T11:06:36.412Z",
+      "errors": [],
+      "warnings": [],
+      "passed": true
+    },
+    "requireAnomalyCheck": true,
+    "stage1_result": {
+      "stage": "health_snapshot",
+      "execution_time": "2025-12-19T11:06:12.662Z",
       "status": "normal",
       "metrics": {
         "total_logs": 168573,
@@ -1113,33 +1209,72 @@
           "ui-authz-mc-backend (em-global-prod)"
         ]
       },
-      "anomalies": {
-        "sudden_spike": false,
-        "new_error_types": false,
-        "service_degradation": [],
-        "anomaly_scores": {
-          "moving_average": 0,
-          "std_deviation": 0,
-          "rate_change": 0,
-          "spike_ratio": 0
-        },
-        "anomaly_period": null
-      },
-      "proceed_to_stage2": true,
-      "reason": "based on tool results",
-      "quick_summary": "The error rate across all namespaces is 1.77%, which is considered normal but close to warning thresholds for some critical services.",
-      "forceDeepAnalysis": false,
-      "priority": "normal",
-      "overridden": false,
+      "critical_errors": [],
+      "affected_services": [],
       "tools_executed": [
         "Error Rate Check",
         "Service Health Check"
       ],
-      "context_preserved": {
-        "analysisId": "actual analysis ID",
-        "source": "actual source",
-        "priority": "normal"
-      }
-    }
+      "quick_summary": "The error rate across all namespaces is 1.77%, which is considered normal but close to warning thresholds for some critical services.",
+      "proceed_to_anomaly": false
+    },
+    "anomaly_analysis": {
+      "stage": "anomaly_detection",
+      "execution_time": "2025-12-19T11:06:27.054Z",
+      "analysis_period": {
+        "start": "2025-12-19T10:06:12.000Z",
+        "end": "2025-12-19T11:06:12.000Z",
+        "duration_minutes": 60
+      },
+      "tools_executed": [
+        "Anomaly - Moving Average",
+        "Anomaly - Standard Deviation",
+        "Anomaly - Rate Change",
+        "Anomaly - Spike Detection"
+      ],
+      "raw_metrics": {
+        "data_points_analyzed": 32,
+        "mean_error_rate": 0.03333333333333333,
+        "max_error_rate": 0.06666666666666667,
+        "std_deviation": 0.016666666666666666
+      },
+      "anomaly_scores": {
+        "moving_average": 0.5,
+        "std_deviation": 0.6,
+        "rate_change": 0.5,
+        "spike_ratio": 0.25
+      },
+      "anomaly_findings": {
+        "trend_direction": "increasing",
+        "trend_severity": "moderate",
+        "baseline_deviation": "minor_deviation",
+        "spike_pattern": "random",
+        "anomaly_period": {
+          "start": "2025-12-19T10:30:00.000Z",
+          "end": "2025-12-19T11:00:00.000Z",
+          "peak": "2025-12-19T10:45:00.000Z"
+        }
+      },
+      "service_anomalies": {
+        "most_anomalous_services": [
+          "bstp-cpq-batch",
+          "ntf-engine-service",
+          "ui-authz-mc-backend"
+        ],
+        "anomaly_distribution": "distributed"
+      },
+      "proceed_to_stage2": true,
+      "anomaly_summary": "The analysis detected a moderate increasing trend in error rates with minor deviations from the baseline. Random spikes were observed, particularly affecting services like bstp-cpq-batch and ntf-engine-service. The anomalies were distributed across multiple namespaces.",
+      "recommended_focus": "Stage 2 should focus on investigating the causes of the increasing error rates and random spikes, particularly in the bstp-cpq-batch and ntf-engine-service."
+    },
+    "anomaly_scores": {
+      "moving_average": 0.5,
+      "std_deviation": 0.6,
+      "rate_change": 0.5,
+      "spike_ratio": 0.25
+    },
+    "anomaly_check_performed": true,
+    "proceed_to_stage2": true,
+    "_branch": "with_anomaly"
   }
 ]

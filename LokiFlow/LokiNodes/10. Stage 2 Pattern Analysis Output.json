@@ -1,0 +1,2 @@
+Bad request - please check your parameters
+litellm.ContextWindowExceededError: litellm.BadRequestError: ContextWindowExceededError: OpenAIException - This model's maximum context length is 128000 tokens. However, your messages resulted in 263495 tokens (263175 in the messages, 320 in the functions). Please reduce the length of the messages or functions. model=etiya-gpt-4o. context_window_fallbacks=None. fallbacks=None. Set 'context_window_fallback' - https://docs.litellm.ai/docs/routing#fallbacks. Received Model Group=etiya-gpt-4o Available Model Group Fallbacks=None

@@ -1140,6 +1140,44 @@
         "source": "actual source",
         "priority": "normal"
       }
+    },
+    "_validation": {
+      "stage": "stage1",
+      "validated_at": "2025-12-19T11:06:26.990Z",
+      "errors": [],
+      "warnings": [],
+      "passed": true
+    },
+    "requireAnomalyCheck": true,
+    "stage1_result": {
+      "stage": "health_snapshot",
+      "execution_time": "2025-12-19T11:06:12.662Z",
+      "status": "normal",
+      "metrics": {
+        "total_logs": 168573,
+        "error_count": 2986,
+        "error_rate": "1.77%",
+        "log_levels": {
+          "debug": 0,
+          "info": 0,
+          "warn": 0,
+          "error": 0,
+          "fatal": 0
+        },
+        "top_error_services": [
+          "bstp-cpq-batch (em-prod)",
+          "ntf-engine-service (em-global-prod)",
+          "ui-authz-mc-backend (em-global-prod)"
+        ]
+      },
+      "critical_errors": [],
+      "affected_services": [],
+      "tools_executed": [
+        "Error Rate Check",
+        "Service Health Check"
+      ],
+      "quick_summary": "The error rate across all namespaces is 1.77%, which is considered normal but close to warning thresholds for some critical services.",
+      "proceed_to_anomaly": false
     }
   }
 ]
