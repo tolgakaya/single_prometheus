@@ -26,7 +26,7 @@ if (!aiOutput || !aiOutput.stage) {
 }
 
 // CRITICAL: Merge context data with AI output
-return [{
+return {
   json: {
     // Preserve entire standardized structure from Node 4
     ...contextData,
@@ -50,4 +50,4 @@ return [{
     // Legacy compatibility - keep output field
     output: aiOutput
   }
-}];
+};

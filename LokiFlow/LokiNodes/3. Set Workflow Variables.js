@@ -44,7 +44,7 @@ console.log("Priority:", vars.PRIORITY);
 console.log("Orchestrator Request:", vars.IS_ORCHESTRATOR_REQUEST);
 
 // Pass all data forward (preserve standardized structure)
-return [{
+return {
   json: {
     ...timeData,  // Preserve entire standardized structure
     $vars: vars,
@@ -62,4 +62,4 @@ return [{
     forceDeepAnalysis: forceDeepAnalysis,
     priority: metadata.priority || timeData.priority || 'normal'
   }
-}];
+};

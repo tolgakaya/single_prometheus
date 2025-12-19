@@ -133,7 +133,7 @@ console.log("✅ ALL STAGES VALIDATED SUCCESSFULLY");
 console.log("=======================================\n");
 
 // Pass data through with final validation metadata
-return [{
+return {
   json: {
     ...input,
     _validation: {
@@ -145,4 +145,4 @@ return [{
       all_stages_validated: true
     }
   }
-}];
+};

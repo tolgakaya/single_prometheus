@@ -241,4 +241,4 @@ console.log("Force Deep Analysis:", output.metadata.forceDeepAnalysis);
 console.log("Source:", output.metadata.source);
 console.log("==========================================================");
 
-return [{ json: output }];
+return { json: output };

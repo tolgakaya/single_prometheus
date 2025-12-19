@@ -13,7 +13,7 @@ console.log("Has stageResults.stage1?", input.stageResults?.stage1 ? "YES" : "NO
 const stage1Result = input.stageResults?.stage1 || input.output || input;
 
 // CRITICAL: Pass EVERYTHING to anomaly stage (preserve standardized structure)
-return [{
+return {
   json: {
     // Preserve entire standardized structure (already has metadata, context, stageResults)
     ...input,
@@ -24,4 +24,4 @@ return [{
     // Stage 1 result reference for the anomaly agent prompt (both new and legacy)
     stage1_result: stage1Result  // Legacy field for prompt compatibility
   }
-}];
+};

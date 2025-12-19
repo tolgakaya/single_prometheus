@@ -637,4 +637,4 @@ function generateTimelineChart(timeline) {
     }))
   };
 }
-return [{ json: finalOutput }];
+return { json: finalOutput };

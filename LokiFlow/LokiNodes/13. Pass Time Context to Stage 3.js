@@ -15,7 +15,7 @@ const timeContext = {
 // Extract anomaly context
 const anomalyContext = stage2Result.anomaly_context || prevData.anomaly_scores || {};
 
-return [{ 
+return { 
   json: {
     ...stage2Result,
     ...timeContext,
@@ -24,4 +24,4 @@ return [{
     anomaly_context: anomalyContext,
     proceed_to_stage3: stage2Result.proceed_to_stage3
   }
-}];
+};

@@ -163,7 +163,7 @@ const serviceDependencyData = {
 };
 
 // IMPORTANT: Return with standardized structure update
-return [{
+return {
   json: {
     ...input, // PRESERVE ALL EXISTING DATA
 
@@ -176,4 +176,4 @@ return [{
     // Legacy compatibility - keep at root level
     serviceDependencies: serviceDependencyData
   }
-}];
+};

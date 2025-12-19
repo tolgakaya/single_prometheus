@@ -71,7 +71,7 @@ if (passContextItem && anomalyResultItem) {
                        priority === 'critical' ||
                        anomalyData.proceed_to_stage2;
 
-  return [{
+  return {
     json: {
       ...contextData,  // Preserve standardized structure
 
@@ -98,9 +98,9 @@ if (passContextItem && anomalyResultItem) {
       output: contextData.output || contextData.stage1_result, // Keep Stage 1 for legacy!
       _branch: "with_anomaly"
     }
-  }];
+  };
 }
 
 // Fallback
 console.log("WARNING: Could not properly merge, returning first input");
-return [inputs[0]];
+return inputs[0];

@@ -81,4 +81,4 @@ const finalData = {
   }
 };
 
-return [{ json: finalData }];
+return { json: finalData };

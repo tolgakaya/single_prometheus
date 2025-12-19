@@ -101,4 +101,4 @@ if (input.orchestratorId && input.analysisConfig) {
 }
 
 // If neither format matches, pass through unchanged
-return [{ json: input }];
+return { json: input };

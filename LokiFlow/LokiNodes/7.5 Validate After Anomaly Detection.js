@@ -101,7 +101,7 @@ console.log("✅ Anomaly Detection Validation PASSED");
 console.log("==========================================\n");
 
 // Pass data through with validation metadata
-return [{
+return {
   json: {
     ...input,
     _validation: {
@@ -112,4 +112,4 @@ return [{
       passed: errors.length === 0
     }
   }
-}];
+};
