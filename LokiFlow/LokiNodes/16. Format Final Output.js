@@ -58,14 +58,14 @@ const finalOutput = {
     } : null,
     
     // Stage 1.5 - Anomaly Detection (if performed)
-    stage1_5_anomalyDetection: timeContext.anomaly_analysis ? {
-      execution_time: timeContext.anomaly_analysis.execution_time,
-      anomaly_scores: timeContext.anomaly_analysis.anomaly_scores,
-      anomaly_findings: timeContext.anomaly_analysis.anomaly_findings,
-      service_anomalies: timeContext.anomaly_analysis.service_anomalies,
-      raw_metrics: timeContext.anomaly_analysis.raw_metrics,
-      tools_executed: timeContext.anomaly_analysis.tools_executed,
-      anomaly_summary: timeContext.anomaly_analysis.anomaly_summary
+    stage1_5_anomalyDetection: stageResults.stage1_5_anomaly?.performed ? {
+      execution_time: stageResults.stage1_5_anomaly.execution_time,
+      anomaly_scores: stageResults.stage1_5_anomaly.anomaly_scores,
+      anomaly_findings: stageResults.stage1_5_anomaly.anomaly_findings,
+      service_anomalies: stageResults.stage1_5_anomaly.service_anomalies,
+      raw_metrics: stageResults.stage1_5_anomaly.raw_metrics,
+      tools_executed: stageResults.stage1_5_anomaly.tools_executed,
+      anomaly_summary: stageResults.stage1_5_anomaly.anomaly_summary
     } : null,
     
     // Stage 2 - Pattern Analysis
@@ -106,12 +106,12 @@ const finalOutput = {
     } : {},
     
     // Anomaly Evidence
-    anomalyEvidence: timeContext.anomaly_analysis ? {
-      scores: timeContext.anomaly_analysis.anomaly_scores,
-      trend_direction: timeContext.anomaly_analysis.anomaly_findings?.trend_direction,
-      baseline_deviation: timeContext.anomaly_analysis.anomaly_findings?.baseline_deviation,
-      spike_pattern: timeContext.anomaly_analysis.anomaly_findings?.spike_pattern,
-      anomalous_services: timeContext.anomaly_analysis.service_anomalies?.most_anomalous_services
+    anomalyEvidence: stageResults.stage1_5_anomaly?.performed ? {
+      scores: stageResults.stage1_5_anomaly.anomaly_scores,
+      trend_direction: stageResults.stage1_5_anomaly.anomaly_findings?.trend_direction,
+      baseline_deviation: stageResults.stage1_5_anomaly.anomaly_findings?.baseline_deviation,
+      spike_pattern: stageResults.stage1_5_anomaly.anomaly_findings?.spike_pattern,
+      anomalous_services: stageResults.stage1_5_anomaly.service_anomalies?.most_anomalous_services
     } : null,
     
     // Pattern Evidence
@@ -205,25 +205,25 @@ const finalOutput = {
   // METADATA ENHANCED
   metadata: {
     stagesExecuted: stage3Result ? 3 : stage2Result ? 2 : 1,
-    includesAnomalyAnalysis: timeContext.stage1_5_anomaly_detection?.performed || false,
+    includesAnomalyAnalysis: stageResults.stage1_5_anomaly?.performed || false,
     totalExecutionTime: `${executionTimeSeconds}s`,
     inputSource: context.source || 'unknown',
-    affectedServices: timeContext.affectedServices || [],
+    affectedServices: context.affectedServices || [],
     severity: context.severity || stage3Result?.analysis_metadata?.severity || 'unknown',
-    priority: timeContext.priority || 'normal',
-    forceDeepAnalysis: timeContext.forceDeepAnalysis || false,
+    priority: metadata.priority || 'normal',
+    forceDeepAnalysis: metadata.forceDeepAnalysis || false,
     toolsUsed: [
-      ...(stage1Result.tools_executed || []), 
-      ...(timeContext.anomaly_analysis?.tools_executed || []),
-      ...(stage2Result?.tools_executed || []), 
+      ...(stage1Result.tools_executed || []),
+      ...(stageResults.stage1_5_anomaly?.tools_executed || []),
+      ...(stage2Result?.tools_executed || []),
       ...(stage3Result?.tools_executed || [])
     ].filter((v, i, a) => a.indexOf(v) === i),
     enhancedAnalysis: {
       cascadeDetection: cascadeData ? "enabled" : "disabled",
       stackTraceAnalysis: stage3Result ? "completed" : "not_required",
       serviceMapping: "enabled",
-      anomalyDetection: timeContext.stage1_5_anomaly_detection?.performed ? "performed" : "skipped",
-      serviceDependencyAnalysis: timeContext.dependencyContext ? "enabled" : "disabled"
+      anomalyDetection: stageResults.stage1_5_anomaly?.performed ? "performed" : "skipped",
+      serviceDependencyAnalysis: context.serviceDependencies ? "enabled" : "disabled"
     }
   }
 };
@@ -568,8 +568,25 @@ function generateErrorDistribution(stage2) {
 
 function calculateStageDuration(stageResult) {
   if (!stageResult?.execution_time) return 'N/A';
-  // Bu kısım stage execution zamanlarını hesaplar
-  return '< 1s'; // Placeholder
+
+  // Parse execution_time (could be "2.5s", "150ms", ISO timestamp, number, etc.)
+  const execTime = stageResult.execution_time;
+
+  if (typeof execTime === 'string') {
+    // Already formatted string
+    if (execTime.includes('ms') || execTime.includes('s') || execTime.includes('m')) {
+      return execTime;
+    }
+  }
+
+  if (typeof execTime === 'number') {
+    // Assume milliseconds
+    if (execTime < 1000) return execTime + 'ms';
+    if (execTime < 60000) return (execTime / 1000).toFixed(1) + 's';
+    return (execTime / 60000).toFixed(1) + 'm';
+  }
+
+  return 'N/A';
 }
 
 function assessEvidenceQuality(stage3) {
@@ -586,12 +603,36 @@ function assessEvidenceQuality(stage3) {
 }
 
 function generateErrorTrendData(stage1, timeRange) {
-  // Basit bir trend data structure
+  const labels = [];
+  const errorData = [];
+
+  // From Stage 1 metrics
+  if (stage1?.metrics?.error_rate) {
+    labels.push('Overall Period');
+    const errorRate = parseFloat(stage1.metrics.error_rate) || 0;
+    errorData.push(errorRate);
+  }
+
+  // If we have error count and total logs, calculate rate
+  if (stage1?.metrics?.error_count && stage1?.metrics?.total_logs) {
+    const rate = (stage1.metrics.error_count / stage1.metrics.total_logs * 100).toFixed(2);
+    if (!labels.includes('Overall Period')) {
+      labels.push('Overall Period');
+      errorData.push(parseFloat(rate));
+    }
+  }
+
+  // Fallback if no data
+  if (labels.length === 0) {
+    labels.push('No Data');
+    errorData.push(0);
+  }
+
   return {
-    labels: ['Start', 'Peak', 'Current'],
+    labels: labels,
     datasets: [{
-      label: 'Error Rate',
-      data: [0, 100, 50] // Placeholder - gerçek verilerle değiştirin
+      label: 'Error Rate (%)',
+      data: errorData
     }]
   };
 }
