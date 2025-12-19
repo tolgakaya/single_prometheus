@@ -45,16 +45,25 @@ for (const input of inputs) {
         stageResults: {
           ...contextData.stageResults,  // stage1, stage1_5_anomaly, stage2 from Node 13
           stage3: {
-            stage: "root_cause_analysis",
-            execution_time: stage3Result.execution_time,
-            root_cause: stage3Result.root_cause,
-            technical_details: stage3Result.technical_details,
-            contributing_factors: stage3Result.contributing_factors,
-            business_impact: stage3Result.business_impact,
-            recommended_actions: stage3Result.recommended_actions,
-            tools_executed: stage3Result.tools_executed,
-            confidence_score: stage3Result.confidence_score,
-            severity: stage3Result.severity
+            stage: stage3Result.stage || "root_cause_analysis",
+            // Map findings to expected validation structure
+            root_cause: stage3Result.findings?.primary_root_cause ? {
+              component: stage3Result.affected_systems?.services?.[0]?.name || "unknown",
+              issue_type: stage3Result.findings.primary_root_cause.type || stage3Result.investigation_type,
+              evidence: stage3Result.findings.primary_root_cause.evidence || [],
+              confidence: stage3Result.findings.primary_root_cause.confidence
+            } : (stage3Result.root_cause || null),
+            technical_details: stage3Result.findings || stage3Result.technical_details,
+            contributing_factors: stage3Result.findings?.contributing_factors || stage3Result.contributing_factors,
+            business_impact: stage3Result.affected_systems || stage3Result.business_impact,
+            recommended_actions: stage3Result.remediation?.immediate_actions || stage3Result.recommended_actions,
+            tools_executed: stage3Result.tools_executed || [],
+            confidence_score: stage3Result.findings?.primary_root_cause?.confidence || stage3Result.confidence_score,
+            severity: stage3Result.analysis_metadata?.severity || stage3Result.severity,
+            // Keep original fields as well
+            executive_summary: stage3Result.executive_summary,
+            remediation: stage3Result.remediation,
+            prevention: stage3Result.prevention
           }
         },
 
