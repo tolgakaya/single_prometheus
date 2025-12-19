@@ -1,0 +1,286 @@
+[
+  {
+    "output": {
+      "stage": "pattern_analysis",
+      "patterns_identified": {
+        "error_patterns": {
+          "dominant_errors": [],
+          "pattern_category": "auth|service|batch|resource"
+        },
+        "service_patterns": {
+          "most_affected": [],
+          "cascade_detected": false,
+          "cascade_path": []
+        },
+        "temporal_patterns": {
+          "error_clustering": "N/A",
+          "propagation_speed": "N/A"
+        }
+      },
+      "correlations": {
+        "resource_correlation": 0,
+        "service_dependency": [],
+        "external_factors": []
+      },
+      "user_impact": {
+        "affected_percentage": "N/A",
+        "affected_features": [],
+        "geographic_distribution": "N/A"
+      },
+      "confidence_score": 0,
+      "tools_executed": [
+        "Cascade Timeline Reconstructor",
+        "Error Pattern Analyzer",
+        "Service Error Distribution"
+      ],
+      "anomaly_context": {
+        "highest_anomaly": "RC0.75"
+      },
+      "proceed_to_stage3": false
+    },
+    "stageResults": {
+      "stage2": {
+        "stage": "pattern_analysis",
+        "patterns_identified": {
+          "error_patterns": {
+            "dominant_errors": [],
+            "pattern_category": "auth|service|batch|resource"
+          },
+          "service_patterns": {
+            "most_affected": [],
+            "cascade_detected": false,
+            "cascade_path": []
+          },
+          "temporal_patterns": {
+            "error_clustering": "N/A",
+            "propagation_speed": "N/A"
+          }
+        },
+        "correlations": {
+          "resource_correlation": 0,
+          "service_dependency": [],
+          "external_factors": []
+        },
+        "user_impact": {
+          "affected_percentage": "N/A",
+          "affected_features": [],
+          "geographic_distribution": "N/A"
+        },
+        "confidence_score": 0,
+        "tools_executed": [
+          "Cascade Timeline Reconstructor",
+          "Error Pattern Analyzer",
+          "Service Error Distribution"
+        ],
+        "anomaly_context": {
+          "highest_anomaly": "RC0.75"
+        },
+        "proceed_to_stage3": false
+      }
+    },
+    "stage2_output": {
+      "stage": "pattern_analysis",
+      "analysis_timeframe": {
+        "start": "2025-12-19T11:38:03.000Z",
+        "end": "2025-12-19T12:38:03.000Z",
+        "focused_period": "30 minutes"
+      },
+      "trigger_reason": "Critical: bstp-pcm-product-catalog,ntf-engine-service,domain-config-service",
+      "anomaly_context": {
+        "highest_anomaly": "RC0.75"
+      },
+      "tools_executed": [
+        "Cascade Timeline Reconstructor",
+        "Error Pattern Analyzer",
+        "Service Error Distribution"
+      ],
+      "patterns_identified": {
+        "error_patterns": {
+          "dominant_errors": [],
+          "pattern_category": "auth|service|batch|resource"
+        },
+        "service_patterns": {
+          "most_affected": [],
+          "cascade_detected": false,
+          "cascade_path": []
+        },
+        "temporal_patterns": {
+          "error_clustering": "N/A",
+          "propagation_speed": "N/A"
+        }
+      },
+      "correlations": {
+        "resource_correlation": 0,
+        "service_dependency": [],
+        "external_factors": []
+      },
+      "user_impact": {
+        "affected_percentage": "N/A",
+        "affected_features": [],
+        "geographic_distribution": "N/A"
+      },
+      "proceed_to_stage3": false,
+      "stage3_focus": "auth_failure|resource_exhaustion|cascade_failure|service_degradation",
+      "confidence_score": 0
+    },
+    "proceed_to_stage3": false,
+    "enrichments": {
+      "cascadeAnalysis": {
+        "totalCascades": 0,
+        "averageDuration": 0,
+        "maxDuration": null,
+        "cascadePatterns": [],
+        "criticalCascades": 0,
+        "dependencyBasedCascades": 0,
+        "affectedServicesPerCascade": []
+      },
+      "serviceImpact": {},
+      "timeline": [],
+      "recommendation": "No cascade pattern detected in the time range.",
+      "suggestedActions": [
+        "1. No cascade detected in the analyzed time range",
+        "2. Continue monitoring critical services: bstp-pcm-product-catalog, ntf-engine-service, domain-config-service",
+        "3. Review service dependencies for potential improvements"
+      ],
+      "dependencyContext": {
+        "criticalServices": [
+          {
+            "service": "bstp-pcm-product-catalog",
+            "score": 100
+          },
+          {
+            "service": "ntf-engine-service",
+            "score": 100
+          },
+          {
+            "service": "domain-config-service",
+            "score": 100
+          },
+          {
+            "service": "ntf-history-service",
+            "score": 100
+          },
+          {
+            "service": "crm-asset",
+            "score": 100
+          }
+        ],
+        "serviceGroups": {
+          "notification": [
+            "ntf-engine-service",
+            "ntf-history-service",
+            "ntf-batch-service",
+            "cpq-ntf-integrator-service",
+            "crm-ntf-integrator-service",
+            "bss-mc-ntf-engine-t4"
+          ],
+          "customer": [
+            "crm-customer-information",
+            "crm-mash-up",
+            "crm-asset",
+            "customer-search-mc-backend",
+            "bss-mc-crm-customer-information-t4"
+          ],
+          "product": [
+            "bstp-pcm-product-catalog",
+            "bstp-pcm-product-offer-detail",
+            "bss-mc-pcm-product-catalog-t4"
+          ],
+          "order": [
+            "cpq-ordercapture",
+            "bss-mc-cpq-t4",
+            "bstp-cpq-batch"
+          ],
+          "config": [
+            "domain-config-service",
+            "bss-mc-domain-config-t4"
+          ],
+          "auth": [
+            "eca-t4",
+            "ui-authz-mc-backend"
+          ],
+          "integration": [
+            "APIGateway",
+            "search-integrator-mc-backend",
+            "bss-services-service.etiyamobile-production-eom"
+          ]
+        },
+        "totalServices": 28,
+        "averageDependencyDepth": 1.8928571428571428
+      }
+    },
+    "metadata": {
+      "proceed_to_stage3": false
+    },
+    "cascadeDetected": false,
+    "cascadeAnalysis": {
+      "totalCascades": 0,
+      "averageDuration": 0,
+      "maxDuration": null,
+      "affectedServicesPerCascade": [],
+      "cascadePatterns": [],
+      "criticalCascades": 0,
+      "dependencyBasedCascades": 0
+    },
+    "serviceImpact": {},
+    "stage1_health_check": null,
+    "stage1_5_anomaly_detection": null,
+    "stage2_pattern_analysis": {
+      "stage": "pattern_analysis",
+      "patterns_identified": {
+        "error_patterns": {
+          "dominant_errors": [],
+          "pattern_category": "auth|service|batch|resource"
+        },
+        "service_patterns": {
+          "most_affected": [],
+          "cascade_detected": false,
+          "cascade_path": []
+        },
+        "temporal_patterns": {
+          "error_clustering": "N/A",
+          "propagation_speed": "N/A"
+        }
+      },
+      "correlations": {
+        "resource_correlation": 0,
+        "service_dependency": [],
+        "external_factors": []
+      },
+      "user_impact": {
+        "affected_percentage": "N/A",
+        "affected_features": [],
+        "geographic_distribution": "N/A"
+      },
+      "confidence_score": 0,
+      "tools_executed": [
+        "Cascade Timeline Reconstructor",
+        "Error Pattern Analyzer",
+        "Service Error Distribution"
+      ],
+      "anomaly_context": {
+        "highest_anomaly": "RC0.75"
+      },
+      "proceed_to_stage3": false
+    },
+    "_debugInfo": {
+      "totalInputs": 1,
+      "inputs": [
+        {
+          "index": 0,
+          "topLevelKeys": [
+            "output",
+            "stageResults",
+            "stage2_output",
+            "proceed_to_stage3"
+          ],
+          "hasOutput": true,
+          "outputStage": "pattern_analysis",
+          "hasStage1Result": false,
+          "hasAnomalyAnalysis": false,
+          "hasTimeRange": false
+        }
+      ]
+    }
+  }
+]

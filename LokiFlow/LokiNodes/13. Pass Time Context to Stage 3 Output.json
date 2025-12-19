@@ -1,0 +1,76 @@
+[
+  {
+    "metadata": {
+      "proceed_to_stage3": false
+    },
+    "context": {},
+    "stageResults": {
+      "stage1": {},
+      "stage1_5_anomaly": {},
+      "stage2": {
+        "stage": "pattern_analysis",
+        "status": "completed",
+        "patterns_identified": {
+          "error_patterns": {
+            "dominant_errors": [],
+            "pattern_category": "auth|service|batch|resource"
+          },
+          "service_patterns": {
+            "most_affected": [],
+            "cascade_detected": false,
+            "cascade_path": []
+          },
+          "temporal_patterns": {
+            "error_clustering": "N/A",
+            "propagation_speed": "N/A"
+          }
+        },
+        "stage3_focus": {},
+        "proceed_to_stage3": false,
+        "summary": ""
+      }
+    },
+    "analysisId": "unknown",
+    "stage2_pattern": {},
+    "anomaly_context": {},
+    "proceed_to_stage3": false,
+    "output": {
+      "stage": "pattern_analysis",
+      "patterns_identified": {
+        "error_patterns": {
+          "dominant_errors": [],
+          "pattern_category": "auth|service|batch|resource"
+        },
+        "service_patterns": {
+          "most_affected": [],
+          "cascade_detected": false,
+          "cascade_path": []
+        },
+        "temporal_patterns": {
+          "error_clustering": "N/A",
+          "propagation_speed": "N/A"
+        }
+      },
+      "correlations": {
+        "resource_correlation": 0,
+        "service_dependency": [],
+        "external_factors": []
+      },
+      "user_impact": {
+        "affected_percentage": "N/A",
+        "affected_features": [],
+        "geographic_distribution": "N/A"
+      },
+      "confidence_score": 0,
+      "tools_executed": [
+        "Cascade Timeline Reconstructor",
+        "Error Pattern Analyzer",
+        "Service Error Distribution"
+      ],
+      "anomaly_context": {
+        "highest_anomaly": "RC0.75"
+      },
+      "proceed_to_stage3": false
+    }
+  }
+]
