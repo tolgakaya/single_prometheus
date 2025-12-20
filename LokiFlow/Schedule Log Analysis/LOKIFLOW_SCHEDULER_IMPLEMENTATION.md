@@ -22,15 +22,27 @@ This document explains the complete adaptation of the Scheduler flow from FreePr
 }
 ```
 
-**LokiFlow Output Structure**:
+**LokiFlow Output Structure** (Node 17 passes through Node 16 + adds jiraTicket):
 ```javascript
 {
-  jiraTicket: {title, description, priority, labels, issues, actions},
+  // All fields from Node 16 (Format Final Output):
+  analysisComplete: true,
+  timestamp: "ISO timestamp",
+  workflowExecutionId: "execution_id",
+  analysisId: "lokiflow-timestamp-hash",
   metadata: {analysisId, workflowExecutionId, stagesExecuted},
   timeContext: {requestedRange, source},
   incidentEvaluation: {isIncident, severity, errorRate, errorCount},
   consolidatedFindings: {identifiedIssues[], affectedServices[], severity},
-  actionableInsights: {immediateActions, monitoringGaps, processImprovements}
+  actionableInsights: {immediateActions, monitoringGaps, processImprovements},
+  stageResults: {...},
+  evidenceCollection: {...},
+  performanceBenchmarks: {...},
+
+  // Added by Node 17 (Generate Jira Ticket):
+  jiraTicket: {title, description, priority, labels, issues, actions},
+  htmlContent: "HTML formatted ticket",
+  summary: {title, priority, issueType, labelsCount, issuesCount}
 }
 ```
 

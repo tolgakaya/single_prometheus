@@ -489,8 +489,10 @@ console.log("Priority:", jiraPriority);
 console.log("Labels:", jiraLabels.length);
 console.log("Issues included:", identifiedIssues.length);
 
+// Pass through ALL data from Node 16 (inputData) + add jiraTicket field
 return {
   json: {
+    ...inputData,  // Pass through complete Node 16 output
     jiraTicket: jiraTicket,
     htmlContent: jiraTicketHtml,
     summary: {
@@ -500,15 +502,6 @@ return {
       labelsCount: jiraLabels.length,
       issuesCount: identifiedIssues.length,
       affectedServicesCount: affectedServices.length
-    },
-
-    // SCHEDULER SUPPORT: Pass through full analysis data for deduplication and processing
-    metadata: metadata,
-    timeContext: timeContext,
-    incidentEvaluation: incidentEvaluation,
-    consolidatedFindings: consolidatedFindings,
-    actionableInsights: actionableInsights,
-    stageResults: stageResults,
-    performanceBenchmarks: performanceBenchmarks
+    }
   }
 };
