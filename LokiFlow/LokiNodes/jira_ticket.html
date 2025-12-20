@@ -1,0 +1,193 @@
+
+<div style="font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto;">
+
+  <!-- INCIDENT SUMMARY -->
+  <div style="border: 2px solid #2196f3; border-radius: 8px; margin: 10px 0; background: #e3f2fd;">
+    <div style="background: #2196f3; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;">
+      📊 LOG ANALYSIS SUMMARY
+    </div>
+    <div style="padding: 15px; background: white; border-radius: 0 0 6px 6px;">
+      <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+        <tr><td style="font-weight: bold; width: 150px; padding: 5px;">Analysis ID:</td><td style="padding: 5px;">unknown</td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Type:</td><td style="padding: 5px;">Log Analysis</td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Overall Severity:</td><td style="padding: 5px;">🟢 NORMAL</td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Issues Detected:</td><td style="padding: 5px;"><strong>1</strong></td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Affected Services:</td><td style="padding: 5px;">bstp-cpq-batch (em-prod), bstp-id-service (em-global-prod), ntf-engine-service (em-global-prod), b2b-object-storage, bstp-id-service</td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Time Range:</td><td style="padding: 5px;">2025-12-20T12:35:30.000Z to 2025-12-20T13:35:30.000Z</td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Duration:</td><td style="padding: 5px;">1 hours</td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Error Rate:</td><td style="padding: 5px;">1.7%</td></tr>
+        <tr><td style="font-weight: bold; padding: 5px;">Error Count:</td><td style="padding: 5px;">3463</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- EXECUTIVE SUMMARY -->
+  <div style="margin: 20px 0; padding: 15px; background: #f5f5f5; border-left: 4px solid #607d8b; border-radius: 4px;">
+    <h3 style="margin: 0 0 10px 0; color: #455a64;">📝 Executive Summary</h3>
+    <p style="margin: 0; line-height: 1.6;">Analysis: The root cause of the incident was identified as a DNS resolution failure affecting the 'bstp-id-service' and other services, leading to service disruptions. Immediate remediation involves checking and correcting DNS configurations, with long-term solutions focusing on implementing DNS monitoring and regular audits.</p>
+  </div>
+
+  <!-- IDENTIFIED ISSUES -->
+  <div style="margin: 20px 0;">
+    <h2 style="color: #f57c00; border-bottom: 2px solid #ff9800; padding-bottom: 10px;">
+      🔍 Identified Issues (1)
+    </h2>
+    
+    <div style="border: 2px solid #ff9800; border-radius: 8px; margin: 15px 0; background: #fff3e0;">
+      <div style="background: #ff9800; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;">
+        🔍 ISSUE 1 of 1
+      </div>
+      <div style="padding: 15px; background: white; border-radius: 0 0 6px 6px;">
+        <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
+          <tr><td style="font-weight: bold; width: 150px; padding: 5px;">Issue Type:</td><td style="padding: 5px;">java.net.UnknownHostException</td></tr>
+          <tr><td style="font-weight: bold; padding: 5px;">Affected Services:</td><td style="padding: 5px;">bstp-id-service</td></tr>
+          <tr><td style="font-weight: bold; padding: 5px;">Occurrences:</td><td style="padding: 5px;">1</td></tr>
+          <tr><td style="font-weight: bold; padding: 5px;">Severity:</td><td style="padding: 5px;">🟡 MEDIUM</td></tr>
+          <tr><td style="font-weight: bold; padding: 5px;">Detected By:</td><td style="padding: 5px;">STAGE2 PATTERN ANALYSIS</td></tr>
+          
+        </table>
+
+        <div style="margin-top: 15px;">
+          <h4 style="margin: 0 0 10px 0; color: #f57c00;">📋 Evidence:</h4>
+          <ul style="margin: 5px 0; padding-left: 20px;">
+            <li>Error type: java.net.UnknownHostException</li>
+      <li>Occurrence count: 1</li>
+      <li>Affected services: bstp-id-service</li>
+      <li>Temporal clustering: 2025-12-20T12:35:30.000Z to 2025-12-20T12:35:35.000Z</li>
+      <li>Propagation speed: <2s</li>
+          </ul>
+        </div>
+
+        
+
+        
+
+        
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONABLE INSIGHTS -->
+  
+  <div style="border: 2px solid #2196f3; border-radius: 8px; margin: 20px 0; background: #e3f2fd;">
+    <div style="background: #2196f3; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;">
+      🛠️ IMMEDIATE ACTIONS REQUIRED
+    </div>
+    <div style="padding: 15px; background: white; border-radius: 0 0 6px 6px;">
+      <ul style="margin: 0; padding-left: 20px;">
+        <li><strong>Check DNS server configuration</strong><br><code style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px;">kubectl get configmap -n kube-system coredns -o yaml</code><br><em>Impact: Restore DNS resolution</em> <span style="color: #f44336;">(Risk: Low risk if configuration is corrected)</span></li>
+      </ul>
+    </div>
+  </div>
+  
+
+  <!-- MONITORING GAPS & PROCESS IMPROVEMENTS -->
+  
+  <div style="margin: 20px 0;">
+    <h3 style="color: #9c27b0; border-bottom: 2px solid #9c27b0; padding-bottom: 10px;">
+      🔮 Prevention & Improvements
+    </h3>
+
+    
+    <div style="margin: 15px 0; padding: 10px; background: #f3e5f5; border-left: 4px solid #9c27b0; border-radius: 4px;">
+      <h4 style="margin: 0 0 10px 0; color: #7b1fa2;">📊 Monitoring Gaps:</h4>
+      <ul style="margin: 5px 0; padding-left: 20px;">
+        <li>Lack of DNS resolution monitoring</li>
+      </ul>
+    </div>
+    
+
+    
+    <div style="margin: 15px 0; padding: 10px; background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 4px;">
+      <h4 style="margin: 0 0 10px 0; color: #2e7d32;">🔧 Process Improvements:</h4>
+      <ul style="margin: 5px 0; padding-left: 20px;">
+        <li>Regular DNS configuration audits</li>
+      </ul>
+    </div>
+    
+  </div>
+  
+
+  <!-- ANALYSIS DETAILS -->
+  <div style="margin: 20px 0;">
+    <h3 style="color: #607d8b; border-bottom: 2px solid #607d8b; padding-bottom: 10px;">
+      📈 Analysis Details
+    </h3>
+
+    <table style="width: 100%; border-collapse: collapse; margin: 10px 0;">
+      <tr style="background: #f5f5f5;">
+        <th style="padding: 8px; text-align: left; border-bottom: 2px solid #e0e0e0;">Stage</th>
+        <th style="padding: 8px; text-align: left; border-bottom: 2px solid #e0e0e0;">Status</th>
+      </tr>
+      
+    <tr>
+      <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">Stage 1: Health Check</td>
+      <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">
+        <span style="color: #4caf50; font-weight: bold;">✓</span> normal
+      </td>
+    </tr>
+  
+    <tr>
+      <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">Stage 2: Pattern Analysis</td>
+      <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">
+        <span style="color: #4caf50; font-weight: bold;">✓</span> Analysis Complete
+      </td>
+    </tr>
+  
+    <tr>
+      <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">Stage 3: Root Cause Analysis</td>
+      <td style="padding: 8px; border-bottom: 1px solid #e0e0e0;">
+        <span style="color: #4caf50; font-weight: bold;">✓</span> Completed
+      </td>
+    </tr>
+  
+    </table>
+
+    <div style="margin: 15px 0; padding: 10px; background: #fafafa; border-radius: 4px;">
+      <h4 style="margin: 0 0 10px 0;">⏱️ Performance Metrics:</h4>
+      <ul style="margin: 0; padding-left: 20px;">
+        <li><strong>Total Analysis Time:</strong> 0s</li>
+        <li><strong>Logs Processed:</strong> 203,476</li>
+        <li><strong>Errors Parsed:</strong> 3,463</li>
+        <li><strong>Services Analyzed:</strong> 5</li>
+        <li><strong>Confidence Score:</strong> 50.0%</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- INCIDENT EVALUATION JUSTIFICATION -->
+  <div style="margin: 20px 0; padding: 15px; background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 4px;">
+    <h4 style="margin: 0 0 10px 0; color: #2e7d32;">
+      ✅ Normal Operations Assessment
+    </h4>
+    <p style="margin: 0;"><strong>Justification:</strong> Error rate 1.7% within acceptable limits</p>
+
+    <div style="margin-top: 10px;">
+      <strong>Thresholds:</strong>
+      <ul style="margin: 5px 0; padding-left: 20px;">
+        <li>Warning: 2% error rate</li>
+        <li>Incident: 5% error rate</li>
+        <li>Critical: 10% error rate</li>
+      </ul>
+    </div>
+
+    
+    <div style="margin-top: 10px;">
+      <strong>Factors:</strong>
+      <ul style="margin: 5px 0; padding-left: 20px;">
+        <li>Anomaly Detected: ✗ No</li>
+        <li>Cascade Detected: ✗ No</li>
+        <li>Critical Services Affected: 0</li>
+      </ul>
+    </div>
+    
+  </div>
+
+  <!-- FOOTER -->
+  <div style="text-align: center; margin-top: 30px; padding: 15px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666;">
+    <div style="margin-bottom: 5px;"><strong>Auto-Generated by LokiFlow</strong></div>
+    <div>Analysis Timestamp: 12/20/2025, 4:37:35 PM</div>
+    <div>Workflow Execution ID: unknown</div>
+    <div>Stages Completed: 3 | Tools Used: 6</div>
+  </div>
+</div>
