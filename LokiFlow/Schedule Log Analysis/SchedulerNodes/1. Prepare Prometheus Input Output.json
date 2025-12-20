@@ -1,70 +1,62 @@
-// Prepare Prometheus Input Node
-// Purpose: Converts Schedule Trigger empty input to FreePrometheus Flow required format
-// Position: Between "Schedule Trigger" and "Execute Prometheus Analysis"
-
-const now = Math.floor(Date.now() / 1000);
-const oneHourAgo = now - 3600; // 1 hour lookback for scheduled checks
-
-// Generate unique request ID
-const requestId = `scheduled-${now}-${Math.random().toString(36).substring(7)}`;
-
-// Prepare orchestrator input for FreePrometheus Flow
-const orchestratorInput = {
-  requestId: requestId,
-  orchestratorId: `scheduler-health-check-${now}`,
-  timestamp: new Date().toISOString(),
-  requestType: 'scheduled_health_check',
-  
-  // Time range for analysis (last 1 hour)
-  timeRange: {
-    start: oneHourAgo,
-    end: now,
-    duration: '1h'
-  },
-  
-  // Context for FreePrometheus Flow
-  context: {
-    source: {
-      type: 'scheduler',
-      trigger: 'periodic_check',
-      interval: '15m'
+[
+  {
+    "startTime": 1766238380,
+    "endTime": 1766241980,
+    "context": {
+      "source": {
+        "type": "scheduler",
+        "trigger": "periodic_log_check",
+        "interval": "50m"
+      },
+      "namespaces": [
+        "bstp-cms-global-production",
+        "bstp-cms-prod-v3",
+        "em-global-prod-3pp",
+        "em-global-prod-eom",
+        "em-global-prod-flowe",
+        "em-global-prod",
+        "em-prod-3pp",
+        "em-prod-eom",
+        "em-prod-flowe",
+        "em-prod",
+        "etiyamobile-production",
+        "etiyamobile-prod"
+      ],
+      "servicePatterns": [
+        "rim",
+        "pcm",
+        "ntf",
+        "crm",
+        "eom",
+        "fstp",
+        "api",
+        "gateway",
+        "auth",
+        "payment",
+        "subscription"
+      ],
+      "cluster": "production-cluster",
+      "checkType": "scheduled"
     },
-    // Default namespaces to check (can be customized)
-    namespaces: [
-      'bstp-cms-global-production',
-      'em-control-plane-prod',
-      'production'
-    ],
-    // Cluster info (can be customized based on your setup)
-    cluster: process.env.CLUSTER_NAME || 'production-cluster',
-    checkType: 'comprehensive' // or 'quick', 'critical-only'
-  },
-  
-  // Metadata
-  metadata: {
-    scheduler: {
-      version: '1.0',
-      nextRun: new Date(Date.now() + 15 * 60 * 1000).toISOString(), // Next 15 min
-      runNumber: Math.floor(now / (15 * 60)), // Approximate run counter
+    "metadata": {
+      "requestId": "lokiflow-scheduled-1766241980-yf1g4s",
+      "source": "Scheduler Log Analysis Flow",
+      "automated": true,
+      "schedulerVersion": "2.0-loki",
+      "nextRun": "2025-12-20T15:36:20.518Z",
+      "runNumber": 588747
     },
-    source: 'Scheduler Cluster Health Flow',
-    automated: true
-  },
-  
-  // Priority (normal for scheduled checks, critical for manual triggers)
-  priority: 'normal',
-  
-  // Force deep analysis for scheduled checks
-  forceDeepAnalysis: false // Set true if you want full 6-stage analysis every time
-};
-
-return {
-  json: {
-    orchestratorInput: orchestratorInput,
-    schedulerInfo: {
-      triggeredAt: new Date().toISOString(),
-      requestId: requestId,
-      checkInterval: '15m'
+    "priority": "normal",
+    "forceDeepAnalysis": false,
+    "searchFilters": {
+      "logLevels": [
+        "error",
+        "ERROR",
+        "warning",
+        "WARNING"
+      ],
+      "minErrorRate": 0.005,
+      "minErrorCount": 10
     }
   }
-};
+]
