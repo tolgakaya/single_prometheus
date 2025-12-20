@@ -1,8 +1,8 @@
 [
   {
     "metadata": {
-      "analysisId": "analysis-1766147883230",
-      "timestamp": "2025-12-19T12:38:03.230Z",
+      "analysisId": "analysis-1766157380291",
+      "timestamp": "2025-12-19T15:16:20.291Z",
       "priority": "normal",
       "forceDeepAnalysis": false,
       "source": "default",
@@ -15,18 +15,18 @@
     },
     "context": {
       "timeRange": {
-        "start": 1766144283,
-        "end": 1766147883,
-        "startISO": "2025-12-19T11:38:03.000Z",
-        "endISO": "2025-12-19T12:38:03.000Z",
+        "start": 1766153780,
+        "end": 1766157380,
+        "startISO": "2025-12-19T14:16:20.000Z",
+        "endISO": "2025-12-19T15:16:20.000Z",
         "durationSeconds": 3600,
         "durationMinutes": 60,
         "durationHuman": "1 hours",
         "step": 60
       },
       "queryParams": {
-        "start": 1766144283,
-        "end": 1766147883,
+        "start": 1766153780,
+        "end": 1766157380,
         "step": 60
       },
       "affectedServices": [],
@@ -529,10 +529,10 @@
       }
     },
     "timeRange": {
-      "start": 1766144283,
-      "end": 1766147883,
-      "startISO": "2025-12-19T11:38:03.000Z",
-      "endISO": "2025-12-19T12:38:03.000Z",
+      "start": 1766153780,
+      "end": 1766157380,
+      "startISO": "2025-12-19T14:16:20.000Z",
+      "endISO": "2025-12-19T15:16:20.000Z",
       "durationSeconds": 3600,
       "durationMinutes": 60,
       "durationHuman": "1 hours"
@@ -540,11 +540,11 @@
     "stageResults": {
       "stage1": {
         "stage": "health_snapshot",
-        "status": "normal",
+        "status": "critical",
         "metrics": {
-          "total_logs": 201911,
-          "error_count": 3754,
-          "error_rate": "1.86%",
+          "total_logs": 232416,
+          "error_count": 3645,
+          "error_rate": "1.57%",
           "log_levels": {
             "debug": 0,
             "info": 0,
@@ -553,23 +553,21 @@
             "fatal": 0
           },
           "top_error_services": [
-            "bstp-cms-global-production:Drupal",
-            "em-global-prod:bstp-common-outbox-message-relay",
-            "em-global-prod:bstp-cpq-batch",
-            "em-global-prod:bstp-id-service",
-            "em-global-prod:cpq-ntf-integrator-service",
-            "em-global-prod:cpq-ordercapture",
-            "em-global-prod:ntf-batch-service",
-            "em-global-prod:ntf-engine-service",
-            "em-global-prod:ntf-history-service",
-            "em-global-prod:ui-authz-mc-backend",
-            "em-prod:bstp-cpq-batch",
-            "em-prod:cpq-ordercapture"
+            "bstp-cms-global-production",
+            "bstp-cms-prod-v3",
+            "em-global-prod",
+            "em-global-prod-3pp",
+            "em-global-prod-eom",
+            "em-global-prod-flowe",
+            "em-prod",
+            "em-prod-3pp",
+            "em-prod-eom",
+            "em-prod-flowe"
           ]
         },
         "critical_errors": [],
         "affected_services": [],
-        "quick_summary": "The error rate is 1.86%, which is above the normal threshold, indicating a need for further analysis.",
+        "quick_summary": "The error rate across services is 1.57%, which is above the critical threshold. Services like bstp-cms-global-production and em-global-prod show significant error rates.",
         "proceed_to_anomaly": false
       },
       "stage1_5_anomaly": {
@@ -580,8 +578,8 @@
     "anomaly_scores": {
       "moving_average": 0.5,
       "std_deviation": 0.6,
-      "rate_change": 0.75,
-      "spike_ratio": 0.1
+      "rate_change": 0.4,
+      "spike_ratio": 0.2
     },
     "anomaly_check_performed": false,
     "proceed_to_stage2": true,

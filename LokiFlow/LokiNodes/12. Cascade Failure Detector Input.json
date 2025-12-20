@@ -1,66 +1,611 @@
 [
   {
-    "output": {
-      "stage": "pattern_analysis",
-      "analysis_timeframe": {
-        "start": "2025-12-19T11:38:03.000Z",
-        "end": "2025-12-19T12:38:03.000Z",
-        "focused_period": "30 minutes"
+    "metadata": {
+      "analysisId": "analysis-1766157380291",
+      "timestamp": "2025-12-19T15:16:20.291Z",
+      "priority": "normal",
+      "forceDeepAnalysis": false,
+      "source": "default",
+      "orchestratorId": null,
+      "requestId": null,
+      "analysisConfig": null,
+      "searchFilters": null,
+      "features": null,
+      "orchestratorMetadata": null
+    },
+    "context": {
+      "timeRange": {
+        "start": 1766153780,
+        "end": 1766157380,
+        "startISO": "2025-12-19T14:16:20.000Z",
+        "endISO": "2025-12-19T15:16:20.000Z",
+        "durationSeconds": 3600,
+        "durationMinutes": 60,
+        "durationHuman": "1 hours",
+        "step": 60
       },
-      "trigger_reason": "Critical: bstp-pcm-product-catalog,ntf-engine-service,domain-config-service",
-      "anomaly_context": {
-        "highest_anomaly": "RC0.75"
+      "queryParams": {
+        "start": 1766153780,
+        "end": 1766157380,
+        "step": 60
       },
-      "tools_executed": [
-        "Cascade Timeline Reconstructor",
-        "Error Pattern Analyzer",
-        "Service Error Distribution"
-      ],
-      "patterns_identified": {
-        "error_patterns": {
-          "dominant_errors": [],
-          "pattern_category": "auth|service|batch|resource"
+      "affectedServices": [],
+      "serviceDependencies": {
+        "raw": {
+          "cpq-ntf-integrator-service": {
+            "dependencies": [
+              "domain-config-service",
+              "ntf-engine-service",
+              "ntf-history-service",
+              "crm-customer-information",
+              "bss-mc-ntf-engine-t4"
+            ]
+          },
+          "ntf-batch-service": {
+            "dependencies": [
+              "domain-config-service",
+              "ntf-engine-service"
+            ]
+          },
+          "activity": {
+            "dependencies": [
+              "domain-config-service"
+            ]
+          },
+          "ui-authz-mc-backend": {
+            "dependencies": [
+              "domain-config-service"
+            ]
+          },
+          "crm-ntf-integrator-service": {
+            "dependencies": [
+              "domain-config-service",
+              "ntf-engine-service",
+              "crm-customer-information",
+              "search-integrator-mc-backend"
+            ]
+          },
+          "search-integrator-mc-backend": {
+            "dependencies": [
+              "crm-customer-information"
+            ]
+          },
+          "crm-customer-information": {
+            "dependencies": [
+              "crm-asset",
+              "domain-config-service",
+              "bstp-pcm-product-catalog",
+              "eca-t4",
+              "bss-services-service.etiyamobile-production-eom",
+              "bss-mc-domain-config-t4",
+              "bss-mc-asset-management-t4",
+              "bss-mc-ntf-engine-t4",
+              "bss-mc-crm-customer-information-t4",
+              "bss-mc-pcm-product-catalog-t4"
+            ]
+          },
+          "crm-mash-up": {
+            "dependencies": [
+              "crm-customer-information",
+              "cpq-ordercapture",
+              "bstp-pcm-product-catalog",
+              "bstp-pcm-product-offer-detail",
+              "bss-mc-cpq-t4",
+              "bss-mc-crm-customer-information-t4",
+              "bss-mc-asset-management-t4",
+              "customer-search-mc-backend",
+              "bstp-pcm-product-catalog",
+              "bss-mc-pcm-product-catalog-t4"
+            ]
+          },
+          "bstp-pcm-product-catalog": {
+            "dependencies": [
+              "domain-config-service"
+            ]
+          },
+          "cpq-ordercapture": {
+            "dependencies": [
+              "bstp-pcm-product-catalog",
+              "bstp-pcm-product-offer-detail",
+              "domain-config-service",
+              "activity"
+            ]
+          },
+          "bstp-pcm-product-offer-detail": {
+            "dependencies": [
+              "crm-asset"
+            ]
+          },
+          "ntf-engine-service": {
+            "dependencies": [
+              "ntf-history-service",
+              "bss-services-service.etiyamobile-production-eom",
+              "bss-mc-domain-config-t4"
+            ]
+          },
+          "domain-config-service": {
+            "dependencies": [
+              "ntf-engine-service",
+              "ntf-history-service",
+              "bss-mc-ntf-engine-t4"
+            ]
+          },
+          "ntf-history-service": {
+            "dependencies": []
+          },
+          "crm-asset": {
+            "dependencies": []
+          },
+          "bstp-cpq-batch": {
+            "dependencies": [
+              "bss-mc-domain-config-t4",
+              "eca-t4"
+            ]
+          },
+          "bstp-id-service": {
+            "dependencies": []
+          },
+          "em-b2c-wsc-new-ui": {
+            "dependencies": [
+              "eca-t4"
+            ]
+          },
+          "APIGateway": {
+            "dependencies": [
+              "crm-mash-up",
+              "crm-customer-information",
+              "cpq-ordercapture"
+            ]
+          },
+          "bss-services-service.etiyamobile-production-eom": {
+            "dependencies": []
+          },
+          "eca-t4": {
+            "dependencies": []
+          },
+          "bss-mc-domain-config-t4": {
+            "dependencies": [
+              "eca-t4"
+            ]
+          },
+          "bss-mc-cpq-t4": {
+            "dependencies": []
+          },
+          "bss-mc-crm-customer-information-t4": {
+            "dependencies": []
+          },
+          "bss-mc-ntf-engine-t4": {
+            "dependencies": []
+          },
+          "bss-mc-pcm-product-catalog-t4": {
+            "dependencies": []
+          },
+          "bss-mc-asset-management-t4": {
+            "dependencies": []
+          },
+          "customer-search-mc-backend": {
+            "dependencies": []
+          }
         },
-        "service_patterns": {
-          "most_affected": [],
-          "cascade_detected": false,
-          "cascade_path": []
+        "reverse": {
+          "cpq-ntf-integrator-service": [],
+          "ntf-batch-service": [],
+          "activity": [
+            "cpq-ordercapture"
+          ],
+          "ui-authz-mc-backend": [],
+          "crm-ntf-integrator-service": [],
+          "search-integrator-mc-backend": [
+            "crm-ntf-integrator-service"
+          ],
+          "crm-customer-information": [
+            "cpq-ntf-integrator-service",
+            "crm-ntf-integrator-service",
+            "search-integrator-mc-backend",
+            "crm-mash-up",
+            "APIGateway"
+          ],
+          "crm-mash-up": [
+            "APIGateway"
+          ],
+          "bstp-pcm-product-catalog": [
+            "crm-customer-information",
+            "crm-mash-up",
+            "crm-mash-up",
+            "cpq-ordercapture"
+          ],
+          "cpq-ordercapture": [
+            "crm-mash-up",
+            "APIGateway"
+          ],
+          "bstp-pcm-product-offer-detail": [
+            "crm-mash-up",
+            "cpq-ordercapture"
+          ],
+          "ntf-engine-service": [
+            "cpq-ntf-integrator-service",
+            "ntf-batch-service",
+            "crm-ntf-integrator-service",
+            "domain-config-service"
+          ],
+          "domain-config-service": [
+            "cpq-ntf-integrator-service",
+            "ntf-batch-service",
+            "activity",
+            "ui-authz-mc-backend",
+            "crm-ntf-integrator-service",
+            "crm-customer-information",
+            "bstp-pcm-product-catalog",
+            "cpq-ordercapture"
+          ],
+          "ntf-history-service": [
+            "cpq-ntf-integrator-service",
+            "ntf-engine-service",
+            "domain-config-service"
+          ],
+          "crm-asset": [
+            "crm-customer-information",
+            "bstp-pcm-product-offer-detail"
+          ],
+          "bstp-cpq-batch": [],
+          "bstp-id-service": [],
+          "em-b2c-wsc-new-ui": [],
+          "APIGateway": [],
+          "bss-services-service.etiyamobile-production-eom": [
+            "crm-customer-information",
+            "ntf-engine-service"
+          ],
+          "eca-t4": [
+            "crm-customer-information",
+            "bstp-cpq-batch",
+            "em-b2c-wsc-new-ui",
+            "bss-mc-domain-config-t4"
+          ],
+          "bss-mc-domain-config-t4": [
+            "crm-customer-information",
+            "ntf-engine-service",
+            "bstp-cpq-batch"
+          ],
+          "bss-mc-cpq-t4": [
+            "crm-mash-up"
+          ],
+          "bss-mc-crm-customer-information-t4": [
+            "crm-customer-information",
+            "crm-mash-up"
+          ],
+          "bss-mc-ntf-engine-t4": [
+            "cpq-ntf-integrator-service",
+            "crm-customer-information",
+            "domain-config-service"
+          ],
+          "bss-mc-pcm-product-catalog-t4": [
+            "crm-customer-information",
+            "crm-mash-up"
+          ],
+          "bss-mc-asset-management-t4": [
+            "crm-customer-information",
+            "crm-mash-up"
+          ],
+          "customer-search-mc-backend": [
+            "crm-mash-up"
+          ]
         },
-        "temporal_patterns": {
-          "error_clustering": "N/A",
-          "propagation_speed": "N/A"
+        "criticality": {
+          "cpq-ntf-integrator-service": {
+            "directDependents": 0,
+            "totalImpact": 0,
+            "criticalityScore": 0,
+            "tier": "low"
+          },
+          "ntf-batch-service": {
+            "directDependents": 0,
+            "totalImpact": 0,
+            "criticalityScore": 0,
+            "tier": "low"
+          },
+          "activity": {
+            "directDependents": 1,
+            "totalImpact": 4,
+            "criticalityScore": 40,
+            "tier": "medium"
+          },
+          "ui-authz-mc-backend": {
+            "directDependents": 0,
+            "totalImpact": 0,
+            "criticalityScore": 0,
+            "tier": "low"
+          },
+          "crm-ntf-integrator-service": {
+            "directDependents": 0,
+            "totalImpact": 0,
+            "criticalityScore": 0,
+            "tier": "low"
+          },
+          "search-integrator-mc-backend": {
+            "directDependents": 1,
+            "totalImpact": 1,
+            "criticalityScore": 10,
+            "tier": "low"
+          },
+          "crm-customer-information": {
+            "directDependents": 5,
+            "totalImpact": 7,
+            "criticalityScore": 70,
+            "tier": "high"
+          },
+          "crm-mash-up": {
+            "directDependents": 1,
+            "totalImpact": 1,
+            "criticalityScore": 10,
+            "tier": "low"
+          },
+          "bstp-pcm-product-catalog": {
+            "directDependents": 4,
+            "totalImpact": 13,
+            "criticalityScore": 100,
+            "tier": "critical"
+          },
+          "cpq-ordercapture": {
+            "directDependents": 2,
+            "totalImpact": 3,
+            "criticalityScore": 30,
+            "tier": "medium"
+          },
+          "bstp-pcm-product-offer-detail": {
+            "directDependents": 2,
+            "totalImpact": 5,
+            "criticalityScore": 50,
+            "tier": "high"
+          },
+          "ntf-engine-service": {
+            "directDependents": 4,
+            "totalImpact": 26,
+            "criticalityScore": 100,
+            "tier": "critical"
+          },
+          "domain-config-service": {
+            "directDependents": 8,
+            "totalImpact": 22,
+            "criticalityScore": 100,
+            "tier": "critical"
+          },
+          "ntf-history-service": {
+            "directDependents": 3,
+            "totalImpact": 29,
+            "criticalityScore": 100,
+            "tier": "critical"
+          },
+          "crm-asset": {
+            "directDependents": 2,
+            "totalImpact": 13,
+            "criticalityScore": 100,
+            "tier": "critical"
+          },
+          "bstp-cpq-batch": {
+            "directDependents": 0,
+            "totalImpact": 0,
+            "criticalityScore": 0,
+            "tier": "low"
+          },
+          "bstp-id-service": {
+            "directDependents": 0,
+            "totalImpact": 0,
+            "criticalityScore": 0,
+            "tier": "low"
+          },
+          "em-b2c-wsc-new-ui": {
+            "directDependents": 0,
+            "totalImpact": 0,
+            "criticalityScore": 0,
+            "tier": "low"
+          },
+          "APIGateway": {
+            "directDependents": 0,
+            "totalImpact": 0,
+            "criticalityScore": 0,
+            "tier": "low"
+          },
+          "bss-services-service.etiyamobile-production-eom": {
+            "directDependents": 2,
+            "totalImpact": 28,
+            "criticalityScore": 100,
+            "tier": "critical"
+          },
+          "eca-t4": {
+            "directDependents": 4,
+            "totalImpact": 33,
+            "criticalityScore": 100,
+            "tier": "critical"
+          },
+          "bss-mc-domain-config-t4": {
+            "directDependents": 3,
+            "totalImpact": 29,
+            "criticalityScore": 100,
+            "tier": "critical"
+          },
+          "bss-mc-cpq-t4": {
+            "directDependents": 1,
+            "totalImpact": 2,
+            "criticalityScore": 20,
+            "tier": "medium"
+          },
+          "bss-mc-crm-customer-information-t4": {
+            "directDependents": 2,
+            "totalImpact": 9,
+            "criticalityScore": 90,
+            "tier": "high"
+          },
+          "bss-mc-ntf-engine-t4": {
+            "directDependents": 3,
+            "totalImpact": 25,
+            "criticalityScore": 100,
+            "tier": "critical"
+          },
+          "bss-mc-pcm-product-catalog-t4": {
+            "directDependents": 2,
+            "totalImpact": 9,
+            "criticalityScore": 90,
+            "tier": "high"
+          },
+          "bss-mc-asset-management-t4": {
+            "directDependents": 2,
+            "totalImpact": 9,
+            "criticalityScore": 90,
+            "tier": "high"
+          },
+          "customer-search-mc-backend": {
+            "directDependents": 1,
+            "totalImpact": 2,
+            "criticalityScore": 20,
+            "tier": "medium"
+          }
+        },
+        "serviceGroups": {
+          "notification": [
+            "ntf-engine-service",
+            "ntf-history-service",
+            "ntf-batch-service",
+            "cpq-ntf-integrator-service",
+            "crm-ntf-integrator-service",
+            "bss-mc-ntf-engine-t4"
+          ],
+          "customer": [
+            "crm-customer-information",
+            "crm-mash-up",
+            "crm-asset",
+            "customer-search-mc-backend",
+            "bss-mc-crm-customer-information-t4"
+          ],
+          "product": [
+            "bstp-pcm-product-catalog",
+            "bstp-pcm-product-offer-detail",
+            "bss-mc-pcm-product-catalog-t4"
+          ],
+          "order": [
+            "cpq-ordercapture",
+            "bss-mc-cpq-t4",
+            "bstp-cpq-batch"
+          ],
+          "config": [
+            "domain-config-service",
+            "bss-mc-domain-config-t4"
+          ],
+          "auth": [
+            "eca-t4",
+            "ui-authz-mc-backend"
+          ],
+          "integration": [
+            "APIGateway",
+            "search-integrator-mc-backend",
+            "bss-services-service.etiyamobile-production-eom"
+          ]
+        },
+        "metadata": {
+          "totalServices": 28,
+          "avgDependencies": 1.8928571428571428,
+          "mostCritical": [
+            {
+              "service": "bstp-pcm-product-catalog",
+              "score": 100
+            },
+            {
+              "service": "ntf-engine-service",
+              "score": 100
+            },
+            {
+              "service": "domain-config-service",
+              "score": 100
+            },
+            {
+              "service": "ntf-history-service",
+              "score": 100
+            },
+            {
+              "service": "crm-asset",
+              "score": 100
+            }
+          ]
         }
-      },
-      "correlations": {
-        "resource_correlation": 0,
-        "service_dependency": [],
-        "external_factors": []
-      },
-      "user_impact": {
-        "affected_percentage": "N/A",
-        "affected_features": [],
-        "geographic_distribution": "N/A"
-      },
-      "proceed_to_stage3": false,
-      "stage3_focus": "auth_failure|resource_exhaustion|cascade_failure|service_degradation",
-      "confidence_score": 0
+      }
+    },
+    "timeRange": {
+      "start": 1766153780,
+      "end": 1766157380,
+      "startISO": "2025-12-19T14:16:20.000Z",
+      "endISO": "2025-12-19T15:16:20.000Z",
+      "durationSeconds": 3600,
+      "durationMinutes": 60,
+      "durationHuman": "1 hours"
     },
     "stageResults": {
+      "stage1": {
+        "stage": "health_snapshot",
+        "status": "critical",
+        "metrics": {
+          "total_logs": 232416,
+          "error_count": 3645,
+          "error_rate": "1.57%",
+          "log_levels": {
+            "debug": 0,
+            "info": 0,
+            "warn": 0,
+            "error": 0,
+            "fatal": 0
+          },
+          "top_error_services": [
+            "bstp-cms-global-production",
+            "bstp-cms-prod-v3",
+            "em-global-prod",
+            "em-global-prod-3pp",
+            "em-global-prod-eom",
+            "em-global-prod-flowe",
+            "em-prod",
+            "em-prod-3pp",
+            "em-prod-eom",
+            "em-prod-flowe"
+          ]
+        },
+        "critical_errors": [],
+        "affected_services": [],
+        "quick_summary": "The error rate across services is 1.57%, which is above the critical threshold. Services like bstp-cms-global-production and em-global-prod show significant error rates.",
+        "proceed_to_anomaly": false
+      },
+      "stage1_5_anomaly": {
+        "performed": false,
+        "reason_skipped": "Conditions not met for anomaly check"
+      },
       "stage2": {
         "stage": "pattern_analysis",
         "patterns_identified": {
           "error_patterns": {
-            "dominant_errors": [],
-            "pattern_category": "auth|service|batch|resource"
+            "dominant_errors": [
+              {
+                "type": "java.net.UnknownHostException",
+                "count": 1,
+                "services": [
+                  "bstp-id-service"
+                ]
+              },
+              {
+                "type": "Connection to node -1 could not be established",
+                "count": 50,
+                "services": [
+                  "b2b-object-storage"
+                ]
+              }
+            ],
+            "pattern_category": "service"
           },
           "service_patterns": {
-            "most_affected": [],
+            "most_affected": [
+              "b2b-object-storage"
+            ],
             "cascade_detected": false,
             "cascade_path": []
           },
           "temporal_patterns": {
-            "error_clustering": "N/A",
-            "propagation_speed": "N/A"
+            "error_clustering": "2025-12-19T14:16:20Z to 2025-12-19T14:16:25Z",
+            "propagation_speed": "<2s"
           }
         },
         "correlations": {
@@ -73,28 +618,40 @@
           "affected_features": [],
           "geographic_distribution": "N/A"
         },
-        "confidence_score": 0,
+        "confidence_score": 0.4,
         "tools_executed": [
           "Cascade Timeline Reconstructor",
           "Error Pattern Analyzer",
           "Service Error Distribution"
         ],
         "anomaly_context": {
-          "highest_anomaly": "RC0.75"
+          "highest_anomaly": "std_deviation",
+          "anomaly_scores": {
+            "moving_average": 0.5,
+            "std_deviation": 0.6,
+            "rate_change": 0.4,
+            "spike_ratio": 0.2
+          }
         },
         "proceed_to_stage3": false
       }
     },
-    "stage2_output": {
+    "output": {
       "stage": "pattern_analysis",
       "analysis_timeframe": {
-        "start": "2025-12-19T11:38:03.000Z",
-        "end": "2025-12-19T12:38:03.000Z",
+        "start": "2025-12-19T14:16:20.000Z",
+        "end": "2025-12-19T15:16:20.000Z",
         "focused_period": "30 minutes"
       },
-      "trigger_reason": "Critical: bstp-pcm-product-catalog,ntf-engine-service,domain-config-service",
+      "trigger_reason": "Critical: bstp-pcm-product-catalog, ntf-engine-service, domain-config-service",
       "anomaly_context": {
-        "highest_anomaly": "RC0.75"
+        "highest_anomaly": "std_deviation",
+        "anomaly_scores": {
+          "moving_average": 0.5,
+          "std_deviation": 0.6,
+          "rate_change": 0.4,
+          "spike_ratio": 0.2
+        }
       },
       "tools_executed": [
         "Cascade Timeline Reconstructor",
@@ -103,17 +660,34 @@
       ],
       "patterns_identified": {
         "error_patterns": {
-          "dominant_errors": [],
-          "pattern_category": "auth|service|batch|resource"
+          "dominant_errors": [
+            {
+              "type": "java.net.UnknownHostException",
+              "count": 1,
+              "services": [
+                "bstp-id-service"
+              ]
+            },
+            {
+              "type": "Connection to node -1 could not be established",
+              "count": 50,
+              "services": [
+                "b2b-object-storage"
+              ]
+            }
+          ],
+          "pattern_category": "service"
         },
         "service_patterns": {
-          "most_affected": [],
+          "most_affected": [
+            "b2b-object-storage"
+          ],
           "cascade_detected": false,
           "cascade_path": []
         },
         "temporal_patterns": {
-          "error_clustering": "N/A",
-          "propagation_speed": "N/A"
+          "error_clustering": "2025-12-19T14:16:20Z to 2025-12-19T14:16:25Z",
+          "propagation_speed": "<2s"
         }
       },
       "correlations": {
@@ -127,8 +701,76 @@
         "geographic_distribution": "N/A"
       },
       "proceed_to_stage3": false,
-      "stage3_focus": "auth_failure|resource_exhaustion|cascade_failure|service_degradation",
-      "confidence_score": 0
+      "stage3_focus": "service_degradation",
+      "confidence_score": 0.4
+    },
+    "stage2_output": {
+      "stage": "pattern_analysis",
+      "analysis_timeframe": {
+        "start": "2025-12-19T14:16:20.000Z",
+        "end": "2025-12-19T15:16:20.000Z",
+        "focused_period": "30 minutes"
+      },
+      "trigger_reason": "Critical: bstp-pcm-product-catalog, ntf-engine-service, domain-config-service",
+      "anomaly_context": {
+        "highest_anomaly": "std_deviation",
+        "anomaly_scores": {
+          "moving_average": 0.5,
+          "std_deviation": 0.6,
+          "rate_change": 0.4,
+          "spike_ratio": 0.2
+        }
+      },
+      "tools_executed": [
+        "Cascade Timeline Reconstructor",
+        "Error Pattern Analyzer",
+        "Service Error Distribution"
+      ],
+      "patterns_identified": {
+        "error_patterns": {
+          "dominant_errors": [
+            {
+              "type": "java.net.UnknownHostException",
+              "count": 1,
+              "services": [
+                "bstp-id-service"
+              ]
+            },
+            {
+              "type": "Connection to node -1 could not be established",
+              "count": 50,
+              "services": [
+                "b2b-object-storage"
+              ]
+            }
+          ],
+          "pattern_category": "service"
+        },
+        "service_patterns": {
+          "most_affected": [
+            "b2b-object-storage"
+          ],
+          "cascade_detected": false,
+          "cascade_path": []
+        },
+        "temporal_patterns": {
+          "error_clustering": "2025-12-19T14:16:20Z to 2025-12-19T14:16:25Z",
+          "propagation_speed": "<2s"
+        }
+      },
+      "correlations": {
+        "resource_correlation": 0,
+        "service_dependency": [],
+        "external_factors": []
+      },
+      "user_impact": {
+        "affected_percentage": "N/A",
+        "affected_features": [],
+        "geographic_distribution": "N/A"
+      },
+      "proceed_to_stage3": false,
+      "stage3_focus": "service_degradation",
+      "confidence_score": 0.4
     },
     "proceed_to_stage3": false
   }

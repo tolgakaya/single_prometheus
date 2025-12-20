@@ -3,13 +3,19 @@
     "output": {
       "stage": "pattern_analysis",
       "analysis_timeframe": {
-        "start": "2025-12-19T11:38:03.000Z",
-        "end": "2025-12-19T12:38:03.000Z",
+        "start": "2025-12-19T14:16:20.000Z",
+        "end": "2025-12-19T15:16:20.000Z",
         "focused_period": "30 minutes"
       },
-      "trigger_reason": "Critical: bstp-pcm-product-catalog,ntf-engine-service,domain-config-service",
+      "trigger_reason": "Critical: bstp-pcm-product-catalog, ntf-engine-service, domain-config-service",
       "anomaly_context": {
-        "highest_anomaly": "RC0.75"
+        "highest_anomaly": "std_deviation",
+        "anomaly_scores": {
+          "moving_average": 0.5,
+          "std_deviation": 0.6,
+          "rate_change": 0.4,
+          "spike_ratio": 0.2
+        }
       },
       "tools_executed": [
         "Cascade Timeline Reconstructor",
@@ -18,17 +24,34 @@
       ],
       "patterns_identified": {
         "error_patterns": {
-          "dominant_errors": [],
-          "pattern_category": "auth|service|batch|resource"
+          "dominant_errors": [
+            {
+              "type": "java.net.UnknownHostException",
+              "count": 1,
+              "services": [
+                "bstp-id-service"
+              ]
+            },
+            {
+              "type": "Connection to node -1 could not be established",
+              "count": 50,
+              "services": [
+                "b2b-object-storage"
+              ]
+            }
+          ],
+          "pattern_category": "service"
         },
         "service_patterns": {
-          "most_affected": [],
+          "most_affected": [
+            "b2b-object-storage"
+          ],
           "cascade_detected": false,
           "cascade_path": []
         },
         "temporal_patterns": {
-          "error_clustering": "N/A",
-          "propagation_speed": "N/A"
+          "error_clustering": "2025-12-19T14:16:20Z to 2025-12-19T14:16:25Z",
+          "propagation_speed": "<2s"
         }
       },
       "correlations": {
@@ -42,8 +65,8 @@
         "geographic_distribution": "N/A"
       },
       "proceed_to_stage3": false,
-      "stage3_focus": "auth_failure|resource_exhaustion|cascade_failure|service_degradation",
-      "confidence_score": 0
+      "stage3_focus": "service_degradation",
+      "confidence_score": 0.4
     }
   }
 ]

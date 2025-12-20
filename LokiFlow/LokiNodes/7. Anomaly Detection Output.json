@@ -2,10 +2,10 @@
   {
     "output": {
       "stage": "anomaly_detection",
-      "execution_time": "2025-12-19T11:06:27.054Z",
+      "execution_time": "2025-12-19T15:17:06.432Z",
       "analysis_period": {
-        "start": "2025-12-19T10:06:12.000Z",
-        "end": "2025-12-19T11:06:12.000Z",
+        "start": "2025-12-19T14:16:20.000Z",
+        "end": "2025-12-19T15:16:20.000Z",
         "duration_minutes": 60
       },
       "tools_executed": [
@@ -15,7 +15,7 @@
         "Anomaly - Spike Detection"
       ],
       "raw_metrics": {
-        "data_points_analyzed": 32,
+        "data_points_analyzed": 30,
         "mean_error_rate": 0.03333333333333333,
         "max_error_rate": 0.06666666666666667,
         "std_deviation": 0.016666666666666666
@@ -23,31 +23,30 @@
       "anomaly_scores": {
         "moving_average": 0.5,
         "std_deviation": 0.6,
-        "rate_change": 0.5,
-        "spike_ratio": 0.25
+        "rate_change": 0.4,
+        "spike_ratio": 0.2
       },
       "anomaly_findings": {
-        "trend_direction": "increasing",
+        "trend_direction": "fluctuating",
         "trend_severity": "moderate",
         "baseline_deviation": "minor_deviation",
         "spike_pattern": "random",
         "anomaly_period": {
-          "start": "2025-12-19T10:30:00.000Z",
-          "end": "2025-12-19T11:00:00.000Z",
-          "peak": "2025-12-19T10:45:00.000Z"
+          "start": "2025-12-19T14:16:20.000Z",
+          "end": "2025-12-19T15:16:20.000Z",
+          "peak": "2025-12-19T14:46:20.000Z"
         }
       },
       "service_anomalies": {
         "most_anomalous_services": [
           "bstp-cpq-batch",
-          "ntf-engine-service",
-          "ui-authz-mc-backend"
+          "bstp-id-service"
         ],
         "anomaly_distribution": "distributed"
       },
       "proceed_to_stage2": true,
-      "anomaly_summary": "The analysis detected a moderate increasing trend in error rates with minor deviations from the baseline. Random spikes were observed, particularly affecting services like bstp-cpq-batch and ntf-engine-service. The anomalies were distributed across multiple namespaces.",
-      "recommended_focus": "Stage 2 should focus on investigating the causes of the increasing error rates and random spikes, particularly in the bstp-cpq-batch and ntf-engine-service."
+      "anomaly_summary": "The analysis detected moderate fluctuations in error rates across multiple services, with a notable deviation from the baseline and random spike patterns. The most affected services were bstp-cpq-batch and bstp-id-service, indicating a distributed anomaly pattern across the namespaces.",
+      "recommended_focus": "Stage 2 should focus on investigating the bstp-cpq-batch and bstp-id-service for potential underlying issues causing the fluctuations and deviations."
     }
   }
 ]

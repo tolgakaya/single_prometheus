@@ -1,8 +1,8 @@
 [
   {
     "metadata": {
-      "analysisId": "analysis-1766142372621",
-      "timestamp": "2025-12-19T11:06:12.621Z",
+      "analysisId": "analysis-1766157380291",
+      "timestamp": "2025-12-19T15:16:20.291Z",
       "priority": "normal",
       "forceDeepAnalysis": false,
       "source": "default",
@@ -15,18 +15,18 @@
     },
     "context": {
       "timeRange": {
-        "start": 1766138772,
-        "end": 1766142372,
-        "startISO": "2025-12-19T10:06:12.000Z",
-        "endISO": "2025-12-19T11:06:12.000Z",
+        "start": 1766153780,
+        "end": 1766157380,
+        "startISO": "2025-12-19T14:16:20.000Z",
+        "endISO": "2025-12-19T15:16:20.000Z",
         "durationSeconds": 3600,
         "durationMinutes": 60,
         "durationHuman": "1 hours",
         "step": 60
       },
       "queryParams": {
-        "start": 1766138772,
-        "end": 1766142372,
+        "start": 1766153780,
+        "end": 1766157380,
         "step": 60
       },
       "affectedServices": [],
@@ -35,25 +35,25 @@
     "stageResults": {},
     "enrichments": {},
     "timeRange": {
-      "start": 1766138772,
-      "end": 1766142372,
-      "startISO": "2025-12-19T10:06:12.000Z",
-      "endISO": "2025-12-19T11:06:12.000Z",
+      "start": 1766153780,
+      "end": 1766157380,
+      "startISO": "2025-12-19T14:16:20.000Z",
+      "endISO": "2025-12-19T15:16:20.000Z",
       "durationSeconds": 3600,
       "durationMinutes": 60,
       "durationHuman": "1 hours"
     },
-    "analysisId": "analysis-1766142372621",
+    "analysisId": "analysis-1766157380292",
     "priority": "normal",
     "forceDeepAnalysis": false,
     "$vars": {
-      "START_TIME": 1766138772,
-      "END_TIME": 1766142372,
-      "START_ISO": "2025-12-19T10:06:12.000Z",
-      "END_ISO": "2025-12-19T11:06:12.000Z",
+      "START_TIME": 1766153780,
+      "END_TIME": 1766157380,
+      "START_ISO": "2025-12-19T14:16:20.000Z",
+      "END_ISO": "2025-12-19T15:16:20.000Z",
       "STEP": 60,
       "DURATION_MINUTES": 60,
-      "ANALYSIS_ID": "analysis-1766142372621",
+      "ANALYSIS_ID": "analysis-1766157380291",
       "AFFECTED_SERVICES": [],
       "SEVERITY": "unknown",
       "SOURCE": "default",
@@ -61,7 +61,7 @@
       "PRIORITY": "normal",
       "IS_ORCHESTRATOR_REQUEST": false
     },
-    "anomalyStart": 1766141472,
-    "anomalyEnd": 1766142372
+    "anomalyStart": 1766156480,
+    "anomalyEnd": 1766157380
   }
 ]
