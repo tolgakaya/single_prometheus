@@ -19,12 +19,18 @@ const actionableInsights = inputData.actionableInsights || {};
 const outputFormats = inputData.outputFormats || {};
 const performanceBenchmarks = inputData.performanceBenchmarks || {};
 
+// Generate analysisId with timestamp-based fallback (same as Node 16)
+const analysisId = metadata.analysisId ||
+                   inputData.analysisId ||
+                   `lokiflow-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
 // Get identified issues array (multi-problem support)
 const identifiedIssues = consolidatedFindings.identifiedIssues || [];
 const affectedServices = consolidatedFindings.affectedServices || [];
 const overallSeverity = incidentEvaluation.severity || 'NORMAL';
 const isIncident = incidentEvaluation.isIncident || false;
 
+console.log("Analysis ID:", analysisId);
 console.log("Issues to report:", identifiedIssues.length);
 console.log("Affected services:", affectedServices.length);
 console.log("Is Incident:", isIncident);
@@ -284,7 +290,7 @@ const jiraTicketHtml = `
     </div>
     <div style="padding: 15px; background: white; border-radius: 0 0 6px 6px;">
       <table style="width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;">
-        <tr><td style="font-weight: bold; width: 150px; padding: 5px;">Analysis ID:</td><td style="padding: 5px;">${metadata.analysisId || 'unknown'}</td></tr>
+        <tr><td style="font-weight: bold; width: 150px; padding: 5px;">Analysis ID:</td><td style="padding: 5px;">${analysisId}</td></tr>
         <tr><td style="font-weight: bold; padding: 5px;">Type:</td><td style="padding: 5px;">${isIncident ? 'Incident' : 'Log Analysis'}</td></tr>
         <tr><td style="font-weight: bold; padding: 5px;">Overall Severity:</td><td style="padding: 5px;">${getSeverityDisplay(overallSeverity)}</td></tr>
         <tr><td style="font-weight: bold; padding: 5px;">Issues Detected:</td><td style="padding: 5px;"><strong>${identifiedIssues.length}</strong></td></tr>
@@ -432,7 +438,7 @@ const jiraTicket = {
 
   // Custom fields
   customFields: {
-    analysisId: metadata.analysisId,
+    analysisId: analysisId,
     workflowExecutionId: metadata.workflowExecutionId,
     isIncident: isIncident,
     severity: overallSeverity,
