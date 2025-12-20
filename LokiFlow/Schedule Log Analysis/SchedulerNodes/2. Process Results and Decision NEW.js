@@ -20,7 +20,8 @@ function simpleHash(str) {
 const analysisResult = $input.item.json;
 
 // Extract key information from LokiFlow output
-const jiraTicket = analysisResult.jiraTicket || {};
+// Node 17 adds jiraTicket field to Node 16's complete output
+const jiraTicketFromNode17 = analysisResult.jiraTicket || {}; // CRITICAL: This is from Node 17
 const metadata = analysisResult.metadata || {};
 const timeContext = analysisResult.timeContext || {};
 const incidentEvaluation = analysisResult.incidentEvaluation || {};
@@ -170,7 +171,7 @@ const output = {
   logAnalysis: logAnalysis,
 
   // Direct access to jiraTicket (already formatted by Node 17)
-  jiraTicketData: needsJiraTicket ? jiraTicket : null,
+  jiraTicketData: needsJiraTicket ? jiraTicketFromNode17 : null,
 
   // Pass through original analysis for downstream nodes
   originalAnalysis: analysisResult,

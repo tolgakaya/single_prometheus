@@ -132,7 +132,12 @@ connection to node 1 could not be established|dns resolution failure | b2b-objec
 
 ### Node 2: Process Results & Decision
 
-**Purpose**: Process LokiFlow output, generate fingerprint, decide Jira ticket creation
+**Purpose**: Process LokiFlow output (from Node 17), extract jiraTicket, generate fingerprint, decide Jira ticket creation
+
+**Key Data Extraction**:
+- Receives complete Node 16 output + jiraTicket from Node 17
+- `jiraTicketFromNode17 = analysisResult.jiraTicket` (complete Jira ticket object ready to use)
+- Extracts metadata, incidentEvaluation, consolidatedFindings for fingerprint generation
 
 **Fingerprint Generation**:
 ```javascript
@@ -187,7 +192,19 @@ const fingerprint = simpleHash(JSON.stringify({issueTypes, services, severity}))
     metrics,
     actions
   },
-  jiraTicketData: {...} or null
+  // CRITICAL: jiraTicket from Node 17 (complete object ready for Jira API)
+  jiraTicketData: {
+    title: "Issue title",
+    description: "HTML formatted description",
+    priority: "High" | "Medium" | "Low",
+    labels: [...],
+    components: [...services...],
+    issueType: "Incident" | "Task",
+    customFields: {...},
+    issues: [...],
+    actions: {...},
+    metadata: {...}
+  } or null
 }
 ```
 
