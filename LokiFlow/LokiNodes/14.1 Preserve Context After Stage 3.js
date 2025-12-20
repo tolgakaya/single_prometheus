@@ -55,7 +55,7 @@ for (const input of inputs) {
             } : (stage3Result.root_cause || null),
             technical_details: stage3Result.findings || stage3Result.technical_details,
             contributing_factors: stage3Result.findings?.contributing_factors || stage3Result.contributing_factors,
-            business_impact: stage3Result.affected_systems || stage3Result.business_impact,
+            affected_systems: stage3Result.affected_systems,  // FIXED: Don't create business_impact field
             recommended_actions: stage3Result.remediation?.immediate_actions || stage3Result.recommended_actions,
             tools_executed: stage3Result.tools_executed || [],
             confidence_score: stage3Result.findings?.primary_root_cause?.confidence || stage3Result.confidence_score,
