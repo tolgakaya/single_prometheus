@@ -2,13 +2,13 @@
   {
     "output": {
       "stage": "root_cause_analysis",
-      "investigation_type": "connection_issue_analysis",
-      "stage2_pattern": "{\"error_patterns\":{\"dominant_errors\":[{\"type\":\"java.net.UnknownHostException\",\"count\":1,\"services\":[\"bstp-id-service\"]},{\"type\":\"Connection to node -1 could not be established\",\"count\":50,\"services\":[\"b2b-object-storage\"]}],\"pattern_category\":\"service\"},\"service_patterns\":{\"most_affected\":[\"b2b-object-storage\"],\"cascade_detected\":false,\"cascade_path\":[]},\"temporal_patterns\":{\"error_clustering\":\"2025-12-19T14:16:20Z to 2025-12-19T14:16:25Z\",\"propagation_speed\":\"<2s\"}}",
+      "investigation_type": "connection_issues",
+      "stage2_pattern": "{\"error_patterns\":{\"dominant_errors\":[{\"type\":\"java.net.UnknownHostException\",\"count\":1,\"services\":[\"bstp-id-service\"]},{\"type\":\"Connection to node -1 could not be established\",\"count\":50,\"services\":[\"b2b-object-storage\"]}],\"pattern_category\":\"service\"},\"service_patterns\":{\"most_affected\":[\"b2b-object-storage\",\"bstp-id-service\"],\"cascade_detected\":false,\"cascade_path\":[]},\"temporal_patterns\":{\"error_clustering\":\"2025-12-20T10:46:46.000Z to 2025-12-20T10:46:51.000Z\",\"propagation_speed\":\"<2s\"}}",
       "analysis_metadata": {
-        "analysis_id": "analysis-1766157380291",
+        "analysis_id": "analysis-1766231206234",
         "time_range": {
-          "start": "2025-12-19T14:16:20.000Z",
-          "end": "2025-12-19T15:16:20.000Z"
+          "start": "2025-12-20T10:46:46.000Z",
+          "end": "2025-12-20T11:46:46.000Z"
         },
         "severity": "high",
         "anomaly_severity": "critical"
@@ -18,73 +18,55 @@
         "Pod_Restart_Logs",
         "Memory_Dump_Analysis",
         "Slow_Query_Logs",
-        "DB_Connection_Analysis"
+        "DB_Connection_Analysis",
+        "Integration_Health_Monitor"
       ],
       "findings": {
         "primary_root_cause": {
           "type": "DNS resolution failure",
           "confidence": 0.9,
           "evidence": [
-            "java.net.UnknownHostException: grafana-alloy.saas-bss-monitoring.svc.cluster.local",
-            "Multiple services affected across em-global-prod namespace"
+            "java.net.UnknownHostException: grafana-alloy.saas-bss-monitoring.svc.cluster.local: Name does not resolve"
           ],
-          "trigger_event": "DNS resolution failure for grafana-alloy.saas-bss-monitoring.svc.cluster.local"
+          "trigger_event": "Failed DNS resolution for monitoring service"
         },
         "contributing_factors": [
           {
             "factor": "Network configuration issues",
-            "impact": "High impact on service connectivity",
-            "evidence": "Consistent UnknownHostException across multiple services"
+            "impact": "High",
+            "evidence": "Repeated DNS resolution failures across multiple services"
           }
         ],
         "impact_timeline": {
-          "issue_start": "2025-12-19T14:16:20Z",
-          "peak_impact": "2025-12-19T14:16:25Z",
+          "issue_start": "2025-12-20T10:46:46.000Z",
+          "peak_impact": "2025-12-20T10:46:51.000Z",
           "current_state": "ongoing",
-          "estimated_recovery": "2025-12-19T15:30:00Z"
+          "estimated_recovery": "unknown"
         }
       },
       "affected_systems": {
         "services": [
           {
             "name": "bstp-id-service",
-            "impact": "Service disruption",
-            "functionality": "Identity management services affected"
-          },
-          {
-            "name": "ntf-history-service",
-            "impact": "Service disruption",
-            "functionality": "Notification history services affected"
-          },
-          {
-            "name": "cpq-ntf-integrator-service",
-            "impact": "Service disruption",
-            "functionality": "CPQ notification integration affected"
-          },
-          {
-            "name": "ui-authz-mc-backend",
-            "impact": "Service disruption",
-            "functionality": "Authorization backend services affected"
+            "impact": "Service disruption due to DNS failure",
+            "functionality": "Identity management and authentication"
           }
-        ],
-        "users_affected": 1000,
-        "revenue_impact": "Potential loss due to service downtime",
-        "sla_breach": true
+        ]
       },
       "remediation": {
         "immediate_actions": [
           {
             "action": "Restart DNS resolver service",
-            "command": "systemctl restart dnsmasq",
+            "command": "systemctl restart systemd-resolved",
             "impact": "Restores DNS resolution",
-            "risk": "Low risk, immediate effect"
+            "risk": "Low"
           }
         ],
         "short_term_fixes": [
-          "Update DNS server configuration to ensure reliability"
+          "Check and update DNS server configurations"
         ],
         "long_term_solutions": [
-          "Implement redundant DNS servers to prevent single point of failure"
+          "Implement redundant DNS servers and monitoring"
         ]
       },
       "prevention": {
@@ -95,7 +77,7 @@
           "Regular DNS configuration audits"
         ]
       },
-      "executive_summary": "The root cause of the incident was identified as a DNS resolution failure affecting multiple services in the em-global-prod namespace. This led to service disruptions across several critical services, including identity management and notification systems. Immediate actions involve restarting the DNS resolver service, with recommendations for updating DNS configurations and implementing redundancy to prevent future occurrences."
+      "executive_summary": "The root cause of the incident was identified as a DNS resolution failure affecting multiple services, primarily impacting the 'bstp-id-service'. The failure was due to unresolved DNS queries for the monitoring service endpoint, causing service disruptions. Immediate actions include restarting the DNS resolver service, with further recommendations to update DNS configurations and implement redundancy."
     }
   }
 ]
