@@ -143,27 +143,33 @@ const finalOutput = {
   // INCIDENT EVALUATION (threshold-based)
   incidentEvaluation: evaluateIncident(stage1Result, stage2Result, stage3Result, stageResults.stage1_5_anomaly),
 
-  // CONSOLIDATED FINDINGS
-  consolidatedFindings: {
-    overallStatus: stage1Result.status || 'unknown',
-    primaryIssue: stage3Result?.findings?.primary_root_cause?.type ||
-                  stage2Result?.patterns_identified?.error_patterns?.dominant_errors?.[0]?.type ||
-                  'No specific issue identified',
-    affectedServices: [
-      ...(stage1Result.metrics?.top_error_services || []),
-      ...(stage2Result?.patterns_identified?.service_patterns?.most_affected || []),
-      ...(stage3Result?.affected_systems?.services?.map(s => s.name) || []),
-      ...(stage3Result?.business_impact?.services?.map(s => s.name) || [])
-    ].filter((v, i, a) => a.indexOf(v) === i), // Remove duplicates
+  // CONSOLIDATED FINDINGS - FIXED: Multi-problem support
+  consolidatedFindings: (() => {
+    const incidentEval = evaluateIncident(stage1Result, stage2Result, stage3Result, stageResults.stage1_5_anomaly);
+    const allIssues = collectAllIssues(stage1Result, stage2Result, stage3Result, incidentEval);
 
-    severity: stage3Result?.analysis_metadata?.severity ||
-              stage2Result?.anomaly_context?.highest_anomaly ||
-              (stage1Result.status === 'critical' ? 'HIGH' : 'MEDIUM'),
+    return {
+      overallStatus: stage1Result.status || 'unknown',
+      // FIXED: identifiedIssues (array) instead of primaryIssue (single)
+      identifiedIssues: allIssues,
+      affectedServices: [
+        ...(stage1Result.metrics?.top_error_services || []),
+        ...(stage2Result?.patterns_identified?.service_patterns?.most_affected || []),
+        ...(stage3Result?.affected_systems?.services?.map(s => s.name) || [])
+      ].filter((v, i, a) => a.indexOf(v) === i), // Remove duplicates
 
-    confidence: stage3Result?.findings?.primary_root_cause?.confidence ||
-                stage2Result?.confidence_score ||
-                0.5
-  },
+      severity: stage3Result?.analysis_metadata?.severity ||
+                stage2Result?.anomaly_context?.highest_anomaly ||
+                (stage1Result.status === 'critical' ? 'HIGH' : 'MEDIUM'),
+
+      confidence: stage3Result?.findings?.primary_root_cause?.confidence ||
+                  stage2Result?.confidence_score ||
+                  0.5,
+
+      // Legacy support - keep primaryIssue for backward compatibility
+      primaryIssue: allIssues.length > 0 ? allIssues[0].type : 'No specific issue identified'
+    };
+  })(),
   
   // ACTIONABLE INSIGHTS
   actionableInsights: {
@@ -182,8 +188,19 @@ const finalOutput = {
   
   // DIFFERENT OUTPUT FORMATS
   outputFormats: {
-    // Executive Summary Format
-    "executiveSummary": stage3Result?.executive_summary || generateExecutiveSummary(stage1Result, stage2Result, stage3Result, cascadeData),
+    // Executive Summary Format - FIXED: Pass incidentEval and allIssues
+    "executiveSummary": (() => {
+      const incidentEval = evaluateIncident(stage1Result, stage2Result, stage3Result, stageResults.stage1_5_anomaly);
+      const allIssues = collectAllIssues(stage1Result, stage2Result, stage3Result, incidentEval);
+
+      // If Stage 3 has executive_summary, use it but prefix with analysis/incident terminology
+      if (stage3Result?.executive_summary) {
+        const prefix = incidentEval.isIncident ? "Incident:" : "Analysis:";
+        return `${prefix} ${stage3Result.executive_summary}`;
+      }
+
+      return generateExecutiveSummary(stage1Result, stage2Result, stage3Result, cascadeData, incidentEval, allIssues);
+    })(),
     
     // Technical Details Format
     technicalDetails: {
@@ -232,20 +249,83 @@ const finalOutput = {
   }
 };
 
+// NEW: Collect all issues from all stages
+function collectAllIssues(stage1, stage2, stage3, incidentEval) {
+  const issues = [];
+
+  // Stage 2 - Pattern Analysis Issues
+  if (stage2?.patterns_identified?.error_patterns?.dominant_errors) {
+    stage2.patterns_identified.error_patterns.dominant_errors.forEach(error => {
+      issues.push({
+        type: error.type,
+        affectedServices: error.services || [],
+        occurrenceCount: error.count || 0,
+        evidence: [`Found in ${error.services?.join(', ')}`],
+        stageDetected: 'stage2_pattern_analysis',
+        severity: 'MEDIUM',
+        remediation: []
+      });
+    });
+  }
+
+  // Stage 3 - Root Cause Issues
+  if (stage3?.findings?.primary_root_cause) {
+    const affectedServices = stage3.affected_systems?.services?.map(s => s.name) || [];
+    issues.push({
+      type: stage3.findings.primary_root_cause.type,
+      affectedServices: affectedServices,
+      occurrenceCount: null, // Root cause doesn't have occurrence count
+      evidence: stage3.findings.primary_root_cause.evidence || [],
+      stageDetected: 'stage3_root_cause_analysis',
+      severity: stage3.analysis_metadata?.severity || 'HIGH',
+      remediation: stage3.remediation?.immediate_actions || [],
+      affectedSystemDetails: stage3.affected_systems?.services || []
+    });
+  }
+
+  // Stage 1 - Top Error Services (if no Stage 2/3)
+  if (issues.length === 0 && stage1?.metrics?.top_error_services?.length > 0) {
+    issues.push({
+      type: 'Multiple errors detected',
+      affectedServices: stage1.metrics.top_error_services,
+      occurrenceCount: stage1.metrics.error_count,
+      evidence: [`Error rate: ${stage1.metrics.error_rate}`],
+      stageDetected: 'stage1_health_check',
+      severity: incidentEval?.severity || 'MEDIUM',
+      remediation: []
+    });
+  }
+
+  return issues;
+}
+
 // Helper functions
-function generateExecutiveSummary(stage1, stage2, stage3, cascade) {
+function generateExecutiveSummary(stage1, stage2, stage3, cascade, incidentEval, allIssues) {
   const parts = [];
 
-  parts.push(`System Status: ${stage1?.status || 'Unknown'}`);
+  // FIXED: Terminology based on incidentEvaluation.isIncident
+  const isIncident = incidentEval?.isIncident || false;
+  const prefix = isIncident ? "Incident Analysis" : "Log Analysis";
+
+  parts.push(`${prefix} - System Status: ${stage1?.status || 'Unknown'}`);
 
   if (stage1?.metrics?.error_rate) {
     parts.push(`Error Rate: ${stage1.metrics.error_rate}`);
   }
 
-  if (stage3?.findings?.primary_root_cause) {
-    parts.push(`Root Cause Identified: ${stage3.findings.primary_root_cause.type}`);
-  } else if (stage2?.patterns_identified?.error_patterns?.dominant_errors?.[0]) {
-    parts.push(`Main Error Pattern: ${stage2.patterns_identified.error_patterns.dominant_errors[0].type}`);
+  // FIXED: Show ALL issues, not just one
+  if (allIssues && allIssues.length > 0) {
+    if (allIssues.length === 1) {
+      parts.push(`Issue Identified: ${allIssues[0].type}`);
+    } else {
+      parts.push(`${allIssues.length} Issues Identified:`);
+      allIssues.forEach((issue, index) => {
+        const servicesText = issue.affectedServices.length > 0
+          ? ` (${issue.affectedServices.join(', ')})`
+          : '';
+        parts.push(`  ${index + 1}. ${issue.type}${servicesText}`);
+      });
+    }
   }
 
   if (cascade?.cascadeDetected) {
