@@ -39,6 +39,7 @@ const errorCount = incidentEvaluation.errorCount || 0;
 
 console.log("=== PROCESS LOKIFLOW RESULTS ===");
 console.log("Analysis ID:", metadata.analysisId);
+console.log("jiraTicketFromNode17:", JSON.stringify(jiraTicketFromNode17).substring(0, 200));
 console.log("Issues Found:", identifiedIssues.length);
 console.log("Severity:", overallSeverity);
 console.log("Is Incident:", isIncident);
@@ -85,7 +86,7 @@ console.log("Fingerprint:", fingerprint);
 const alertSummary = {
   alertId: metadata.analysisId || `loki-${Date.now()}`,
   source: 'loki-logs',
-  title: jiraTicket.title || 'Log Analysis Alert',
+  title: jiraTicketFromNode17.title || 'Log Analysis Alert',
   detectedAt: new Date().toISOString(),
   severity: overallSeverity,
   isIncident: isIncident,
