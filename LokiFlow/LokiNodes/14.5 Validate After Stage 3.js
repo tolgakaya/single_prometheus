@@ -70,6 +70,38 @@ if (!input.stageResults) {
     if (!stage3.tools_executed || stage3.tools_executed.length === 0) {
       warnings.push("No tools executed in Stage 3");
     }
+
+    // 🚫 FORBIDDEN BUSINESS IMPACT FIELDS CHECK
+    const forbiddenFields = [
+      'users_affected',
+      'revenue_impact',
+      'sla_breach',
+      'estimated_recovery'
+    ];
+
+    // Check in affected_systems
+    if (stage3.affected_systems) {
+      forbiddenFields.forEach(field => {
+        if (stage3.affected_systems[field] !== undefined) {
+          errors.push(`FORBIDDEN FIELD: stage3.affected_systems.${field} - Log analysis cannot determine business metrics`);
+        }
+      });
+    }
+
+    // Check in business_impact object (should not exist at all)
+    if (stage3.business_impact) {
+      errors.push("FORBIDDEN OBJECT: stage3.business_impact - Log analysis cannot determine business metrics");
+      forbiddenFields.forEach(field => {
+        if (stage3.business_impact[field] !== undefined) {
+          errors.push(`FORBIDDEN FIELD: stage3.business_impact.${field}`);
+        }
+      });
+    }
+
+    // Check in impact_timeline (estimated_recovery not allowed)
+    if (stage3.findings?.impact_timeline?.estimated_recovery) {
+      errors.push("FORBIDDEN FIELD: stage3.findings.impact_timeline.estimated_recovery - Cannot predict recovery from logs");
+    }
   } else {
     // Stage 3 is null - verify this was intentional
     const shouldHaveStage3 = input.metadata?.proceed_to_stage3 ||

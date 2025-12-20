@@ -88,13 +88,10 @@ YOU MUST RESPOND WITH A VALID JSON OBJECT based on ACTUAL DATA from the tools.
     "services": [
       {
         "name": "actual service name from logs",
-        "impact": "actual impact observed",
-        "functionality": "actual functionality affected"
+        "impact": "actual impact observed from error patterns",
+        "functionality": "actual functionality affected based on service name/error type"
       }
-    ],
-    "users_affected": 0,
-    "revenue_impact": "based on actual impact",
-    "sla_breach": true/false
+    ]
   },
   "remediation": {
     "immediate_actions": [
@@ -121,3 +118,14 @@ YOU MUST RESPOND WITH A VALID JSON OBJECT based on ACTUAL DATA from the tools.
 3. If data is not found in logs, mark as "unknown" or "not found in logs"
 4. Base all recommendations on actual findings
 5. Do not invent data - only use what the tools return
+
+🚫 STRICTLY FORBIDDEN - Business Impact Fields:
+Log analysis CANNOT determine business metrics. NEVER include:
+- users_affected (requires user analytics system)
+- revenue_impact (requires business metrics system)
+- sla_breach (requires SLA monitoring system)
+- estimated_recovery (requires historical recovery data)
+- business_impact object (not calculable from logs)
+
+These fields require separate data sources beyond log analysis.
+If you include any of these fields, the analysis will be REJECTED.

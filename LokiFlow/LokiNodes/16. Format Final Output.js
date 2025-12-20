@@ -140,24 +140,28 @@ const finalOutput = {
     } : null
   },
   
+  // INCIDENT EVALUATION (threshold-based)
+  incidentEvaluation: evaluateIncident(stage1Result, stage2Result, stage3Result, stageResults.stage1_5_anomaly),
+
   // CONSOLIDATED FINDINGS
   consolidatedFindings: {
     overallStatus: stage1Result.status || 'unknown',
-    primaryIssue: stage3Result?.findings?.primary_root_cause?.type || 
-                  stage2Result?.patterns_identified?.error_patterns?.dominant_errors?.[0]?.type || 
+    primaryIssue: stage3Result?.findings?.primary_root_cause?.type ||
+                  stage2Result?.patterns_identified?.error_patterns?.dominant_errors?.[0]?.type ||
                   'No specific issue identified',
     affectedServices: [
       ...(stage1Result.metrics?.top_error_services || []),
       ...(stage2Result?.patterns_identified?.service_patterns?.most_affected || []),
-      ...(stage3Result?.affected_systems?.services?.map(s => s.name) || [])
+      ...(stage3Result?.affected_systems?.services?.map(s => s.name) || []),
+      ...(stage3Result?.business_impact?.services?.map(s => s.name) || [])
     ].filter((v, i, a) => a.indexOf(v) === i), // Remove duplicates
-    
-    severity: stage3Result?.analysis_metadata?.severity || 
-              stage2Result?.anomaly_context?.highest_anomaly || 
+
+    severity: stage3Result?.analysis_metadata?.severity ||
+              stage2Result?.anomaly_context?.highest_anomaly ||
               (stage1Result.status === 'critical' ? 'HIGH' : 'MEDIUM'),
-    
-    confidence: stage3Result?.findings?.primary_root_cause?.confidence || 
-                stage2Result?.confidence_score || 
+
+    confidence: stage3Result?.findings?.primary_root_cause?.confidence ||
+                stage2Result?.confidence_score ||
                 0.5
   },
   
@@ -195,8 +199,8 @@ const finalOutput = {
       }
     },
     
-    // Timeline Format
-    incidentTimeline: generateIncidentTimeline(stage1Result, stage2Result, stage3Result, timeRange),
+    // Timeline Format (renamed from incidentTimeline - not every analysis is an incident)
+    analysisTimeline: generateAnalysisTimeline(stage1Result, stage2Result, stage3Result, timeRange),
     
     // Service Impact Matrix
     serviceImpactMatrix: generateServiceImpactMatrix(stage1Result, stage2Result, stage3Result, cascadeData)
@@ -231,23 +235,23 @@ const finalOutput = {
 // Helper functions
 function generateExecutiveSummary(stage1, stage2, stage3, cascade) {
   const parts = [];
-  
+
   parts.push(`System Status: ${stage1?.status || 'Unknown'}`);
-  
+
   if (stage1?.metrics?.error_rate) {
     parts.push(`Error Rate: ${stage1.metrics.error_rate}`);
   }
-  
+
   if (stage3?.findings?.primary_root_cause) {
-    parts.push(`Root Cause: ${stage3.findings.primary_root_cause.type}`);
+    parts.push(`Root Cause Identified: ${stage3.findings.primary_root_cause.type}`);
   } else if (stage2?.patterns_identified?.error_patterns?.dominant_errors?.[0]) {
-    parts.push(`Main Issue: ${stage2.patterns_identified.error_patterns.dominant_errors[0].type}`);
+    parts.push(`Main Error Pattern: ${stage2.patterns_identified.error_patterns.dominant_errors[0].type}`);
   }
-  
+
   if (cascade?.cascadeDetected) {
-    parts.push(`Cascade Failure Detected affecting ${cascade.totalCascades} services`);
+    parts.push(`Cascade Pattern Detected affecting ${cascade.totalCascades} services`);
   }
-  
+
   return parts.join(' | ');
 }
 
@@ -312,9 +316,9 @@ function calculateDataPoints(stage1, stage2) {
   return dataPoints;
 }
 
-function generateIncidentTimeline(stage1, stage2, stage3, timeRange) {
+function generateAnalysisTimeline(stage1, stage2, stage3, timeRange) {
   const timeline = [];
-  
+
   if (timeRange.startISO) {
     timeline.push({
       time: timeRange.startISO,
@@ -322,23 +326,23 @@ function generateIncidentTimeline(stage1, stage2, stage3, timeRange) {
       source: "input"
     });
   }
-  
+
   if (stage3?.findings?.impact_timeline?.issue_start) {
     timeline.push({
       time: stage3.findings.impact_timeline.issue_start,
-      event: "Issue First Detected",
+      event: "Error Pattern First Detected",
       source: "stage3"
     });
   }
-  
+
   if (stage3?.findings?.impact_timeline?.peak_impact) {
     timeline.push({
       time: stage3.findings.impact_timeline.peak_impact,
-      event: "Peak Impact",
+      event: "Peak Error Occurrence",
       source: "stage3"
     });
   }
-  
+
   if (timeRange.endISO) {
     timeline.push({
       time: timeRange.endISO,
@@ -346,7 +350,7 @@ function generateIncidentTimeline(stage1, stage2, stage3, timeRange) {
       source: "input"
     });
   }
-  
+
   return timeline.sort((a, b) => new Date(a.time) - new Date(b.time));
 }
 
@@ -414,20 +418,10 @@ if (stage1Health && !finalOutput.evidenceCollection.healthMetrics.errorRate) {
   };
 }
 
-// Business Impact Score Hesaplama
-finalOutput.businessImpact = {
-  score: calculateBusinessImpactScore(stage3Result, stage2Result),
-  severity: stage3Result?.affected_systems?.sla_breach ? "CRITICAL" : 
-            finalOutput.consolidatedFindings.severity === "high" ? "HIGH" : "MEDIUM",
-  affectedFeatures: stage2Result?.user_impact?.affected_features || [],
-  userImpact: stage3Result?.affected_systems?.users_affected || 0,
-  revenueImpact: stage3Result?.affected_systems?.revenue_impact || "minimal",
-  slaBreached: stage3Result?.affected_systems?.sla_breach || false,
-  estimatedRecovery: stage3Result?.findings?.impact_timeline?.estimated_recovery || "N/A"
-};
+// Business Impact - REMOVED (log analysis cannot determine user/revenue impact)
 
-// Alert Summary (eğer yoksa)
-finalOutput.alertSummary = {
+// Error Summary (renamed from alertSummary - not every analysis is an incident)
+finalOutput.errorSummary = {
   totalErrors: calculateTotalErrors(stage1Result, stage2Result),
   errorTypes: getUniqueErrorTypes(stage2Result, stage3Result),
   timeWindow: {
@@ -468,7 +462,7 @@ finalOutput.visualizationData = {
   errorTrend: generateErrorTrendData(stage1Result, timeRange),
   serviceHealthMap: generateServiceHealthMap(finalOutput.outputFormats.serviceImpactMatrix),
   cascadeGraph: cascadeData ? generateCascadeGraph(cascadeData) : null,
-  timelineChart: generateTimelineChart(finalOutput.outputFormats.incidentTimeline)
+  timelineChart: generateTimelineChart(finalOutput.outputFormats.analysisTimeline)
 };
 
 // ============ EKLENECEK BÖLÜM BİTİŞ ============
@@ -488,28 +482,94 @@ function generateServiceErrorMatrix(stage1, stage2) {
 
 // ============ YENİ HELPER FUNCTIONS EKLE ============
 
-function calculateBusinessImpactScore(stage3, stage2) {
-  let score = 0;
-  
-  // SLA breach = 50 points
-  if (stage3?.affected_systems?.sla_breach) score += 50;
-  
-  // User impact
-  const userImpact = stage3?.affected_systems?.users_affected || 0;
-  if (userImpact > 1000) score += 30;
-  else if (userImpact > 100) score += 20;
-  else if (userImpact > 0) score += 10;
-  
-  // Service count
-  const serviceCount = stage2?.patterns_identified?.service_patterns?.most_affected?.length || 0;
-  score += serviceCount * 5;
-  
-  // Revenue impact
-  if (stage3?.affected_systems?.revenue_impact === "high") score += 25;
-  else if (stage3?.affected_systems?.revenue_impact === "medium") score += 15;
-  else if (stage3?.affected_systems?.revenue_impact === "minimal") score += 5;
-  
-  return Math.min(100, score); // Cap at 100
+// calculateBusinessImpactScore - REMOVED (not calculable from log analysis)
+
+function evaluateIncident(stage1, stage2, stage3, anomalyStage) {
+  // Thresholds for incident classification
+  const ERROR_RATE_WARNING = 2.0;      // %2
+  const ERROR_RATE_INCIDENT = 5.0;     // %5
+  const ERROR_RATE_CRITICAL = 10.0;    // %10
+  const ERROR_COUNT_INCIDENT = 10000;
+
+  const errorRate = parseFloat(stage1?.metrics?.error_rate) || 0;
+  const errorCount = stage1?.metrics?.error_count || 0;
+  const anomalyDetected = anomalyStage?.performed && anomalyStage?.anomaly_scores?.overall_score > 0.7;
+  const cascadeDetected = stage2?.patterns_identified?.service_patterns?.cascade_detected || false;
+
+  // Critical services check (from service dependencies)
+  const affectedServices = [
+    ...(stage1?.metrics?.top_error_services || []),
+    ...(stage2?.patterns_identified?.service_patterns?.most_affected || []),
+    ...(stage3?.affected_systems?.services?.map(s => s.name) || [])
+  ];
+
+  // Critical services list (you may want to externalize this)
+  const criticalServices = ['api-gateway', 'auth-service', 'payment-service', 'order-service'];
+  const criticalServicesAffected = affectedServices.filter(s =>
+    criticalServices.some(cs => s.toLowerCase().includes(cs.toLowerCase()))
+  );
+
+  // Incident determination
+  const isIncident = (
+    errorRate > ERROR_RATE_INCIDENT ||
+    errorCount > ERROR_COUNT_INCIDENT ||
+    anomalyDetected ||
+    cascadeDetected ||
+    criticalServicesAffected.length > 0
+  );
+
+  // Severity calculation
+  let severity = 'NORMAL';
+  let justification = [];
+
+  if (isIncident) {
+    if (errorRate > ERROR_RATE_CRITICAL) {
+      severity = 'CRITICAL';
+      justification.push(`Error rate ${errorRate}% exceeds critical threshold (${ERROR_RATE_CRITICAL}%)`);
+    } else if (errorCount > ERROR_COUNT_INCIDENT) {
+      severity = 'CRITICAL';
+      justification.push(`Error count ${errorCount} exceeds incident threshold (${ERROR_COUNT_INCIDENT})`);
+    } else if (cascadeDetected) {
+      severity = 'HIGH';
+      justification.push('Cascade failure pattern detected');
+    } else if (criticalServicesAffected.length > 0) {
+      severity = 'HIGH';
+      justification.push(`Critical services affected: ${criticalServicesAffected.join(', ')}`);
+    } else if (anomalyDetected) {
+      severity = 'HIGH';
+      justification.push('Anomaly pattern detected above threshold');
+    } else if (errorRate > ERROR_RATE_INCIDENT) {
+      severity = 'HIGH';
+      justification.push(`Error rate ${errorRate}% exceeds incident threshold (${ERROR_RATE_INCIDENT}%)`);
+    }
+  } else {
+    if (errorRate > ERROR_RATE_WARNING) {
+      severity = 'WARNING';
+      justification.push(`Error rate ${errorRate}% above warning threshold (${ERROR_RATE_WARNING}%)`);
+    } else {
+      severity = 'NORMAL';
+      justification.push(`Error rate ${errorRate}% within acceptable limits`);
+    }
+  }
+
+  return {
+    isIncident: isIncident,
+    severity: severity,
+    errorRate: errorRate + '%',
+    errorCount: errorCount,
+    justification: justification.join('; '),
+    thresholds: {
+      errorRateWarning: ERROR_RATE_WARNING + '%',
+      errorRateIncident: ERROR_RATE_INCIDENT + '%',
+      errorRateCritical: ERROR_RATE_CRITICAL + '%',
+      errorCountIncident: ERROR_COUNT_INCIDENT
+    },
+    factors: {
+      anomalyDetected: anomalyDetected,
+      cascadeDetected: cascadeDetected,
+      criticalServicesAffected: criticalServicesAffected
+    }
+  };
 }
 
 function calculateTotalErrors(stage1, stage2) {
