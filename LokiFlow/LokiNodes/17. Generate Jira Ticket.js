@@ -500,6 +500,15 @@ return {
       labelsCount: jiraLabels.length,
       issuesCount: identifiedIssues.length,
       affectedServicesCount: affectedServices.length
-    }
+    },
+
+    // SCHEDULER SUPPORT: Pass through full analysis data for deduplication and processing
+    metadata: metadata,
+    timeContext: timeContext,
+    incidentEvaluation: incidentEvaluation,
+    consolidatedFindings: consolidatedFindings,
+    actionableInsights: actionableInsights,
+    stageResults: stageResults,
+    performanceBenchmarks: performanceBenchmarks
   }
 };
