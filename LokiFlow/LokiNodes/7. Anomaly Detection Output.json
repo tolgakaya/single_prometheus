@@ -2,10 +2,10 @@
   {
     "output": {
       "stage": "anomaly_detection",
-      "execution_time": "2025-12-19T15:17:06.432Z",
+      "execution_time": "2025-12-20T12:04:26.515Z",
       "analysis_period": {
-        "start": "2025-12-19T14:16:20.000Z",
-        "end": "2025-12-19T15:16:20.000Z",
+        "start": "2025-12-20T11:04:11.000Z",
+        "end": "2025-12-20T12:04:11.000Z",
         "duration_minutes": 60
       },
       "tools_executed": [
@@ -15,26 +15,26 @@
         "Anomaly - Spike Detection"
       ],
       "raw_metrics": {
-        "data_points_analyzed": 30,
+        "data_points_analyzed": 33,
         "mean_error_rate": 0.03333333333333333,
         "max_error_rate": 0.06666666666666667,
         "std_deviation": 0.016666666666666666
       },
       "anomaly_scores": {
         "moving_average": 0.5,
-        "std_deviation": 0.6,
-        "rate_change": 0.4,
-        "spike_ratio": 0.2
+        "std_deviation": 0.8,
+        "rate_change": 0.6,
+        "spike_ratio": 0.3
       },
       "anomaly_findings": {
-        "trend_direction": "fluctuating",
+        "trend_direction": "increasing",
         "trend_severity": "moderate",
-        "baseline_deviation": "minor_deviation",
+        "baseline_deviation": "major_deviation",
         "spike_pattern": "random",
         "anomaly_period": {
-          "start": "2025-12-19T14:16:20.000Z",
-          "end": "2025-12-19T15:16:20.000Z",
-          "peak": "2025-12-19T14:46:20.000Z"
+          "start": "2025-12-20T11:04:11.000Z",
+          "end": "2025-12-20T12:04:11.000Z",
+          "peak": "2025-12-20T11:30:00.000Z"
         }
       },
       "service_anomalies": {
@@ -42,11 +42,11 @@
           "bstp-cpq-batch",
           "bstp-id-service"
         ],
-        "anomaly_distribution": "distributed"
+        "anomaly_distribution": "concentrated"
       },
       "proceed_to_stage2": true,
-      "anomaly_summary": "The analysis detected moderate fluctuations in error rates across multiple services, with a notable deviation from the baseline and random spike patterns. The most affected services were bstp-cpq-batch and bstp-id-service, indicating a distributed anomaly pattern across the namespaces.",
-      "recommended_focus": "Stage 2 should focus on investigating the bstp-cpq-batch and bstp-id-service for potential underlying issues causing the fluctuations and deviations."
+      "anomaly_summary": "The analysis detected a moderate increasing trend in error rates with significant deviations from the baseline. The most affected services are bstp-cpq-batch and bstp-id-service, with anomalies concentrated in specific namespaces. Random spikes were observed, indicating potential instability.",
+      "recommended_focus": "Stage 2 should focus on investigating the bstp-cpq-batch and bstp-id-service for potential causes of the anomalies, particularly in the em-global-prod and em-prod namespaces."
     }
   }
 ]

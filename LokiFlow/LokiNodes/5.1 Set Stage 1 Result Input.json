@@ -2,17 +2,17 @@
   {
     "output": {
       "stage": "health_snapshot",
-      "execution_time": "2025-12-19T15:16:20.343Z",
+      "execution_time": "2025-12-20T12:04:11.640Z",
       "analysis_period": {
-        "start": "2025-12-19T14:16:20.000Z",
-        "end": "2025-12-19T15:16:20.000Z",
+        "start": "2025-12-20T11:04:11.000Z",
+        "end": "2025-12-20T12:04:11.000Z",
         "duration_minutes": 60
       },
-      "status": "critical",
+      "status": "normal",
       "metrics": {
-        "total_logs": 232416,
-        "error_count": 3645,
-        "error_rate": "1.57%",
+        "total_logs": 237822,
+        "error_count": 3211,
+        "error_rate": "1.35%",
         "log_levels": {
           "debug": 0,
           "info": 0,
@@ -21,16 +21,9 @@
           "fatal": 0
         },
         "top_error_services": [
-          "bstp-cms-global-production",
-          "bstp-cms-prod-v3",
-          "em-global-prod",
-          "em-global-prod-3pp",
-          "em-global-prod-eom",
-          "em-global-prod-flowe",
-          "em-prod",
-          "em-prod-3pp",
-          "em-prod-eom",
-          "em-prod-flowe"
+          "bstp-cpq-batch (em-prod)",
+          "bstp-id-service (em-global-prod)",
+          "ntf-engine-service (em-global-prod)"
         ]
       },
       "anomalies": {
@@ -46,8 +39,8 @@
         "anomaly_period": null
       },
       "proceed_to_stage2": true,
-      "reason": "Error rate exceeds critical threshold",
-      "quick_summary": "The error rate across services is 1.57%, which is above the critical threshold. Services like bstp-cms-global-production and em-global-prod show significant error rates.",
+      "reason": "Error rate exceeds normal threshold",
+      "quick_summary": "The error rate across services is 1.35%, which is above the normal threshold, indicating potential issues. Services with the highest error rates include bstp-cpq-batch in em-prod and bstp-id-service in em-global-prod.",
       "forceDeepAnalysis": false,
       "priority": "normal",
       "overridden": false,

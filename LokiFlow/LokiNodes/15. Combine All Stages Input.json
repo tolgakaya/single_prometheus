@@ -1,8 +1,8 @@
 [
   {
     "metadata": {
-      "analysisId": "analysis-1766157380291",
-      "timestamp": "2025-12-19T15:16:20.291Z",
+      "analysisId": "analysis-1766232251597",
+      "timestamp": "2025-12-20T12:04:11.597Z",
       "priority": "normal",
       "forceDeepAnalysis": false,
       "source": "default",
@@ -16,18 +16,18 @@
     },
     "context": {
       "timeRange": {
-        "start": 1766153780,
-        "end": 1766157380,
-        "startISO": "2025-12-19T14:16:20.000Z",
-        "endISO": "2025-12-19T15:16:20.000Z",
+        "start": 1766228651,
+        "end": 1766232251,
+        "startISO": "2025-12-20T11:04:11.000Z",
+        "endISO": "2025-12-20T12:04:11.000Z",
         "durationSeconds": 3600,
         "durationMinutes": 60,
         "durationHuman": "1 hours",
         "step": 60
       },
       "queryParams": {
-        "start": 1766153780,
-        "end": 1766157380,
+        "start": 1766228651,
+        "end": 1766232251,
         "step": 60
       },
       "affectedServices": [],
@@ -530,10 +530,10 @@
       }
     },
     "timeRange": {
-      "start": 1766153780,
-      "end": 1766157380,
-      "startISO": "2025-12-19T14:16:20.000Z",
-      "endISO": "2025-12-19T15:16:20.000Z",
+      "start": 1766228651,
+      "end": 1766232251,
+      "startISO": "2025-12-20T11:04:11.000Z",
+      "endISO": "2025-12-20T12:04:11.000Z",
       "durationSeconds": 3600,
       "durationMinutes": 60,
       "durationHuman": "1 hours"
@@ -541,11 +541,11 @@
     "stageResults": {
       "stage1": {
         "stage": "health_snapshot",
-        "status": "critical",
+        "status": "normal",
         "metrics": {
-          "total_logs": 232416,
-          "error_count": 3645,
-          "error_rate": "1.57%",
+          "total_logs": 237822,
+          "error_count": 3211,
+          "error_rate": "1.35%",
           "log_levels": {
             "debug": 0,
             "info": 0,
@@ -554,21 +554,14 @@
             "fatal": 0
           },
           "top_error_services": [
-            "bstp-cms-global-production",
-            "bstp-cms-prod-v3",
-            "em-global-prod",
-            "em-global-prod-3pp",
-            "em-global-prod-eom",
-            "em-global-prod-flowe",
-            "em-prod",
-            "em-prod-3pp",
-            "em-prod-eom",
-            "em-prod-flowe"
+            "bstp-cpq-batch (em-prod)",
+            "bstp-id-service (em-global-prod)",
+            "ntf-engine-service (em-global-prod)"
           ]
         },
         "critical_errors": [],
         "affected_services": [],
-        "quick_summary": "The error rate across services is 1.57%, which is above the critical threshold. Services like bstp-cms-global-production and em-global-prod show significant error rates.",
+        "quick_summary": "The error rate across services is 1.35%, which is above the normal threshold, indicating potential issues. Services with the highest error rates include bstp-cpq-batch in em-prod and bstp-id-service in em-global-prod.",
         "proceed_to_anomaly": false
       },
       "stage1_5_anomaly": {
@@ -581,13 +574,6 @@
         "patterns_identified": {
           "error_patterns": {
             "dominant_errors": [
-              {
-                "type": "java.net.UnknownHostException",
-                "count": 1,
-                "services": [
-                  "bstp-id-service"
-                ]
-              },
               {
                 "type": "Connection to node -1 could not be established",
                 "count": 50,
@@ -606,7 +592,7 @@
             "cascade_path": []
           },
           "temporal_patterns": {
-            "error_clustering": "2025-12-19T14:16:20Z to 2025-12-19T14:16:25Z",
+            "error_clustering": "11:04:11 to 11:04:16",
             "propagation_speed": "<2s"
           }
         },
@@ -620,8 +606,7 @@
           "component": "bstp-id-service",
           "issue_type": "DNS resolution failure",
           "evidence": [
-            "java.net.UnknownHostException: grafana-alloy.saas-bss-monitoring.svc.cluster.local",
-            "Multiple services affected across em-global-prod namespace"
+            "java.net.UnknownHostException: grafana-alloy.saas-bss-monitoring.svc.cluster.local: Name does not resolve"
           ],
           "confidence": 0.9
         },
@@ -630,65 +615,46 @@
             "type": "DNS resolution failure",
             "confidence": 0.9,
             "evidence": [
-              "java.net.UnknownHostException: grafana-alloy.saas-bss-monitoring.svc.cluster.local",
-              "Multiple services affected across em-global-prod namespace"
+              "java.net.UnknownHostException: grafana-alloy.saas-bss-monitoring.svc.cluster.local: Name does not resolve"
             ],
-            "trigger_event": "DNS resolution failure for grafana-alloy.saas-bss-monitoring.svc.cluster.local"
+            "trigger_event": "Failed to export spans due to DNS resolution failure"
           },
           "contributing_factors": [
             {
-              "factor": "Network configuration issues",
-              "impact": "High impact on service connectivity",
-              "evidence": "Consistent UnknownHostException across multiple services"
+              "factor": "Service misconfiguration",
+              "impact": "High",
+              "evidence": "Misconfigured DNS settings for service endpoints"
             }
           ],
           "impact_timeline": {
-            "issue_start": "2025-12-19T14:16:20Z",
-            "peak_impact": "2025-12-19T14:16:25Z",
-            "current_state": "ongoing",
-            "estimated_recovery": "2025-12-19T15:30:00Z"
+            "issue_start": "2025-12-20T11:04:11.000Z",
+            "peak_impact": "2025-12-20T11:04:16.000Z",
+            "current_state": "Unresolved",
+            "estimated_recovery": "unknown"
           }
         },
         "contributing_factors": [
           {
-            "factor": "Network configuration issues",
-            "impact": "High impact on service connectivity",
-            "evidence": "Consistent UnknownHostException across multiple services"
+            "factor": "Service misconfiguration",
+            "impact": "High",
+            "evidence": "Misconfigured DNS settings for service endpoints"
           }
         ],
-        "business_impact": {
+        "affected_systems": {
           "services": [
             {
               "name": "bstp-id-service",
               "impact": "Service disruption",
-              "functionality": "Identity management services affected"
-            },
-            {
-              "name": "ntf-history-service",
-              "impact": "Service disruption",
-              "functionality": "Notification history services affected"
-            },
-            {
-              "name": "cpq-ntf-integrator-service",
-              "impact": "Service disruption",
-              "functionality": "CPQ notification integration affected"
-            },
-            {
-              "name": "ui-authz-mc-backend",
-              "impact": "Service disruption",
-              "functionality": "Authorization backend services affected"
+              "functionality": "Failed to resolve DNS for monitoring service"
             }
-          ],
-          "users_affected": 1000,
-          "revenue_impact": "Potential loss due to service downtime",
-          "sla_breach": true
+          ]
         },
         "recommended_actions": [
           {
-            "action": "Restart DNS resolver service",
-            "command": "systemctl restart dnsmasq",
-            "impact": "Restores DNS resolution",
-            "risk": "Low risk, immediate effect"
+            "action": "Check DNS configuration",
+            "command": "kubectl get svc -n saas-bss-monitoring",
+            "impact": "Restore DNS resolution",
+            "risk": "Low"
           }
         ],
         "tools_executed": [
@@ -696,25 +662,26 @@
           "Pod_Restart_Logs",
           "Memory_Dump_Analysis",
           "Slow_Query_Logs",
-          "DB_Connection_Analysis"
+          "DB_Connection_Analysis",
+          "Integration_Health_Monitor"
         ],
         "confidence_score": 0.9,
         "severity": "high",
-        "executive_summary": "The root cause of the incident was identified as a DNS resolution failure affecting multiple services in the em-global-prod namespace. This led to service disruptions across several critical services, including identity management and notification systems. Immediate actions involve restarting the DNS resolver service, with recommendations for updating DNS configurations and implementing redundancy to prevent future occurrences.",
+        "executive_summary": "The incident was primarily caused by a DNS resolution failure affecting the 'bstp-id-service', leading to service disruptions. Immediate action is required to correct DNS configurations and implement monitoring to prevent future occurrences.",
         "remediation": {
           "immediate_actions": [
             {
-              "action": "Restart DNS resolver service",
-              "command": "systemctl restart dnsmasq",
-              "impact": "Restores DNS resolution",
-              "risk": "Low risk, immediate effect"
+              "action": "Check DNS configuration",
+              "command": "kubectl get svc -n saas-bss-monitoring",
+              "impact": "Restore DNS resolution",
+              "risk": "Low"
             }
           ],
           "short_term_fixes": [
-            "Update DNS server configuration to ensure reliability"
+            "Update DNS settings for affected services"
           ],
           "long_term_solutions": [
-            "Implement redundant DNS servers to prevent single point of failure"
+            "Implement automated DNS monitoring and alerts"
           ]
         },
         "prevention": {
@@ -722,20 +689,20 @@
             "Lack of DNS resolution monitoring"
           ],
           "process_improvements": [
-            "Regular DNS configuration audits"
+            "Regular audits of DNS configurations"
           ]
         }
       }
     },
     "output": {
       "stage": "root_cause_analysis",
-      "investigation_type": "connection_issue_analysis",
-      "stage2_pattern": "{\"error_patterns\":{\"dominant_errors\":[{\"type\":\"java.net.UnknownHostException\",\"count\":1,\"services\":[\"bstp-id-service\"]},{\"type\":\"Connection to node -1 could not be established\",\"count\":50,\"services\":[\"b2b-object-storage\"]}],\"pattern_category\":\"service\"},\"service_patterns\":{\"most_affected\":[\"b2b-object-storage\"],\"cascade_detected\":false,\"cascade_path\":[]},\"temporal_patterns\":{\"error_clustering\":\"2025-12-19T14:16:20Z to 2025-12-19T14:16:25Z\",\"propagation_speed\":\"<2s\"}}",
+      "investigation_type": "connection_issues",
+      "stage2_pattern": "{\"error_patterns\":{\"dominant_errors\":[{\"type\":\"Connection to node -1 could not be established\",\"count\":50,\"services\":[\"b2b-object-storage\"]}],\"pattern_category\":\"service\"},\"service_patterns\":{\"most_affected\":[\"b2b-object-storage\"],\"cascade_detected\":false,\"cascade_path\":[]},\"temporal_patterns\":{\"error_clustering\":\"11:04:11 to 11:04:16\",\"propagation_speed\":\"<2s\"}}",
       "analysis_metadata": {
-        "analysis_id": "analysis-1766157380291",
+        "analysis_id": "analysis-1766232251597",
         "time_range": {
-          "start": "2025-12-19T14:16:20.000Z",
-          "end": "2025-12-19T15:16:20.000Z"
+          "start": "2025-12-20T11:04:11.000Z",
+          "end": "2025-12-20T12:04:11.000Z"
         },
         "severity": "high",
         "anomaly_severity": "critical"
@@ -745,30 +712,30 @@
         "Pod_Restart_Logs",
         "Memory_Dump_Analysis",
         "Slow_Query_Logs",
-        "DB_Connection_Analysis"
+        "DB_Connection_Analysis",
+        "Integration_Health_Monitor"
       ],
       "findings": {
         "primary_root_cause": {
           "type": "DNS resolution failure",
           "confidence": 0.9,
           "evidence": [
-            "java.net.UnknownHostException: grafana-alloy.saas-bss-monitoring.svc.cluster.local",
-            "Multiple services affected across em-global-prod namespace"
+            "java.net.UnknownHostException: grafana-alloy.saas-bss-monitoring.svc.cluster.local: Name does not resolve"
           ],
-          "trigger_event": "DNS resolution failure for grafana-alloy.saas-bss-monitoring.svc.cluster.local"
+          "trigger_event": "Failed to export spans due to DNS resolution failure"
         },
         "contributing_factors": [
           {
-            "factor": "Network configuration issues",
-            "impact": "High impact on service connectivity",
-            "evidence": "Consistent UnknownHostException across multiple services"
+            "factor": "Service misconfiguration",
+            "impact": "High",
+            "evidence": "Misconfigured DNS settings for service endpoints"
           }
         ],
         "impact_timeline": {
-          "issue_start": "2025-12-19T14:16:20Z",
-          "peak_impact": "2025-12-19T14:16:25Z",
-          "current_state": "ongoing",
-          "estimated_recovery": "2025-12-19T15:30:00Z"
+          "issue_start": "2025-12-20T11:04:11.000Z",
+          "peak_impact": "2025-12-20T11:04:16.000Z",
+          "current_state": "Unresolved",
+          "estimated_recovery": "unknown"
         }
       },
       "affected_systems": {
@@ -776,42 +743,24 @@
           {
             "name": "bstp-id-service",
             "impact": "Service disruption",
-            "functionality": "Identity management services affected"
-          },
-          {
-            "name": "ntf-history-service",
-            "impact": "Service disruption",
-            "functionality": "Notification history services affected"
-          },
-          {
-            "name": "cpq-ntf-integrator-service",
-            "impact": "Service disruption",
-            "functionality": "CPQ notification integration affected"
-          },
-          {
-            "name": "ui-authz-mc-backend",
-            "impact": "Service disruption",
-            "functionality": "Authorization backend services affected"
+            "functionality": "Failed to resolve DNS for monitoring service"
           }
-        ],
-        "users_affected": 1000,
-        "revenue_impact": "Potential loss due to service downtime",
-        "sla_breach": true
+        ]
       },
       "remediation": {
         "immediate_actions": [
           {
-            "action": "Restart DNS resolver service",
-            "command": "systemctl restart dnsmasq",
-            "impact": "Restores DNS resolution",
-            "risk": "Low risk, immediate effect"
+            "action": "Check DNS configuration",
+            "command": "kubectl get svc -n saas-bss-monitoring",
+            "impact": "Restore DNS resolution",
+            "risk": "Low"
           }
         ],
         "short_term_fixes": [
-          "Update DNS server configuration to ensure reliability"
+          "Update DNS settings for affected services"
         ],
         "long_term_solutions": [
-          "Implement redundant DNS servers to prevent single point of failure"
+          "Implement automated DNS monitoring and alerts"
         ]
       },
       "prevention": {
@@ -819,20 +768,20 @@
           "Lack of DNS resolution monitoring"
         ],
         "process_improvements": [
-          "Regular DNS configuration audits"
+          "Regular audits of DNS configurations"
         ]
       },
-      "executive_summary": "The root cause of the incident was identified as a DNS resolution failure affecting multiple services in the em-global-prod namespace. This led to service disruptions across several critical services, including identity management and notification systems. Immediate actions involve restarting the DNS resolver service, with recommendations for updating DNS configurations and implementing redundancy to prevent future occurrences."
+      "executive_summary": "The incident was primarily caused by a DNS resolution failure affecting the 'bstp-id-service', leading to service disruptions. Immediate action is required to correct DNS configurations and implement monitoring to prevent future occurrences."
     },
     "stage3_output": {
       "stage": "root_cause_analysis",
-      "investigation_type": "connection_issue_analysis",
-      "stage2_pattern": "{\"error_patterns\":{\"dominant_errors\":[{\"type\":\"java.net.UnknownHostException\",\"count\":1,\"services\":[\"bstp-id-service\"]},{\"type\":\"Connection to node -1 could not be established\",\"count\":50,\"services\":[\"b2b-object-storage\"]}],\"pattern_category\":\"service\"},\"service_patterns\":{\"most_affected\":[\"b2b-object-storage\"],\"cascade_detected\":false,\"cascade_path\":[]},\"temporal_patterns\":{\"error_clustering\":\"2025-12-19T14:16:20Z to 2025-12-19T14:16:25Z\",\"propagation_speed\":\"<2s\"}}",
+      "investigation_type": "connection_issues",
+      "stage2_pattern": "{\"error_patterns\":{\"dominant_errors\":[{\"type\":\"Connection to node -1 could not be established\",\"count\":50,\"services\":[\"b2b-object-storage\"]}],\"pattern_category\":\"service\"},\"service_patterns\":{\"most_affected\":[\"b2b-object-storage\"],\"cascade_detected\":false,\"cascade_path\":[]},\"temporal_patterns\":{\"error_clustering\":\"11:04:11 to 11:04:16\",\"propagation_speed\":\"<2s\"}}",
       "analysis_metadata": {
-        "analysis_id": "analysis-1766157380291",
+        "analysis_id": "analysis-1766232251597",
         "time_range": {
-          "start": "2025-12-19T14:16:20.000Z",
-          "end": "2025-12-19T15:16:20.000Z"
+          "start": "2025-12-20T11:04:11.000Z",
+          "end": "2025-12-20T12:04:11.000Z"
         },
         "severity": "high",
         "anomaly_severity": "critical"
@@ -842,30 +791,30 @@
         "Pod_Restart_Logs",
         "Memory_Dump_Analysis",
         "Slow_Query_Logs",
-        "DB_Connection_Analysis"
+        "DB_Connection_Analysis",
+        "Integration_Health_Monitor"
       ],
       "findings": {
         "primary_root_cause": {
           "type": "DNS resolution failure",
           "confidence": 0.9,
           "evidence": [
-            "java.net.UnknownHostException: grafana-alloy.saas-bss-monitoring.svc.cluster.local",
-            "Multiple services affected across em-global-prod namespace"
+            "java.net.UnknownHostException: grafana-alloy.saas-bss-monitoring.svc.cluster.local: Name does not resolve"
           ],
-          "trigger_event": "DNS resolution failure for grafana-alloy.saas-bss-monitoring.svc.cluster.local"
+          "trigger_event": "Failed to export spans due to DNS resolution failure"
         },
         "contributing_factors": [
           {
-            "factor": "Network configuration issues",
-            "impact": "High impact on service connectivity",
-            "evidence": "Consistent UnknownHostException across multiple services"
+            "factor": "Service misconfiguration",
+            "impact": "High",
+            "evidence": "Misconfigured DNS settings for service endpoints"
           }
         ],
         "impact_timeline": {
-          "issue_start": "2025-12-19T14:16:20Z",
-          "peak_impact": "2025-12-19T14:16:25Z",
-          "current_state": "ongoing",
-          "estimated_recovery": "2025-12-19T15:30:00Z"
+          "issue_start": "2025-12-20T11:04:11.000Z",
+          "peak_impact": "2025-12-20T11:04:16.000Z",
+          "current_state": "Unresolved",
+          "estimated_recovery": "unknown"
         }
       },
       "affected_systems": {
@@ -873,42 +822,24 @@
           {
             "name": "bstp-id-service",
             "impact": "Service disruption",
-            "functionality": "Identity management services affected"
-          },
-          {
-            "name": "ntf-history-service",
-            "impact": "Service disruption",
-            "functionality": "Notification history services affected"
-          },
-          {
-            "name": "cpq-ntf-integrator-service",
-            "impact": "Service disruption",
-            "functionality": "CPQ notification integration affected"
-          },
-          {
-            "name": "ui-authz-mc-backend",
-            "impact": "Service disruption",
-            "functionality": "Authorization backend services affected"
+            "functionality": "Failed to resolve DNS for monitoring service"
           }
-        ],
-        "users_affected": 1000,
-        "revenue_impact": "Potential loss due to service downtime",
-        "sla_breach": true
+        ]
       },
       "remediation": {
         "immediate_actions": [
           {
-            "action": "Restart DNS resolver service",
-            "command": "systemctl restart dnsmasq",
-            "impact": "Restores DNS resolution",
-            "risk": "Low risk, immediate effect"
+            "action": "Check DNS configuration",
+            "command": "kubectl get svc -n saas-bss-monitoring",
+            "impact": "Restore DNS resolution",
+            "risk": "Low"
           }
         ],
         "short_term_fixes": [
-          "Update DNS server configuration to ensure reliability"
+          "Update DNS settings for affected services"
         ],
         "long_term_solutions": [
-          "Implement redundant DNS servers to prevent single point of failure"
+          "Implement automated DNS monitoring and alerts"
         ]
       },
       "prevention": {
@@ -916,14 +847,14 @@
           "Lack of DNS resolution monitoring"
         ],
         "process_improvements": [
-          "Regular DNS configuration audits"
+          "Regular audits of DNS configurations"
         ]
       },
-      "executive_summary": "The root cause of the incident was identified as a DNS resolution failure affecting multiple services in the em-global-prod namespace. This led to service disruptions across several critical services, including identity management and notification systems. Immediate actions involve restarting the DNS resolver service, with recommendations for updating DNS configurations and implementing redundancy to prevent future occurrences."
+      "executive_summary": "The incident was primarily caused by a DNS resolution failure affecting the 'bstp-id-service', leading to service disruptions. Immediate action is required to correct DNS configurations and implement monitoring to prevent future occurrences."
     },
     "_validation": {
       "stage": "stage3_final",
-      "validated_at": "2025-12-19T15:20:37.549Z",
+      "validated_at": "2025-12-20T12:06:16.421Z",
       "errors": [],
       "warnings": [
         "Missing enrichments section in final output",

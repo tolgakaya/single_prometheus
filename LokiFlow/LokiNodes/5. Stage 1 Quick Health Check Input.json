@@ -1,8 +1,8 @@
 [
   {
     "metadata": {
-      "analysisId": "analysis-1766157380291",
-      "timestamp": "2025-12-19T15:16:20.291Z",
+      "analysisId": "analysis-1766232251597",
+      "timestamp": "2025-12-20T12:04:11.597Z",
       "priority": "normal",
       "forceDeepAnalysis": false,
       "source": "default",
@@ -15,18 +15,18 @@
     },
     "context": {
       "timeRange": {
-        "start": 1766153780,
-        "end": 1766157380,
-        "startISO": "2025-12-19T14:16:20.000Z",
-        "endISO": "2025-12-19T15:16:20.000Z",
+        "start": 1766228651,
+        "end": 1766232251,
+        "startISO": "2025-12-20T11:04:11.000Z",
+        "endISO": "2025-12-20T12:04:11.000Z",
         "durationSeconds": 3600,
         "durationMinutes": 60,
         "durationHuman": "1 hours",
         "step": 60
       },
       "queryParams": {
-        "start": 1766153780,
-        "end": 1766157380,
+        "start": 1766228651,
+        "end": 1766232251,
         "step": 60
       },
       "affectedServices": [],
@@ -531,25 +531,25 @@
     "stageResults": {},
     "enrichments": {},
     "timeRange": {
-      "start": 1766153780,
-      "end": 1766157380,
-      "startISO": "2025-12-19T14:16:20.000Z",
-      "endISO": "2025-12-19T15:16:20.000Z",
+      "start": 1766228651,
+      "end": 1766232251,
+      "startISO": "2025-12-20T11:04:11.000Z",
+      "endISO": "2025-12-20T12:04:11.000Z",
       "durationSeconds": 3600,
       "durationMinutes": 60,
       "durationHuman": "1 hours"
     },
-    "analysisId": "analysis-1766157380292",
+    "analysisId": "analysis-1766232251597",
     "priority": "normal",
     "forceDeepAnalysis": false,
     "$vars": {
-      "START_TIME": 1766153780,
-      "END_TIME": 1766157380,
-      "START_ISO": "2025-12-19T14:16:20.000Z",
-      "END_ISO": "2025-12-19T15:16:20.000Z",
+      "START_TIME": 1766228651,
+      "END_TIME": 1766232251,
+      "START_ISO": "2025-12-20T11:04:11.000Z",
+      "END_ISO": "2025-12-20T12:04:11.000Z",
       "STEP": 60,
       "DURATION_MINUTES": 60,
-      "ANALYSIS_ID": "analysis-1766157380291",
+      "ANALYSIS_ID": "analysis-1766232251597",
       "AFFECTED_SERVICES": [],
       "SEVERITY": "unknown",
       "SOURCE": "default",
@@ -557,8 +557,8 @@
       "PRIORITY": "normal",
       "IS_ORCHESTRATOR_REQUEST": false
     },
-    "anomalyStart": 1766156480,
-    "anomalyEnd": 1766157380,
+    "anomalyStart": 1766231351,
+    "anomalyEnd": 1766232251,
     "serviceDependencies": {
       "raw": {
         "cpq-ntf-integrator-service": {

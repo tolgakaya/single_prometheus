@@ -1,25 +1,25 @@
 [
   {
     "analysisComplete": true,
-    "timestamp": "2025-12-19T15:20:37.602Z",
-    "workflowExecutionId": "7635",
-    "analysisId": "analysis-1766157380291",
+    "timestamp": "2025-12-20T12:06:16.471Z",
+    "workflowExecutionId": "7894",
+    "analysisId": "analysis-1766232251597",
     "analysisDepth": "deep",
     "timeContext": {
       "requestedRange": {
-        "start": "2025-12-19T14:16:20.000Z",
-        "end": "2025-12-19T15:16:20.000Z",
+        "start": "2025-12-20T11:04:11.000Z",
+        "end": "2025-12-20T12:04:11.000Z",
         "duration": "1 hours",
         "source": "default"
       }
     },
     "stageResults": {
       "stage1_healthSnapshot": {
-        "status": "critical",
+        "status": "normal",
         "metrics": {
-          "total_logs": 232416,
-          "error_count": 3645,
-          "error_rate": "1.57%",
+          "total_logs": 237822,
+          "error_count": 3211,
+          "error_rate": "1.35%",
           "log_levels": {
             "debug": 0,
             "info": 0,
@@ -28,32 +28,18 @@
             "fatal": 0
           },
           "top_error_services": [
-            "bstp-cms-global-production",
-            "bstp-cms-prod-v3",
-            "em-global-prod",
-            "em-global-prod-3pp",
-            "em-global-prod-eom",
-            "em-global-prod-flowe",
-            "em-prod",
-            "em-prod-3pp",
-            "em-prod-eom",
-            "em-prod-flowe"
+            "bstp-cpq-batch (em-prod)",
+            "bstp-id-service (em-global-prod)",
+            "ntf-engine-service (em-global-prod)"
           ]
         },
-        "quick_summary": "The error rate across services is 1.57%, which is above the critical threshold. Services like bstp-cms-global-production and em-global-prod show significant error rates."
+        "quick_summary": "The error rate across services is 1.35%, which is above the normal threshold, indicating potential issues. Services with the highest error rates include bstp-cpq-batch in em-prod and bstp-id-service in em-global-prod."
       },
       "stage1_5_anomalyDetection": null,
       "stage2_patternAnalysis": {
         "patterns_identified": {
           "error_patterns": {
             "dominant_errors": [
-              {
-                "type": "java.net.UnknownHostException",
-                "count": 1,
-                "services": [
-                  "bstp-id-service"
-                ]
-              },
               {
                 "type": "Connection to node -1 could not be established",
                 "count": 50,
@@ -72,7 +58,7 @@
             "cascade_path": []
           },
           "temporal_patterns": {
-            "error_clustering": "2025-12-19T14:16:20Z to 2025-12-19T14:16:25Z",
+            "error_clustering": "11:04:11 to 11:04:16",
             "propagation_speed": "<2s"
           }
         },
@@ -80,20 +66,29 @@
         "stage3_focus": {}
       },
       "stage3_rootCauseAnalysis": {
+        "affected_systems": {
+          "services": [
+            {
+              "name": "bstp-id-service",
+              "impact": "Service disruption",
+              "functionality": "Failed to resolve DNS for monitoring service"
+            }
+          ]
+        },
         "remediation": {
           "immediate_actions": [
             {
-              "action": "Restart DNS resolver service",
-              "command": "systemctl restart dnsmasq",
-              "impact": "Restores DNS resolution",
-              "risk": "Low risk, immediate effect"
+              "action": "Check DNS configuration",
+              "command": "kubectl get svc -n saas-bss-monitoring",
+              "impact": "Restore DNS resolution",
+              "risk": "Low"
             }
           ],
           "short_term_fixes": [
-            "Update DNS server configuration to ensure reliability"
+            "Update DNS settings for affected services"
           ],
           "long_term_solutions": [
-            "Implement redundant DNS servers to prevent single point of failure"
+            "Implement automated DNS monitoring and alerts"
           ]
         },
         "prevention": {
@@ -101,7 +96,7 @@
             "Lack of DNS resolution monitoring"
           ],
           "process_improvements": [
-            "Regular DNS configuration audits"
+            "Regular audits of DNS configurations"
           ]
         },
         "tools_executed": [
@@ -109,16 +104,17 @@
           "Pod_Restart_Logs",
           "Memory_Dump_Analysis",
           "Slow_Query_Logs",
-          "DB_Connection_Analysis"
+          "DB_Connection_Analysis",
+          "Integration_Health_Monitor"
         ],
-        "executive_summary": "The root cause of the incident was identified as a DNS resolution failure affecting multiple services in the em-global-prod namespace. This led to service disruptions across several critical services, including identity management and notification systems. Immediate actions involve restarting the DNS resolver service, with recommendations for updating DNS configurations and implementing redundancy to prevent future occurrences."
+        "executive_summary": "The incident was primarily caused by a DNS resolution failure affecting the 'bstp-id-service', leading to service disruptions. Immediate action is required to correct DNS configurations and implement monitoring to prevent future occurrences."
       }
     },
     "evidenceCollection": {
       "healthMetrics": {
-        "errorRate": "1.57%",
-        "errorCount": 3645,
-        "totalLogs": 232416,
+        "errorRate": "1.35%",
+        "errorCount": 3211,
+        "totalLogs": 237822,
         "logLevels": {
           "debug": 0,
           "info": 0,
@@ -127,28 +123,14 @@
           "fatal": 0
         },
         "topErrorServices": [
-          "bstp-cms-global-production",
-          "bstp-cms-prod-v3",
-          "em-global-prod",
-          "em-global-prod-3pp",
-          "em-global-prod-eom",
-          "em-global-prod-flowe",
-          "em-prod",
-          "em-prod-3pp",
-          "em-prod-eom",
-          "em-prod-flowe"
+          "bstp-cpq-batch (em-prod)",
+          "bstp-id-service (em-global-prod)",
+          "ntf-engine-service (em-global-prod)"
         ]
       },
       "anomalyEvidence": null,
       "patternEvidence": {
         "dominantErrors": [
-          {
-            "type": "java.net.UnknownHostException",
-            "count": 1,
-            "services": [
-              "bstp-id-service"
-            ]
-          },
           {
             "type": "Connection to node -1 could not be established",
             "count": 50,
@@ -162,37 +144,49 @@
         ],
         "cascadeDetected": false,
         "cascadePath": [],
-        "temporalClustering": "2025-12-19T14:16:20Z to 2025-12-19T14:16:25Z"
+        "temporalClustering": "11:04:11 to 11:04:16"
       },
       "rootCauseEvidence": {},
       "cascadeEvidence": null
     },
+    "incidentEvaluation": {
+      "isIncident": false,
+      "severity": "NORMAL",
+      "errorRate": "1.35%",
+      "errorCount": 3211,
+      "justification": "Error rate 1.35% within acceptable limits",
+      "thresholds": {
+        "errorRateWarning": "2%",
+        "errorRateIncident": "5%",
+        "errorRateCritical": "10%",
+        "errorCountIncident": 10000
+      },
+      "factors": {
+        "anomalyDetected": false,
+        "cascadeDetected": false,
+        "criticalServicesAffected": []
+      }
+    },
     "consolidatedFindings": {
-      "overallStatus": "critical",
-      "primaryIssue": "java.net.UnknownHostException",
+      "overallStatus": "normal",
+      "primaryIssue": "Connection to node -1 could not be established",
       "affectedServices": [
-        "bstp-cms-global-production",
-        "bstp-cms-prod-v3",
-        "em-global-prod",
-        "em-global-prod-3pp",
-        "em-global-prod-eom",
-        "em-global-prod-flowe",
-        "em-prod",
-        "em-prod-3pp",
-        "em-prod-eom",
-        "em-prod-flowe",
-        "b2b-object-storage"
+        "bstp-cpq-batch (em-prod)",
+        "bstp-id-service (em-global-prod)",
+        "ntf-engine-service (em-global-prod)",
+        "b2b-object-storage",
+        "bstp-id-service"
       ],
-      "severity": "HIGH",
+      "severity": "MEDIUM",
       "confidence": 0.5
     },
     "actionableInsights": {
       "immediateActions": [
         {
-          "action": "Restart DNS resolver service",
-          "command": "systemctl restart dnsmasq",
-          "impact": "Restores DNS resolution",
-          "risk": "Low risk, immediate effect"
+          "action": "Check DNS configuration",
+          "command": "kubectl get svc -n saas-bss-monitoring",
+          "impact": "Restore DNS resolution",
+          "risk": "Low"
         }
       ],
       "diagnosticCommands": [],
@@ -200,14 +194,14 @@
         "Lack of DNS resolution monitoring"
       ],
       "processImprovements": [
-        "Regular DNS configuration audits"
+        "Regular audits of DNS configurations"
       ]
     },
     "outputFormats": {
-      "executiveSummary": "The root cause of the incident was identified as a DNS resolution failure affecting multiple services in the em-global-prod namespace. This led to service disruptions across several critical services, including identity management and notification systems. Immediate actions involve restarting the DNS resolver service, with recommendations for updating DNS configurations and implementing redundancy to prevent future occurrences.",
+      "executiveSummary": "The incident was primarily caused by a DNS resolution failure affecting the 'bstp-id-service', leading to service disruptions. Immediate action is required to correct DNS configurations and implement monitoring to prevent future occurrences.",
       "technicalDetails": {
         "logAnalysis": {
-          "totalLogsAnalyzed": 232416,
+          "totalLogsAnalyzed": 237822,
           "errorDistribution": {
             "debug": 0,
             "info": 0,
@@ -223,100 +217,60 @@
             "Pod_Restart_Logs",
             "Memory_Dump_Analysis",
             "Slow_Query_Logs",
-            "DB_Connection_Analysis"
+            "DB_Connection_Analysis",
+            "Integration_Health_Monitor"
           ],
-          "dataPointsAnalyzed": 232467
+          "dataPointsAnalyzed": 237872
         }
       },
-      "incidentTimeline": [
+      "analysisTimeline": [
         {
-          "time": "2025-12-19T14:16:20.000Z",
+          "time": "2025-12-20T11:04:11.000Z",
           "event": "Analysis Period Start",
           "source": "input"
         },
         {
-          "time": "2025-12-19T15:16:20.000Z",
+          "time": "2025-12-20T12:04:11.000Z",
           "event": "Analysis Period End",
           "source": "input"
         }
       ],
       "serviceImpactMatrix": {
-        "bstp-cms-global-production": {
-          "service": "bstp-cms-global-production",
-          "errorRate": "1.57%",
+        "bstp-cpq-batch (em-prod)": {
+          "service": "bstp-cpq-batch (em-prod)",
+          "errorRate": "1.35%",
           "impactLevel": "UNKNOWN",
           "cascadeRole": "none",
           "downtime": "N/A"
         },
-        "bstp-cms-prod-v3": {
-          "service": "bstp-cms-prod-v3",
-          "errorRate": "1.57%",
+        "bstp-id-service (em-global-prod)": {
+          "service": "bstp-id-service (em-global-prod)",
+          "errorRate": "1.35%",
           "impactLevel": "UNKNOWN",
           "cascadeRole": "none",
           "downtime": "N/A"
         },
-        "em-global-prod": {
-          "service": "em-global-prod",
-          "errorRate": "1.57%",
-          "impactLevel": "UNKNOWN",
-          "cascadeRole": "none",
-          "downtime": "N/A"
-        },
-        "em-global-prod-3pp": {
-          "service": "em-global-prod-3pp",
-          "errorRate": "1.57%",
-          "impactLevel": "UNKNOWN",
-          "cascadeRole": "none",
-          "downtime": "N/A"
-        },
-        "em-global-prod-eom": {
-          "service": "em-global-prod-eom",
-          "errorRate": "1.57%",
-          "impactLevel": "UNKNOWN",
-          "cascadeRole": "none",
-          "downtime": "N/A"
-        },
-        "em-global-prod-flowe": {
-          "service": "em-global-prod-flowe",
-          "errorRate": "1.57%",
-          "impactLevel": "UNKNOWN",
-          "cascadeRole": "none",
-          "downtime": "N/A"
-        },
-        "em-prod": {
-          "service": "em-prod",
-          "errorRate": "1.57%",
-          "impactLevel": "UNKNOWN",
-          "cascadeRole": "none",
-          "downtime": "N/A"
-        },
-        "em-prod-3pp": {
-          "service": "em-prod-3pp",
-          "errorRate": "1.57%",
-          "impactLevel": "UNKNOWN",
-          "cascadeRole": "none",
-          "downtime": "N/A"
-        },
-        "em-prod-eom": {
-          "service": "em-prod-eom",
-          "errorRate": "1.57%",
-          "impactLevel": "UNKNOWN",
-          "cascadeRole": "none",
-          "downtime": "N/A"
-        },
-        "em-prod-flowe": {
-          "service": "em-prod-flowe",
-          "errorRate": "1.57%",
+        "ntf-engine-service (em-global-prod)": {
+          "service": "ntf-engine-service (em-global-prod)",
+          "errorRate": "1.35%",
           "impactLevel": "UNKNOWN",
           "cascadeRole": "none",
           "downtime": "N/A"
         },
         "b2b-object-storage": {
           "service": "b2b-object-storage",
-          "errorRate": "1.57%",
+          "errorRate": "1.35%",
           "impactLevel": "HIGH",
           "cascadeRole": "none",
           "downtime": "N/A"
+        },
+        "bstp-id-service": {
+          "service": "bstp-id-service",
+          "errorRate": "1.35%",
+          "impactLevel": "Service disruption",
+          "cascadeRole": "none",
+          "downtime": "N/A",
+          "functionality": "Failed to resolve DNS for monitoring service"
         }
       }
     },
@@ -334,7 +288,8 @@
         "Pod_Restart_Logs",
         "Memory_Dump_Analysis",
         "Slow_Query_Logs",
-        "DB_Connection_Analysis"
+        "DB_Connection_Analysis",
+        "Integration_Health_Monitor"
       ],
       "enhancedAnalysis": {
         "cascadeDetection": "disabled",
@@ -344,30 +299,17 @@
         "serviceDependencyAnalysis": "enabled"
       }
     },
-    "businessImpact": {
-      "score": 5,
-      "severity": "MEDIUM",
-      "affectedFeatures": [],
-      "userImpact": 0,
-      "revenueImpact": "minimal",
-      "slaBreached": false,
-      "estimatedRecovery": "N/A"
-    },
-    "alertSummary": {
-      "totalErrors": 3645,
+    "errorSummary": {
+      "totalErrors": 3211,
       "errorTypes": [
-        "java.net.UnknownHostException",
         "Connection to node -1 could not be established"
       ],
       "timeWindow": {
-        "start": "2025-12-19T14:16:20.000Z",
-        "end": "2025-12-19T15:16:20.000Z",
+        "start": "2025-12-20T11:04:11.000Z",
+        "end": "2025-12-20T12:04:11.000Z",
         "duration": "1 hours"
       },
       "errorDistribution": {
-        "bstp-id-service": {
-          "java.net.UnknownHostException": 1
-        },
         "b2b-object-storage": {
           "Connection to node -1 could not be established": 50
         }
@@ -383,9 +325,9 @@
         }
       },
       "dataVolume": {
-        "logsProcessed": 232416,
-        "errorsParsed": 3645,
-        "servicesAnalyzed": 11
+        "logsProcessed": 237822,
+        "errorsParsed": 3211,
+        "servicesAnalyzed": 5
       },
       "accuracy": {
         "confidenceScore": 0.5,
@@ -402,55 +344,31 @@
           {
             "label": "Error Rate (%)",
             "data": [
-              1.57
+              1.35
             ]
           }
         ]
       },
       "serviceHealthMap": {
-        "bstp-cms-global-production": {
+        "bstp-cpq-batch (em-prod)": {
           "health": 100,
           "status": "UNKNOWN"
         },
-        "bstp-cms-prod-v3": {
+        "bstp-id-service (em-global-prod)": {
           "health": 100,
           "status": "UNKNOWN"
         },
-        "em-global-prod": {
-          "health": 100,
-          "status": "UNKNOWN"
-        },
-        "em-global-prod-3pp": {
-          "health": 100,
-          "status": "UNKNOWN"
-        },
-        "em-global-prod-eom": {
-          "health": 100,
-          "status": "UNKNOWN"
-        },
-        "em-global-prod-flowe": {
-          "health": 100,
-          "status": "UNKNOWN"
-        },
-        "em-prod": {
-          "health": 100,
-          "status": "UNKNOWN"
-        },
-        "em-prod-3pp": {
-          "health": 100,
-          "status": "UNKNOWN"
-        },
-        "em-prod-eom": {
-          "health": 100,
-          "status": "UNKNOWN"
-        },
-        "em-prod-flowe": {
+        "ntf-engine-service (em-global-prod)": {
           "health": 100,
           "status": "UNKNOWN"
         },
         "b2b-object-storage": {
           "health": 0,
           "status": "HIGH"
+        },
+        "bstp-id-service": {
+          "health": 100,
+          "status": "Service disruption"
         }
       },
       "cascadeGraph": null,
@@ -458,13 +376,13 @@
         "type": "timeline",
         "data": [
           {
-            "x": "2025-12-19T14:16:20.000Z",
+            "x": "2025-12-20T11:04:11.000Z",
             "y": 0,
             "label": "Analysis Period Start",
             "source": "input"
           },
           {
-            "x": "2025-12-19T15:16:20.000Z",
+            "x": "2025-12-20T12:04:11.000Z",
             "y": 1,
             "label": "Analysis Period End",
             "source": "input"

@@ -1,8 +1,8 @@
 [
   {
     "metadata": {
-      "analysisId": "analysis-1766157380291",
-      "timestamp": "2025-12-19T15:16:20.291Z",
+      "analysisId": "analysis-1766232251597",
+      "timestamp": "2025-12-20T12:04:11.597Z",
       "priority": "normal",
       "forceDeepAnalysis": false,
       "source": "default",
@@ -16,18 +16,18 @@
     },
     "context": {
       "timeRange": {
-        "start": 1766153780,
-        "end": 1766157380,
-        "startISO": "2025-12-19T14:16:20.000Z",
-        "endISO": "2025-12-19T15:16:20.000Z",
+        "start": 1766228651,
+        "end": 1766232251,
+        "startISO": "2025-12-20T11:04:11.000Z",
+        "endISO": "2025-12-20T12:04:11.000Z",
         "durationSeconds": 3600,
         "durationMinutes": 60,
         "durationHuman": "1 hours",
         "step": 60
       },
       "queryParams": {
-        "start": 1766153780,
-        "end": 1766157380,
+        "start": 1766228651,
+        "end": 1766232251,
         "step": 60
       },
       "affectedServices": [],
@@ -530,10 +530,10 @@
       }
     },
     "timeRange": {
-      "start": 1766153780,
-      "end": 1766157380,
-      "startISO": "2025-12-19T14:16:20.000Z",
-      "endISO": "2025-12-19T15:16:20.000Z",
+      "start": 1766228651,
+      "end": 1766232251,
+      "startISO": "2025-12-20T11:04:11.000Z",
+      "endISO": "2025-12-20T12:04:11.000Z",
       "durationSeconds": 3600,
       "durationMinutes": 60,
       "durationHuman": "1 hours"
@@ -541,11 +541,11 @@
     "stageResults": {
       "stage1": {
         "stage": "health_snapshot",
-        "status": "critical",
+        "status": "normal",
         "metrics": {
-          "total_logs": 232416,
-          "error_count": 3645,
-          "error_rate": "1.57%",
+          "total_logs": 237822,
+          "error_count": 3211,
+          "error_rate": "1.35%",
           "log_levels": {
             "debug": 0,
             "info": 0,
@@ -554,21 +554,14 @@
             "fatal": 0
           },
           "top_error_services": [
-            "bstp-cms-global-production",
-            "bstp-cms-prod-v3",
-            "em-global-prod",
-            "em-global-prod-3pp",
-            "em-global-prod-eom",
-            "em-global-prod-flowe",
-            "em-prod",
-            "em-prod-3pp",
-            "em-prod-eom",
-            "em-prod-flowe"
+            "bstp-cpq-batch (em-prod)",
+            "bstp-id-service (em-global-prod)",
+            "ntf-engine-service (em-global-prod)"
           ]
         },
         "critical_errors": [],
         "affected_services": [],
-        "quick_summary": "The error rate across services is 1.57%, which is above the critical threshold. Services like bstp-cms-global-production and em-global-prod show significant error rates.",
+        "quick_summary": "The error rate across services is 1.35%, which is above the normal threshold, indicating potential issues. Services with the highest error rates include bstp-cpq-batch in em-prod and bstp-id-service in em-global-prod.",
         "proceed_to_anomaly": false
       },
       "stage1_5_anomaly": {
@@ -581,13 +574,6 @@
         "patterns_identified": {
           "error_patterns": {
             "dominant_errors": [
-              {
-                "type": "java.net.UnknownHostException",
-                "count": 1,
-                "services": [
-                  "bstp-id-service"
-                ]
-              },
               {
                 "type": "Connection to node -1 could not be established",
                 "count": 50,
@@ -606,7 +592,7 @@
             "cascade_path": []
           },
           "temporal_patterns": {
-            "error_clustering": "2025-12-19T14:16:20Z to 2025-12-19T14:16:25Z",
+            "error_clustering": "11:04:11 to 11:04:16",
             "propagation_speed": "<2s"
           }
         },
@@ -615,7 +601,7 @@
         "summary": ""
       }
     },
-    "analysisId": "analysis-1766157380291",
+    "analysisId": "analysis-1766232251597",
     "stage2_pattern": {},
     "anomaly_context": {},
     "proceed_to_stage3": false,
@@ -624,13 +610,6 @@
       "patterns_identified": {
         "error_patterns": {
           "dominant_errors": [
-            {
-              "type": "java.net.UnknownHostException",
-              "count": 1,
-              "services": [
-                "bstp-id-service"
-              ]
-            },
             {
               "type": "Connection to node -1 could not be established",
               "count": 50,
@@ -649,7 +628,7 @@
           "cascade_path": []
         },
         "temporal_patterns": {
-          "error_clustering": "2025-12-19T14:16:20Z to 2025-12-19T14:16:25Z",
+          "error_clustering": "11:04:11 to 11:04:16",
           "propagation_speed": "<2s"
         }
       },
@@ -673,16 +652,16 @@
         "highest_anomaly": "std_deviation",
         "anomaly_scores": {
           "moving_average": 0.5,
-          "std_deviation": 0.6,
-          "rate_change": 0.4,
-          "spike_ratio": 0.2
+          "std_deviation": 0.8,
+          "rate_change": 0.6,
+          "spike_ratio": 0.3
         }
       },
       "proceed_to_stage3": false
     },
     "_validation": {
       "stage": "stage2",
-      "validated_at": "2025-12-19T15:18:32.755Z",
+      "validated_at": "2025-12-20T12:04:57.418Z",
       "errors": [],
       "warnings": [
         "No patterns identified in Stage 2",

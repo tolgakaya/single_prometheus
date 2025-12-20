@@ -3,8 +3,8 @@
     "output": {
       "stage": "pattern_analysis",
       "analysis_timeframe": {
-        "start": "2025-12-19T14:16:20.000Z",
-        "end": "2025-12-19T15:16:20.000Z",
+        "start": "2025-12-20T11:04:11.000Z",
+        "end": "2025-12-20T12:04:11.000Z",
         "focused_period": "30 minutes"
       },
       "trigger_reason": "Critical: bstp-pcm-product-catalog, ntf-engine-service, domain-config-service",
@@ -12,9 +12,9 @@
         "highest_anomaly": "std_deviation",
         "anomaly_scores": {
           "moving_average": 0.5,
-          "std_deviation": 0.6,
-          "rate_change": 0.4,
-          "spike_ratio": 0.2
+          "std_deviation": 0.8,
+          "rate_change": 0.6,
+          "spike_ratio": 0.3
         }
       },
       "tools_executed": [
@@ -25,13 +25,6 @@
       "patterns_identified": {
         "error_patterns": {
           "dominant_errors": [
-            {
-              "type": "java.net.UnknownHostException",
-              "count": 1,
-              "services": [
-                "bstp-id-service"
-              ]
-            },
             {
               "type": "Connection to node -1 could not be established",
               "count": 50,
@@ -50,7 +43,7 @@
           "cascade_path": []
         },
         "temporal_patterns": {
-          "error_clustering": "2025-12-19T14:16:20Z to 2025-12-19T14:16:25Z",
+          "error_clustering": "11:04:11 to 11:04:16",
           "propagation_speed": "<2s"
         }
       },

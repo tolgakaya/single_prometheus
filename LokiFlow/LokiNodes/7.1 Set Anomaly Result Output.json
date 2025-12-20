@@ -1,8 +1,8 @@
 [
   {
     "metadata": {
-      "analysisId": "analysis-1766157380291",
-      "timestamp": "2025-12-19T15:16:20.291Z",
+      "analysisId": "analysis-1766232251597",
+      "timestamp": "2025-12-20T12:04:11.597Z",
       "priority": "normal",
       "forceDeepAnalysis": false,
       "source": "default",
@@ -15,18 +15,18 @@
     },
     "context": {
       "timeRange": {
-        "start": 1766153780,
-        "end": 1766157380,
-        "startISO": "2025-12-19T14:16:20.000Z",
-        "endISO": "2025-12-19T15:16:20.000Z",
+        "start": 1766228651,
+        "end": 1766232251,
+        "startISO": "2025-12-20T11:04:11.000Z",
+        "endISO": "2025-12-20T12:04:11.000Z",
         "durationSeconds": 3600,
         "durationMinutes": 60,
         "durationHuman": "1 hours",
         "step": 60
       },
       "queryParams": {
-        "start": 1766153780,
-        "end": 1766157380,
+        "start": 1766228651,
+        "end": 1766232251,
         "step": 60
       },
       "affectedServices": [],
@@ -531,12 +531,12 @@
     "stageResults": {
       "stage1": {
         "stage": "health_snapshot",
-        "execution_time": "2025-12-19T15:16:20.343Z",
-        "status": "critical",
+        "execution_time": "2025-12-20T12:04:11.640Z",
+        "status": "normal",
         "metrics": {
-          "total_logs": 232416,
-          "error_count": 3645,
-          "error_rate": "1.57%",
+          "total_logs": 237822,
+          "error_count": 3211,
+          "error_rate": "1.35%",
           "log_levels": {
             "debug": 0,
             "info": 0,
@@ -545,16 +545,9 @@
             "fatal": 0
           },
           "top_error_services": [
-            "bstp-cms-global-production",
-            "bstp-cms-prod-v3",
-            "em-global-prod",
-            "em-global-prod-3pp",
-            "em-global-prod-eom",
-            "em-global-prod-flowe",
-            "em-prod",
-            "em-prod-3pp",
-            "em-prod-eom",
-            "em-prod-flowe"
+            "bstp-cpq-batch (em-prod)",
+            "bstp-id-service (em-global-prod)",
+            "ntf-engine-service (em-global-prod)"
           ]
         },
         "critical_errors": [],
@@ -563,28 +556,28 @@
           "Error Rate Check",
           "Service Health Check"
         ],
-        "quick_summary": "The error rate across services is 1.57%, which is above the critical threshold. Services like bstp-cms-global-production and em-global-prod show significant error rates.",
+        "quick_summary": "The error rate across services is 1.35%, which is above the normal threshold, indicating potential issues. Services with the highest error rates include bstp-cpq-batch in em-prod and bstp-id-service in em-global-prod.",
         "proceed_to_anomaly": false
       },
       "stage1_5_anomaly": {
         "performed": true,
         "stage": "anomaly_detection",
-        "execution_time": "2025-12-19T15:17:06.432Z",
+        "execution_time": "2025-12-20T12:04:26.515Z",
         "anomaly_scores": {
           "moving_average": 0.5,
-          "std_deviation": 0.6,
-          "rate_change": 0.4,
-          "spike_ratio": 0.2
+          "std_deviation": 0.8,
+          "rate_change": 0.6,
+          "spike_ratio": 0.3
         },
         "anomaly_findings": {
-          "trend_direction": "fluctuating",
+          "trend_direction": "increasing",
           "trend_severity": "moderate",
-          "baseline_deviation": "minor_deviation",
+          "baseline_deviation": "major_deviation",
           "spike_pattern": "random",
           "anomaly_period": {
-            "start": "2025-12-19T14:16:20.000Z",
-            "end": "2025-12-19T15:16:20.000Z",
-            "peak": "2025-12-19T14:46:20.000Z"
+            "start": "2025-12-20T11:04:11.000Z",
+            "end": "2025-12-20T12:04:11.000Z",
+            "peak": "2025-12-20T11:30:00.000Z"
           }
         },
         "service_anomalies": {
@@ -592,15 +585,15 @@
             "bstp-cpq-batch",
             "bstp-id-service"
           ],
-          "anomaly_distribution": "distributed"
+          "anomaly_distribution": "concentrated"
         },
         "raw_metrics": {
-          "data_points_analyzed": 30,
+          "data_points_analyzed": 33,
           "mean_error_rate": 0.03333333333333333,
           "max_error_rate": 0.06666666666666667,
           "std_deviation": 0.016666666666666666
         },
-        "anomaly_summary": "The analysis detected moderate fluctuations in error rates across multiple services, with a notable deviation from the baseline and random spike patterns. The most affected services were bstp-cpq-batch and bstp-id-service, indicating a distributed anomaly pattern across the namespaces.",
+        "anomaly_summary": "The analysis detected a moderate increasing trend in error rates with significant deviations from the baseline. The most affected services are bstp-cpq-batch and bstp-id-service, with anomalies concentrated in specific namespaces. Random spikes were observed, indicating potential instability.",
         "tools_executed": [
           "Anomaly - Moving Average",
           "Anomaly - Standard Deviation",
@@ -612,25 +605,25 @@
     },
     "enrichments": {},
     "timeRange": {
-      "start": 1766153780,
-      "end": 1766157380,
-      "startISO": "2025-12-19T14:16:20.000Z",
-      "endISO": "2025-12-19T15:16:20.000Z",
+      "start": 1766228651,
+      "end": 1766232251,
+      "startISO": "2025-12-20T11:04:11.000Z",
+      "endISO": "2025-12-20T12:04:11.000Z",
       "durationSeconds": 3600,
       "durationMinutes": 60,
       "durationHuman": "1 hours"
     },
-    "analysisId": "analysis-1766157380292",
+    "analysisId": "analysis-1766232251597",
     "priority": "normal",
     "forceDeepAnalysis": false,
     "$vars": {
-      "START_TIME": 1766153780,
-      "END_TIME": 1766157380,
-      "START_ISO": "2025-12-19T14:16:20.000Z",
-      "END_ISO": "2025-12-19T15:16:20.000Z",
+      "START_TIME": 1766228651,
+      "END_TIME": 1766232251,
+      "START_ISO": "2025-12-20T11:04:11.000Z",
+      "END_ISO": "2025-12-20T12:04:11.000Z",
       "STEP": 60,
       "DURATION_MINUTES": 60,
-      "ANALYSIS_ID": "analysis-1766157380291",
+      "ANALYSIS_ID": "analysis-1766232251597",
       "AFFECTED_SERVICES": [],
       "SEVERITY": "unknown",
       "SOURCE": "default",
@@ -638,8 +631,8 @@
       "PRIORITY": "normal",
       "IS_ORCHESTRATOR_REQUEST": false
     },
-    "anomalyStart": 1766156480,
-    "anomalyEnd": 1766157380,
+    "anomalyStart": 1766231351,
+    "anomalyEnd": 1766232251,
     "serviceDependencies": {
       "raw": {
         "cpq-ntf-integrator-service": {
@@ -1139,10 +1132,10 @@
     },
     "output": {
       "stage": "anomaly_detection",
-      "execution_time": "2025-12-19T15:17:06.432Z",
+      "execution_time": "2025-12-20T12:04:26.515Z",
       "analysis_period": {
-        "start": "2025-12-19T14:16:20.000Z",
-        "end": "2025-12-19T15:16:20.000Z",
+        "start": "2025-12-20T11:04:11.000Z",
+        "end": "2025-12-20T12:04:11.000Z",
         "duration_minutes": 60
       },
       "tools_executed": [
@@ -1152,26 +1145,26 @@
         "Anomaly - Spike Detection"
       ],
       "raw_metrics": {
-        "data_points_analyzed": 30,
+        "data_points_analyzed": 33,
         "mean_error_rate": 0.03333333333333333,
         "max_error_rate": 0.06666666666666667,
         "std_deviation": 0.016666666666666666
       },
       "anomaly_scores": {
         "moving_average": 0.5,
-        "std_deviation": 0.6,
-        "rate_change": 0.4,
-        "spike_ratio": 0.2
+        "std_deviation": 0.8,
+        "rate_change": 0.6,
+        "spike_ratio": 0.3
       },
       "anomaly_findings": {
-        "trend_direction": "fluctuating",
+        "trend_direction": "increasing",
         "trend_severity": "moderate",
-        "baseline_deviation": "minor_deviation",
+        "baseline_deviation": "major_deviation",
         "spike_pattern": "random",
         "anomaly_period": {
-          "start": "2025-12-19T14:16:20.000Z",
-          "end": "2025-12-19T15:16:20.000Z",
-          "peak": "2025-12-19T14:46:20.000Z"
+          "start": "2025-12-20T11:04:11.000Z",
+          "end": "2025-12-20T12:04:11.000Z",
+          "peak": "2025-12-20T11:30:00.000Z"
         }
       },
       "service_anomalies": {
@@ -1179,15 +1172,15 @@
           "bstp-cpq-batch",
           "bstp-id-service"
         ],
-        "anomaly_distribution": "distributed"
+        "anomaly_distribution": "concentrated"
       },
       "proceed_to_stage2": true,
-      "anomaly_summary": "The analysis detected moderate fluctuations in error rates across multiple services, with a notable deviation from the baseline and random spike patterns. The most affected services were bstp-cpq-batch and bstp-id-service, indicating a distributed anomaly pattern across the namespaces.",
-      "recommended_focus": "Stage 2 should focus on investigating the bstp-cpq-batch and bstp-id-service for potential underlying issues causing the fluctuations and deviations."
+      "anomaly_summary": "The analysis detected a moderate increasing trend in error rates with significant deviations from the baseline. The most affected services are bstp-cpq-batch and bstp-id-service, with anomalies concentrated in specific namespaces. Random spikes were observed, indicating potential instability.",
+      "recommended_focus": "Stage 2 should focus on investigating the bstp-cpq-batch and bstp-id-service for potential causes of the anomalies, particularly in the em-global-prod and em-prod namespaces."
     },
     "_validation": {
       "stage": "stage1",
-      "validated_at": "2025-12-19T15:17:06.353Z",
+      "validated_at": "2025-12-20T12:04:26.433Z",
       "errors": [],
       "warnings": [],
       "passed": true
@@ -1195,12 +1188,12 @@
     "requireAnomalyCheck": true,
     "stage1_result": {
       "stage": "health_snapshot",
-      "execution_time": "2025-12-19T15:16:20.343Z",
-      "status": "critical",
+      "execution_time": "2025-12-20T12:04:11.640Z",
+      "status": "normal",
       "metrics": {
-        "total_logs": 232416,
-        "error_count": 3645,
-        "error_rate": "1.57%",
+        "total_logs": 237822,
+        "error_count": 3211,
+        "error_rate": "1.35%",
         "log_levels": {
           "debug": 0,
           "info": 0,
@@ -1209,16 +1202,9 @@
           "fatal": 0
         },
         "top_error_services": [
-          "bstp-cms-global-production",
-          "bstp-cms-prod-v3",
-          "em-global-prod",
-          "em-global-prod-3pp",
-          "em-global-prod-eom",
-          "em-global-prod-flowe",
-          "em-prod",
-          "em-prod-3pp",
-          "em-prod-eom",
-          "em-prod-flowe"
+          "bstp-cpq-batch (em-prod)",
+          "bstp-id-service (em-global-prod)",
+          "ntf-engine-service (em-global-prod)"
         ]
       },
       "critical_errors": [],
@@ -1227,15 +1213,15 @@
         "Error Rate Check",
         "Service Health Check"
       ],
-      "quick_summary": "The error rate across services is 1.57%, which is above the critical threshold. Services like bstp-cms-global-production and em-global-prod show significant error rates.",
+      "quick_summary": "The error rate across services is 1.35%, which is above the normal threshold, indicating potential issues. Services with the highest error rates include bstp-cpq-batch in em-prod and bstp-id-service in em-global-prod.",
       "proceed_to_anomaly": false
     },
     "anomaly_analysis": {
       "stage": "anomaly_detection",
-      "execution_time": "2025-12-19T15:17:06.432Z",
+      "execution_time": "2025-12-20T12:04:26.515Z",
       "analysis_period": {
-        "start": "2025-12-19T14:16:20.000Z",
-        "end": "2025-12-19T15:16:20.000Z",
+        "start": "2025-12-20T11:04:11.000Z",
+        "end": "2025-12-20T12:04:11.000Z",
         "duration_minutes": 60
       },
       "tools_executed": [
@@ -1245,26 +1231,26 @@
         "Anomaly - Spike Detection"
       ],
       "raw_metrics": {
-        "data_points_analyzed": 30,
+        "data_points_analyzed": 33,
         "mean_error_rate": 0.03333333333333333,
         "max_error_rate": 0.06666666666666667,
         "std_deviation": 0.016666666666666666
       },
       "anomaly_scores": {
         "moving_average": 0.5,
-        "std_deviation": 0.6,
-        "rate_change": 0.4,
-        "spike_ratio": 0.2
+        "std_deviation": 0.8,
+        "rate_change": 0.6,
+        "spike_ratio": 0.3
       },
       "anomaly_findings": {
-        "trend_direction": "fluctuating",
+        "trend_direction": "increasing",
         "trend_severity": "moderate",
-        "baseline_deviation": "minor_deviation",
+        "baseline_deviation": "major_deviation",
         "spike_pattern": "random",
         "anomaly_period": {
-          "start": "2025-12-19T14:16:20.000Z",
-          "end": "2025-12-19T15:16:20.000Z",
-          "peak": "2025-12-19T14:46:20.000Z"
+          "start": "2025-12-20T11:04:11.000Z",
+          "end": "2025-12-20T12:04:11.000Z",
+          "peak": "2025-12-20T11:30:00.000Z"
         }
       },
       "service_anomalies": {
@@ -1272,17 +1258,17 @@
           "bstp-cpq-batch",
           "bstp-id-service"
         ],
-        "anomaly_distribution": "distributed"
+        "anomaly_distribution": "concentrated"
       },
       "proceed_to_stage2": true,
-      "anomaly_summary": "The analysis detected moderate fluctuations in error rates across multiple services, with a notable deviation from the baseline and random spike patterns. The most affected services were bstp-cpq-batch and bstp-id-service, indicating a distributed anomaly pattern across the namespaces.",
-      "recommended_focus": "Stage 2 should focus on investigating the bstp-cpq-batch and bstp-id-service for potential underlying issues causing the fluctuations and deviations."
+      "anomaly_summary": "The analysis detected a moderate increasing trend in error rates with significant deviations from the baseline. The most affected services are bstp-cpq-batch and bstp-id-service, with anomalies concentrated in specific namespaces. Random spikes were observed, indicating potential instability.",
+      "recommended_focus": "Stage 2 should focus on investigating the bstp-cpq-batch and bstp-id-service for potential causes of the anomalies, particularly in the em-global-prod and em-prod namespaces."
     },
     "anomaly_scores": {
       "moving_average": 0.5,
-      "std_deviation": 0.6,
-      "rate_change": 0.4,
-      "spike_ratio": 0.2
+      "std_deviation": 0.8,
+      "rate_change": 0.6,
+      "spike_ratio": 0.3
     },
     "anomaly_check_performed": true,
     "proceed_to_stage2": true,
