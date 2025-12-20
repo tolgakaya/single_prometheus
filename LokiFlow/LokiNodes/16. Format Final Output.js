@@ -27,11 +27,16 @@ console.log("Stage results:", {
 const startTime = $execution.startedAt ? new Date($execution.startedAt).getTime() : Date.now();
 const executionTimeSeconds = Math.round((Date.now() - startTime) / 1000);
 
+// Generate analysisId with timestamp-based fallback
+const analysisId = metadata.analysisId ||
+                   inputData.analysisId ||
+                   `lokiflow-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
 const finalOutput = {
   analysisComplete: true,
   timestamp: new Date().toISOString(),
   workflowExecutionId: $execution.id,
-  analysisId: metadata.analysisId || inputData.analysisId || 'unknown',
+  analysisId: analysisId,
   analysisDepth: stage3Result ? "deep" : stage2Result ? "pattern" : "quick",
 
   timeContext: {
