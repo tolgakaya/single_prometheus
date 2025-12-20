@@ -199,6 +199,24 @@ function generateIssuesSection(issues) {
           </ul>
         </div>
         ` : ''}
+
+        ${issue.shortTermFixes && issue.shortTermFixes.length > 0 ? `
+        <div style="margin-top: 15px; padding: 10px; background: #fff3e0; border-left: 4px solid #ff9800; border-radius: 4px;">
+          <h4 style="margin: 0 0 10px 0; color: #f57c00;">📅 Short-Term Fixes:</h4>
+          <ul style="margin: 5px 0; padding-left: 20px;">
+            ${issue.shortTermFixes.map(fix => `<li>${fix}</li>`).join('\n            ')}
+          </ul>
+        </div>
+        ` : ''}
+
+        ${issue.longTermSolutions && issue.longTermSolutions.length > 0 ? `
+        <div style="margin-top: 15px; padding: 10px; background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 4px;">
+          <h4 style="margin: 0 0 10px 0; color: #2e7d32;">🎯 Long-Term Solutions:</h4>
+          <ul style="margin: 5px 0; padding-left: 20px;">
+            ${issue.longTermSolutions.map(solution => `<li>${solution}</li>`).join('\n            ')}
+          </ul>
+        </div>
+        ` : ''}
       </div>
     </div>`;
   }).join('\n');
