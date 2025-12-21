@@ -1,0 +1,21 @@
+1. İlk stage'te Recent Errors http tool'u ile tempo sorgulanıyor
+
+Burada gönderilen parametre şu şekilde:
+
+{{ $json.searchParams?.customQuery || '{status=error && .deployment.environment="etiyamobile-production" }' }}
+
+ve bu şu şekilde evaluate edilmiş
+
+{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (service.name="APIGateway" || service.name="crm-mash-up" || service.name="crm-customer-information" || service.name="crm-asset" || service.name="domain-config-service" || service.name="ntf-engine-service" || service.name="ntf-history-service" || service.name="bss-services-service.etiyamobile-production-eom" || service.name="bss-mc-domain-config-t4" || service.name="bss-mc-ntf-engine-t4" || service.name="bstp-pcm-product-catalog" || service.name="eca-t4" || service.name="bss-mc-asset-management-t4" || service.name="bss-mc-crm-customer-information-t4" || service.name="bss-mc-pcm-product-catalog-t4" || service.name="cpq-ordercapture" || service.name="bstp-pcm-product-offer-detail" || service.name="activity" || service.name="bss-mc-cpq-t4" || service.name="customer-search-mc-backend" || service.name="ui-authz-mc-backend") && status=error }
+
+Ancak burada bu şekild ehata alınıyor:
+
+Bad request - please check your parameters Details: invalid TraceQL query: parse error at line 1, col 246: syntax error: unexpected IDENTIFIER
+invalid TraceQL query: parse error at line 1, col 246: syntax error: unexpected IDENTIFIER
+
+
+2. Ayrıca şu hata da diğer node'ta var:
+Problem in node ‘Combine Results‘
+Referenced node doesn't exist [line 5]
+
+Lütfen bu node'ta feferans veridğin node'ları kontrol eder misin? Kontrol ettiğini söylemiştin ama hala var olmayan bir node'a referans var burada.
