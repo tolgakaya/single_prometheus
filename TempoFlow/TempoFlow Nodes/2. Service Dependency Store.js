@@ -1,0 +1,378 @@
+// Service Dependency Store Node - UPDATED WITH service_dependencies.json
+// T4 servisleri ve güncel bağımlılıklar ile
+
+// Preserve input data
+const input = $input.first().json;
+
+return [{
+  json: {
+    // Preserve all input fields
+    ...input,
+    
+    // Add service dependencies
+    serviceDependencies: {
+      // API Gateway
+      "APIGateway": {
+        dependencies: ["crm-mash-up", "crm-customer-information", "cpq-ordercapture"],
+        criticality: "critical",
+        slaThresholds: {
+          errorRate: 0.005,
+          latencyP95: 500,
+          latencyP99: 1000
+        },
+        category: "gateway"
+      },
+      
+      // Core Backend Services
+      "cpq-ordercapture": {
+        dependencies: ["bstp-pcm-product-catalog", "bstp-pcm-product-offer-detail", "domain-config-service", "activity"],
+        criticality: "critical",
+        slaThresholds: {
+          errorRate: 0.01,
+          latencyP95: 1000,
+          latencyP99: 2000
+        },
+        category: "cpq"
+      },
+      
+      // CRM Services
+      "crm-customer-information": {
+        dependencies: [
+          "crm-asset", 
+          "domain-config-service", 
+          "bstp-pcm-product-catalog", 
+          "eca-t4", 
+          "bss-services-service.etiyamobile-production-eom",
+          "bss-mc-domain-config-t4",
+          "bss-mc-asset-management-t4",
+          "bss-mc-ntf-engine-t4",
+          "bss-mc-crm-customer-information-t4",
+          "bss-mc-pcm-product-catalog-t4"
+        ],
+        criticality: "critical",
+        slaThresholds: {
+          errorRate: 0.01,
+          latencyP95: 300,
+          latencyP99: 800
+        },
+        category: "crm"
+      },
+      
+      "crm-mash-up": {
+        dependencies: [
+          "crm-customer-information",
+          "cpq-ordercapture",
+          "bstp-pcm-product-catalog",
+          "bstp-pcm-product-offer-detail",
+          "bss-mc-cpq-t4",
+          "bss-mc-crm-customer-information-t4",
+          "bss-mc-asset-management-t4",
+          "customer-search-mc-backend",
+          "bss-mc-pcm-product-catalog-t4"
+        ],
+        criticality: "high",
+        slaThresholds: {
+          errorRate: 0.02,
+          latencyP95: 500,
+          latencyP99: 1200
+        },
+        category: "crm"
+      },
+      
+      "crm-asset": {
+        dependencies: [],
+        criticality: "high",
+        slaThresholds: {
+          errorRate: 0.02,
+          latencyP95: 400,
+          latencyP99: 1000
+        },
+        category: "crm"
+      },
+      
+      // Product Catalog Services
+      "bstp-pcm-product-catalog": {
+        dependencies: ["domain-config-service"],
+        criticality: "high",
+        slaThresholds: {
+          errorRate: 0.02,
+          latencyP95: 300,
+          latencyP99: 800
+        },
+        category: "catalog"
+      },
+      
+      "bstp-pcm-product-offer-detail": {
+        dependencies: ["crm-asset"],
+        criticality: "high",
+        slaThresholds: {
+          errorRate: 0.02,
+          latencyP95: 400,
+          latencyP99: 1000
+        },
+        category: "catalog"
+      },
+      
+      // Notification Services
+      "ntf-engine-service": {
+        dependencies: ["ntf-history-service", "bss-services-service.etiyamobile-production-eom", "bss-mc-domain-config-t4"],
+        criticality: "medium",
+        slaThresholds: {
+          errorRate: 0.05,
+          latencyP95: 2000,
+          latencyP99: 5000
+        },
+        category: "notification"
+      },
+      
+      "ntf-history-service": {
+        dependencies: [],
+        criticality: "low",
+        slaThresholds: {
+          errorRate: 0.05,
+          latencyP95: 1000,
+          latencyP99: 3000
+        },
+        category: "notification"
+      },
+      
+      "ntf-batch-service": {
+        dependencies: ["domain-config-service", "ntf-engine-service"],
+        criticality: "low",
+        slaThresholds: {
+          errorRate: 0.05,
+          latencyP95: 5000,
+          latencyP99: 10000
+        },
+        category: "notification"
+      },
+      
+      "cpq-ntf-integrator-service": {
+        dependencies: ["domain-config-service", "ntf-engine-service", "ntf-history-service", "crm-customer-information", "bss-mc-ntf-engine-t4"],
+        criticality: "medium",
+        slaThresholds: {
+          errorRate: 0.05,
+          latencyP95: 1500,
+          latencyP99: 3000
+        },
+        category: "notification"
+      },
+      
+      "crm-ntf-integrator-service": {
+        dependencies: ["domain-config-service", "ntf-engine-service", "crm-customer-information", "search-integrator-mc-backend"],
+        criticality: "medium",
+        slaThresholds: {
+          errorRate: 0.05,
+          latencyP95: 1500,
+          latencyP99: 3000
+        },
+        category: "notification"
+      },
+      
+      // Search Services
+      "customer-search-mc-backend": {
+        dependencies: [],
+        criticality: "high",
+        slaThresholds: {
+          errorRate: 0.02,
+          latencyP95: 400,
+          latencyP99: 1000
+        },
+        category: "search"
+      },
+      
+      "search-integrator-mc-backend": {
+        dependencies: ["crm-customer-information"],
+        criticality: "medium",
+        slaThresholds: {
+          errorRate: 0.03,
+          latencyP95: 500,
+          latencyP99: 1200
+        },
+        category: "search"
+      },
+      
+      // Supporting Services
+      "domain-config-service": {
+        dependencies: ["ntf-engine-service", "ntf-history-service", "bss-mc-ntf-engine-t4"],
+        criticality: "critical",
+        slaThresholds: {
+          errorRate: 0.001,
+          latencyP95: 100,
+          latencyP99: 300
+        },
+        category: "config"
+      },
+      
+      "activity": {
+        dependencies: ["domain-config-service"],
+        criticality: "low",
+        slaThresholds: {
+          errorRate: 0.05,
+          latencyP95: 1000,
+          latencyP99: 2000
+        },
+        category: "support"
+      },
+      
+      "ui-authz-mc-backend": {
+        dependencies: ["domain-config-service"],
+        criticality: "critical",
+        slaThresholds: {
+          errorRate: 0.005,
+          latencyP95: 200,
+          latencyP99: 500
+        },
+        category: "auth"
+      },
+      
+      // CPQ Services
+      "bstp-cpq-batch": {
+        dependencies: ["bss-mc-domain-config-t4"],
+        criticality: "medium",
+        slaThresholds: {
+          errorRate: 0.03,
+          latencyP95: 5000,
+          latencyP99: 10000
+        },
+        category: "cpq"
+      },
+      
+      // Identity Service
+      "bstp-id-service": {
+        dependencies: [],
+        criticality: "high",
+        slaThresholds: {
+          errorRate: 0.01,
+          latencyP95: 200,
+          latencyP99: 500
+        },
+        category: "auth"
+      },
+      
+      // UI Services
+      "em-b2c-wsc-new-ui": {
+        dependencies: ["eca-t4"],
+        criticality: "medium",
+        slaThresholds: {
+          errorRate: 0.02,
+          latencyP95: 500,
+          latencyP99: 1000
+        },
+        category: "ui"
+      },
+      
+      // External/EOM Services
+      "bss-services-service.etiyamobile-production-eom": {
+        dependencies: [],
+        criticality: "critical",
+        slaThresholds: {
+          errorRate: 0.01,
+          latencyP95: 500,
+          latencyP99: 1000
+        },
+        category: "backend"
+      },
+      
+      "eca-t4": {
+        dependencies: [],
+        criticality: "high",
+        slaThresholds: {
+          errorRate: 0.02,
+          latencyP95: 300,
+          latencyP99: 800
+        },
+        category: "t4-layer"
+      },
+      
+      // T4 Layer Services
+      "bss-mc-domain-config-t4": {
+        dependencies: [],
+        criticality: "high",
+        slaThresholds: {
+          errorRate: 0.01,
+          latencyP95: 200,
+          latencyP99: 500
+        },
+        category: "t4-layer"
+      },
+      
+      "bss-mc-cpq-t4": {
+        dependencies: [],
+        criticality: "high",
+        slaThresholds: {
+          errorRate: 0.02,
+          latencyP95: 400,
+          latencyP99: 1000
+        },
+        category: "t4-layer"
+      },
+      
+      "bss-mc-crm-customer-information-t4": {
+        dependencies: [],
+        criticality: "high",
+        slaThresholds: {
+          errorRate: 0.02,
+          latencyP95: 300,
+          latencyP99: 800
+        },
+        category: "t4-layer"
+      },
+      
+      "bss-mc-ntf-engine-t4": {
+        dependencies: [],
+        criticality: "medium",
+        slaThresholds: {
+          errorRate: 0.03,
+          latencyP95: 1000,
+          latencyP99: 2000
+        },
+        category: "t4-layer"
+      },
+      
+      "bss-mc-pcm-product-catalog-t4": {
+        dependencies: [],
+        criticality: "high",
+        slaThresholds: {
+          errorRate: 0.02,
+          latencyP95: 300,
+          latencyP99: 800
+        },
+        category: "t4-layer"
+      },
+      
+      "bss-mc-asset-management-t4": {
+        dependencies: [],
+        criticality: "high",
+        slaThresholds: {
+          errorRate: 0.02,
+          latencyP95: 400,
+          latencyP99: 1000
+        },
+        category: "t4-layer"
+      }
+    },
+    
+    serviceCategories: {
+      backend: ["bss-services-service.etiyamobile-production-eom"],
+      auth: ["ui-authz-mc-backend", "bstp-id-service"],
+      crm: ["crm-customer-information", "crm-mash-up", "crm-asset"],
+      catalog: ["bstp-pcm-product-catalog", "bstp-pcm-product-offer-detail"],
+      cpq: ["cpq-ordercapture", "bstp-cpq-batch"],
+      notification: ["ntf-engine-service", "ntf-history-service", "ntf-batch-service", "cpq-ntf-integrator-service", "crm-ntf-integrator-service"],
+      search: ["customer-search-mc-backend", "search-integrator-mc-backend"],
+      config: ["domain-config-service"],
+      support: ["activity"],
+      gateway: ["APIGateway"],
+      ui: ["em-b2c-wsc-new-ui"],
+      "t4-layer": ["eca-t4", "bss-mc-domain-config-t4", "bss-mc-cpq-t4", "bss-mc-crm-customer-information-t4", "bss-mc-ntf-engine-t4", "bss-mc-pcm-product-catalog-t4", "bss-mc-asset-management-t4"]
+    },
+    
+    criticalPaths: {
+      login: ["ui-authz-mc-backend", "crm-customer-information", "domain-config-service"],
+      order: ["APIGateway", "cpq-ordercapture", "crm-customer-information", "bstp-pcm-product-catalog"],
+      search: ["customer-search-mc-backend", "search-integrator-mc-backend", "crm-customer-information"],
+      payment: ["APIGateway", "cpq-ordercapture", "bss-services-service.etiyamobile-production-eom"]
+    }
+  }
+}];

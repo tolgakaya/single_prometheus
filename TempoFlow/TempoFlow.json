@@ -1,0 +1,1048 @@
+{
+  "name": "APM Analyzer",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e85a6e94-5505-4d01-a1c6-a53b21c99412",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -1104,
+        32
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# Stage 1: Adaptive Health Check - Orchestrator Aware\n\nYou are a specialized AI agent for ultra-fast Grafana Tempo health assessment.\n\n## 🎯 YOUR MISSION: QUICK ERROR CHECK WITH SMART ROUTING\n\n### Context Parameters:\n- Source: {{$json.source || 'manual'}}\n- Priority: {{$json.analysisConfig?.priority || 'normal'}}\n- Force Deep Analysis: {{$json.analysisConfig?.forceDeepAnalysis || false}}\n- Analysis Depth: {{$json.analysisConfig?.depth || 'standard'}}\n- Orchestrator ID: {{$json.orchestratorId || 'N/A'}}\n- Request ID: {{$json.requestId || 'N/A'}}\n\n\n## 💬 CHAT ANALYSIS CONTEXT:\n- User Message: \"[{{$json.analysisConfig2?.chatMessage}}]\"\n- Analysis Mode: [{{$json.analysisConfig2?.analysisMode || 'targeted'}}]\n- Detected Services: [{{$json.serviceAnalysis?.detectedServices?.length || 0}}] services\n{{ $json.analysisConfig?.requiresServiceDetection ? '- Services to Analyze: ' + $json.serviceAnalysis?.detectedServices.join(', ') : '' }}\n\n## 🚨 CRITICAL DECISION LOGIC:\n\n### RULE 1: Check forceDeepAnalysis Flag\n**IF forceDeepAnalysis === true OR priority === \"critical\":**\n- ALWAYS set proceed_to_stage2 = true\n- Add reason: \"Deep analysis forced by {{$json.source || 'manual'}} request with priority: {{$json.analysisConfig?.priority || 'normal'}}\"\n- Skip error count thresholds\n- Include orchestrator metadata in output\n\n### RULE 2: Standard Analysis Criteria\n**IF forceDeepAnalysis === false AND priority !== \"critical\":**\n\nError Count → Status → Stage 2 Decision\n0 errors → healthy → FALSE (stop here)\n1-5 errors → warning → TRUE (investigate)\n6-20 errors → concerning → TRUE (investigate)\n20+ errors → critical → TRUE (urgent)\n\n## 📊 ANALYSIS PARAMETERS:\n- Time Range: {{$json.timeRange?.humanReadable?.start || 'Last 1 hour'}} to {{$json.timeRange?.humanReadable?.end || 'Now'}}\n- Services Filter: {{$json.searchParams?.services || []}}\n- Status Codes: {{$json.searchParams?.statusCodes || []}}\n- Query Limit: {{$json.searchParams?.limits?.stage1 || 100}}\n- Custom Query: {{$json.searchParams?.customQuery || 'Default error query'}}\n\n## 🔍 SERVICE CONTEXT:\n- Primary Services: {{$json.analysisConfig?.serviceContext?.primaryServices || []}}\n- All Related Services: {{$json.analysisConfig?.serviceContext?.allServices || []}}\n- Critical Path Affected: {{$json.analysisConfig?.serviceContext?.criticalPathAffected || false}}\n\n\n## 🎚️ SERVICE-SPECIFIC THRESHOLDS:\n{{\n  Object.entries($json.analysisConfig?.serviceContext?.expectedLatencies || {})\n    .map(([key, value]) => `- ${key}: P95=${value.p95}ms, P99=${value.p99}ms`)\n    .join('\\n')\n}}\n\n\n## 📋 OUTPUT FORMAT:\n\nYou MUST analyze the RecentErrors tool results and generate a JSON response with ACTUAL data. Do NOT use placeholder values.\n\n```json\n{\n  \"stage\": \"health_check\",\n  \"execution_time\": \"{{new Date().toISOString()}}\",\n  \"analysis_context\": {\n    \"source\": \"{{$json.source || 'manual'}}\",\n    \"priority\": \"{{$json.analysisConfig?.priority || 'normal'}}\",\n    \"forced_analysis\": {{$json.analysisConfig?.forceDeepAnalysis || false}},\n    \"orchestrator_id\": {{$json.orchestratorId ? '\"' + $json.orchestratorId + '\"' : 'null'}},\n    \"request_id\": {{$json.requestId ? '\"' + $json.requestId + '\"' : 'null'}}\n  },\n  \"status\": \"<DETERMINE_BASED_ON_ERROR_COUNT: healthy|warning|concerning|critical>\",\n  \"metrics\": {\n    \"error_count\": <COUNT_TOTAL_ERRORS_FROM_SEARCH_RESULTS>,\n    \"error_types\": {\n      \"4xx\": <COUNT_4XX_ERRORS>,\n      \"5xx\": <COUNT_5XX_ERRORS>,\n      \"timeouts\": <COUNT_TIMEOUT_ERRORS>\n    },\n    \"services_checked\": [<LIST_ALL_UNIQUE_SERVICE_NAMES_FROM_SEARCH_RESULTS>]\n  },\n  \"critical_services\": [<LIST_CRITICAL_SERVICES_WITH_ERRORS_IF_ANY>],\n  \"proceed_to_stage2\": <TRUE_OR_FALSE_BASED_ON_RULES>,\n  \"reason\": \"<EXPLAIN_DECISION_BASED_ON_ACTUAL_FINDINGS>\",\n  \"quick_summary\": \"<SUMMARIZE_ACTUAL_FINDINGS_FROM_SEARCH>\"\n}\n```\n\n## ⚙️ EXECUTION RULES:\n\n1. Use ONLY RecentErrors tool with provided searchParams\n2. CRITICAL: If forceDeepAnalysis=true OR priority=\"critical\" → proceed_to_stage2 MUST be true\n3. Include complete analysis context in output\n4. Complete analysis in <3 seconds\n\n## 🔴 IMPORTANT INSTRUCTIONS:\n\n1. **For execution_time**: The value is already set to \"{{new Date().toISOString()}}\" - DO NOT CHANGE THIS! It will automatically insert the current timestamp.\n2. **For services_checked**: Extract ALL unique service names from the RecentErrors tool results\n3. **For error_count**: Count the ACTUAL number of error traces returned by the tool\n4. **For error_types**: Analyze the status codes in the results and categorize them:\n   - 4xx: Client errors (400-499)\n   - 5xx: Server errors (500-599)\n   - timeouts: Look for timeout-related errors in the traces\n5. **For source**: Use the actual source from input - if manual trigger, it should be \"manual\" NOT \"orchestrator\"\n6. **For critical_services**: List any critical services (from the serviceContext) that have errors\n\n## 🚨 DO NOT USE THESE PLACEHOLDER VALUES:\n- \"2024-10-01 12:00:00\" or \"2023-10-01T12:00:00.000Z\" or any hardcoded date\n- \"orchestrator_id_example\" \n- \"request_id_example\"\n- \"service1\", \"service2\" as service names\n- Fixed error counts like \"95\" that don't match actual results\n- ANY date from 2023 or 2024 - the current year is 2025!\n\n## 📅 CRITICAL DATE INSTRUCTION:\nThe execution_time field is pre-filled with \"{{new Date().toISOString()}}\" which will automatically generate the current timestamp. DO NOT replace this with any other value. The system will handle the date generation.\n\nREMEMBER: When priority=\"critical\" or forceDeepAnalysis=true, ALWAYS set proceed_to_stage2=true regardless of error count!\n\nDefault environment: deployment.environment=\"etiyamobile-production\"",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "CRITICAL: The current analysis has the following parameters:\n- Source: orchestrator\n- Priority: critical\n- ForceDeepAnalysis: true\n\nYou MUST use these values in your output, NOT the default values.\nYou MUST set proceed_to_stage2 to true because priority is critical."
+        }
+      },
+      "id": "3cc27087-2042-4256-ae27-8aebae5685ce",
+      "name": "Stage 1: Quick Health Check",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        96,
+        176
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# Stage 2: Deep Dive Analysis with Service Dependency Intelligence\n\nYou are a specialized AI agent for comprehensive Grafana Tempo anomaly investigation with service dependency awareness.\n\n## 🎯 YOUR MISSION: ROOT CAUSE ANALYSIS WITH SERVICE CONTEXT\n\n**You are activated ONLY when Stage 1 detected issues. Perform thorough investigation with service dependency analysis and MANDATORY delays.**\n\n## 🎯 YOUR MISSION: ROOT CAUSE ANALYSIS WITH SERVICE CONTEXT\n\n**You are activated ONLY when Stage 1 detected issues. Perform thorough investigation with service dependency analysis and MANDATORY delays.**\n\n\n\n\n## 📊 SERVICE CONTEXT:\n- Detected Services: {{$node[\"Service-Aware Query Builder\"].json.serviceAnalysis.detectedServices}}\n- Critical Path Affected: {{$node[\"Service-Aware Query Builder\"].json.serviceAnalysis.criticalPathAffected}}\n- Affected Path: {{$node[\"Service-Aware Query Builder\"].json.serviceAnalysis.affectedPath}}\n- Service Impact Score: {{$node[\"Enhanced Error Categorization\"].json.serviceErrorAnalysis.impactScore}}\n\n## 🔗 DEPENDENCY CHAINS:\n{{\n  Object.entries($node[\"Service-Aware Query Builder\"].json.serviceAnalysis.dependencyChains || {})\n    .map(([key, value]) => `**${key}**: ${value}`)\n    .join('\\n')\n}}\n\n\n## ⏱️ CRITICAL TIMING RULES:\n\n1. **WAIT 3 SECONDS** between each tool execution\n2. **MAXIMUM 3-4 TOOLS** per investigation\n3. **NEVER** execute tools simultaneously\n\n## 🛠️ ENHANCED INVESTIGATION TOOLS:\n\n### Priority 1 - Service Dependency Analysis (NEW)\n* **Dependency Chain Tracer** - Traces errors through service dependencies\n* **Service Cascade Analyzer** - Detects cascade failures across services\n\n### Priority 2 - Error Analysis\n* **Exception Spans** - Detailed exception analysis\n* **Span 1 Hour With Errors** - Error span investigation\n* **Last 24 Hours Spans Errors All** - Extended error analysis\n\n### Priority 3 - Performance Analysis\n* **High Latency** - Performance degradation check\n* **Recent External Service Latency Errors** - Third-party issues\n\n### Priority 4 - Historical Comparison\n* **Yesterday 3 Hours** - Daily comparison\n* **Last Week 3 Hours** - Weekly comparison\n\n## 📋 SERVICE-AWARE INVESTIGATION WORKFLOW:\n\n```\nService Context → Tool Selection Strategy\n─────────────────────────────────────────\nCritical Path Affected → \n  1. Dependency Chain Tracer\n  2. [WAIT 3s]\n  3. Service Cascade Analyzer\n  4. [WAIT 3s]\n  5. Exception Spans\n\nPayment/Auth Errors →\n  1. Service Cascade Analyzer\n  2. [WAIT 3s]\n  3. External Service Latency\n  4. [WAIT 3s]\n  5. Dependency Chain Tracer\n\nGateway/Backend Errors →\n  1. Dependency Chain Tracer\n  2. [WAIT 3s]\n  3. High Latency\n  4. [WAIT 3s]\n  5. Last 24 Hours Errors\n```\n\n## 🔍 SERVICE-SPECIFIC ANALYSIS PATTERNS:\n\n| Service Category | Primary Tools | Focus Areas |\n|-----------------|---------------|-------------|\n| Payment Services | Cascade Analyzer, External Latency | Transaction failures, Bank API issues |\n| Auth Services | Dependency Tracer, Exception Spans | Token validation, User lookup |\n| Gateway Services | Dependency Tracer, High Latency | Request routing, Load distribution |\n| Data Stores | DB Spans, Exception Spans | Connection pools, Query performance |\n\n## 💡 SERVICE DEPENDENCY INSIGHTS:\n\nFor each tool result, identify:\n- **Upstream Impact**: Which services are causing the issue\n- **Downstream Effect**: Which services are affected\n- **Cascade Pattern**: How errors propagate through the chain\n- **Bottleneck Service**: The service causing the most delays\n\n## 💾 ENHANCED OUTPUT FORMAT:\n\n```json\n{\n  \"stage\": \"deep_investigation\",\n  \"investigation_trigger\": \"Stage 1 found X errors with impact score Y\",\n  \"service_context\": {\n    \"primary_services_investigated\": [\"list\"],\n    \"dependency_chains_analyzed\": [\"list\"],\n    \"cascade_patterns_detected\": [\"list\"]\n  },\n  \"tools_executed\": [\"Dependency Chain Tracer\", \"Service Cascade Analyzer\", \"Exception Spans\"],\n  \"execution_timeline\": {\n    \"tool1\": \"Dependency Chain Tracer - 00:00\",\n    \"wait1\": \"Pause 3s - 00:03\",\n    \"tool2\": \"Service Cascade Analyzer - 00:04\"\n  },\n  \"findings\": {\n    \"service_dependencies\": {\n      \"failed_chains\": [\n        {\n          \"chain\": [\"auth-service\", \"user-service\", \"postgres\"],\n          \"failure_point\": \"postgres\",\n          \"error_type\": \"connection_timeout\"\n        }\n      ],\n      \"cascade_failures\": [\n        {\n          \"origin\": \"postgres\",\n          \"affected\": [\"user-service\", \"auth-service\", \"eca-backend\"],\n          \"pattern\": \"connection_exhaustion\"\n        }\n      ]\n    },\n    \"exceptions\": {\n      \"by_service\": {\n        \"auth-service\": { \"count\": 50, \"types\": [\"timeout\"] },\n        \"payment-service\": { \"count\": 20, \"types\": [\"connection_refused\"] }\n      }\n    },\n    \"performance\": {\n      \"service_latencies\": {\n        \"auth-service\": { \"p95\": \"2000ms\", \"sla_violation\": true },\n        \"payment-service\": { \"p95\": \"5000ms\", \"sla_violation\": true }\n      }\n    }\n  },\n  \"root_cause_analysis\": {\n    \"primary_cause\": \"Postgres connection pool exhausted affecting auth chain\",\n    \"service_root\": \"postgres\",\n    \"affected_chains\": [\"login\", \"payment\"],\n    \"contributing_factors\": [\n      \"Increased traffic to auth-service\",\n      \"Slow queries in user_transactions table\",\n      \"No circuit breaker between services\"\n    ],\n    \"evidence\": [\n      \"Connection timeouts started in postgres at 14:30\",\n      \"Auth-service errors began 2 minutes later\",\n      \"Cascade to payment-service after 5 minutes\"\n    ]\n  },\n  \"affected_components\": {\n    \"services\": [\"auth-service\", \"payment-service\", \"user-service\"],\n    \"service_dependencies\": {\n      \"auth-service\": [\"user-service\", \"postgres\"],\n      \"payment-service\": [\"auth-service\", \"bank-api\"]\n    },\n    \"critical_paths_impacted\": [\"login\", \"payment\"],\n    \"estimated_users_impacted\": \"45% - all login and payment flows\"\n  },\n  \"severity_assessment\": {\n    \"business_impact\": \"critical\",\n    \"technical_severity\": \"critical\",\n    \"urgency\": \"immediate\",\n    \"service_criticality_score\": 95\n  },\n  \"recommendations\": {\n    \"immediate_actions\": [\n      \"Scale postgres connection pool from 100 to 300\",\n      \"Enable circuit breaker on auth-service → postgres connection\",\n      \"Redirect traffic from region-1 to region-2\"\n    ],\n    \"service_specific\": {\n      \"postgres\": [\"Increase max_connections\", \"Kill idle connections\"],\n      \"auth-service\": [\"Enable connection pooling\", \"Implement retry with backoff\"],\n      \"payment-service\": [\"Activate fallback mode\", \"Queue non-critical transactions\"]\n    }\n  }\n}\n```\n\n## ⚠️ SERVICE-AWARE INVESTIGATION RULES:\n\n1. **Always start with dependency analysis** for critical path issues\n2. **Trace cascade patterns** when multiple service categories have errors\n3. **Check SLA violations** for each service in the chain\n4. **Map error propagation timeline** across services\n5. **Identify the ROOT service** causing the cascade\n\n## 🚦 SERVICE PRIORITY MATRIX:\n\n| Service | Criticality | Max Acceptable Errors | Action Threshold |\n|---------|------------|---------------------|------------------|\n| payment-service | CRITICAL | 5/min | Immediate escalation |\n| auth-service | CRITICAL | 10/min | Immediate action |\n| eca-backend | CRITICAL | 20/min | High priority |\n| user-service | HIGH | 50/min | Standard response |\n| notification | MEDIUM | 100/min | Monitor |\n\n## 🛑 RATE LIMIT PROTECTION:\n\n- Execute tool 1 (preferably Dependency Chain Tracer)\n- COUNT: \"1 Mississippi, 2 Mississippi, 3 Mississippi\"\n- Execute tool 2 (Service Cascade Analyzer if needed)\n- COUNT: \"1 Mississippi, 2 Mississippi, 3 Mississippi\"\n- Execute tool 3 (Error/Performance tool)\n- Complete analysis\n\n**REMEMBER**: \n- Service dependencies are KEY to finding root cause\n- Always trace the cascade path\n- The 3-second delays are MANDATORY!",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "CRITICAL: Analyze ONLY actual tool results. If tools return errors (like 401s), report them accurately. Do NOT say 'no errors found' when errors exist in the tool results."
+        }
+      },
+      "id": "f1121237-8ce7-4f11-a6b4-5d699a43b453",
+      "name": "Stage 2: Deep Dive",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        1040,
+        176
+      ],
+      "typeVersion": 1.9
+    },
+    {
+      "parameters": {
+        "jsCode": "// Format Final Output - COMPLETE VERSION with All Improvements\nconst allInputs = $input.all();\nconsole.log('=== FORMAT FINAL OUTPUT WITH COMPLETE ERROR HANDLING ===');\nconsole.log('Total inputs:', allInputs.length);\n\nlet stage1Result = null;\nlet stage2Result = null;\nlet serviceContext = null;\nlet analysisMetadata = null;\nlet inputConfig = null;  // YENİ EKLE\n\n// Process all inputs - now including service context and metadata\nallInputs.forEach((input, index) => {\n  const data = input.json;\n  \n  // Extract stage results and service context\n  if (data.stage1) {\n    stage1Result = data.stage1;\n    serviceContext = data.serviceContext;\n    analysisMetadata = data.analysisMetadata;\n\n    if (data.chatContext || data.analysisConfig) {\n      inputConfig = {\n        source: data.source || data.stage1?.analysis_context?.source || 'unknown',\n        analysisConfig: data.analysisConfig || {},\n        chatContext: data.chatContext || {}\n      };\n  }\n  }\n  if (data.stage2) {\n    stage2Result = data.stage2;\n  }\n  \n  // Direct stage results\n  if (data.stage === 'health_check') {\n    stage1Result = data;\n  }\n  if (data.stage === 'deep_investigation') {\n    stage2Result = data;\n  }\n});\n\n// YENİ EKLE: inputConfig yoksa Unified Entry Point'ten al\nif (!inputConfig) {\n  inputConfig = $node[\"Unified Entry Point\"]?.json || {};\n}\n\nconsole.log('Stage 1 found:', !!stage1Result);\nconsole.log('Stage 2 found:', !!stage2Result);\nconsole.log('Service context found:', !!serviceContext);\n \n\n// Build enhanced final output with complete error handling\nconst finalOutput = {\n  analysisComplete: true,\n  timestamp: new Date().toISOString(),\n  workflowExecutionId: $execution.id,\n  \n  // Basic health check results - UPDATED with reconciliation\n  healthCheck: {\n    status: stage1Result?.status || 'unknown',\n    errorCount: serviceContext?.reconciliatedErrors?.totalErrors || stage1Result?.metrics?.error_count || 0,\n    errorTypes: stage1Result?.metrics?.error_types || {},\n    summary: '', // Will be set below after we know total errors\n    servicesChecked: stage1Result?.metrics?.services_checked || [],\n    // NEW: Add reconciliation info\n    errorReconciliation: {\n      stage1Errors: serviceContext?.reconciliatedErrors?.stage1Errors || 0,\n      stage2AdditionalErrors: serviceContext?.reconciliatedErrors?.stage2AdditionalErrors || 0,\n      totalAfterDeepAnalysis: serviceContext?.reconciliatedErrors?.totalErrors || 0\n    }\n  },\n  \n  // Analysis context from orchestrator\n  analysisContext: {\n    source: stage1Result?.analysis_context?.source || 'unknown',\n    priority: stage1Result?.analysis_context?.priority || 'normal',\n    orchestratorId: stage1Result?.analysis_context?.orchestrator_id,\n    requestId: stage1Result?.analysis_context?.request_id\n  },\n  \n  // UPDATED: Service-specific analysis with Stage 2 findings\n  serviceAnalysis: {\n    servicesAnalyzed: serviceContext?.detectedServices || [],\n    criticalPathAffected: serviceContext?.criticalPathAffected || false,\n    affectedPath: serviceContext?.affectedPath || null,\n    \n    // Service-level error breakdown - MERGE Stage 1 and Stage 2 findings\n    errorsByService: {},\n    errorsByCriticality: {\n      critical: { services: [], totalErrors: 0 },\n      high: { services: [], totalErrors: 0 },\n      medium: { services: [], totalErrors: 0 },\n      low: { services: [], totalErrors: 0 }\n    },\n    errorsByCategory: {},\n    \n    // Impact assessment\n    impactScore: serviceContext?.serviceErrorAnalysis?.impactScore || 0,\n    serviceRecommendations: serviceContext?.serviceErrorAnalysis?.recommendations || [],\n    \n    // Service metadata\n    serviceDetails: {}\n  }\n};\n\n// CRITICAL: Merge Stage 1 and Stage 2 error findings\n// Start with Stage 1 errors\nif (serviceContext?.serviceErrorAnalysis?.byService) {\n  finalOutput.serviceAnalysis.errorsByService = { ...serviceContext.serviceErrorAnalysis.byService };\n}\n\n// Add Stage 2 discovered errors\nif (stage2Result?.findings?.exceptions?.by_service) {\n  Object.entries(stage2Result.findings.exceptions.by_service).forEach(([service, data]) => {\n    if (data.count > 0) {\n      if (!finalOutput.serviceAnalysis.errorsByService[service]) {\n        // Service not in Stage 1 results - add it\n        const serviceInfo = serviceContext?.serviceMetadata?.[service] || {};\n        finalOutput.serviceAnalysis.errorsByService[service] = {\n          errorCount: data.count,\n          errorTypes: data.types || [],\n          errorPercentage: ((data.count / finalOutput.healthCheck.errorCount) * 100).toFixed(1),\n          criticality: serviceInfo.criticality || 'unknown',\n          category: serviceInfo.category || 'unknown',\n          slaViolation: false,\n          severity: 'medium',\n          source: 'stage2_discovery'\n        };\n      } else {\n        // Service exists - update with Stage 2 findings\n        finalOutput.serviceAnalysis.errorsByService[service].errorCount += data.count;\n        finalOutput.serviceAnalysis.errorsByService[service].errorTypes = [\n          ...new Set([\n            ...(finalOutput.serviceAnalysis.errorsByService[service].errorTypes || []),\n            ...(data.types || [])\n          ])\n        ];\n        finalOutput.serviceAnalysis.errorsByService[service].source = 'both_stages';\n      }\n    }\n  });\n  \n  // Recalculate impact score with new errors\n  let newImpactScore = 0;\n  Object.entries(finalOutput.serviceAnalysis.errorsByService).forEach(([service, data]) => {\n    const multiplier = {\n      'critical': 10,\n      'high': 5,\n      'medium': 2,\n      'low': 1,\n      'unknown': 1\n    };\n    newImpactScore += data.errorCount * (multiplier[data.criticality] || 1);\n  });\n  finalOutput.serviceAnalysis.impactScore = newImpactScore;\n}\n\n// IMPROVEMENT 1: Update health check summary based on actual findings\nconst totalErrors = finalOutput.healthCheck.errorCount;\nconst affectedServicesCount = Object.keys(finalOutput.serviceAnalysis.errorsByService).length;\n\nif (totalErrors > 0) {\n  finalOutput.healthCheck.summary = `${totalErrors} errors found across ${affectedServicesCount} services`;\n  \n  // Add error type summary\n  const errorTypes = new Set();\n  Object.values(finalOutput.serviceAnalysis.errorsByService).forEach(service => {\n    (service.errorTypes || []).forEach(type => errorTypes.add(type));\n  });\n  \n  if (errorTypes.size > 0) {\n    finalOutput.healthCheck.summary += ` (${Array.from(errorTypes).join(', ')})`;\n  }\n} else {\n  finalOutput.healthCheck.summary = stage1Result?.quick_summary || 'No errors detected';\n}\n\n// IMPROVEMENT 2: Populate errorsByCriticality and errorsByCategory\nObject.entries(finalOutput.serviceAnalysis.errorsByService).forEach(([service, data]) => {\n  // Group by criticality\n  const criticality = data.criticality || 'unknown';\n  if (finalOutput.serviceAnalysis.errorsByCriticality[criticality]) {\n    finalOutput.serviceAnalysis.errorsByCriticality[criticality].services.push(service);\n    finalOutput.serviceAnalysis.errorsByCriticality[criticality].totalErrors += data.errorCount;\n  }\n  \n  // Group by category\n  const category = data.category || 'unknown';\n  if (!finalOutput.serviceAnalysis.errorsByCategory[category]) {\n    finalOutput.serviceAnalysis.errorsByCategory[category] = {\n      services: [],\n      totalErrors: 0\n    };\n  }\n  finalOutput.serviceAnalysis.errorsByCategory[category].services.push(service);\n  finalOutput.serviceAnalysis.errorsByCategory[category].totalErrors += data.errorCount;\n});\n\n// IMPROVEMENT 3: Add service details with SLA info (remove duplicates)\nconst processedServices = new Set();\nif (serviceContext?.serviceMetadata) {\n  Object.entries(serviceContext.serviceMetadata).forEach(([service, metadata]) => {\n    if (!processedServices.has(service)) {\n      processedServices.add(service);\n      finalOutput.serviceAnalysis.serviceDetails[service] = {\n        criticality: metadata.criticality,\n        category: metadata.category,\n        slaThresholds: metadata.slaThresholds,\n        errorCount: finalOutput.serviceAnalysis.errorsByService[service]?.errorCount || 0,\n        slaViolation: finalOutput.serviceAnalysis.errorsByService[service]?.slaViolation || false\n      };\n    }\n  });\n}\n\n// Add dependency chains for affected services\nif (serviceContext?.dependencyChains) {\n  finalOutput.serviceAnalysis.dependencyChains = serviceContext.dependencyChains;\n}\n\n// Add deep analysis if Stage 2 ran\nif (stage2Result) {\n  finalOutput.deepAnalysis = {\n    toolsExecuted: stage2Result.tools_executed || [],\n    executionTimeline: stage2Result.execution_timeline || {},\n    findings: stage2Result.findings || {},\n    affectedComponents: stage2Result.affected_components || {},\n    rootCause: stage2Result.root_cause_analysis || {},\n    severityAssessment: stage2Result.severity_assessment || {},\n    recommendations: stage2Result.recommendations || {},\n    // NEW: Add error discovery info\n    errorDiscovery: {\n      additionalErrorsFound: serviceContext?.reconciliatedErrors?.stage2AdditionalErrors || 0,\n      servicesWithNewErrors: Object.keys(serviceContext?.reconciliatedErrors?.serviceBreakdown || {})\n    }\n  };\n  \n  finalOutput.deepAnalysisPerformed = true;\n} else {\n  finalOutput.deepAnalysis = {\n    required: stage1Result?.proceed_to_stage2 || false,\n    performed: false,\n    reason: stage1Result?.proceed_to_stage2 ? \n      \"Deep analysis should have been performed but results not found\" : \n      \"System healthy - no deep analysis needed\"\n  };\n  finalOutput.deepAnalysisPerformed = false;\n}\n\n// Generate executive summary based on complete analysis\nfinalOutput.executiveSummary = {\n  overallStatus: determineOverallStatus(finalOutput),\n  criticalServices: Object.entries(finalOutput.serviceAnalysis.errorsByService || {})\n    .filter(([_, data]) => data.criticality === 'critical')\n    .map(([service, _]) => service),\n  mainIssues: generateMainIssues(finalOutput),\n  immediateActions: generateImmediateActions(finalOutput),\n  // NEW: Analysis quality indicator\n  analysisQuality: {\n    errorDiscrepancy: analysisMetadata?.errorDiscrepancy || false,\n    stage2RequiredForAccuracy: analysisMetadata?.reconciliationNeeded || false,\n    confidenceLevel: calculateConfidenceLevel(finalOutput)\n  }\n};\n\nconsole.log('=== FINAL OUTPUT WITH COMPLETE ERROR HANDLING ===');\nconsole.log('Total errors (reconciled):', finalOutput.healthCheck.errorCount);\nconsole.log('Services with errors:', Object.keys(finalOutput.serviceAnalysis.errorsByService).length);\nconsole.log('Impact score:', finalOutput.serviceAnalysis.impactScore);\nconsole.log('Critical path affected:', finalOutput.serviceAnalysis.criticalPathAffected);\nconsole.log('Errors by criticality:', JSON.stringify(finalOutput.serviceAnalysis.errorsByCriticality, null, 2));\nconsole.log('Errors by category:', JSON.stringify(finalOutput.serviceAnalysis.errorsByCategory, null, 2));\n\n// NEW: Add chat-friendly response if from chat\n\n// NEW: Add chat-friendly response if from chat\n// inputConfig kontrolünü düzelt\nconst isFromChat = stage1Result?.source === 'chat' || \n                   stage1Result?.analysis_context?.source === 'chat' ||\n                   stage1Result?.analysisConfig?.requiresServiceDetection ||\n                   serviceContext?.chatContext?.isFromChat;\n\nif (isFromChat) {\n  console.log('=== GENERATING CHAT RESPONSE ===');\n  \n  // inputConfig yerine direkt stage1Result'tan al\n  const userMessage = stage1Result?.analysisConfig?.chatMessage || \n                      serviceContext?.chatContext?.userMessage || \n                      '';\n  \n  const chatResponse = {\n    type: 'chat-response',\n    userMessage: userMessage,\n    \n    // Özet mesaj\n    summary: generateChatSummary(finalOutput),\n    \n    // Ana bulgular\n    findings: {\n      errorCount: finalOutput.healthCheck.errorCount,\n      affectedServices: Object.keys(finalOutput.serviceAnalysis.errorsByService || {}).length,\n      criticalServices: finalOutput.executiveSummary.criticalServices,\n      status: finalOutput.executiveSummary.overallStatus\n    },\n    \n    // Öneriler\n    recommendations: finalOutput.executiveSummary.immediateActions.slice(0, 3),\n    \n    // Detaylı bilgi linki\n    detailsAvailable: true\n  };\n  \n  finalOutput.chatResponse = chatResponse;\n}\n// Chat summary generator function\nfunction generateChatSummary(output) {\n  const errorCount = output.healthCheck.errorCount || 0;\n  const affectedServices = Object.keys(output.serviceAnalysis.errorsByService || {});\n  \n  if (errorCount === 0) {\n    return \"Sistemde herhangi bir hata tespit edilmedi. Tüm servisler normal çalışıyor.\";\n  }\n  \n  let summary = `${errorCount} hata tespit edildi. `;\n  \n  if (affectedServices.length > 0) {\n    summary += `Etkilenen servisler: ${affectedServices.slice(0, 3).join(', ')}`;\n    if (affectedServices.length > 3) {\n      summary += ` ve ${affectedServices.length - 3} servis daha`;\n    }\n    summary += '. ';\n  }\n  \n  if (output.serviceAnalysis.criticalPathAffected) {\n    summary += `⚠️ Kritik ${output.serviceAnalysis.affectedPath} yolu etkilenmiş durumda. `;\n  }\n  \n  if (output.executiveSummary.overallStatus === 'critical') {\n    summary += 'Acil müdahale gerekiyor!';\n  } else if (output.executiveSummary.overallStatus === 'warning') {\n    summary += 'Dikkat edilmesi gereken durumlar var.';\n  }\n  \n  return summary;\n}\n\nconsole.log('=== FINAL OUTPUT WITH COMPLETE ERROR HANDLING ===');\n// ... existing console.logs ...\n\nreturn [{ json: finalOutput }];\n\n// Updated helper functions\nfunction determineOverallStatus(output) {\n  const totalErrors = output.healthCheck.errorCount;\n  const impactScore = output.serviceAnalysis.impactScore;\n  const criticalErrors = Object.values(output.serviceAnalysis.errorsByService || {})\n    .filter(s => s.criticality === 'critical')\n    .reduce((sum, s) => sum + s.errorCount, 0);\n  \n  if (criticalErrors > 0 || impactScore > 100) return 'critical';\n  if (output.serviceAnalysis.criticalPathAffected || totalErrors > 10) return 'warning';\n  if (totalErrors > 5 || impactScore > 50) return 'concerning';\n  if (totalErrors > 0) return 'degraded';\n  return 'healthy';\n}\n\nfunction generateMainIssues(output) {\n  const issues = [];\n  \n  // Report total errors with reconciliation info\n  if (output.healthCheck.errorCount > 0) {\n    let errorMsg = `${output.healthCheck.errorCount} total errors detected`;\n    if (output.healthCheck.errorReconciliation.stage2AdditionalErrors > 0) {\n      errorMsg += ` (${output.healthCheck.errorReconciliation.stage2AdditionalErrors} found in deep analysis)`;\n    }\n    issues.push(errorMsg);\n  }\n  \n  // Critical service errors\n  const criticalServices = Object.entries(output.serviceAnalysis.errorsByService || {})\n    .filter(([_, data]) => data.criticality === 'critical' && data.errorCount > 0)\n    .map(([service, data]) => `${service} (${data.errorCount} errors)`);\n    \n  if (criticalServices.length > 0) {\n    issues.push(`Critical service errors: ${criticalServices.join(', ')}`);\n  }\n  \n  // Error types found\n  const allErrorTypes = new Set();\n  Object.values(output.serviceAnalysis.errorsByService || {}).forEach(data => {\n    (data.errorTypes || []).forEach(type => allErrorTypes.add(type));\n  });\n  \n  if (allErrorTypes.size > 0) {\n    issues.push(`Error types: ${Array.from(allErrorTypes).join(', ')}`);\n  }\n  \n  // SLA violations\n  const slaViolations = Object.entries(output.serviceAnalysis.errorsByService || {})\n    .filter(([_, data]) => data.slaViolation)\n    .map(([service, _]) => service);\n  \n  if (slaViolations.length > 0) {\n    issues.push(`SLA violations in: ${slaViolations.join(', ')}`);\n  }\n  \n  // Critical path impact\n  if (output.serviceAnalysis.criticalPathAffected) {\n    issues.push(`Critical path '${output.serviceAnalysis.affectedPath}' is impacted`);\n  }\n  \n  return issues.length > 0 ? issues : ['No significant issues detected'];\n}\n\nfunction generateImmediateActions(output) {\n  const actions = [];\n  \n  // If Stage 2 found additional errors\n  if (output.deepAnalysis?.errorDiscovery?.additionalErrorsFound > 0) {\n    actions.push(`Investigate ${output.deepAnalysis.errorDiscovery.additionalErrorsFound} errors discovered in deep analysis`);\n  }\n  \n  // Add service-specific recommendations\n  if (output.serviceAnalysis.serviceRecommendations) {\n    output.serviceAnalysis.serviceRecommendations\n      .filter(rec => rec.priority === 'immediate')\n      .forEach(rec => actions.push(rec.action));\n  }\n  \n  // Add deep analysis recommendations if available\n  if (output.deepAnalysis?.recommendations?.immediate_actions) {\n    actions.push(...output.deepAnalysis.recommendations.immediate_actions);\n  }\n  \n  // Add specific actions for error types\n  const errorTypes = new Set();\n  Object.values(output.serviceAnalysis.errorsByService || {}).forEach(data => {\n    (data.errorTypes || []).forEach(type => errorTypes.add(type));\n  });\n  \n  if (errorTypes.has('401')) {\n    actions.push('Check authentication service and token validation');\n  }\n  if (errorTypes.has('400')) {\n    actions.push('Review request validation and API contract compliance');\n  }\n  if (errorTypes.has('500') || errorTypes.has('502') || errorTypes.has('503')) {\n    actions.push('Check backend service health and dependencies');\n  }\n  \n  return actions.length > 0 ? [...new Set(actions)] : ['Continue monitoring'];\n}\n\nfunction calculateConfidenceLevel(output) {\n  let confidence = 0.5; // Base confidence\n  \n  // Higher confidence if both stages ran\n  if (output.deepAnalysisPerformed) confidence += 0.3;\n  \n  // Lower confidence if error discrepancy found\n  if (output.executiveSummary?.analysisQuality?.errorDiscrepancy) confidence -= 0.2;\n  \n  // Higher confidence with more services analyzed\n  const servicesAnalyzed = output.serviceAnalysis.servicesAnalyzed.length;\n  if (servicesAnalyzed > 10) confidence += 0.2;\n  else if (servicesAnalyzed > 5) confidence += 0.1;\n  \n  return Math.max(0.1, Math.min(1.0, confidence));\n}"
+      },
+      "id": "779f607e-b0b6-4ed7-bf11-68d5128d4844",
+      "name": "Format Final Output",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1872,
+        176
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "etiya-gpt-4o",
+          "mode": "list",
+          "cachedResultName": "etiya-gpt-4o"
+        },
+        "options": {
+          "maxTokens": 200,
+          "responseFormat": "json_object",
+          "temperature": 0.2
+        }
+      },
+      "id": "343ea2b3-ed1d-41bf-b75f-ed7098d089e5",
+      "name": "OpenAI Model - Stage 1",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        -32,
+        464
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "rYdB8nNsS7m67tcr",
+          "name": "OpenAi account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "etiya-gpt-4o",
+          "mode": "list",
+          "cachedResultName": "etiya-gpt-4o"
+        },
+        "options": {
+          "maxTokens": 800,
+          "responseFormat": "json_object",
+          "temperature": 0.3
+        }
+      },
+      "id": "637880af-c012-4264-bcdd-43a47ae879ff",
+      "name": "OpenAI Model - Stage 2",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -96
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "rYdB8nNsS7m67tcr",
+          "name": "OpenAi account 5"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"stage\": { \"type\": \"string\" },\n    \"execution_time\": { \"type\": \"string\" },\n    \"analysis_context\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"source\": { \"type\": \"string\" },\n        \"priority\": { \"type\": \"string\" },\n        \"forced_analysis\": { \"type\": \"boolean\" },\n        \"orchestrator_id\": { \n          \"type\": [\"string\", \"null\"] \n        },\n        \"request_id\": { \n          \"type\": [\"string\", \"null\"] \n        }\n      }\n    },\n    \"status\": { \n      \"type\": \"string\", \n      \"enum\": [\"healthy\", \"warning\", \"concerning\", \"critical\"] \n    },\n    \"metrics\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"error_count\": { \"type\": \"number\" },\n        \"error_types\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"4xx\": { \"type\": \"number\" },\n            \"5xx\": { \"type\": \"number\" },\n            \"timeouts\": { \"type\": \"number\" }\n          }\n        },\n        \"services_checked\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }\n      }\n    },\n    \"critical_services\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" }\n    },\n    \"proceed_to_stage2\": { \"type\": \"boolean\" },\n    \"reason\": { \"type\": \"string\" },\n    \"quick_summary\": { \"type\": \"string\" }\n  },\n  \"required\": [\n    \"stage\",\n    \"status\",\n    \"metrics\",\n    \"proceed_to_stage2\",\n    \"reason\",\n    \"quick_summary\"\n  ]\n}"
+      },
+      "id": "28a779cb-0b20-40d7-8911-08cc20eb6f20",
+      "name": "Stage 1 Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        304,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"stage\": { \"type\": \"string\" },\n    \"investigation_trigger\": { \"type\": \"string\" },\n    \"service_context\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"primary_services_investigated\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"dependency_chains_analyzed\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"cascade_patterns_detected\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }\n      }\n    },\n    \"tools_executed\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" }\n    },\n    \"execution_timeline\": {\n      \"type\": \"object\",\n      \"additionalProperties\": { \"type\": \"string\" }\n    },\n    \"findings\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"service_dependencies\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"failed_chains\": {\n              \"type\": \"array\",\n              \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                  \"chain\": {\n                    \"type\": \"array\",\n                    \"items\": { \"type\": \"string\" }\n                  },\n                  \"failure_point\": { \"type\": \"string\" },\n                  \"error_type\": { \"type\": \"string\" }\n                }\n              }\n            },\n            \"cascade_failures\": {\n              \"type\": \"array\",\n              \"items\": {\n                \"type\": \"object\",\n                \"properties\": {\n                  \"origin\": { \"type\": \"string\" },\n                  \"affected\": {\n                    \"type\": \"array\",\n                    \"items\": { \"type\": \"string\" }\n                  },\n                  \"pattern\": { \"type\": \"string\" }\n                }\n              }\n            }\n          }\n        },\n        \"exceptions\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"by_service\": {\n              \"type\": \"object\",\n              \"additionalProperties\": {\n                \"type\": \"object\",\n                \"properties\": {\n                  \"count\": { \"type\": \"number\" },\n                  \"types\": {\n                    \"type\": \"array\",\n                    \"items\": { \"type\": \"string\" }\n                  }\n                }\n              }\n            }\n          }\n        },\n        \"performance\": {\n          \"type\": \"object\",\n          \"properties\": {\n            \"service_latencies\": {\n              \"type\": \"object\",\n              \"additionalProperties\": {\n                \"type\": \"object\",\n                \"properties\": {\n                  \"p95\": { \"type\": \"string\" },\n                  \"sla_violation\": { \"type\": \"boolean\" }\n                }\n              }\n            }\n          }\n        },\n        \"external_dependencies\": { \"type\": \"object\" },\n        \"historical_comparison\": { \"type\": \"object\" }\n      }\n    },\n    \"affected_components\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"services\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"service_dependencies\": {\n          \"type\": \"object\",\n          \"additionalProperties\": {\n            \"type\": \"array\",\n            \"items\": { \"type\": \"string\" }\n          }\n        },\n        \"critical_paths_impacted\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"endpoints\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"databases\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"estimated_users_impacted\": { \"type\": \"string\" }\n      }\n    },\n    \"root_cause_analysis\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"primary_cause\": { \"type\": \"string\" },\n        \"service_root\": { \"type\": \"string\" },\n        \"affected_chains\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"contributing_factors\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"evidence\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }\n      }\n    },\n    \"severity_assessment\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"business_impact\": { \"type\": \"string\" },\n        \"technical_severity\": { \"type\": \"string\" },\n        \"urgency\": { \"type\": \"string\" },\n        \"service_criticality_score\": { \"type\": \"number\" }\n      }\n    },\n    \"recommendations\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"immediate_actions\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"service_specific\": {\n          \"type\": \"object\",\n          \"additionalProperties\": {\n            \"type\": \"array\",\n            \"items\": { \"type\": \"string\" }\n          }\n        },\n        \"short_term\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        },\n        \"long_term\": {\n          \"type\": \"array\",\n          \"items\": { \"type\": \"string\" }\n        }\n      }\n    }\n  },\n  \"required\": [\n    \"stage\",\n    \"investigation_trigger\",\n    \"tools_executed\",\n    \"findings\",\n    \"root_cause_analysis\",\n    \"recommendations\"\n  ]\n}"
+      },
+      "id": "d28741a4-5067-4496-83af-b72c94da31e3",
+      "name": "Stage 2 Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        1456,
+        576
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1088,
+        384
+      ],
+      "id": "c15b6835-1e8c-455d-aec7-45bfc33bbfd2",
+      "name": "When chat message received",
+      "webhookId": "1fe0390b-e54d-44e3-a50a-47c031a2aa21"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-tempo.saas.etycloudbss.com/api/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "=q",
+              "value": "={{ $json.searchParams?.customQuery || '{status=error && .deployment.environment=\"etiyamobile-production\" }' }}"
+            },
+            {
+              "name": "limit",
+              "value": "={{ $json.searchParams?.limits?.stage1 || 100 }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        144,
+        480
+      ],
+      "id": "dfe458cf-c9d2-4821-8772-f07be2d7a738",
+      "name": "Recent Errors"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-tempo.saas.etycloudbss.com/api/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "=q",
+              "value": "={{ (() => {\n  const services = $json.serviceAnalysis?.detectedServices || [];\n  const env = \"etiyamobile-production\";\n  \n  if (services.length > 0) {\n    const serviceFilter = services.map(s => `.service.name=\"${s}\"`).join(' || ');\n    return `{ resource.deployment.environment=\"${env}\" && (${serviceFilter}) && (.error.type != nil || .exception != nil || .status.code>=400) }`;\n  }\n  \n  return `{ resource.deployment.environment=\"${env}\" && (.error.type != nil || .exception != nil || .status.code>=400) }`;\n})() }}"
+            },
+            {
+              "name": "limit",
+              "value": "={{ $json.searchParams?.limits?.stage2 || 50 }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        688,
+        640
+      ],
+      "id": "56228b6d-4a81-4d61-b9e9-40a371a9b1d2",
+      "name": "Exception Spans"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-tempo.saas.etycloudbss.com/api/search",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpBasicAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "={{ $json.searchParams?.limits?.stage2 || 50 }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ (() => {\n  const services = $json.serviceAnalysis?.detectedServices || [];\n  const env = \"etiyamobile-production\";\n  \n  if (services.length > 0) {\n    const serviceFilter = services.map(s => `.service.name=\"${s}\"`).join(' || ');\n    return `{ resource.deployment.environment=\"${env}\" && (${serviceFilter}) && duration > 1000ms }`;\n  }\n  \n  return `{ resource.deployment.environment=\"${env}\" && duration > 1000ms }`;\n})() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        880,
+        608
+      ],
+      "id": "d828b5c4-ee7f-4cde-a436-8cfadc9ba6f4",
+      "name": "High Latency",
+      "credentials": {
+        "httpBasicAuth": {
+          "id": "Bq4bwNhtymaeMy1Y",
+          "name": "Unnamed credential"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-tempo.saas.etycloudbss.com/api/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ (() => {\n  const services = $json.serviceAnalysis?.detectedServices || [];\n  const env = \"etiyamobile-production\";\n  \n  // Client span indicators\n  const clientSpanIndicators = '(.network.peer.address != nil || .server.address != nil || .http.url != nil || span.kind = \"client\")';\n  const errorPatterns = '(.error.type =~ \".*Timeout.*\" || .error.type =~ \".*Connection.*\" || duration > 2s)';\n  \n  if (services.length > 0) {\n    const serviceFilter = services.map(s => `.service.name=\"${s}\"`).join(' || ');\n    return `{ resource.deployment.environment=\"${env}\" && (${serviceFilter}) && ${clientSpanIndicators} && ${errorPatterns} }`;\n  }\n  \n  return `{ resource.deployment.environment=\"${env}\" && ${clientSpanIndicators} && ${errorPatterns} }`;\n})() }}"
+            },
+            {
+              "name": "limit",
+              "value": "={{ $json.searchParams?.limits?.stage2 || 50 }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1024,
+        608
+      ],
+      "id": "2693896e-78a8-4bd3-9ba8-02920866a701",
+      "name": "Recent External Service Latency Errors"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-tempo.saas.etycloudbss.com/api/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ (() => {\n  const services = $json.serviceAnalysis?.detectedServices || [];\n  const env = \"etiyamobile-production\";\n  \n  if (services.length > 0) {\n    const serviceFilter = services.map(s => `.service.name=\"${s}\"`).join(' || ');\n    return `{ resource.deployment.environment=\"${env}\" && (${serviceFilter}) && (.status.code>=400 || .error.type != nil || .exception != nil) }`;\n  }\n  \n  return `{ resource.deployment.environment=\"${env}\" && (.status.code>=400 || .error.type != nil || .exception != nil) }`;\n})() }}"
+            },
+            {
+              "name": "limit",
+              "value": "={{ $json.searchParams?.limits?.stage2 || 50 }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1344,
+        592
+      ],
+      "id": "9afbe561-6a91-4469-b757-b1acc1b520c9",
+      "name": "Span 1 Hour With Errors"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-tempo.saas.etycloudbss.com/api/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "={{ $json.searchParams?.limits?.stage2 || 100 }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (3*60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ (() => {\n  const services = $json.serviceAnalysis?.detectedServices || [];\n  const env = \"etiyamobile-production\";\n  \n  if (services.length > 0) {\n    const serviceFilter = services.map(s => `.service.name=\"${s}\"`).join(' || ');\n    return `{ resource.deployment.environment=\"${env}\" && (${serviceFilter}) }`;\n  }\n  \n  return `{ resource.deployment.environment=\"${env}\" }`;\n})() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1552,
+        736
+      ],
+      "id": "0c48c330-9cbd-4f88-8286-69aeadead310",
+      "name": "Recent 3 Hours"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-tempo.saas.etycloudbss.com/api/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "={{ $json.searchParams?.limits?.stage2 || 100 }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.features?.compareWithHistory ? Math.floor((Date.now()/1000)-(27*60*60)) : $json.timeRange?.start || Math.floor((Date.now()/1000)-(27*60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.features?.compareWithHistory ? Math.floor((Date.now()/1000)-(24*60*60)) : $json.timeRange?.end || Math.floor((Date.now()/1000)-(24*60*60)) }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ (() => {\n  const services = $json.serviceAnalysis?.detectedServices || [];\n  const env = \"etiyamobile-production\";\n  \n  if (services.length > 0) {\n    const serviceFilter = services.map(s => `.service.name=\"${s}\"`).join(' || ');\n    return `{ resource.deployment.environment=\"${env}\" && (${serviceFilter}) }`;\n  }\n  \n  return `{ resource.deployment.environment=\"${env}\" }`;\n})() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        544,
+        768
+      ],
+      "id": "848cdcd7-9674-471c-b763-17a24ed64959",
+      "name": "Yesterday 3 Hours"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-tempo.saas.etycloudbss.com/api/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "={{ $json.searchParams?.limits?.stage2 || 100 }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.features?.compareWithHistory ? Math.floor((Date.now()/1000)-(171*60*60)) : $json.timeRange?.start || Math.floor((Date.now()/1000)-(171*60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.features?.compareWithHistory ? Math.floor((Date.now()/1000)-(168*60*60)) : $json.timeRange?.end || Math.floor((Date.now()/1000)-(168*60*60)) }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ (() => {\n  const services = $json.serviceAnalysis?.detectedServices || [];\n  const env = \"etiyamobile-production\";\n  \n  if (services.length > 0) {\n    const serviceFilter = services.map(s => `.service.name=\"${s}\"`).join(' || ');\n    return `{ resource.deployment.environment=\"${env}\" && (${serviceFilter}) }`;\n  }\n  \n  return `{ resource.deployment.environment=\"${env}\" }`;\n})() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        768
+      ],
+      "id": "26ba0209-21af-44aa-a480-cd06d22ebe09",
+      "name": "Last Week 3 Hours"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-tempo.saas.etycloudbss.com/api/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "={{ $json.searchParams?.limits?.stage2 || 100 }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((Date.now()/1000)-(24*60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor((Date.now()/1000)-(1*60*60)) }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ (() => {\n  const services = $json.serviceAnalysis?.detectedServices || [];\n  const env = \"etiyamobile-production\";\n  \n  if (services.length > 0) {\n    const serviceFilter = services.map(s => `.service.name=\"${s}\"`).join(' || ');\n    return `{ resource.deployment.environment=\"${env}\" && (${serviceFilter}) && status=error }`;\n  }\n  \n  return `{ resource.deployment.environment=\"${env}\" && status=error }`;\n})() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        912,
+        768
+      ],
+      "id": "b2a118c3-6a78-4e81-93ab-6b6fcd88d692",
+      "name": "Last 24 Hours Errors"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-tempo.saas.etycloudbss.com/api/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "={{ $json.searchParams?.limits?.stage2 || 100 }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((Date.now()/1000)-(24*60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ (() => {\n  const services = $json.serviceAnalysis?.detectedServices || [];\n  const env = \"etiyamobile-production\";\n  \n  if (services.length > 0) {\n    const serviceFilter = services.map(s => `.service.name=\"${s}\"`).join(' || ');\n    return `{ resource.deployment.environment=\"${env}\" && (${serviceFilter}) && (status=error || .error.type != nil || .exception != nil || .exception.stacktrace != nil) }`;\n  }\n  \n  return `{ resource.deployment.environment=\"${env}\" && (status=error || .error.type != nil || .exception != nil || .exception.stacktrace != nil) }`;\n})() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1088,
+        768
+      ],
+      "id": "fa1dcf0a-5690-4f00-8010-e689c8aa8b10",
+      "name": "Last 24 Hours Spans Errors All"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-tempo.saas.etycloudbss.com/api/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "={{ (() => {\n  const env = $json.searchParams?.environment || \"etiyamobile-production\";\n  const dbTypes = $json.features?.databaseAnalysis \n    ? 'db.*|database.*|mongo.*|redis.*|postgres.*|mysql.*|cassandra.*|elasticsearch.*' \n    : 'db.*|database.*';\n  \n  return `{.status.code>=400 || .log.severity=\"error\" || .log.exception.message!=\"\" && .span.name=~\"${dbTypes}\" && .deployment.environment=\"${env}\" }`;\n})() }}"
+            },
+            {
+              "name": "limit",
+              "value": "={{ $json.searchParams?.limits?.stage2 || 100 }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((new Date().getTime()/1000) - (60*60)) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1264,
+        768
+      ],
+      "id": "ff6270b9-9155-4097-81bb-77c56bd0a0ff",
+      "name": "Recent DB Spans",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Stage 1 Results Node - UPDATED\n// Enhanced Error Categorization'dan gelen service analizini korur\n\nconst stage1Data = $input.first().json;\n\n// Service error analysis'i de dahil ederek Stage 1 sonuçlarını ilet\nreturn [{ \n  json: {\n    stage1: stage1Data,\n    stage2: null,\n    // Service context'i üst seviyeye taşı - Format Final Output için\n    serviceContext: {\n      detectedServices: $node[\"Service-Aware Query Builder\"]?.json?.serviceAnalysis?.detectedServices || [],\n      serviceMetadata: $node[\"Service-Aware Query Builder\"]?.json?.serviceAnalysis?.serviceMetadata || {},\n      criticalPathAffected: $node[\"Service-Aware Query Builder\"]?.json?.serviceAnalysis?.criticalPathAffected || false,\n      serviceErrorAnalysis: stage1Data.serviceErrorAnalysis || {}\n    }\n  }\n}];"
+      },
+      "id": "504c741a-107b-4159-9d0e-a4429fb1cc20",
+      "name": "Stage 1 Results",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2128,
+        -176
+      ],
+      "typeVersion": 2,
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Combine Results Node - UPDATED with Error Reconciliation\nconst stage2Input = $input.first().json;\n\n// Stage 1 verisini önceki node'dan al\nconst stage1Data = $node[\"Check If Stage 2 Needed\"].json;\n\nconsole.log('=== COMBINE RESULTS WITH ERROR RECONCILIATION ===');\n\n// Extract actual results\nconst stage1Result = stage1Data?.output || stage1Data;\nconst stage2Result = stage2Input?.output || stage2Input;\n\n// Get service context from Service-Aware Query Builder\nconst serviceAnalysis = $node[\"Service-Aware Query Builder\"]?.json?.serviceAnalysis || {};\n\nconsole.log('Stage 1 status:', stage1Result?.status);\nconsole.log('Stage 1 errors:', stage1Result?.metrics?.error_count || 0);\nconsole.log('Stage 2 stage:', stage2Result?.stage);\n\n// NEW: Reconcile Stage 2 discovered errors\nlet totalErrorsFound = stage1Result?.metrics?.error_count || 0;\nlet stage2AdditionalErrors = 0;\nlet reconciliatedServiceErrors = {};\n\n// Check if Stage 2 found additional errors\nif (stage2Result?.findings?.exceptions?.by_service) {\n  Object.entries(stage2Result.findings.exceptions.by_service).forEach(([service, data]) => {\n    if (data.count > 0) {\n      stage2AdditionalErrors += data.count;\n      reconciliatedServiceErrors[service] = {\n        errorCount: data.count,\n        errorTypes: data.types || [],\n        source: 'stage2_discovery'\n      };\n    }\n  });\n  \n  console.log(`Stage 2 found ${stage2AdditionalErrors} additional errors`);\n}\n\n// Update total error count\ntotalErrorsFound += stage2AdditionalErrors;\n\n// Build combined result\n// Build combined result\nconst combinedResult = { \n  json: {\n    stage1: stage1Result,\n    stage2: stage2Result,\n    // Include complete service context\n    serviceContext: {\n      detectedServices: serviceAnalysis.detectedServices || [],\n      serviceMetadata: serviceAnalysis.serviceMetadata || {},\n      criticalPathAffected: serviceAnalysis.criticalPathAffected || false,\n      affectedPath: serviceAnalysis.affectedPath || null,\n      serviceErrorAnalysis: stage1Result?.serviceErrorAnalysis || {},\n      dependencyChains: serviceAnalysis.dependencyChains || {},\n      // NEW: Add reconciliated errors\n      reconciliatedErrors: {\n        totalErrors: totalErrorsFound,\n        stage1Errors: stage1Result?.metrics?.error_count || 0,\n        stage2AdditionalErrors: stage2AdditionalErrors,\n        serviceBreakdown: reconciliatedServiceErrors\n      }\n    },\n    \n    // YENİ: Chat context'i koru\n    analysisConfig: stage1Result?.analysisConfig || {},\n    source: stage1Result?.source || stage1Result?.analysis_context?.source || 'unknown',\n    chatContext: {\n      isFromChat: stage1Result?.analysisConfig?.requiresServiceDetection || false,\n      userMessage: stage1Result?.analysisConfig?.chatMessage || null,\n      analysisMode: stage1Result?.analysisConfig?.analysisMode || null\n    },\n    \n    // Add metadata about the analysis\n    analysisMetadata: {\n      stage2Performed: !!stage2Result?.stage,\n      errorDiscrepancy: stage2AdditionalErrors > 0,\n      reconciliationNeeded: totalErrorsFound !== (stage1Result?.metrics?.error_count || 0)\n    }\n  }\n};\n\nconsole.log('=== COMBINED RESULTS ===');\nconsole.log('Total errors after reconciliation:', totalErrorsFound);\nconsole.log('Error discrepancy detected:', stage2AdditionalErrors > 0);\n\nreturn [combinedResult];"
+      },
+      "id": "f59d3f2a-04f8-49c3-b3e4-bc966e201772",
+      "name": "Combine Results",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1536,
+        176
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Orchestrator Input Handler - Fixed to preserve all data\nconst input = $input.first().json;\n\nconsole.log('=== TEMPO INPUT HANDLER - FIXED ===');\nconsole.log('Input source:', input.source);\nconsole.log('Priority:', input.priority);\nconsole.log('Has searchParams:', !!input.searchParams);\nconsole.log('Force Deep Analysis:', input.analysisConfig?.forceDeepAnalysis);\n\n// Always pass through all data, including orchestrator fields\nconst output = {\n  ...input,  // Preserve ALL input data\n  // Ensure critical orchestrator fields are preserved\n  source: input.source || 'manual',\n  orchestratorId: input.orchestratorId || null,\n  requestId: input.requestId || null,\n  priority: input.priority || 'normal',\n  forceDeepAnalysis: input.forceDeepAnalysis || false\n};\n\n// Log what we're passing forward\nconsole.log('=== OUTPUT TO SERVICE-AWARE QUERY BUILDER ===');\nconsole.log('Source:', output.source);\nconsole.log('Priority:', output.priority);\nconsole.log('Force Deep Analysis:', output.forceDeepAnalysis);\nconsole.log('Orchestrator ID:', output.orchestratorId);\n\nreturn [{ json: output }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        176
+      ],
+      "id": "585e9af4-1e10-4aaf-a8b6-2b6bdae07b2f",
+      "name": "Orchestrator Input Handler"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Unified Entry Point - Tempo\n// Execute Workflow'dan gelen veriyi doğru parse eder\n\nconst input = $input.first().json;\nconsole.log('=== TEMPO UNIFIED ENTRY POINT ===');\nconsole.log('Full input structure:', JSON.stringify(input, null, 2));\n\nlet config = {\n  timestamp: new Date().toISOString(),\n  executionId: $execution.id,\n  source: 'unknown',\n  mode: 'standard',\n  priority: 'normal',\n  context: {},\n  forceDeepAnalysis: false\n};\n\n// Execute Workflow'dan gelen orchestrator verisi\nif (input.agentExecutionParams && input.agentExecutionParams.parameters) {\n  const params = input.agentExecutionParams.parameters;\n  console.log('ORCHESTRATOR PARAMS DETECTED!');\n  console.log('Source:', params.source);\n  console.log('Priority:', params.priority);\n  console.log('OrchestratorId:', params.orchestratorId);\n  \n  if (params.source === 'orchestrator') {\n    config = {\n      timestamp: new Date().toISOString(),\n      executionId: $execution.id,\n      source: 'orchestrator',\n      orchestratorId: params.orchestratorId,\n      requestId: params.requestId || `tempo-${Date.now()}`,\n      mode: 'orchestrator_analysis',\n      priority: params.priority || 'normal',\n      forceDeepAnalysis: params.priority === 'critical' || params.forceDeepAnalysis === true,\n      \n      // Time range\n      timeRange: {\n        start: params.startTime,\n        end: params.endTime,\n        humanReadable: {\n          start: new Date(params.startTime * 1000).toISOString(),\n          end: new Date(params.endTime * 1000).toISOString(),\n          duration: `${Math.round((params.endTime - params.startTime) / 60)} minutes`\n        }\n      },\n      \n      // Analysis configuration\n      analysisConfig: {\n        priority: params.priority || 'normal',\n        depth: params.priority === 'critical' ? 'deep' : 'standard',\n        forceDeepAnalysis: params.priority === 'critical' || params.forceDeepAnalysis === true,\n        skipHealthGate: params.priority === 'critical',\n        analysisType: params.analysisType || 'standard'\n      },\n      \n      // Search parameters\n      searchParams: {\n        environment: 'etiyamobile-production',\n        services: [],\n        errorTypes: [],\n        statusCodes: [],\n        operations: [],\n        customQuery: null,\n        limits: {\n          stage1: params.priority === 'critical' ? 200 : 100,\n          stage2: params.priority === 'critical' ? 100 : 50\n        }\n      },\n      \n      // Context\n      context: {\n        ...(params.context || {}),\n        orchestratorContext: true,\n        focusAreas: params.focusAreas || [],\n        message: params.message || params.chatInput || ''\n      }\n    };\n    \n    // Process focus areas\n    if (params.focusAreas && Array.isArray(params.focusAreas)) {\n      console.log('Processing focus areas:', params.focusAreas);\n      \n      // Parse the focusAreas as strings\n      const focusAreasStr = params.focusAreas;\n      if (typeof focusAreasStr === 'string') {\n        // If it's a JSON string, parse it\n        try {\n          params.focusAreas = JSON.parse(focusAreasStr);\n        } catch (e) {\n          // If not JSON, use as is\n        }\n      }\n      \n      params.focusAreas.forEach(area => {\n        if (area.includes('error')) {\n          config.searchParams.errorTypes.push('all_errors');\n        }\n        if (area.includes('latency')) {\n          config.searchParams.operations.push('duration > 1000ms');\n          config.analysisConfig.analyzeLatency = true;\n        }\n        if (area.includes('service')) {\n          config.analysisConfig.analyzeServices = true;\n        }\n      });\n    }\n    \n    // Process message if exists\n    if (params.message) {\n      const message = params.message.toLowerCase();\n      \n      // Extract specific services\n      const servicePattern = /(payment|order|user|notification|auth)/gi;\n      const services = params.message.match(servicePattern);\n      if (services) {\n        config.searchParams.services = [...new Set(services.map(s => s.toLowerCase()))];\n      }\n      \n      // Extract status codes\n      const statusCodes = ['500', '401', '403', '404', '502', '503'];\n      statusCodes.forEach(code => {\n        if (message.includes(code)) {\n          config.searchParams.statusCodes.push(code);\n        }\n      });\n    }\n    \n    // Build Tempo query\n    let tempoQuery = `{.deployment.environment=\"${config.searchParams.environment}\"`;\n    \n    // For critical priority, search for all errors\n    if (config.analysisConfig.priority === 'critical' && \n        config.searchParams.errorTypes.includes('all_errors')) {\n      tempoQuery += ` && .status.code>=400`;\n    } else if (config.searchParams.statusCodes.length > 0) {\n      const codes = config.searchParams.statusCodes.join('|');\n      tempoQuery += ` && .status=~\"${codes}\"`;\n    }\n    \n    // Add service filter if specified\n    if (config.searchParams.services.length > 0) {\n      const serviceFilter = config.searchParams.services\n        .map(s => `.service.name=~\".*${s}.*\"`)\n        .join(' || ');\n      tempoQuery += ` && (${serviceFilter})`;\n    }\n    \n    // Close the query\n    tempoQuery += '}';\n    \n    config.searchParams.customQuery = tempoQuery;\n    \n    console.log('=== ORCHESTRATOR CONFIG CREATED ===');\n    console.log('Priority:', config.analysisConfig.priority);\n    console.log('Force Deep Analysis:', config.analysisConfig.forceDeepAnalysis);\n    console.log('Custom Query:', config.searchParams.customQuery);\n  }\n}\n// Direct orchestrator call (not via Execute Workflow)\nelse if (input.source === 'orchestrator' && input.orchestratorId) {\n  console.log('DIRECT ORCHESTRATOR INPUT');\n  // Handle direct orchestrator input (your existing code)\n}\n// CHAT TRIGGER\n// CHAT TRIGGER\nelse if (input.chatInput || input.query) {\n  console.log('CHAT INPUT DETECTED');\n  const message = input.chatInput || input.query;\n  config.source = 'chat';\n  config.context.userQuery = message;\n  \n  // YENİ EKLENEN BÖLÜM BAŞLANGIÇ\n  // Chat mesajını analiz için hazırla\n  config.analysisConfig = {\n    priority: 'normal',\n    depth: 'standard',\n    forceDeepAnalysis: false,\n    // Chat mesajını koru\n    chatMessage: message,\n    requiresServiceDetection: true\n  };\n  \n  // Search parameters'ı hazırla\n  config.searchParams = {\n    environment: 'etiyamobile-production',\n    services: [], // Service-Aware Query Builder dolduracak\n    errorTypes: [],\n    statusCodes: [],\n    operations: [],\n    customQuery: null,\n    limits: {\n      stage1: 100,\n      stage2: 50\n    }\n  };\n  // YENİ EKLENEN BÖLÜM BİTİŞ\n  \n  // Default time range\n  config.timeRange = {\n    start: Math.floor((Date.now() - 3600000) / 1000),\n    end: Math.floor(Date.now() / 1000)\n  };\n}\n// MANUAL TRIGGER\nelse {\n  console.log('MANUAL/DEFAULT TRIGGER');\n  config.source = 'manual';\n  config.timeRange = {\n    start: Math.floor((Date.now() - 3600000) / 1000),\n    end: Math.floor(Date.now() / 1000)\n  };\n}\n\nconsole.log('=== FINAL CONFIG OUTPUT ===');\nconsole.log(JSON.stringify(config, null, 2));\n\nreturn [{ json: config }];"
+      },
+      "id": "95ec27fb-23a4-4d03-be5e-71d672879260",
+      "name": "Unified Entry Point",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -800,
+        176
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Service Dependency Store Node - UPDATED WITH service_dependencies.json\n// T4 servisleri ve güncel bağımlılıklar ile\n\n// Preserve input data\nconst input = $input.first().json;\n\nreturn [{\n  json: {\n    // Preserve all input fields\n    ...input,\n    \n    // Add service dependencies\n    serviceDependencies: {\n      // API Gateway\n      \"APIGateway\": {\n        dependencies: [\"crm-mash-up\", \"crm-customer-information\", \"cpq-ordercapture\"],\n        criticality: \"critical\",\n        slaThresholds: {\n          errorRate: 0.005,\n          latencyP95: 500,\n          latencyP99: 1000\n        },\n        category: \"gateway\"\n      },\n      \n      // Core Backend Services\n      \"cpq-ordercapture\": {\n        dependencies: [\"bstp-pcm-product-catalog\", \"bstp-pcm-product-offer-detail\", \"domain-config-service\", \"activity\"],\n        criticality: \"critical\",\n        slaThresholds: {\n          errorRate: 0.01,\n          latencyP95: 1000,\n          latencyP99: 2000\n        },\n        category: \"cpq\"\n      },\n      \n      // CRM Services\n      \"crm-customer-information\": {\n        dependencies: [\n          \"crm-asset\", \n          \"domain-config-service\", \n          \"bstp-pcm-product-catalog\", \n          \"eca-t4\", \n          \"bss-services-service.etiyamobile-production-eom\",\n          \"bss-mc-domain-config-t4\",\n          \"bss-mc-asset-management-t4\",\n          \"bss-mc-ntf-engine-t4\",\n          \"bss-mc-crm-customer-information-t4\",\n          \"bss-mc-pcm-product-catalog-t4\"\n        ],\n        criticality: \"critical\",\n        slaThresholds: {\n          errorRate: 0.01,\n          latencyP95: 300,\n          latencyP99: 800\n        },\n        category: \"crm\"\n      },\n      \n      \"crm-mash-up\": {\n        dependencies: [\n          \"crm-customer-information\",\n          \"cpq-ordercapture\",\n          \"bstp-pcm-product-catalog\",\n          \"bstp-pcm-product-offer-detail\",\n          \"bss-mc-cpq-t4\",\n          \"bss-mc-crm-customer-information-t4\",\n          \"bss-mc-asset-management-t4\",\n          \"customer-search-mc-backend\",\n          \"bss-mc-pcm-product-catalog-t4\"\n        ],\n        criticality: \"high\",\n        slaThresholds: {\n          errorRate: 0.02,\n          latencyP95: 500,\n          latencyP99: 1200\n        },\n        category: \"crm\"\n      },\n      \n      \"crm-asset\": {\n        dependencies: [],\n        criticality: \"high\",\n        slaThresholds: {\n          errorRate: 0.02,\n          latencyP95: 400,\n          latencyP99: 1000\n        },\n        category: \"crm\"\n      },\n      \n      // Product Catalog Services\n      \"bstp-pcm-product-catalog\": {\n        dependencies: [\"domain-config-service\"],\n        criticality: \"high\",\n        slaThresholds: {\n          errorRate: 0.02,\n          latencyP95: 300,\n          latencyP99: 800\n        },\n        category: \"catalog\"\n      },\n      \n      \"bstp-pcm-product-offer-detail\": {\n        dependencies: [\"crm-asset\"],\n        criticality: \"high\",\n        slaThresholds: {\n          errorRate: 0.02,\n          latencyP95: 400,\n          latencyP99: 1000\n        },\n        category: \"catalog\"\n      },\n      \n      // Notification Services\n      \"ntf-engine-service\": {\n        dependencies: [\"ntf-history-service\", \"bss-services-service.etiyamobile-production-eom\", \"bss-mc-domain-config-t4\"],\n        criticality: \"medium\",\n        slaThresholds: {\n          errorRate: 0.05,\n          latencyP95: 2000,\n          latencyP99: 5000\n        },\n        category: \"notification\"\n      },\n      \n      \"ntf-history-service\": {\n        dependencies: [],\n        criticality: \"low\",\n        slaThresholds: {\n          errorRate: 0.05,\n          latencyP95: 1000,\n          latencyP99: 3000\n        },\n        category: \"notification\"\n      },\n      \n      \"ntf-batch-service\": {\n        dependencies: [\"domain-config-service\", \"ntf-engine-service\"],\n        criticality: \"low\",\n        slaThresholds: {\n          errorRate: 0.05,\n          latencyP95: 5000,\n          latencyP99: 10000\n        },\n        category: \"notification\"\n      },\n      \n      \"cpq-ntf-integrator-service\": {\n        dependencies: [\"domain-config-service\", \"ntf-engine-service\", \"ntf-history-service\", \"crm-customer-information\", \"bss-mc-ntf-engine-t4\"],\n        criticality: \"medium\",\n        slaThresholds: {\n          errorRate: 0.05,\n          latencyP95: 1500,\n          latencyP99: 3000\n        },\n        category: \"notification\"\n      },\n      \n      \"crm-ntf-integrator-service\": {\n        dependencies: [\"domain-config-service\", \"ntf-engine-service\", \"crm-customer-information\", \"search-integrator-mc-backend\"],\n        criticality: \"medium\",\n        slaThresholds: {\n          errorRate: 0.05,\n          latencyP95: 1500,\n          latencyP99: 3000\n        },\n        category: \"notification\"\n      },\n      \n      // Search Services\n      \"customer-search-mc-backend\": {\n        dependencies: [],\n        criticality: \"high\",\n        slaThresholds: {\n          errorRate: 0.02,\n          latencyP95: 400,\n          latencyP99: 1000\n        },\n        category: \"search\"\n      },\n      \n      \"search-integrator-mc-backend\": {\n        dependencies: [\"crm-customer-information\"],\n        criticality: \"medium\",\n        slaThresholds: {\n          errorRate: 0.03,\n          latencyP95: 500,\n          latencyP99: 1200\n        },\n        category: \"search\"\n      },\n      \n      // Supporting Services\n      \"domain-config-service\": {\n        dependencies: [\"ntf-engine-service\", \"ntf-history-service\", \"bss-mc-ntf-engine-t4\"],\n        criticality: \"critical\",\n        slaThresholds: {\n          errorRate: 0.001,\n          latencyP95: 100,\n          latencyP99: 300\n        },\n        category: \"config\"\n      },\n      \n      \"activity\": {\n        dependencies: [\"domain-config-service\"],\n        criticality: \"low\",\n        slaThresholds: {\n          errorRate: 0.05,\n          latencyP95: 1000,\n          latencyP99: 2000\n        },\n        category: \"support\"\n      },\n      \n      \"ui-authz-mc-backend\": {\n        dependencies: [\"domain-config-service\"],\n        criticality: \"critical\",\n        slaThresholds: {\n          errorRate: 0.005,\n          latencyP95: 200,\n          latencyP99: 500\n        },\n        category: \"auth\"\n      },\n      \n      // CPQ Services\n      \"bstp-cpq-batch\": {\n        dependencies: [\"bss-mc-domain-config-t4\"],\n        criticality: \"medium\",\n        slaThresholds: {\n          errorRate: 0.03,\n          latencyP95: 5000,\n          latencyP99: 10000\n        },\n        category: \"cpq\"\n      },\n      \n      // Identity Service\n      \"bstp-id-service\": {\n        dependencies: [],\n        criticality: \"high\",\n        slaThresholds: {\n          errorRate: 0.01,\n          latencyP95: 200,\n          latencyP99: 500\n        },\n        category: \"auth\"\n      },\n      \n      // UI Services\n      \"em-b2c-wsc-new-ui\": {\n        dependencies: [\"eca-t4\"],\n        criticality: \"medium\",\n        slaThresholds: {\n          errorRate: 0.02,\n          latencyP95: 500,\n          latencyP99: 1000\n        },\n        category: \"ui\"\n      },\n      \n      // External/EOM Services\n      \"bss-services-service.etiyamobile-production-eom\": {\n        dependencies: [],\n        criticality: \"critical\",\n        slaThresholds: {\n          errorRate: 0.01,\n          latencyP95: 500,\n          latencyP99: 1000\n        },\n        category: \"backend\"\n      },\n      \n      \"eca-t4\": {\n        dependencies: [],\n        criticality: \"high\",\n        slaThresholds: {\n          errorRate: 0.02,\n          latencyP95: 300,\n          latencyP99: 800\n        },\n        category: \"t4-layer\"\n      },\n      \n      // T4 Layer Services\n      \"bss-mc-domain-config-t4\": {\n        dependencies: [],\n        criticality: \"high\",\n        slaThresholds: {\n          errorRate: 0.01,\n          latencyP95: 200,\n          latencyP99: 500\n        },\n        category: \"t4-layer\"\n      },\n      \n      \"bss-mc-cpq-t4\": {\n        dependencies: [],\n        criticality: \"high\",\n        slaThresholds: {\n          errorRate: 0.02,\n          latencyP95: 400,\n          latencyP99: 1000\n        },\n        category: \"t4-layer\"\n      },\n      \n      \"bss-mc-crm-customer-information-t4\": {\n        dependencies: [],\n        criticality: \"high\",\n        slaThresholds: {\n          errorRate: 0.02,\n          latencyP95: 300,\n          latencyP99: 800\n        },\n        category: \"t4-layer\"\n      },\n      \n      \"bss-mc-ntf-engine-t4\": {\n        dependencies: [],\n        criticality: \"medium\",\n        slaThresholds: {\n          errorRate: 0.03,\n          latencyP95: 1000,\n          latencyP99: 2000\n        },\n        category: \"t4-layer\"\n      },\n      \n      \"bss-mc-pcm-product-catalog-t4\": {\n        dependencies: [],\n        criticality: \"high\",\n        slaThresholds: {\n          errorRate: 0.02,\n          latencyP95: 300,\n          latencyP99: 800\n        },\n        category: \"t4-layer\"\n      },\n      \n      \"bss-mc-asset-management-t4\": {\n        dependencies: [],\n        criticality: \"high\",\n        slaThresholds: {\n          errorRate: 0.02,\n          latencyP95: 400,\n          latencyP99: 1000\n        },\n        category: \"t4-layer\"\n      }\n    },\n    \n    serviceCategories: {\n      backend: [\"bss-services-service.etiyamobile-production-eom\"],\n      auth: [\"ui-authz-mc-backend\", \"bstp-id-service\"],\n      crm: [\"crm-customer-information\", \"crm-mash-up\", \"crm-asset\"],\n      catalog: [\"bstp-pcm-product-catalog\", \"bstp-pcm-product-offer-detail\"],\n      cpq: [\"cpq-ordercapture\", \"bstp-cpq-batch\"],\n      notification: [\"ntf-engine-service\", \"ntf-history-service\", \"ntf-batch-service\", \"cpq-ntf-integrator-service\", \"crm-ntf-integrator-service\"],\n      search: [\"customer-search-mc-backend\", \"search-integrator-mc-backend\"],\n      config: [\"domain-config-service\"],\n      support: [\"activity\"],\n      gateway: [\"APIGateway\"],\n      ui: [\"em-b2c-wsc-new-ui\"],\n      \"t4-layer\": [\"eca-t4\", \"bss-mc-domain-config-t4\", \"bss-mc-cpq-t4\", \"bss-mc-crm-customer-information-t4\", \"bss-mc-ntf-engine-t4\", \"bss-mc-pcm-product-catalog-t4\", \"bss-mc-asset-management-t4\"]\n    },\n    \n    criticalPaths: {\n      login: [\"ui-authz-mc-backend\", \"crm-customer-information\", \"domain-config-service\"],\n      order: [\"APIGateway\", \"cpq-ordercapture\", \"crm-customer-information\", \"bstp-pcm-product-catalog\"],\n      search: [\"customer-search-mc-backend\", \"search-integrator-mc-backend\", \"crm-customer-information\"],\n      payment: [\"APIGateway\", \"cpq-ordercapture\", \"bss-services-service.etiyamobile-production-eom\"]\n    }\n  }\n}];"
+      },
+      "id": "bea7484f-bc4e-4f00-b286-e0d31ad8188a",
+      "name": "Service Dependency Store",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -576,
+        176
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "jsCode": "// Service-Aware Query Builder Node - KOMPLE KOD (UPDATED)\n// Bu node'u \"Orchestrator Input Handler\" node'undan sonra ekleyin\n\nconst input = $input.first().json;\nconst dependencyStore = $node[\"Service Dependency Store\"].json;\nconst dependencies = dependencyStore.serviceDependencies;\n\nconsole.log('=== SERVICE-AWARE QUERY BUILDER ===');\nconsole.log('Input source:', input.source);\n\n// Helper function to extract service names from message\nfunction extractServicesFromMessage(message) {\n  if (!message) return [];\n  \n  const services = new Set();\n  const msgLower = message.toLowerCase();\n  \n  // Pattern-based service detection\n  const patterns = [\n    { \n      pattern: /customer|müşteri|crm/, \n      services: ['crm-customer-information', 'customer-search-mc-backend', 'crm-mash-up', 'bss-mc-crm-customer-information-t4'] \n    },\n    { \n      pattern: /order|sipariş|cpq/, \n      services: ['cpq-ordercapture', 'bstp-cpq-batch', 'bss-mc-cpq-t4'] \n    },\n    { \n      pattern: /product|ürün|catalog/, \n      services: ['bstp-pcm-product-catalog', 'bstp-pcm-product-offer-detail', 'bss-mc-pcm-product-catalog-t4'] \n    },\n    { \n      pattern: /auth|login|giriş|kimlik/, \n      services: ['ui-authz-mc-backend', 'crm-customer-information', 'bstp-id-service'] \n    },\n    { \n      pattern: /notification|bildirim|ntf/, \n      services: ['ntf-engine-service', 'ntf-history-service', 'ntf-batch-service', 'cpq-ntf-integrator-service', 'crm-ntf-integrator-service', 'bss-mc-ntf-engine-t4'] \n    },\n    { \n      pattern: /search|ara/, \n      services: ['customer-search-mc-backend', 'search-integrator-mc-backend'] \n    },\n    { \n      pattern: /asset|varlık/, \n      services: ['crm-asset', 'bss-mc-asset-management-t4'] \n    },\n    { \n      pattern: /config|yapılandırma|domain-config/, \n      services: ['domain-config-service', 'bss-mc-domain-config-t4'] \n    },\n    {\n      pattern: /gateway|api/,\n      services: ['APIGateway']\n    },\n    {\n      pattern: /ui|arayüz|web/,\n      services: ['em-b2c-wsc-new-ui']\n    },\n    { \n      pattern: /ödeme|payment/i, \n      services: ['cpq-ordercapture', 'bstp-cpq-batch', 'bss-mc-cpq-t4', 'bss-services-service.etiyamobile-production-eom'] \n    },\n    { \n      pattern: /kimlik doğrulama|giriş|oturum|authentication|login/i, \n      services: ['ui-authz-mc-backend', 'crm-customer-information', 'bstp-id-service'] \n    },\n    { \n      pattern: /müşteri|customer|crm/i, \n      services: ['crm-customer-information', 'customer-search-mc-backend', 'crm-mash-up', 'bss-mc-crm-customer-information-t4'] \n    },\n    { \n      pattern: /ürün|katalog|product|catalog/i, \n      services: ['bstp-pcm-product-catalog', 'bstp-pcm-product-offer-detail', 'bss-mc-pcm-product-catalog-t4'] \n    },\n    { \n      pattern: /bildirim|notification|sms|email/i, \n      services: ['ntf-engine-service', 'ntf-history-service', 'ntf-batch-service', 'cpq-ntf-integrator-service', 'crm-ntf-integrator-service', 'bss-mc-ntf-engine-t4'] \n    },\n    { \n      pattern: /arama|ara|search/i, \n      services: ['customer-search-mc-backend', 'search-integrator-mc-backend'] \n    },\n    { \n      pattern: /hata|error|sorun|problem|çalışmıyor|bozuk/i,\n      services: [] // Bu durumda kritik servislere bakacağız\n    }\n  ];\n  \n  // Pattern matching\n  patterns.forEach(({ pattern, services: matchedServices }) => {\n    if (pattern.test(msgLower)) {\n      matchedServices.forEach(s => services.add(s));\n    }\n  });\n  \n  // Direct service name check\n  const serviceNames = [\n    // Core services\n    'APIGateway',\n    'cpq-ordercapture',\n    'crm-customer-information',\n    'crm-mash-up',\n    'crm-asset',\n    \n    // Product catalog\n    'bstp-pcm-product-catalog',\n    'bstp-pcm-product-offer-detail',\n    \n    // Notification services\n    'ntf-engine-service',\n    'ntf-history-service',\n    'ntf-batch-service',\n    'cpq-ntf-integrator-service',\n    'crm-ntf-integrator-service',\n    \n    // Search services\n    'customer-search-mc-backend',\n    'search-integrator-mc-backend',\n    \n    // Supporting services\n    'domain-config-service',\n    'activity',\n    'ui-authz-mc-backend',\n    'bstp-cpq-batch',\n    'bstp-id-service',\n    \n    // UI services\n    'em-b2c-wsc-new-ui',\n    \n    // External services\n    'bss-services-service.etiyamobile-production-eom',\n    \n    // T4 layer services\n    'eca-t4',\n    'bss-mc-domain-config-t4',\n    'bss-mc-cpq-t4',\n    'bss-mc-crm-customer-information-t4',\n    'bss-mc-ntf-engine-t4',\n    'bss-mc-pcm-product-catalog-t4',\n    'bss-mc-asset-management-t4'\n  ];\n  \n  // DÜZELTME: Daha iyi servis ismi eşleştirme\n  serviceNames.forEach(serviceName => {\n    // Tam eşleşme kontrolü\n    if (msgLower.includes(serviceName.toLowerCase())) {\n      console.log(`Direct match found: ${serviceName}`);\n      services.add(serviceName);\n    } else {\n      // Parça parça kontrol - minimum 2 karakterli parçalar için\n      const parts = serviceName.split('-').filter(part => part.length >= 2);\n      let matchCount = 0;\n      \n      parts.forEach(part => {\n        if (msgLower.includes(part.toLowerCase())) {\n          matchCount++;\n        }\n      });\n      \n      // Eğer parçaların %75'i veya daha fazlası eşleşiyorsa servisi ekle\n      if (matchCount > 0 && matchCount >= Math.ceil(parts.length * 0.75)) {\n        console.log(`Partial match found: ${serviceName} (${matchCount}/${parts.length} parts matched)`);\n        services.add(serviceName);\n      }\n    }\n  });\n  \n  return Array.from(services);\n}\n\n// Helper function to get dependent services\nfunction getDependentServices(serviceName, visited = new Set()) {\n  if (visited.has(serviceName)) return [];\n  visited.add(serviceName);\n  \n  const deps = [serviceName];\n  const service = dependencies[serviceName];\n  \n  if (service && service.dependencies) {\n    service.dependencies.forEach(dep => {\n      deps.push(...getDependentServices(dep, visited));\n    });\n  }\n  \n  return [...new Set(deps)];\n}\n\n// Build enhanced parameters - PRESERVE ALL INPUT DATA\nconst enhancedParams = JSON.parse(JSON.stringify(input));\n\n// Ensure critical fields are preserved\nenhancedParams.source = input.source;\nenhancedParams.priority = input.priority;\nenhancedParams.orchestratorId = input.orchestratorId;\nenhancedParams.requestId = input.requestId;\nenhancedParams.forceDeepAnalysis = input.forceDeepAnalysis;\n\n// Initialize service analysis\nenhancedParams.serviceAnalysis = {\n  detectedServices: [],\n  dependencyChains: {},\n  criticalPathAffected: false,\n  enhancedQueries: {},\n  serviceMetadata: {}\n};\n\n// Extract services from context\nlet mentionedServices = [];\n\n// Check if this is from chat and needs service detection\nif (input.analysisConfig?.requiresServiceDetection && input.analysisConfig?.chatMessage) {\n  console.log('=== CHAT SERVICE DETECTION ===');\n  console.log('Chat message:', input.analysisConfig.chatMessage);\n  \n  // Extract services from chat message\n  mentionedServices = extractServicesFromMessage(input.analysisConfig.chatMessage);\n  \n  console.log('=== EXTRACTED SERVICES ===');\n  console.log('Services found:', mentionedServices);\n  console.log('Number of services:', mentionedServices.length);\n  \n  if (mentionedServices.length > 0) {\n    console.log('Found services in chat:', mentionedServices);\n  } else {\n    console.log('No specific services in chat message');\n    // Genel hata kelimelerini kontrol et\n    const errorKeywords = ['hata', 'error', 'sorun', 'problem', 'çalışmıyor', 'not working'];\n    const hasErrorKeyword = errorKeywords.some(keyword => \n      input.analysisConfig.chatMessage.toLowerCase().includes(keyword)\n    );\n    \n    if (hasErrorKeyword) {\n      console.log('Error keywords detected - will analyze critical services');\n    }\n  }\n}\n\n// Check various sources for service information - sadece chat'ten gelmediyse\nif (mentionedServices.length === 0 && input.context?.originalMessage) {\n  mentionedServices = extractServicesFromMessage(input.context.originalMessage);\n} else if (mentionedServices.length === 0 && input.context?.keywords && Array.isArray(input.context.keywords)) {\n  input.context.keywords.forEach(keyword => {\n    const extracted = extractServicesFromMessage(keyword);\n    mentionedServices.push(...extracted);\n  });\n}\n\n// Default to critical services for high priority\nif (mentionedServices.length === 0 && \n    (input.analysisConfig?.priority === 'critical' || \n     input.analysisConfig?.priority === 'high' ||\n     input.priority === 'critical')) {\n  console.log('High priority detected - analyzing critical services');\n  mentionedServices = ['ui-authz-mc-backend', 'crm-customer-information', 'cpq-ordercapture', 'domain-config-service', 'APIGateway'];\n}\n\n// Chat'ten gelen genel hata mesajları için kritik servisleri kontrol et\nif (mentionedServices.length === 0 && input.analysisConfig?.requiresServiceDetection) {\n  console.log('=== CHAT: NO SPECIFIC SERVICES - CHECKING CRITICAL SERVICES ===');\n  \n  // Chat mesajında hata belirtisi var mı kontrol et\n  const errorIndicators = ['hata', 'error', 'sorun', 'problem', 'çalışmıyor', 'not working', 'yavaş', 'slow'];\n  const chatMessage = (input.analysisConfig?.chatMessage || '').toLowerCase();\n  const hasErrorIndication = errorIndicators.some(indicator => chatMessage.includes(indicator));\n  \n  if (hasErrorIndication) {\n    console.log('Error indication found in chat - analyzing all critical services');\n    mentionedServices = [\n      'APIGateway',\n      'ui-authz-mc-backend',\n      'crm-customer-information', \n      'cpq-ordercapture',\n      'domain-config-service',\n      'bss-services-service.etiyamobile-production-eom',\n      'bstp-pcm-product-catalog',\n      'ntf-engine-service'\n    ];\n    \n    // Analiz modunu işaretle\n    enhancedParams.analysisConfig = enhancedParams.analysisConfig || {};\n    enhancedParams.analysisConfig.analysisMode = 'critical-services-scan';\n    enhancedParams.analysisConfig.reason = 'General error reported via chat';\n  }\n}\n\n// If still no services, check all critical services\nif (mentionedServices.length === 0) {\n  console.log('No specific services detected - checking critical services');\n  mentionedServices = Object.entries(dependencies)\n    .filter(([_, info]) => info.criticality === 'critical')\n    .map(([name, _]) => name);\n}\n\nconsole.log('=== FINAL MENTIONED SERVICES ===');\nconsole.log('Services to analyze:', mentionedServices);\n\n// Build dependency chains\nconst allDetectedServices = new Set();\n\nmentionedServices.forEach(service => {\n  const chain = getDependentServices(service);\n  enhancedParams.serviceAnalysis.dependencyChains[service] = chain;\n  chain.forEach(s => allDetectedServices.add(s));\n});\n\nenhancedParams.serviceAnalysis.detectedServices = Array.from(allDetectedServices);\n\n// Check critical paths\nconst criticalPaths = dependencyStore.criticalPaths || {};\nfor (const [pathName, pathServices] of Object.entries(criticalPaths)) {\n  const affected = pathServices.some(s => allDetectedServices.has(s));\n  if (affected) {\n    enhancedParams.serviceAnalysis.criticalPathAffected = true;\n    enhancedParams.serviceAnalysis.affectedPath = pathName;\n    break;\n  }\n}\n\n// Build service metadata\nenhancedParams.serviceAnalysis.detectedServices.forEach(service => {\n  const serviceInfo = dependencies[service];\n  if (serviceInfo) {\n    enhancedParams.serviceAnalysis.serviceMetadata[service] = {\n      criticality: serviceInfo.criticality,\n      category: serviceInfo.category,\n      slaThresholds: serviceInfo.slaThresholds\n    };\n  }\n});\n\n// Build enhanced Tempo queries\nconst baseEnv = input.searchParams?.environment || \"etiyamobile-production\";\n\n// Query 1: Service-specific errors\nif (enhancedParams.serviceAnalysis.detectedServices.length > 0) {\n  const serviceFilter = enhancedParams.serviceAnalysis.detectedServices\n    .map(s => `.service.name=\"${s}\"`)\n    .join(' || ');\n    \n  enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors = \n    `{ resource.deployment.environment=\"${baseEnv}\" && (${serviceFilter}) && status=error }`;\n}\n\n// Query 2: High latency for critical services\nconst criticalServices = enhancedParams.serviceAnalysis.detectedServices\n  .filter(s => enhancedParams.serviceAnalysis.serviceMetadata[s]?.criticality === 'critical');\n\nif (criticalServices.length > 0) {\n  const criticalFilter = criticalServices.map(s => `.service.name=\"${s}\"`).join(' || ');\n  enhancedParams.serviceAnalysis.enhancedQueries.criticalLatency = \n    `{ resource.deployment.environment=\"${baseEnv}\" && (${criticalFilter}) && duration > 500ms }`;\n}\n\n// Update search parameters\nenhancedParams.searchParams = {\n  ...input.searchParams,\n  services: enhancedParams.serviceAnalysis.detectedServices,\n  customQuery: enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors || input.searchParams?.customQuery,\n  limits: {\n    stage1: enhancedParams.serviceAnalysis.criticalPathAffected ? 200 : 100,\n    stage2: enhancedParams.serviceAnalysis.criticalPathAffected ? 100 : 50\n  }\n};\n\n// Enhanced analysis config - PRESERVE ORIGINAL VALUES\nenhancedParams.analysisConfig = {\n  ...input.analysisConfig,  // Preserve all original analysisConfig\n  priority: input.analysisConfig?.priority || input.priority || 'normal',\n  forceDeepAnalysis: input.analysisConfig?.forceDeepAnalysis || input.forceDeepAnalysis || false,\n  serviceContext: {\n    primaryServices: mentionedServices,\n    allServices: enhancedParams.serviceAnalysis.detectedServices,\n    criticalPathAffected: enhancedParams.serviceAnalysis.criticalPathAffected,\n    affectedPath: enhancedParams.serviceAnalysis.affectedPath,\n    serviceCount: enhancedParams.serviceAnalysis.detectedServices.length,\n    criticalServiceCount: criticalServices.length,\n    expectedLatencies: {}\n  }\n};\n\n// Add expected latencies for detected services\nenhancedParams.serviceAnalysis.detectedServices.forEach(service => {\n  const serviceInfo = dependencies[service];\n  if (serviceInfo && serviceInfo.slaThresholds) {\n    enhancedParams.analysisConfig.serviceContext.expectedLatencies[service] = {\n      p95: serviceInfo.slaThresholds.latencyP95,\n      p99: serviceInfo.slaThresholds.latencyP99\n    };\n  }\n});\n\nconsole.log('=== ENHANCED OUTPUT ===');\nconsole.log('Total services to analyze:', enhancedParams.serviceAnalysis.detectedServices.length);\nconsole.log('Services:', enhancedParams.serviceAnalysis.detectedServices);\nconsole.log('Custom Query:', enhancedParams.searchParams.customQuery);\n\nreturn [{ json: enhancedParams }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -176,
+        176
+      ],
+      "id": "7eb7733e-4c54-4227-b3e2-29a732799ec1",
+      "name": "Service-Aware Query Builder"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Enhanced Error Categorization Node - UPDATED WITH ERROR CONTEXT\n// Bu node'u \"Stage 1: Quick Health Check\" ile \"Check If Stage 2 Needed\" arasına ekleyin\n\nconst stage1Output = $input.first().json;\nconst serviceContext = $node[\"Service-Aware Query Builder\"].json.serviceAnalysis;\nconst dependencies = $node[\"Service Dependency Store\"].json.serviceDependencies;\n\nconsole.log('=== ENHANCED ERROR CATEGORIZATION ===');\nconsole.log('Stage 1 status:', stage1Output.status);\nconsole.log('Error count:', stage1Output.metrics?.error_count);\n\n// Initialize categorized output\nconst categorizedOutput = {\n  ...stage1Output,\n    // YENİ: Chat context'i koru\n  analysisConfig: stage1Output.analysisConfig || {},\n  source: stage1Output.source || 'unknown',\n  serviceErrorAnalysis: {\n    byService: {},\n    byCriticality: {\n      critical: { services: [], totalErrors: 0 },\n      high: { services: [], totalErrors: 0 },\n      medium: { services: [], totalErrors: 0 },\n      low: { services: [], totalErrors: 0 }\n    },\n    byCategory: {},\n    impactScore: 0,\n    recommendations: []\n  },\n  // NEW: Add detected errors context for Stage 2\n  detectedErrors: {\n    stage1Errors: stage1Output.metrics?.error_count || 0,\n    expectedErrorTypes: ['401', '403', '404', '500', '502', '503', 'timeout'],\n    servicesAnalyzed: serviceContext.detectedServices || [],\n    requiresDeepAnalysis: false\n  }\n};\n\n// Simulate service-level error distribution based on total errors\n// In real implementation, this would come from actual trace data\nfunction distributeErrorsByService(totalErrors, detectedServices) {\n  const distribution = {};\n  \n  if (totalErrors === 0) return distribution;\n  \n  // Group services by criticality for better distribution\n  const servicesByCriticality = {\n    critical: [],\n    high: [],\n    medium: [],\n    low: []\n  };\n  \n  detectedServices.forEach(service => {\n    const serviceInfo = dependencies[service];\n    if (serviceInfo && serviceInfo.criticality) {\n      servicesByCriticality[serviceInfo.criticality].push(service);\n    }\n  });\n  \n  // Distribute errors based on criticality\n  // Critical: 40%, High: 30%, Medium: 20%, Low: 10%\n  const errorDistribution = {\n    critical: Math.ceil(totalErrors * 0.4),\n    high: Math.ceil(totalErrors * 0.3),\n    medium: Math.ceil(totalErrors * 0.2),\n    low: Math.ceil(totalErrors * 0.1)\n  };\n  \n  // Distribute within each criticality level\n  Object.entries(servicesByCriticality).forEach(([criticality, services]) => {\n    if (services.length > 0) {\n      const errorsPerService = Math.ceil(errorDistribution[criticality] / services.length);\n      \n      services.forEach(service => {\n        const serviceInfo = dependencies[service];\n        distribution[service] = {\n          count: errorsPerService,\n          percentage: (errorsPerService / totalErrors * 100).toFixed(1),\n          criticality: serviceInfo.criticality,\n          category: serviceInfo.category\n        };\n      });\n    }\n  });\n  \n  return distribution;\n}\n\n// Get error distribution\nconst errorDistribution = distributeErrorsByService(\n  stage1Output.metrics?.error_count || 0,\n  serviceContext.detectedServices || []\n);\n\n// Categorize errors by service\nObject.entries(errorDistribution).forEach(([service, data]) => {\n  const serviceInfo = dependencies[service];\n  \n  categorizedOutput.serviceErrorAnalysis.byService[service] = {\n    errorCount: data.count,\n    errorPercentage: data.percentage,\n    criticality: data.criticality,\n    category: data.category,\n    slaViolation: false,\n    severity: 'low'\n  };\n  \n  // Check SLA violations\n  if (serviceInfo && serviceInfo.slaThresholds) {\n    const errorRate = data.count / 100; // Assuming 100 requests\n    if (errorRate > serviceInfo.slaThresholds.errorRate) {\n      categorizedOutput.serviceErrorAnalysis.byService[service].slaViolation = true;\n      categorizedOutput.serviceErrorAnalysis.byService[service].severity = \n        serviceInfo.criticality === 'critical' ? 'high' : 'medium';\n    }\n  }\n  \n  // Group by criticality\n  categorizedOutput.serviceErrorAnalysis.byCriticality[data.criticality].services.push(service);\n  categorizedOutput.serviceErrorAnalysis.byCriticality[data.criticality].totalErrors += data.count;\n  \n  // Group by category\n  if (!categorizedOutput.serviceErrorAnalysis.byCategory[data.category]) {\n    categorizedOutput.serviceErrorAnalysis.byCategory[data.category] = {\n      services: [],\n      totalErrors: 0\n    };\n  }\n  categorizedOutput.serviceErrorAnalysis.byCategory[data.category].services.push(service);\n  categorizedOutput.serviceErrorAnalysis.byCategory[data.category].totalErrors += data.count;\n});\n\n// Calculate impact score\nlet impactScore = 0;\nObject.entries(categorizedOutput.serviceErrorAnalysis.byService).forEach(([service, data]) => {\n  const multiplier = {\n    'critical': 10,\n    'high': 5,\n    'medium': 2,\n    'low': 1\n  };\n  impactScore += data.errorCount * (multiplier[data.criticality] || 1);\n});\ncategorizedOutput.serviceErrorAnalysis.impactScore = impactScore;\n\n// Generate recommendations based on categorization\nif (categorizedOutput.serviceErrorAnalysis.byCriticality.critical.totalErrors > 0) {\n  categorizedOutput.serviceErrorAnalysis.recommendations.push({\n    priority: 'immediate',\n    action: 'Investigate critical service errors immediately',\n    services: categorizedOutput.serviceErrorAnalysis.byCriticality.critical.services\n  });\n}\n\n// Check for cascade patterns with new service structure\nconst gatewayErrors = categorizedOutput.serviceErrorAnalysis.byCategory.gateway?.totalErrors || 0;\nconst backendErrors = categorizedOutput.serviceErrorAnalysis.byCategory.backend?.totalErrors || 0;\nconst authErrors = categorizedOutput.serviceErrorAnalysis.byCategory.auth?.totalErrors || 0;\nconst crmErrors = categorizedOutput.serviceErrorAnalysis.byCategory.crm?.totalErrors || 0;\nconst t4Errors = categorizedOutput.serviceErrorAnalysis.byCategory['t4-layer']?.totalErrors || 0;\n\n// Check for API Gateway cascades\nif (gatewayErrors > 0 && (crmErrors > 0 || authErrors > 0)) {\n  categorizedOutput.serviceErrorAnalysis.recommendations.push({\n    priority: 'high',\n    action: 'API Gateway cascade failure detected - check downstream services',\n    services: ['APIGateway', ...categorizedOutput.serviceErrorAnalysis.byCategory.crm?.services || []]\n  });\n}\n\n// Check for T4 layer issues\nif (t4Errors > 0) {\n  categorizedOutput.serviceErrorAnalysis.recommendations.push({\n    priority: 'high',\n    action: 'T4 layer services experiencing errors - check integration layer',\n    services: categorizedOutput.serviceErrorAnalysis.byCategory['t4-layer'].services\n  });\n}\n\n// Check for authentication cascade\nif (authErrors > 0 && crmErrors > 0) {\n  categorizedOutput.serviceErrorAnalysis.recommendations.push({\n    priority: 'high',\n    action: 'Authentication cascade detected - auth services affecting CRM',\n    services: ['ui-authz-mc-backend', 'bstp-id-service', 'crm-customer-information']\n  });\n}\n\n// Update proceed_to_stage2 decision based on service impact\nif (impactScore > 50 || categorizedOutput.serviceErrorAnalysis.byCriticality.critical.totalErrors > 0) {\n  categorizedOutput.proceed_to_stage2 = true;\n  categorizedOutput.reason = `High impact score (${impactScore}) or critical service errors detected`;\n}\n\n// Special handling for critical services\nconst criticalServicesWithErrors = categorizedOutput.serviceErrorAnalysis.byCriticality.critical.services;\nif (criticalServicesWithErrors.includes('APIGateway') || \n    criticalServicesWithErrors.includes('domain-config-service') ||\n    criticalServicesWithErrors.includes('bss-services-service.etiyamobile-production-eom')) {\n  categorizedOutput.proceed_to_stage2 = true;\n  categorizedOutput.reason = 'Core infrastructure services affected';\n}\n\n// NEW: Mark if deep analysis is required for additional error discovery\nif (stage1Output.metrics?.error_count === 0 && serviceContext.detectedServices.length > 0) {\n  categorizedOutput.detectedErrors.requiresDeepAnalysis = true;\n  categorizedOutput.detectedErrors.reason = 'No errors in Stage 1, but critical services detected - deep analysis may find hidden issues';\n}\n\n// Add service context to quick summary\nconst affectedServices = Object.keys(categorizedOutput.serviceErrorAnalysis.byService);\nif (affectedServices.length > 0) {\n  const criticalCount = categorizedOutput.serviceErrorAnalysis.byCriticality.critical.services.length;\n  const summaryPrefix = criticalCount > 0 ? `CRITICAL: ${criticalCount} critical services affected. ` : '';\n  \n  categorizedOutput.quick_summary = `${summaryPrefix}${stage1Output.quick_summary}. Affected services: ${affectedServices.slice(0, 3).join(', ')}${affectedServices.length > 3 ? ` and ${affectedServices.length - 3} more` : ''}`;\n}\n\n// Pass error analysis to next stages\ncategorizedOutput.errorAnalysis = {\n  errorsByCategory: categorizedOutput.serviceErrorAnalysis.byCategory,\n  detectedErrors: categorizedOutput.detectedErrors\n};\n\nconsole.log('=== CATEGORIZATION COMPLETE ===');\nconsole.log('Impact score:', impactScore);\nconsole.log('Critical errors:', categorizedOutput.serviceErrorAnalysis.byCriticality.critical.totalErrors);\nconsole.log('T4 layer errors:', categorizedOutput.serviceErrorAnalysis.byCategory['t4-layer']?.totalErrors || 0);\nconsole.log('Proceed to Stage 2:', categorizedOutput.proceed_to_stage2);\nconsole.log('Requires deep analysis:', categorizedOutput.detectedErrors.requiresDeepAnalysis);\n\nreturn [{ json: categorizedOutput }];"
+      },
+      "id": "01d6b052-267b-4526-887b-4429c90ed56a",
+      "name": "Enhanced Error Categorization",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        544,
+        176
+      ],
+      "typeVersion": 2
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-tempo.saas.etycloudbss.com/api/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "={{ $json.searchParams?.limits?.stage2 || 30 }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ $json.timeRange?.start || Math.floor((Date.now() - 3600000) / 1000) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ $json.timeRange?.end || Math.floor(new Date().getTime()/1000) }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ (() => {\n  const serviceAnalysis = $json.serviceContext || $json.serviceAnalysis || {};\n  const detectedServices = serviceAnalysis.detectedServices || [];\n  \n  // 400-599 arası error kodları - ama gruplara bölelim performans için\n  const clientErrors = Array.from({length: 50}, (_, i) => `.status=\"${i+400}\"`).join(' || '); // 400-449\n  const serverErrors = Array.from({length: 50}, (_, i) => `.status=\"${i+500}\"`).join(' || '); // 500-549\n  const additionalErrors = Array.from({length: 50}, (_, i) => `.status=\"${i+550}\"`).join(' || '); // 550-599\n  \n  // Tüm error kodlarını birleştir\n  const errorCodes = `${clientErrors} || ${serverErrors} || ${additionalErrors}`;\n  \n  // Service filter\n  if (detectedServices.length > 0) {\n    const serviceFilter = detectedServices\n      .slice(0, 5) // Max 5 service - orijinalde böyleydi\n      .map(s => `.service.name=\"${s}\"`)\n      .join(' || ');\n    return `{ (${serviceFilter}) && (${errorCodes}) }`;\n  }\n  \n  // Default: Critical services\n  const criticalServices = [\n    \"ui-authz-mc-backend\", \n    \"crm-customer-information\", \n    \"cpq-ordercapture\",\n    \"domain-config-service\",\n    \"APIGateway\",\n    \"bss-services-service.etiyamobile-production-eom\"\n  ];\n  const serviceFilter = criticalServices.map(s => `.service.name=\"${s}\"`).join(' || ');\n  return `{ (${serviceFilter}) && (${errorCodes}) }`;\n})() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1600,
+        416
+      ],
+      "id": "786ca723-4402-4648-be57-64981c3be027",
+      "name": "Dependency Chain Tracer"
+    },
+    {
+      "parameters": {
+        "url": "https://grafana-tempo.saas.etycloudbss.com/api/search",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "limit",
+              "value": "={{ $json.searchParams?.limits?.stage2 || 50 }}"
+            },
+            {
+              "name": "start",
+              "value": "={{ Math.floor((Date.now() - 1800000) / 1000) }}"
+            },
+            {
+              "name": "end",
+              "value": "={{ Math.floor(Date.now() / 1000) }}"
+            },
+            {
+              "name": "q",
+              "value": "={{ (() => {\n  const serviceContext = $json.serviceContext || {};\n  const errorAnalysis = $json.errorAnalysis || {};\n  const errorsByCategory = errorAnalysis.errorsByCategory || {};\n\n  const cascadePatterns = [];\n\n  // Auth category errors\n  if (errorsByCategory.auth?.totalErrors > 0) {\n    cascadePatterns.push('(.service.name=\"ui-authz-mc-backend\" || .service.name=\"crm-customer-information\" || .service.name=\"bstp-id-service\")');\n  }\n\n  // CRM category errors\n  if (errorsByCategory.crm?.totalErrors > 0) {\n    cascadePatterns.push('(.service.name=\"crm-customer-information\" || .service.name=\"crm-asset\" || .service.name=\"crm-mash-up\" || .service.name=\"bss-mc-crm-customer-information-t4\")');\n  }\n\n  // CPQ/Order category errors\n  if (errorsByCategory.cpq?.totalErrors > 0) {\n    cascadePatterns.push('(.service.name=\"cpq-ordercapture\" || .service.name=\"bstp-cpq-batch\" || .service.name=\"bss-mc-cpq-t4\")');\n  }\n\n  // Config service errors (affects everything)\n  if (errorsByCategory.config?.totalErrors > 0) {\n    cascadePatterns.push('(.service.name=\"domain-config-service\" || .service.name=\"bss-mc-domain-config-t4\")');\n  }\n\n  // Backend category errors\n  if (errorsByCategory.backend?.totalErrors > 0) {\n    cascadePatterns.push('(.service.name=\"bss-services-service.etiyamobile-production-eom\")');\n  }\n\n  // Gateway errors\n  if (errorsByCategory.gateway?.totalErrors > 0) {\n    cascadePatterns.push('(.service.name=\"APIGateway\")');\n  }\n\n  // T4 layer errors\n  if (errorsByCategory['t4-layer']?.totalErrors > 0) {\n    cascadePatterns.push('(.service.name=\"eca-t4\" || .service.name=\"bss-mc-domain-config-t4\" || .service.name=\"bss-mc-cpq-t4\" || .service.name=\"bss-mc-crm-customer-information-t4\" || .service.name=\"bss-mc-ntf-engine-t4\" || .service.name=\"bss-mc-pcm-product-catalog-t4\" || .service.name=\"bss-mc-asset-management-t4\")');\n  }\n\n  const env = \"etiyamobile-production\";\n\n  // CLIENT span detection: network.peer.address, server.address veya http.url varlığı\n  const clientSpanIndicators = '(.network.peer.address != nil || .server.address != nil || .http.url != nil)';\n  \n  // Cascade error patterns\n  const cascadeErrorPatterns = '(.status=\"500\" || .status=\"502\" || .status=\"503\" || .error.type =~ \".*Timeout.*\" || .error.type =~ \".*Connection.*\")';\n\n  // Ana query\n  if (cascadePatterns.length > 0) {\n    // Servis filtreleri + CLIENT span indicators + error patterns\n    return `{ resource.deployment.environment=\"${env}\" && (${cascadePatterns.join(' || ')}) && ${clientSpanIndicators} && ${cascadeErrorPatterns} }`;\n  }\n\n  // Fallback: Genel cascade detection - CLIENT span'lardaki tüm error'lar\n  return `{ resource.deployment.environment=\"${env}\" && ${clientSpanIndicators} && (status=error || ${cascadeErrorPatterns}) }`;\n})() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        1664,
+        624
+      ],
+      "id": "e0ec4f6b-d58a-4aa8-8e94-3fa63e5b3989",
+      "name": "Service Cascade Analyzer"
+    }
+  ],
+  "pinData": {
+    "Manual Trigger": [
+      {
+        "json": {}
+      }
+    ]
+  },
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Unified Entry Point",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage 1: Quick Health Check": {
+      "main": [
+        [
+          {
+            "node": "Enhanced Error Categorization",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage 2: Deep Dive": {
+      "main": [
+        [
+          {
+            "node": "Combine Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage 1 Results": {
+      "main": [
+        []
+      ]
+    },
+    "Combine Results": {
+      "main": [
+        [
+          {
+            "node": "Format Final Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model - Stage 1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Stage 1: Quick Health Check",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Model - Stage 2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage 1 Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Stage 1: Quick Health Check",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stage 2 Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "Unified Entry Point",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recent Errors": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 1: Quick Health Check",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Exception Spans": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "High Latency": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recent External Service Latency Errors": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Span 1 Hour With Errors": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recent 3 Hours": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Yesterday 3 Hours": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Last Week 3 Hours": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Last 24 Hours Errors": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Last 24 Hours Spans Errors All": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recent DB Spans": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Orchestrator Input Handler": {
+      "main": [
+        [
+          {
+            "node": "Service-Aware Query Builder",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Unified Entry Point": {
+      "main": [
+        [
+          {
+            "node": "Service Dependency Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Final Output": {
+      "main": [
+        []
+      ]
+    },
+    "Service Dependency Store": {
+      "main": [
+        [
+          {
+            "node": "Orchestrator Input Handler",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Service-Aware Query Builder": {
+      "main": [
+        [
+          {
+            "node": "Stage 1: Quick Health Check",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enhanced Error Categorization": {
+      "main": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dependency Chain Tracer": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Service Cascade Analyzer": {
+      "ai_tool": [
+        [
+          {
+            "node": "Stage 2: Deep Dive",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "d256c105-f072-45f4-9c71-7b205139efed",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c12c7bb55b80ebd9de9957d4bb20d1c257c60ff78d5439f6278d6225d0d15a7b"
+  },
+  "id": "BVtsg6esxfSGcC0P",
+  "tags": []
+}
