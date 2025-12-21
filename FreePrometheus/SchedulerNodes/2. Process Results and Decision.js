@@ -27,20 +27,39 @@ const actions = analysisResult.actions || {};
 const metrics = analysisResult.metrics || {};
 const contextTracking = analysisResult.contextTracking || {};
 
-// ============= FINGERPRINT GENERATION =============
-// Create unique fingerprint for deduplication based on root cause
+// ============= FINGERPRINT GENERATION (STABLE DEDUPLICATION) =============
+// Strategy: Use COMPONENT + ISSUE TYPE only (no severity, no namespace)
+// Why: Severity can escalate, services can spread, but core problem stays same
+// This prevents duplicate tickets for the same underlying issue
+
+// 1. Extract CORE IDENTIFIERS
+const component = findings.rootCause?.component || 'unknown';
+const issueRaw = findings.rootCause?.issue || 'unknown';
+
+// 2. Normalize ISSUE TYPE (consistent format, first 5 words)
+const normalizedIssueType = issueRaw
+  .toLowerCase()
+  .split(' ')
+  .slice(0, 5)  // First 5 words only
+  .join(' ')
+  .replace(/[^a-z0-9\s]/g, '');  // Remove special chars
+
+// 3. Create STABLE fingerprint (ignores severity, namespace changes)
 const fingerprintData = {
-  // Primary: Root cause component and issue type
-  component: findings.rootCause?.component || 'unknown',
-  issueType: (findings.rootCause?.issue || 'unknown').split(' ').slice(0, 3).join(' '), // First 3 words
-  
-  // Secondary: Context
-  namespace: findings.affectedServices?.[0] || 'unknown',
-  severity: executiveSummary.overallHealth || 'unknown'
+  component: component,
+  issueType: normalizedIssueType
+  // ❌ severity REMOVED (can escalate: degraded → critical)
+  // ❌ namespace REMOVED (can spread to multiple namespaces)
 };
 
 // Generate fingerprint using simple hash (n8n compatible)
 const fingerprint = simpleHash(JSON.stringify(fingerprintData));
+
+console.log("=== FINGERPRINT GENERATION ===");
+console.log("Component:", component);
+console.log("Issue Type:", normalizedIssueType);
+console.log("Fingerprint Data:", fingerprintData);
+console.log("Fingerprint:", fingerprint);
 
 // ============= ALERT SUMMARY =============
 const alertSummary = {
