@@ -2,7 +2,7 @@
 const stage2Input = $input.first().json;
 
 // Stage 1 verisini önceki node'dan al
-const stage1Data = $node["Check If Stage 2 Needed"].json;
+const stage1Data = $node["Enhanced Error Categorization"].json;
 
 console.log('=== COMBINE RESULTS WITH ERROR RECONCILIATION ===');
 

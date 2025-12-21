@@ -14,17 +14,17 @@
 - [x] Multi-namespace configuration validated
 - [x] Tempo query syntax verified (TraceQL)
 
-### ✅ Files to Deploy (4 files)
+### ✅ Files to Deploy (5 files)
 1. `TempoFlow Nodes/1. Unified Entry Point.js`
 2. `TempoFlow Nodes/4. Service-Aware Query Builder.js`
 3. `TempoFlow Nodes/5. Stage 1 Quick Health Check.txt`
 4. `TempoFlow Nodes/7. Stage 2 Deep Dive.txt`
+5. `TempoFlow Nodes/8. Combine Results.js` ⚠️ **BUG FIX: Node reference correction**
 
 ### ✅ Nodes NOT Changed (Safe to Skip)
 - Node 2: Service Dependency Store
 - Node 3: Orchestrator Input Handler
 - Node 6: Enhanced Error Categorization
-- Node 8: Combine Results
 - Node 9: Format Final Output
 
 ---
@@ -125,6 +125,8 @@ if (config.searchParams.services.length > 0) {
 
 **n8n Location**: Find node named "Service-Aware Query Builder" or "4. Service-Aware Query Builder"
 
+**⚠️ CRITICAL**: This fixes a TraceQL syntax error (`status=error` → `status.code>=400`)
+
 **Changes to Make - Lines 332-367**:
 
 Replace:
@@ -179,7 +181,7 @@ if (enhancedParams.serviceAnalysis.detectedServices.length > 0) {
     .join(' || ');
 
   enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
-    `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && status=error }`;
+    `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && status.code>=400 }`;
 }
 
 // Query 2: High latency for critical services across ALL namespaces
@@ -240,7 +242,25 @@ Tool results will include cross-namespace patterns. Identify:
 4. **Namespace correlation**: Are errors correlated with specific namespace groups?
 ```
 
-### Step 6: Save and Activate
+### Step 6: Update Node 8 (Combine Results) ⚠️ BUG FIX
+
+**n8n Location**: Find node named "Combine Results" or "8. Combine Results"
+
+**⚠️ CRITICAL**: Fixes missing node reference error
+
+**Changes to Make - Line 5**:
+
+Replace:
+```javascript
+const stage1Data = $node["Check If Stage 2 Needed"].json;
+```
+
+With:
+```javascript
+const stage1Data = $node["Enhanced Error Categorization"].json;
+```
+
+### Step 7: Save and Activate
 
 1. Click **Save** in n8n workflow editor
 2. Verify workflow is **Active** (toggle should be green)
