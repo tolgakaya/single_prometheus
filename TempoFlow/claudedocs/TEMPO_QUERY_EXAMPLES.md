@@ -19,7 +19,7 @@
 ### Real Production Example:
 
 ```traceql
-{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (service.name="APIGateway" || service.name="crm-mash-up" || service.name="crm-customer-information" || service.name="crm-asset" || service.name="domain-config-service" || service.name="ntf-engine-service" || service.name="ntf-history-service" || service.name="bss-services-service.etiyamobile-production-eom" || service.name="bss-mc-domain-config-t4" || service.name="bss-mc-ntf-engine-t4" || service.name="bstp-pcm-product-catalog" || service.name="eca-t4" || service.name="bss-mc-asset-management-t4" || service.name="bss-mc-crm-customer-information-t4" || service.name="bss-mc-pcm-product-catalog-t4" || service.name="cpq-ordercapture" || service.name="bstp-pcm-product-offer-detail" || service.name="activity" || service.name="bss-mc-cpq-t4" || service.name="customer-search-mc-backend" || service.name="ui-authz-mc-backend") && span.http.status_code>=400 }
+{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (resource.service.name="APIGateway" || resource.service.name="crm-mash-up" || resource.service.name="crm-customer-information" || resource.service.name="crm-asset" || resource.service.name="domain-config-service" || resource.service.name="ntf-engine-service" || resource.service.name="ntf-history-service" || resource.service.name="bss-services-service.etiyamobile-production-eom" || resource.service.name="bss-mc-domain-config-t4" || resource.service.name="bss-mc-ntf-engine-t4" || resource.service.name="bstp-pcm-product-catalog" || resource.service.name="eca-t4" || resource.service.name="bss-mc-asset-management-t4" || resource.service.name="bss-mc-crm-customer-information-t4" || resource.service.name="bss-mc-pcm-product-catalog-t4" || resource.service.name="cpq-ordercapture" || resource.service.name="bstp-pcm-product-offer-detail" || resource.service.name="activity" || resource.service.name="bss-mc-cpq-t4" || resource.service.name="customer-search-mc-backend" || resource.service.name="ui-authz-mc-backend") && span.http.status_code>=400 }
 ```
 
 ### Query Breakdown:
@@ -31,27 +31,27 @@ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em
 
 **2. Service Filter (20 critical services)**:
 ```traceql
-(service.name="APIGateway" ||
- service.name="crm-mash-up" ||
- service.name="crm-customer-information" ||
- service.name="crm-asset" ||
- service.name="domain-config-service" ||
- service.name="ntf-engine-service" ||
- service.name="ntf-history-service" ||
- service.name="bss-services-service.etiyamobile-production-eom" ||
- service.name="bss-mc-domain-config-t4" ||
- service.name="bss-mc-ntf-engine-t4" ||
- service.name="bstp-pcm-product-catalog" ||
- service.name="eca-t4" ||
- service.name="bss-mc-asset-management-t4" ||
- service.name="bss-mc-crm-customer-information-t4" ||
- service.name="bss-mc-pcm-product-catalog-t4" ||
- service.name="cpq-ordercapture" ||
- service.name="bstp-pcm-product-offer-detail" ||
- service.name="activity" ||
- service.name="bss-mc-cpq-t4" ||
- service.name="customer-search-mc-backend" ||
- service.name="ui-authz-mc-backend")
+(resource.service.name="APIGateway" ||
+ resource.service.name="crm-mash-up" ||
+ resource.service.name="crm-customer-information" ||
+ resource.service.name="crm-asset" ||
+ resource.service.name="domain-config-service" ||
+ resource.service.name="ntf-engine-service" ||
+ resource.service.name="ntf-history-service" ||
+ resource.service.name="bss-services-service.etiyamobile-production-eom" ||
+ resource.service.name="bss-mc-domain-config-t4" ||
+ resource.service.name="bss-mc-ntf-engine-t4" ||
+ resource.service.name="bstp-pcm-product-catalog" ||
+ resource.service.name="eca-t4" ||
+ resource.service.name="bss-mc-asset-management-t4" ||
+ resource.service.name="bss-mc-crm-customer-information-t4" ||
+ resource.service.name="bss-mc-pcm-product-catalog-t4" ||
+ resource.service.name="cpq-ordercapture" ||
+ resource.service.name="bstp-pcm-product-offer-detail" ||
+ resource.service.name="activity" ||
+ resource.service.name="bss-mc-cpq-t4" ||
+ resource.service.name="customer-search-mc-backend" ||
+ resource.service.name="ui-authz-mc-backend")
 ```
 
 **3. Error Filter** (HTTP status codes):
@@ -78,7 +78,7 @@ span.http.status_code>=400
 ### Real Production Example (Critical Services Only):
 
 ```traceql
-{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (service.name="APIGateway" || service.name="ui-authz-mc-backend" || service.name="crm-customer-information" || service.name="cpq-ordercapture") && duration > 500ms }
+{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (resource.service.name="APIGateway" || resource.service.name="ui-authz-mc-backend" || resource.service.name="crm-customer-information" || resource.service.name="cpq-ordercapture") && duration > 500ms }
 ```
 
 ### Query Breakdown:
@@ -87,10 +87,10 @@ span.http.status_code>=400
 
 **2. Critical Service Filter** (only `criticality: "critical"` services):
 ```traceql
-(service.name="APIGateway" ||
- service.name="ui-authz-mc-backend" ||
- service.name="crm-customer-information" ||
- service.name="cpq-ordercapture")
+(resource.service.name="APIGateway" ||
+ resource.service.name="ui-authz-mc-backend" ||
+ resource.service.name="crm-customer-information" ||
+ resource.service.name="cpq-ordercapture")
 ```
 
 **3. Latency Threshold**:
@@ -121,7 +121,7 @@ duration > 500ms
 ### With Service Filter:
 
 ```traceql
-{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (service.name=~".*payment.*" || service.name=~".*auth.*") && span.http.status_code>=400}
+{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (resource.service.name=~".*payment.*" || resource.service.name=~".*auth.*") && span.http.status_code>=400}
 ```
 
 ---
@@ -138,7 +138,7 @@ duration > 500ms
 
 **Generated Query**:
 ```traceql
-{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (service.name="cpq-ordercapture" || service.name="bstp-cpq-batch" || service.name="bss-services-service.etiyamobile-production-eom") && span.http.status_code>=400 }
+{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (resource.service.name="cpq-ordercapture" || resource.service.name="bstp-cpq-batch" || resource.service.name="bss-services-service.etiyamobile-production-eom") && span.http.status_code>=400 }
 ```
 
 ---
@@ -150,7 +150,7 @@ duration > 500ms
 1. **Span Attributes** (require `.` prefix for sub-fields):
    - `span.http.status_code>=400` ✅
    - `resource.deployment.environment=~"pattern"` ✅
-   - `service.name="value"` ✅
+   - `resource.service.name="value"` ✅
 
 2. **Regex Matching**:
    - `=~"pattern"` for regex
@@ -201,7 +201,7 @@ const namespacePattern = namespaces.join('|');
 // Query 1: Service-specific errors across ALL namespaces
 if (enhancedParams.serviceAnalysis.detectedServices.length > 0) {
   const serviceFilter = enhancedParams.serviceAnalysis.detectedServices
-    .map(s => `service.name="${s}"`)
+    .map(s => `resource.service.name="${s}"`)
     .join(' || ');
 
   enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
@@ -213,7 +213,7 @@ const criticalServices = enhancedParams.serviceAnalysis.detectedServices
   .filter(s => enhancedParams.serviceAnalysis.serviceMetadata[s]?.criticality === 'critical');
 
 if (criticalServices.length > 0) {
-  const criticalFilter = criticalServices.map(s => `service.name="${s}"`).join(' || ');
+  const criticalFilter = criticalServices.map(s => `resource.service.name="${s}"`).join(' || ');
   enhancedParams.serviceAnalysis.enhancedQueries.criticalLatency =
     `{ resource.deployment.environment=~"${namespacePattern}" && (${criticalFilter}) && duration > 500ms }`;
 }
@@ -238,7 +238,7 @@ if (config.analysisConfig.priority === 'critical' &&
 // Add service filter if specified
 if (config.searchParams.services.length > 0) {
   const serviceFilter = config.searchParams.services
-    .map(s => `service.name=~".*${s}.*"`)
+    .map(s => `resource.service.name=~".*${s}.*"`)
     .join(' || ');
   tempoQuery += ` && (${serviceFilter})`;
 }

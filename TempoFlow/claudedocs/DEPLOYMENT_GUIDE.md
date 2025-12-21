@@ -90,7 +90,7 @@ if (config.analysisConfig.priority === 'critical' &&
 // Add service filter if specified
 if (config.searchParams.services.length > 0) {
   const serviceFilter = config.searchParams.services
-    .map(s => `.service.name=~".*${s}.*"`)
+    .map(s => `.resource.service.name=~".*${s}.*"`)
     .join(' || ');
   tempoQuery += ` && (${serviceFilter})`;
 }
@@ -115,7 +115,7 @@ if (config.analysisConfig.priority === 'critical' &&
 // Add service filter if specified
 if (config.searchParams.services.length > 0) {
   const serviceFilter = config.searchParams.services
-    .map(s => `service.name=~".*${s}.*"`)
+    .map(s => `resource.service.name=~".*${s}.*"`)
     .join(' || ');
   tempoQuery += ` && (${serviceFilter})`;
 }
@@ -137,7 +137,7 @@ const baseEnv = input.searchParams?.environment || "etiyamobile-production";
 // Query 1: Service-specific errors
 if (enhancedParams.serviceAnalysis.detectedServices.length > 0) {
   const serviceFilter = enhancedParams.serviceAnalysis.detectedServices
-    .map(s => `.service.name="${s}"`)
+    .map(s => `.resource.service.name="${s}"`)
     .join(' || ');
 
   enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
@@ -149,7 +149,7 @@ const criticalServices = enhancedParams.serviceAnalysis.detectedServices
   .filter(s => enhancedParams.serviceAnalysis.serviceMetadata[s]?.criticality === 'critical');
 
 if (criticalServices.length > 0) {
-  const criticalFilter = criticalServices.map(s => `.service.name="${s}"`).join(' || ');
+  const criticalFilter = criticalServices.map(s => `.resource.service.name="${s}"`).join(' || ');
   enhancedParams.serviceAnalysis.enhancedQueries.criticalLatency =
     `{ resource.deployment.environment="${baseEnv}" && (${criticalFilter}) && duration > 500ms }`;
 }
@@ -177,7 +177,7 @@ const namespacePattern = namespaces.join('|');
 // Query 1: Service-specific errors across ALL namespaces
 if (enhancedParams.serviceAnalysis.detectedServices.length > 0) {
   const serviceFilter = enhancedParams.serviceAnalysis.detectedServices
-    .map(s => `service.name="${s}"`)
+    .map(s => `resource.service.name="${s}"`)
     .join(' || ');
 
   enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
@@ -189,7 +189,7 @@ const criticalServices = enhancedParams.serviceAnalysis.detectedServices
   .filter(s => enhancedParams.serviceAnalysis.serviceMetadata[s]?.criticality === 'critical');
 
 if (criticalServices.length > 0) {
-  const criticalFilter = criticalServices.map(s => `service.name="${s}"`).join(' || ');
+  const criticalFilter = criticalServices.map(s => `resource.service.name="${s}"`).join(' || ');
   enhancedParams.serviceAnalysis.enhancedQueries.criticalLatency =
     `{ resource.deployment.environment=~"${namespacePattern}" && (${criticalFilter}) && duration > 500ms }`;
 }
@@ -374,7 +374,7 @@ If issues occur after deployment:
 |-------|-------|-----|
 | "Invalid TraceQL syntax" | Attribute path has `.` prefix | Remove `.` from `status.code`, `service.name` |
 | "No traces found" | Namespace regex incorrect | Verify 12 namespaces in `namespacePattern` |
-| "Service not detected" | Pattern matching too strict | Check Node 4 pattern: `service.name=~".*${s}.*"` |
+| "Service not detected" | Pattern matching too strict | Check Node 4 pattern: `resource.service.name=~".*${s}.*"` |
 | "Agent confused by data" | Missing multi-namespace instructions | Add multi-namespace sections to agent prompts |
 
 ---

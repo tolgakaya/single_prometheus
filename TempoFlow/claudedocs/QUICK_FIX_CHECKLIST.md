@@ -53,7 +53,7 @@ enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
    {
      "serviceAnalysis": {
        "enhancedQueries": {
-         "serviceErrors": "{ resource.deployment.environment=~\"bstp-cms-global-production|...\" && (service.name=\"APIGateway\" || ...) && span.http.status_code>=400 }"
+         "serviceErrors": "{ resource.deployment.environment=~\"bstp-cms-global-production|...\" && (resource.service.name=\"APIGateway\" || ...) && span.http.status_code>=400 }"
        }
      }
    }
@@ -154,7 +154,7 @@ grep "span.http.status_code>=400" "TempoFlow/TempoFlow Nodes/4. Service-Aware Qu
 {
   resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"
   &&
-  (service.name="APIGateway" || service.name="crm-mash-up" || ...)
+  (resource.service.name="APIGateway" || resource.service.name="crm-mash-up" || ...)
   &&
   span.http.status_code>=400
 }
@@ -166,7 +166,7 @@ grep "span.http.status_code>=400" "TempoFlow/TempoFlow Nodes/4. Service-Aware Qu
 {
   resource.deployment.environment=~"..."
   &&
-  (service.name="...")
+  (resource.service.name="...")
   &&
   status.code>=400     ← ❌ Wrong attribute (col 246 error)
 }
@@ -176,7 +176,7 @@ grep "span.http.status_code>=400" "TempoFlow/TempoFlow Nodes/4. Service-Aware Qu
 {
   resource.deployment.environment=~"..."
   &&
-  (service.name="...")
+  (resource.service.name="...")
   &&
   status=error     ← ❌ Invalid syntax
 }

@@ -156,7 +156,7 @@ if (input.agentExecutionParams && input.agentExecutionParams.parameters) {
     // Add service filter if specified
     if (config.searchParams.services.length > 0) {
       const serviceFilter = config.searchParams.services
-        .map(s => `service.name=~".*${s}.*"`)
+        .map(s => `resource.service.name=~".*${s}.*"`)
         .join(' || ');
       tempoQuery += ` && (${serviceFilter})`;
     }
