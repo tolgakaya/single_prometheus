@@ -81,7 +81,7 @@ let tempoQuery = `{.deployment.environment="${config.searchParams.environment}"`
 // For critical priority, search for all errors
 if (config.analysisConfig.priority === 'critical' &&
     config.searchParams.errorTypes.includes('all_errors')) {
-  tempoQuery += ` && .status.code>=400`;
+  tempoQuery += ` && .span.http.status_code>=400`;
 } else if (config.searchParams.statusCodes.length > 0) {
   const codes = config.searchParams.statusCodes.join('|');
   tempoQuery += ` && .status=~"${codes}"`;
@@ -106,7 +106,7 @@ let tempoQuery = `{resource.deployment.environment=~"${namespacePattern}"`;
 // For critical priority, search for all errors
 if (config.analysisConfig.priority === 'critical' &&
     config.searchParams.errorTypes.includes('all_errors')) {
-  tempoQuery += ` && status.code>=400`;
+  tempoQuery += ` && span.http.status_code>=400`;
 } else if (config.searchParams.statusCodes.length > 0) {
   const codes = config.searchParams.statusCodes.join('|');
   tempoQuery += ` && status.code=~"${codes}"`;
@@ -125,7 +125,7 @@ if (config.searchParams.services.length > 0) {
 
 **n8n Location**: Find node named "Service-Aware Query Builder" or "4. Service-Aware Query Builder"
 
-**⚠️ CRITICAL**: This fixes a TraceQL syntax error (`status=error` → `status.code>=400`)
+**⚠️ CRITICAL**: This fixes a TraceQL syntax error (`status=error` → `span.http.status_code>=400`)
 
 **Changes to Make - Lines 332-367**:
 
@@ -181,7 +181,7 @@ if (enhancedParams.serviceAnalysis.detectedServices.length > 0) {
     .join(' || ');
 
   enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
-    `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && status.code>=400 }`;
+    `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && span.http.status_code>=400 }`;
 }
 
 // Query 2: High latency for critical services across ALL namespaces

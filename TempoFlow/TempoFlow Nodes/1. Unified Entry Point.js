@@ -147,10 +147,10 @@ if (input.agentExecutionParams && input.agentExecutionParams.parameters) {
     // For critical priority, search for all errors
     if (config.analysisConfig.priority === 'critical' &&
         config.searchParams.errorTypes.includes('all_errors')) {
-      tempoQuery += ` && status.code>=400`;
+      tempoQuery += ` && span.http.status_code>=400`;
     } else if (config.searchParams.statusCodes.length > 0) {
       const codes = config.searchParams.statusCodes.join('|');
-      tempoQuery += ` && status.code=~"${codes}"`;
+      tempoQuery += ` && span.http.status_code=~"${codes}"`;
     }
 
     // Add service filter if specified

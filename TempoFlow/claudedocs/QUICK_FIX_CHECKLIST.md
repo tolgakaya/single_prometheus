@@ -14,12 +14,12 @@
 ```javascript
 // CORRECT ✅
 enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
-  `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && status.code>=400 }`;
-                                                                                        ^^^^^^^^^
-                                                                                    Must be status.code>=400
+  `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && span.http.status_code>=400 }`;
+                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^
+                                                                                    Must be span.http.status_code>=400
 ```
 
-**If you see `status=error`** ❌ → File not updated, pull from git again
+**If you see `status.code>=400` or `status=error`** ❌ → File not updated, pull from git again
 
 ---
 
@@ -31,10 +31,11 @@ enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
 4. **Find Line 356** (search for `enhancedQueries.serviceErrors`)
 5. **Verify**:
    ```javascript
-   && status.code>=400 }`;  // ✅ CORRECT
+   && span.http.status_code>=400 }`;  // ✅ CORRECT
    ```
    **NOT**:
    ```javascript
+   && status.code>=400 }`;  // ❌ WRONG (old syntax)
    && status=error }`;      // ❌ WRONG
    ```
 6. **If wrong**: Copy entire file from `TempoFlow Nodes/4. Service-Aware Query Builder.js`
@@ -52,13 +53,13 @@ enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
    {
      "serviceAnalysis": {
        "enhancedQueries": {
-         "serviceErrors": "{ resource.deployment.environment=~\"bstp-cms-global-production|...\" && (service.name=\"APIGateway\" || ...) && status.code>=400 }"
+         "serviceErrors": "{ resource.deployment.environment=~\"bstp-cms-global-production|...\" && (service.name=\"APIGateway\" || ...) && span.http.status_code>=400 }"
        }
      }
    }
    ```
-4. **Search for**: `status.code>=400` ✅
-5. **Should NOT contain**: `status=error` ❌
+4. **Search for**: `span.http.status_code>=400` ✅
+5. **Should NOT contain**: `status.code>=400` or `status=error` ❌
 
 ---
 
@@ -68,7 +69,7 @@ enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
 2. **Check HTTP Request**:
    - **URL**: Should hit Tempo API
    - **Query param `q`**: Should use `$json.searchParams?.customQuery`
-   - **Evaluated query**: Should contain `status.code>=400`
+   - **Evaluated query**: Should contain `span.http.status_code>=400`
 3. **Expected Result**: Traces returned or "No traces found"
 4. **Should NOT see**: "parse error at col 246" ❌
 
@@ -86,7 +87,7 @@ enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
    ```
 4. **Replace with**:
    ```javascript
-   {{ $json.searchParams?.customQuery || '{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && status.code>=400}' }}
+   {{ $json.searchParams?.customQuery || '{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && span.http.status_code>=400}' }}
    ```
 5. **Save** → **Test**
 
@@ -111,10 +112,10 @@ ebb3639 fix: Critical bug fixes for TempoFlow deployment
 ### Verify Local File:
 
 ```bash
-grep "status.code>=400" "TempoFlow/TempoFlow Nodes/4. Service-Aware Query Builder.js"
+grep "span.http.status_code>=400" "TempoFlow/TempoFlow Nodes/4. Service-Aware Query Builder.js"
 ```
 
-**Expected output**: Line 356 with `status.code>=400`
+**Expected output**: Line 356 with `span.http.status_code>=400`
 
 ### Check n8n Workflow Version:
 
@@ -155,7 +156,7 @@ grep "status.code>=400" "TempoFlow/TempoFlow Nodes/4. Service-Aware Query Builde
   &&
   (service.name="APIGateway" || service.name="crm-mash-up" || ...)
   &&
-  status.code>=400
+  span.http.status_code>=400
 }
 ```
 
@@ -167,7 +168,17 @@ grep "status.code>=400" "TempoFlow/TempoFlow Nodes/4. Service-Aware Query Builde
   &&
   (service.name="...")
   &&
-  status=error     ← ❌ Invalid at col 246
+  status.code>=400     ← ❌ Wrong attribute (col 246 error)
+}
+```
+
+```traceql
+{
+  resource.deployment.environment=~"..."
+  &&
+  (service.name="...")
+  &&
+  status=error     ← ❌ Invalid syntax
 }
 ```
 
@@ -177,10 +188,10 @@ grep "status.code>=400" "TempoFlow/TempoFlow Nodes/4. Service-Aware Query Builde
 
 Before closing this issue:
 
-- [ ] **Line 356** in Node 4 has `status.code>=400` ✅
+- [ ] **Line 356** in Node 4 has `span.http.status_code>=400` ✅
 - [ ] Node 4 deployed to n8n ✅
 - [ ] Workflow saved and active ✅
-- [ ] Node 4 output shows `status.code>=400` in query ✅
+- [ ] Node 4 output shows `span.http.status_code>=400` in query ✅
 - [ ] Recent Errors tool returns traces (or "not found") ✅
 - [ ] No "parse error at col 246" ❌
 - [ ] HTTP tool fallback updated (optional) ✅

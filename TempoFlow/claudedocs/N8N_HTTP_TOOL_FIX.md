@@ -18,7 +18,7 @@
 
 ### ❌ İki Hata:
 
-1. **`status=error`** → Geçersiz! TraceQL'de `status` bir span attribute, `.code` gerekli
+1. **`status=error`** → Geçersiz! TraceQL'de doğru syntax `span.http.status_code`
 2. **`.deployment.environment`** → Geçersiz! Leading dot olmamalı, `resource.` prefix gerekli
 
 ---
@@ -38,7 +38,7 @@
 
 ### Yeni Değer:
 ```javascript
-{{ $json.searchParams?.customQuery || '{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && status.code>=400}' }}
+{{ $json.searchParams?.customQuery || '{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && span.http.status_code>=400}' }}
 ```
 
 ### Açıklama:
@@ -47,11 +47,11 @@
 
 **Fallback** (eğer customQuery yoksa):
 ```traceql
-{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && status.code>=400}
+{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && span.http.status_code>=400}
 ```
 
 **Değişiklikler**:
-- ✅ `status=error` → `status.code>=400`
+- ✅ `status=error` → `span.http.status_code>=400`
 - ✅ `.deployment.environment="..."` → `resource.deployment.environment=~"..."`
 - ✅ Tek namespace → 12 namespace (regex pattern)
 
@@ -81,7 +81,7 @@
 
 **Yeni**:
 ```
-{{ $json.searchParams?.customQuery || '{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && status.code>=400}' }}
+{{ $json.searchParams?.customQuery || '{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && span.http.status_code>=400}' }}
 ```
 
 ### 6. Kaydet
@@ -118,7 +118,7 @@ Aynı hata **başka HTTP tool node'larında da olabilir**. Kontrol edilmesi gere
 - **Last Week 3 Hours**
 
 Bu tool'larda da fallback query varsa, aynı syntax düzeltmesi gerekli:
-- `status=error` → `status.code>=400`
+- `status=error` → `span.http.status_code>=400`
 - `.deployment.environment` → `resource.deployment.environment`
 - Tek namespace → Multi-namespace pattern
 
@@ -146,7 +146,7 @@ Tempo, sorguyu parse ederken:
 2. `(service.name="..." || ...)` → OK
 3. `status=error` → ❌ **HATA!** (col 246'da `error` kelimesini beklenmeyen identifier olarak görüyor)
 
-**Çözüm**: `status.code>=400` kullan
+**Çözüm**: `span.http.status_code>=400` kullan
 
 ---
 

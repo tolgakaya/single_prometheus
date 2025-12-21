@@ -353,7 +353,7 @@ if (enhancedParams.serviceAnalysis.detectedServices.length > 0) {
     .join(' || ');
 
   enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
-    `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && status.code>=400 }`;
+    `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && span.http.status_code>=400 }`;
 }
 
 // Query 2: High latency for critical services across ALL namespaces

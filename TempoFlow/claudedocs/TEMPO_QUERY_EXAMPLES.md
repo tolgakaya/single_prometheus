@@ -13,13 +13,13 @@
 ### Query Structure:
 
 ```traceql
-{ resource.deployment.environment=~"NAMESPACE_PATTERN" && (SERVICE_FILTER) && status.code>=400 }
+{ resource.deployment.environment=~"NAMESPACE_PATTERN" && (SERVICE_FILTER) && span.http.status_code>=400 }
 ```
 
 ### Real Production Example:
 
 ```traceql
-{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (service.name="APIGateway" || service.name="crm-mash-up" || service.name="crm-customer-information" || service.name="crm-asset" || service.name="domain-config-service" || service.name="ntf-engine-service" || service.name="ntf-history-service" || service.name="bss-services-service.etiyamobile-production-eom" || service.name="bss-mc-domain-config-t4" || service.name="bss-mc-ntf-engine-t4" || service.name="bstp-pcm-product-catalog" || service.name="eca-t4" || service.name="bss-mc-asset-management-t4" || service.name="bss-mc-crm-customer-information-t4" || service.name="bss-mc-pcm-product-catalog-t4" || service.name="cpq-ordercapture" || service.name="bstp-pcm-product-offer-detail" || service.name="activity" || service.name="bss-mc-cpq-t4" || service.name="customer-search-mc-backend" || service.name="ui-authz-mc-backend") && status.code>=400 }
+{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (service.name="APIGateway" || service.name="crm-mash-up" || service.name="crm-customer-information" || service.name="crm-asset" || service.name="domain-config-service" || service.name="ntf-engine-service" || service.name="ntf-history-service" || service.name="bss-services-service.etiyamobile-production-eom" || service.name="bss-mc-domain-config-t4" || service.name="bss-mc-ntf-engine-t4" || service.name="bstp-pcm-product-catalog" || service.name="eca-t4" || service.name="bss-mc-asset-management-t4" || service.name="bss-mc-crm-customer-information-t4" || service.name="bss-mc-pcm-product-catalog-t4" || service.name="cpq-ordercapture" || service.name="bstp-pcm-product-offer-detail" || service.name="activity" || service.name="bss-mc-cpq-t4" || service.name="customer-search-mc-backend" || service.name="ui-authz-mc-backend") && span.http.status_code>=400 }
 ```
 
 ### Query Breakdown:
@@ -54,10 +54,12 @@ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em
  service.name="ui-authz-mc-backend")
 ```
 
-**3. Error Filter**:
+**3. Error Filter** (HTTP status codes):
 ```traceql
-status.code>=400
+span.http.status_code>=400
 ```
+
+**Note**: Use `span.http.status_code` for HTTP status codes, not `status.code`
 
 ---
 
@@ -107,19 +109,19 @@ duration > 500ms
 ### Query Structure (All Errors):
 
 ```traceql
-{resource.deployment.environment=~"NAMESPACE_PATTERN" && status.code>=400}
+{resource.deployment.environment=~"NAMESPACE_PATTERN" && span.http.status_code>=400}
 ```
 
 ### Real Production Example:
 
 ```traceql
-{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && status.code>=400}
+{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && span.http.status_code>=400}
 ```
 
 ### With Service Filter:
 
 ```traceql
-{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (service.name=~".*payment.*" || service.name=~".*auth.*") && status.code>=400}
+{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (service.name=~".*payment.*" || service.name=~".*auth.*") && span.http.status_code>=400}
 ```
 
 ---
@@ -136,7 +138,7 @@ duration > 500ms
 
 **Generated Query**:
 ```traceql
-{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (service.name="cpq-ordercapture" || service.name="bstp-cpq-batch" || service.name="bss-services-service.etiyamobile-production-eom") && status.code>=400 }
+{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (service.name="cpq-ordercapture" || service.name="bstp-cpq-batch" || service.name="bss-services-service.etiyamobile-production-eom") && span.http.status_code>=400 }
 ```
 
 ---
@@ -146,7 +148,7 @@ duration > 500ms
 ### ✅ CORRECT Syntax:
 
 1. **Span Attributes** (require `.` prefix for sub-fields):
-   - `status.code>=400` ✅
+   - `span.http.status_code>=400` ✅
    - `resource.deployment.environment=~"pattern"` ✅
    - `service.name="value"` ✅
 
@@ -162,7 +164,7 @@ duration > 500ms
 ### ❌ INCORRECT Syntax:
 
 1. **Missing Sub-field**:
-   - `status=error` ❌ → `status.code>=400` ✅
+   - `status=error` ❌ → `span.http.status_code>=400` ✅
    - `status=~"error"` ❌ → `status.code=~"4..|5.."` ✅
 
 2. **Invalid Attribute Paths**:
@@ -170,7 +172,7 @@ duration > 500ms
    - `.service.name` ❌ (leading dot) → `service.name` ✅
 
 3. **Wrong Operators**:
-   - `status.code="error"` ❌ → `status.code>=400` ✅
+   - `status.code="error"` ❌ → `span.http.status_code>=400` ✅
 
 ---
 
@@ -203,7 +205,7 @@ if (enhancedParams.serviceAnalysis.detectedServices.length > 0) {
     .join(' || ');
 
   enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
-    `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && status.code>=400 }`;
+    `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && span.http.status_code>=400 }`;
 }
 
 // Query 2: High latency for critical services across ALL namespaces
@@ -227,7 +229,7 @@ let tempoQuery = `{resource.deployment.environment=~"${namespacePattern}"`;
 // For critical priority, search for all errors
 if (config.analysisConfig.priority === 'critical' &&
     config.searchParams.errorTypes.includes('all_errors')) {
-  tempoQuery += ` && status.code>=400`;
+  tempoQuery += ` && span.http.status_code>=400`;
 } else if (config.searchParams.statusCodes.length > 0) {
   const codes = config.searchParams.statusCodes.join('|');
   tempoQuery += ` && status.code=~"${codes}"`;
@@ -260,7 +262,7 @@ tempoQuery += '}';
 - **Mitigation**: Only include detected services (typically 5-20)
 
 ### Status Code Filter:
-- **Single range**: `status.code>=400` (fastest)
+- **Single range**: `span.http.status_code>=400` (fastest)
 - **Regex pattern**: `status.code=~"4..|5.."` (slower)
 - **Exact codes**: `status.code=~"404|500|503"` (moderate)
 
