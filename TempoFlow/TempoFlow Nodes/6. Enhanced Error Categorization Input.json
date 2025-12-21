@@ -1,0 +1,29 @@
+[
+  {
+    "output": {
+      "stage": "health_check",
+      "execution_time": "2025-12-21T14:00:49.532Z",
+      "analysis_context": {
+        "source": "orchestrator",
+        "priority": "critical",
+        "forced_analysis": true,
+        "orchestrator_id": null,
+        "request_id": null
+      },
+      "status": "healthy",
+      "metrics": {
+        "error_count": 0,
+        "error_types": {
+          "4xx": 0,
+          "5xx": 0,
+          "timeouts": 0
+        },
+        "services_checked": []
+      },
+      "critical_services": [],
+      "proceed_to_stage2": true,
+      "reason": "No errors detected in the recent traces. Proceeding to stage 2 due to critical priority.",
+      "quick_summary": "No errors found in the recent analysis across all monitored services."
+    }
+  }
+]

@@ -1,0 +1,80 @@
+[
+  {
+    "output": {
+      "stage": "deep_investigation",
+      "investigation_trigger": "Stage 1 found errors with impact score 0",
+      "service_context": {
+        "primary_services_investigated": [
+          "cpq-ordercapture"
+        ],
+        "dependency_chains_analyzed": [
+          "cpq-ordercapture,bstp-pcm-product-catalog,domain-config-service,ntf-engine-service,ntf-history-service,bss-services-service.etiyamobile-production-eom,bss-mc-domain-config-t4,bss-mc-ntf-engine-t4,bstp-pcm-product-offer-detail,crm-asset,activity"
+        ],
+        "cascade_patterns_detected": []
+      },
+      "tools_executed": [
+        "Dependency Chain Tracer",
+        "Service Cascade Analyzer",
+        "Exception Spans"
+      ],
+      "findings": {
+        "service_dependencies": {
+          "failed_chains": [
+            {
+              "chain": [
+                "cpq-ordercapture"
+              ],
+              "failure_point": "cpq-ordercapture",
+              "error_type": "400 Bad Request / 500 Internal Server Error"
+            }
+          ],
+          "cascade_failures": []
+        },
+        "exceptions": {},
+        "performance": {}
+      },
+      "affected_components": {
+        "services": [
+          "cpq-ordercapture"
+        ],
+        "critical_paths_impacted": [
+          "login"
+        ],
+        "estimated_users_impacted": "unknown"
+      },
+      "root_cause_analysis": {
+        "primary_cause": "Errors in cpq-ordercapture service causing 400 and 500 status codes",
+        "service_root": "cpq-ordercapture",
+        "affected_chains": [
+          "login"
+        ],
+        "contributing_factors": [
+          "High error rates in cpq-ordercapture"
+        ],
+        "evidence": [
+          "Multiple traces showing 400 and 500 errors in cpq-ordercapture"
+        ]
+      },
+      "severity_assessment": {
+        "business_impact": "moderate",
+        "technical_severity": "high",
+        "urgency": "high",
+        "service_criticality_score": 70
+      },
+      "recommendations": {
+        "immediate_actions": [
+          "Investigate and fix cpq-ordercapture service errors",
+          "Review input validation and backend service integration in cpq-ordercapture"
+        ],
+        "short_term": [
+          "Implement better error handling in cpq-ordercapture",
+          "Monitor cpq-ordercapture for recurring issues"
+        ],
+        "long_term": [
+          "Enhance logging and monitoring for cpq-ordercapture to detect issues early",
+          "Consider implementing circuit breakers to prevent cascading failures"
+        ]
+      }
+    }
+  }
+]

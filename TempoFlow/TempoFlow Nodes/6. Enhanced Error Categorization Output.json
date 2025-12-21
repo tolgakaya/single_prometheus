@@ -1,0 +1,130 @@
+[
+  {
+    "output": {
+      "stage": "health_check",
+      "execution_time": "2025-12-21T14:00:49.532Z",
+      "analysis_context": {
+        "source": "orchestrator",
+        "priority": "critical",
+        "forced_analysis": true,
+        "orchestrator_id": null,
+        "request_id": null
+      },
+      "status": "healthy",
+      "metrics": {
+        "error_count": 0,
+        "error_types": {
+          "4xx": 0,
+          "5xx": 0,
+          "timeouts": 0
+        },
+        "services_checked": []
+      },
+      "critical_services": [],
+      "proceed_to_stage2": true,
+      "reason": "No errors detected in the recent traces. Proceeding to stage 2 due to critical priority.",
+      "quick_summary": "No errors found in the recent analysis across all monitored services."
+    },
+    "analysisConfig": {},
+    "source": "unknown",
+    "serviceErrorAnalysis": {
+      "byService": {},
+      "byCriticality": {
+        "critical": {
+          "services": [],
+          "totalErrors": 0
+        },
+        "high": {
+          "services": [],
+          "totalErrors": 0
+        },
+        "medium": {
+          "services": [],
+          "totalErrors": 0
+        },
+        "low": {
+          "services": [],
+          "totalErrors": 0
+        }
+      },
+      "byCategory": {},
+      "impactScore": 0,
+      "recommendations": []
+    },
+    "detectedErrors": {
+      "stage1Errors": 0,
+      "expectedErrorTypes": [
+        "401",
+        "403",
+        "404",
+        "500",
+        "502",
+        "503",
+        "timeout"
+      ],
+      "servicesAnalyzed": [
+        "APIGateway",
+        "crm-mash-up",
+        "crm-customer-information",
+        "crm-asset",
+        "domain-config-service",
+        "ntf-engine-service",
+        "ntf-history-service",
+        "bss-services-service.etiyamobile-production-eom",
+        "bss-mc-domain-config-t4",
+        "bss-mc-ntf-engine-t4",
+        "bstp-pcm-product-catalog",
+        "eca-t4",
+        "bss-mc-asset-management-t4",
+        "bss-mc-crm-customer-information-t4",
+        "bss-mc-pcm-product-catalog-t4",
+        "cpq-ordercapture",
+        "bstp-pcm-product-offer-detail",
+        "activity",
+        "bss-mc-cpq-t4",
+        "customer-search-mc-backend",
+        "ui-authz-mc-backend"
+      ],
+      "requiresDeepAnalysis": false
+    },
+    "errorAnalysis": {
+      "errorsByCategory": {},
+      "detectedErrors": {
+        "stage1Errors": 0,
+        "expectedErrorTypes": [
+          "401",
+          "403",
+          "404",
+          "500",
+          "502",
+          "503",
+          "timeout"
+        ],
+        "servicesAnalyzed": [
+          "APIGateway",
+          "crm-mash-up",
+          "crm-customer-information",
+          "crm-asset",
+          "domain-config-service",
+          "ntf-engine-service",
+          "ntf-history-service",
+          "bss-services-service.etiyamobile-production-eom",
+          "bss-mc-domain-config-t4",
+          "bss-mc-ntf-engine-t4",
+          "bstp-pcm-product-catalog",
+          "eca-t4",
+          "bss-mc-asset-management-t4",
+          "bss-mc-crm-customer-information-t4",
+          "bss-mc-pcm-product-catalog-t4",
+          "cpq-ordercapture",
+          "bstp-pcm-product-offer-detail",
+          "activity",
+          "bss-mc-cpq-t4",
+          "customer-search-mc-backend",
+          "ui-authz-mc-backend"
+        ],
+        "requiresDeepAnalysis": false
+      }
+    }
+  }
+]

@@ -1,0 +1,414 @@
+[
+  {
+    "stage1": {
+      "stage": "health_check",
+      "execution_time": "2025-12-21T14:00:49.532Z",
+      "analysis_context": {
+        "source": "orchestrator",
+        "priority": "critical",
+        "forced_analysis": true,
+        "orchestrator_id": null,
+        "request_id": null
+      },
+      "status": "healthy",
+      "metrics": {
+        "error_count": 0,
+        "error_types": {
+          "4xx": 0,
+          "5xx": 0,
+          "timeouts": 0
+        },
+        "services_checked": []
+      },
+      "critical_services": [],
+      "proceed_to_stage2": true,
+      "reason": "No errors detected in the recent traces. Proceeding to stage 2 due to critical priority.",
+      "quick_summary": "No errors found in the recent analysis across all monitored services."
+    },
+    "stage2": {
+      "stage": "deep_investigation",
+      "investigation_trigger": "Stage 1 found errors with impact score 0",
+      "service_context": {
+        "primary_services_investigated": [
+          "cpq-ordercapture"
+        ],
+        "dependency_chains_analyzed": [
+          "cpq-ordercapture,bstp-pcm-product-catalog,domain-config-service,ntf-engine-service,ntf-history-service,bss-services-service.etiyamobile-production-eom,bss-mc-domain-config-t4,bss-mc-ntf-engine-t4,bstp-pcm-product-offer-detail,crm-asset,activity"
+        ],
+        "cascade_patterns_detected": []
+      },
+      "tools_executed": [
+        "Dependency Chain Tracer",
+        "Service Cascade Analyzer",
+        "Exception Spans"
+      ],
+      "findings": {
+        "service_dependencies": {
+          "failed_chains": [
+            {
+              "chain": [
+                "cpq-ordercapture"
+              ],
+              "failure_point": "cpq-ordercapture",
+              "error_type": "400 Bad Request / 500 Internal Server Error"
+            }
+          ],
+          "cascade_failures": []
+        },
+        "exceptions": {},
+        "performance": {}
+      },
+      "affected_components": {
+        "services": [
+          "cpq-ordercapture"
+        ],
+        "critical_paths_impacted": [
+          "login"
+        ],
+        "estimated_users_impacted": "unknown"
+      },
+      "root_cause_analysis": {
+        "primary_cause": "Errors in cpq-ordercapture service causing 400 and 500 status codes",
+        "service_root": "cpq-ordercapture",
+        "affected_chains": [
+          "login"
+        ],
+        "contributing_factors": [
+          "High error rates in cpq-ordercapture"
+        ],
+        "evidence": [
+          "Multiple traces showing 400 and 500 errors in cpq-ordercapture"
+        ]
+      },
+      "severity_assessment": {
+        "business_impact": "moderate",
+        "technical_severity": "high",
+        "urgency": "high",
+        "service_criticality_score": 70
+      },
+      "recommendations": {
+        "immediate_actions": [
+          "Investigate and fix cpq-ordercapture service errors",
+          "Review input validation and backend service integration in cpq-ordercapture"
+        ],
+        "short_term": [
+          "Implement better error handling in cpq-ordercapture",
+          "Monitor cpq-ordercapture for recurring issues"
+        ],
+        "long_term": [
+          "Enhance logging and monitoring for cpq-ordercapture to detect issues early",
+          "Consider implementing circuit breakers to prevent cascading failures"
+        ]
+      }
+    },
+    "serviceContext": {
+      "detectedServices": [
+        "APIGateway",
+        "crm-mash-up",
+        "crm-customer-information",
+        "crm-asset",
+        "domain-config-service",
+        "ntf-engine-service",
+        "ntf-history-service",
+        "bss-services-service.etiyamobile-production-eom",
+        "bss-mc-domain-config-t4",
+        "bss-mc-ntf-engine-t4",
+        "bstp-pcm-product-catalog",
+        "eca-t4",
+        "bss-mc-asset-management-t4",
+        "bss-mc-crm-customer-information-t4",
+        "bss-mc-pcm-product-catalog-t4",
+        "cpq-ordercapture",
+        "bstp-pcm-product-offer-detail",
+        "activity",
+        "bss-mc-cpq-t4",
+        "customer-search-mc-backend",
+        "ui-authz-mc-backend"
+      ],
+      "serviceMetadata": {
+        "APIGateway": {
+          "criticality": "critical",
+          "category": "gateway",
+          "slaThresholds": {
+            "errorRate": 0.005,
+            "latencyP95": 500,
+            "latencyP99": 1000
+          }
+        },
+        "crm-mash-up": {
+          "criticality": "high",
+          "category": "crm",
+          "slaThresholds": {
+            "errorRate": 0.02,
+            "latencyP95": 500,
+            "latencyP99": 1200
+          }
+        },
+        "crm-customer-information": {
+          "criticality": "critical",
+          "category": "crm",
+          "slaThresholds": {
+            "errorRate": 0.01,
+            "latencyP95": 300,
+            "latencyP99": 800
+          }
+        },
+        "crm-asset": {
+          "criticality": "high",
+          "category": "crm",
+          "slaThresholds": {
+            "errorRate": 0.02,
+            "latencyP95": 400,
+            "latencyP99": 1000
+          }
+        },
+        "domain-config-service": {
+          "criticality": "critical",
+          "category": "config",
+          "slaThresholds": {
+            "errorRate": 0.001,
+            "latencyP95": 100,
+            "latencyP99": 300
+          }
+        },
+        "ntf-engine-service": {
+          "criticality": "medium",
+          "category": "notification",
+          "slaThresholds": {
+            "errorRate": 0.05,
+            "latencyP95": 2000,
+            "latencyP99": 5000
+          }
+        },
+        "ntf-history-service": {
+          "criticality": "low",
+          "category": "notification",
+          "slaThresholds": {
+            "errorRate": 0.05,
+            "latencyP95": 1000,
+            "latencyP99": 3000
+          }
+        },
+        "bss-services-service.etiyamobile-production-eom": {
+          "criticality": "critical",
+          "category": "backend",
+          "slaThresholds": {
+            "errorRate": 0.01,
+            "latencyP95": 500,
+            "latencyP99": 1000
+          }
+        },
+        "bss-mc-domain-config-t4": {
+          "criticality": "high",
+          "category": "t4-layer",
+          "slaThresholds": {
+            "errorRate": 0.01,
+            "latencyP95": 200,
+            "latencyP99": 500
+          }
+        },
+        "bss-mc-ntf-engine-t4": {
+          "criticality": "medium",
+          "category": "t4-layer",
+          "slaThresholds": {
+            "errorRate": 0.03,
+            "latencyP95": 1000,
+            "latencyP99": 2000
+          }
+        },
+        "bstp-pcm-product-catalog": {
+          "criticality": "high",
+          "category": "catalog",
+          "slaThresholds": {
+            "errorRate": 0.02,
+            "latencyP95": 300,
+            "latencyP99": 800
+          }
+        },
+        "eca-t4": {
+          "criticality": "high",
+          "category": "t4-layer",
+          "slaThresholds": {
+            "errorRate": 0.02,
+            "latencyP95": 300,
+            "latencyP99": 800
+          }
+        },
+        "bss-mc-asset-management-t4": {
+          "criticality": "high",
+          "category": "t4-layer",
+          "slaThresholds": {
+            "errorRate": 0.02,
+            "latencyP95": 400,
+            "latencyP99": 1000
+          }
+        },
+        "bss-mc-crm-customer-information-t4": {
+          "criticality": "high",
+          "category": "t4-layer",
+          "slaThresholds": {
+            "errorRate": 0.02,
+            "latencyP95": 300,
+            "latencyP99": 800
+          }
+        },
+        "bss-mc-pcm-product-catalog-t4": {
+          "criticality": "high",
+          "category": "t4-layer",
+          "slaThresholds": {
+            "errorRate": 0.02,
+            "latencyP95": 300,
+            "latencyP99": 800
+          }
+        },
+        "cpq-ordercapture": {
+          "criticality": "critical",
+          "category": "cpq",
+          "slaThresholds": {
+            "errorRate": 0.01,
+            "latencyP95": 1000,
+            "latencyP99": 2000
+          }
+        },
+        "bstp-pcm-product-offer-detail": {
+          "criticality": "high",
+          "category": "catalog",
+          "slaThresholds": {
+            "errorRate": 0.02,
+            "latencyP95": 400,
+            "latencyP99": 1000
+          }
+        },
+        "activity": {
+          "criticality": "low",
+          "category": "support",
+          "slaThresholds": {
+            "errorRate": 0.05,
+            "latencyP95": 1000,
+            "latencyP99": 2000
+          }
+        },
+        "bss-mc-cpq-t4": {
+          "criticality": "high",
+          "category": "t4-layer",
+          "slaThresholds": {
+            "errorRate": 0.02,
+            "latencyP95": 400,
+            "latencyP99": 1000
+          }
+        },
+        "customer-search-mc-backend": {
+          "criticality": "high",
+          "category": "search",
+          "slaThresholds": {
+            "errorRate": 0.02,
+            "latencyP95": 400,
+            "latencyP99": 1000
+          }
+        },
+        "ui-authz-mc-backend": {
+          "criticality": "critical",
+          "category": "auth",
+          "slaThresholds": {
+            "errorRate": 0.005,
+            "latencyP95": 200,
+            "latencyP99": 500
+          }
+        }
+      },
+      "criticalPathAffected": true,
+      "affectedPath": "login",
+      "serviceErrorAnalysis": {},
+      "dependencyChains": {
+        "APIGateway": [
+          "APIGateway",
+          "crm-mash-up",
+          "crm-customer-information",
+          "crm-asset",
+          "domain-config-service",
+          "ntf-engine-service",
+          "ntf-history-service",
+          "bss-services-service.etiyamobile-production-eom",
+          "bss-mc-domain-config-t4",
+          "bss-mc-ntf-engine-t4",
+          "bstp-pcm-product-catalog",
+          "eca-t4",
+          "bss-mc-asset-management-t4",
+          "bss-mc-crm-customer-information-t4",
+          "bss-mc-pcm-product-catalog-t4",
+          "cpq-ordercapture",
+          "bstp-pcm-product-offer-detail",
+          "activity",
+          "bss-mc-cpq-t4",
+          "customer-search-mc-backend"
+        ],
+        "cpq-ordercapture": [
+          "cpq-ordercapture",
+          "bstp-pcm-product-catalog",
+          "domain-config-service",
+          "ntf-engine-service",
+          "ntf-history-service",
+          "bss-services-service.etiyamobile-production-eom",
+          "bss-mc-domain-config-t4",
+          "bss-mc-ntf-engine-t4",
+          "bstp-pcm-product-offer-detail",
+          "crm-asset",
+          "activity"
+        ],
+        "crm-customer-information": [
+          "crm-customer-information",
+          "crm-asset",
+          "domain-config-service",
+          "ntf-engine-service",
+          "ntf-history-service",
+          "bss-services-service.etiyamobile-production-eom",
+          "bss-mc-domain-config-t4",
+          "bss-mc-ntf-engine-t4",
+          "bstp-pcm-product-catalog",
+          "eca-t4",
+          "bss-mc-asset-management-t4",
+          "bss-mc-crm-customer-information-t4",
+          "bss-mc-pcm-product-catalog-t4"
+        ],
+        "domain-config-service": [
+          "domain-config-service",
+          "ntf-engine-service",
+          "ntf-history-service",
+          "bss-services-service.etiyamobile-production-eom",
+          "bss-mc-domain-config-t4",
+          "bss-mc-ntf-engine-t4"
+        ],
+        "ui-authz-mc-backend": [
+          "ui-authz-mc-backend",
+          "domain-config-service",
+          "ntf-engine-service",
+          "ntf-history-service",
+          "bss-services-service.etiyamobile-production-eom",
+          "bss-mc-domain-config-t4",
+          "bss-mc-ntf-engine-t4"
+        ],
+        "bss-services-service.etiyamobile-production-eom": [
+          "bss-services-service.etiyamobile-production-eom"
+        ]
+      },
+      "reconciliatedErrors": {
+        "totalErrors": 0,
+        "stage1Errors": 0,
+        "stage2AdditionalErrors": 0,
+        "serviceBreakdown": {}
+      }
+    },
+    "analysisConfig": {},
+    "source": "orchestrator",
+    "chatContext": {
+      "isFromChat": false,
+      "userMessage": null,
+      "analysisMode": null
+    },
+    "analysisMetadata": {
+      "stage2Performed": true,
+      "errorDiscrepancy": false,
+      "reconciliationNeeded": false
+    }
+  }
+]

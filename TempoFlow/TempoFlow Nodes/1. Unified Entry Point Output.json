@@ -1,0 +1,15 @@
+[
+  {
+    "timestamp": "2025-12-21T14:00:49.438Z",
+    "executionId": "8376",
+    "source": "manual",
+    "mode": "standard",
+    "priority": "normal",
+    "context": {},
+    "forceDeepAnalysis": false,
+    "timeRange": {
+      "start": 1766322049,
+      "end": 1766325649
+    }
+  }
+]
