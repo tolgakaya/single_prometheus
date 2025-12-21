@@ -46,39 +46,59 @@ console.log("Is Incident:", isIncident);
 console.log("Error Rate:", errorRate);
 console.log("Affected Services:", affectedServices.length);
 
-// ============= FINGERPRINT GENERATION (MULTI-PROBLEM AWARE) =============
-// For LokiFlow, fingerprint should uniquely identify the COMBINATION of issues
-// NOT just one issue, because we support multi-problem analysis
+// ============= FINGERPRINT GENERATION (STABLE DEDUPLICATION) =============
+// Strategy: Use PRIMARY ISSUE + PRIMARY SERVICE only
+// Why: Severity can escalate, services can spread, but core problem stays same
+// This prevents duplicate tickets for the same underlying issue
 
+// 1. Find PRIMARY ISSUE (highest count = dominant problem)
+let primaryIssue = null;
+if (identifiedIssues && identifiedIssues.length > 0) {
+  // Sort by occurrenceCount (descending), then by severity if count is equal
+  const sortedIssues = [...identifiedIssues].sort((a, b) => {
+    const countA = a.occurrenceCount || a.count || 0;
+    const countB = b.occurrenceCount || b.count || 0;
+    const countDiff = countB - countA;
+    if (countDiff !== 0) return countDiff;
+
+    // If count is equal, prioritize by severity
+    const severityOrder = { 'CRITICAL': 4, 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1, 'UNKNOWN': 0 };
+    return (severityOrder[b.severity] || 0) - (severityOrder[a.severity] || 0);
+  });
+  primaryIssue = sortedIssues[0];
+}
+
+// 2. Find PRIMARY SERVICE (from primary issue's affected services)
+let primaryService = 'unknown-service';
+if (primaryIssue && primaryIssue.affectedServices && primaryIssue.affectedServices.length > 0) {
+  primaryService = primaryIssue.affectedServices[0];
+} else if (affectedServices && affectedServices.length > 0) {
+  primaryService = affectedServices[0];
+}
+
+// 3. Normalize PRIMARY ISSUE TYPE (consistent format)
+const normalizedIssueType = (primaryIssue?.type || 'unknown-issue')
+  .toLowerCase()
+  .split(' ')
+  .slice(0, 5)  // First 5 words only
+  .join(' ')
+  .replace(/[^a-z0-9\s]/g, '');  // Remove special chars
+
+// 4. Create STABLE fingerprint (ignores severity, service list changes)
 const fingerprintData = {
-  // Primary: Issue types (sorted alphabetically for consistency)
-  issueTypes: identifiedIssues
-    .map(issue => {
-      // Normalize issue type: take first 5 words, lowercase, remove special chars
-      const normalized = (issue.type || 'unknown')
-        .toLowerCase()
-        .split(' ')
-        .slice(0, 5)
-        .join(' ')
-        .replace(/[^a-z0-9\s]/g, '');
-      return normalized;
-    })
-    .sort()
-    .join('|'),
-
-  // Secondary: Affected services (top 3, sorted)
-  services: affectedServices
-    .slice(0, 3)
-    .sort()
-    .join('|'),
-
-  // Tertiary: Severity level
-  severity: overallSeverity
+  issueType: normalizedIssueType,
+  primaryService: primaryService
+  // ❌ severity REMOVED (can escalate over time)
+  // ❌ full service list REMOVED (can spread over time)
+  // ❌ all issue types REMOVED (secondary issues can appear)
 };
 
 // Generate fingerprint using simple hash
 const fingerprint = simpleHash(JSON.stringify(fingerprintData));
 
+console.log("=== FINGERPRINT GENERATION ===");
+console.log("Primary Issue:", primaryIssue?.type, "(count:", primaryIssue?.occurrenceCount || primaryIssue?.count || 0, ")");
+console.log("Primary Service:", primaryService);
 console.log("Fingerprint Data:", fingerprintData);
 console.log("Fingerprint:", fingerprint);
 
