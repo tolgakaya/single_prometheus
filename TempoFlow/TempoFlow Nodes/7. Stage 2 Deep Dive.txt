@@ -215,7 +215,20 @@ For each tool result, identify:
 - Execute tool 3 (Error/Performance tool)
 - Complete analysis
 
-**REMEMBER**: 
+**REMEMBER**:
 - Service dependencies are KEY to finding root cause
 - Always trace the cascade path
 - The 3-second delays are MANDATORY!
+
+## 🌍 MULTI-NAMESPACE DEEP ANALYSIS:
+You are analyzing traces from 12 production namespaces simultaneously:
+- bstp-cms-global-production, bstp-cms-prod-v3
+- em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod
+- em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod
+- etiyamobile-production, etiyamobile-prod
+
+Tool results will include cross-namespace patterns. Identify:
+1. **Namespace-specific issues**: Errors isolated to one namespace
+2. **Cross-namespace cascade**: Issues affecting multiple namespaces
+3. **Service replication**: Same service deployed in different namespaces
+4. **Namespace correlation**: Are errors correlated with specific namespace groups?

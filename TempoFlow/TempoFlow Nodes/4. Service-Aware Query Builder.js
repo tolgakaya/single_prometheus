@@ -329,27 +329,41 @@ enhancedParams.serviceAnalysis.detectedServices.forEach(service => {
   }
 });
 
-// Build enhanced Tempo queries
-const baseEnv = input.searchParams?.environment || "etiyamobile-production";
+// Build enhanced Tempo queries - MULTI-NAMESPACE SUPPORT
+const namespaces = input.searchParams?.namespaces || [
+  "bstp-cms-global-production",
+  "bstp-cms-prod-v3",
+  "em-global-prod-3pp",
+  "em-global-prod-eom",
+  "em-global-prod-flowe",
+  "em-global-prod",
+  "em-prod-3pp",
+  "em-prod-eom",
+  "em-prod-flowe",
+  "em-prod",
+  "etiyamobile-production",
+  "etiyamobile-prod"
+];
+const namespacePattern = namespaces.join('|');
 
-// Query 1: Service-specific errors
+// Query 1: Service-specific errors across ALL namespaces
 if (enhancedParams.serviceAnalysis.detectedServices.length > 0) {
   const serviceFilter = enhancedParams.serviceAnalysis.detectedServices
-    .map(s => `.service.name="${s}"`)
+    .map(s => `service.name="${s}"`)
     .join(' || ');
-    
-  enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors = 
-    `{ resource.deployment.environment="${baseEnv}" && (${serviceFilter}) && status=error }`;
+
+  enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
+    `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && status=error }`;
 }
 
-// Query 2: High latency for critical services
+// Query 2: High latency for critical services across ALL namespaces
 const criticalServices = enhancedParams.serviceAnalysis.detectedServices
   .filter(s => enhancedParams.serviceAnalysis.serviceMetadata[s]?.criticality === 'critical');
 
 if (criticalServices.length > 0) {
-  const criticalFilter = criticalServices.map(s => `.service.name="${s}"`).join(' || ');
-  enhancedParams.serviceAnalysis.enhancedQueries.criticalLatency = 
-    `{ resource.deployment.environment="${baseEnv}" && (${criticalFilter}) && duration > 500ms }`;
+  const criticalFilter = criticalServices.map(s => `service.name="${s}"`).join(' || ');
+  enhancedParams.serviceAnalysis.enhancedQueries.criticalLatency =
+    `{ resource.deployment.environment=~"${namespacePattern}" && (${criticalFilter}) && duration > 500ms }`;
 }
 
 // Update search parameters

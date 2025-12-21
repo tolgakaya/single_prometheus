@@ -54,9 +54,22 @@ if (input.agentExecutionParams && input.agentExecutionParams.parameters) {
         analysisType: params.analysisType || 'standard'
       },
       
-      // Search parameters
+      // Search parameters - MULTI-NAMESPACE SUPPORT
       searchParams: {
-        environment: 'etiyamobile-production',
+        namespaces: [
+          "bstp-cms-global-production",
+          "bstp-cms-prod-v3",
+          "em-global-prod-3pp",
+          "em-global-prod-eom",
+          "em-global-prod-flowe",
+          "em-global-prod",
+          "em-prod-3pp",
+          "em-prod-eom",
+          "em-prod-flowe",
+          "em-prod",
+          "etiyamobile-production",
+          "etiyamobile-prod"
+        ],
         services: [],
         errorTypes: [],
         statusCodes: [],
@@ -126,26 +139,28 @@ if (input.agentExecutionParams && input.agentExecutionParams.parameters) {
       });
     }
     
-    // Build Tempo query
-    let tempoQuery = `{.deployment.environment="${config.searchParams.environment}"`;
-    
+    // Build Tempo query - MULTI-NAMESPACE SUPPORT
+    // Create namespace regex pattern: namespace=~"ns1|ns2|ns3"
+    const namespacePattern = config.searchParams.namespaces.join('|');
+    let tempoQuery = `{resource.deployment.environment=~"${namespacePattern}"`;
+
     // For critical priority, search for all errors
-    if (config.analysisConfig.priority === 'critical' && 
+    if (config.analysisConfig.priority === 'critical' &&
         config.searchParams.errorTypes.includes('all_errors')) {
-      tempoQuery += ` && .status.code>=400`;
+      tempoQuery += ` && status.code>=400`;
     } else if (config.searchParams.statusCodes.length > 0) {
       const codes = config.searchParams.statusCodes.join('|');
-      tempoQuery += ` && .status=~"${codes}"`;
+      tempoQuery += ` && status.code=~"${codes}"`;
     }
-    
+
     // Add service filter if specified
     if (config.searchParams.services.length > 0) {
       const serviceFilter = config.searchParams.services
-        .map(s => `.service.name=~".*${s}.*"`)
+        .map(s => `service.name=~".*${s}.*"`)
         .join(' || ');
       tempoQuery += ` && (${serviceFilter})`;
     }
-    
+
     // Close the query
     tempoQuery += '}';
     
@@ -181,9 +196,22 @@ else if (input.chatInput || input.query) {
     requiresServiceDetection: true
   };
   
-  // Search parameters'ı hazırla
+  // Search parameters'ı hazırla - MULTI-NAMESPACE SUPPORT
   config.searchParams = {
-    environment: 'etiyamobile-production',
+    namespaces: [
+      "bstp-cms-global-production",
+      "bstp-cms-prod-v3",
+      "em-global-prod-3pp",
+      "em-global-prod-eom",
+      "em-global-prod-flowe",
+      "em-global-prod",
+      "em-prod-3pp",
+      "em-prod-eom",
+      "em-prod-flowe",
+      "em-prod",
+      "etiyamobile-production",
+      "etiyamobile-prod"
+    ],
     services: [], // Service-Aware Query Builder dolduracak
     errorTypes: [],
     statusCodes: [],

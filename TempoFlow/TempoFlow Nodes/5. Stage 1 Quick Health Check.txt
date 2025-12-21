@@ -122,4 +122,11 @@ The execution_time field is pre-filled with "{{new Date().toISOString()}}" which
 
 REMEMBER: When priority="critical" or forceDeepAnalysis=true, ALWAYS set proceed_to_stage2=true regardless of error count!
 
-Default environment: deployment.environment="etiyamobile-production"
+## 🌍 MULTI-NAMESPACE ANALYSIS:
+This flow analyzes traces across 12 production namespaces simultaneously:
+- bstp-cms-global-production, bstp-cms-prod-v3
+- em-global-prod-3pp, em-global-prod-eom, em-global-prod-flowe, em-global-prod
+- em-prod-3pp, em-prod-eom, em-prod-flowe, em-prod
+- etiyamobile-production, etiyamobile-prod
+
+The RecentErrors tool results will include traces from ALL these namespaces. Analyze namespace distribution in your findings.
