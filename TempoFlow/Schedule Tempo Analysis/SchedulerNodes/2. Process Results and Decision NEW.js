@@ -1,7 +1,7 @@
-// Process Results & Decision Node - LokiFlow Version
+// Process Results & Decision Node - TempoFlow Version
 // Purpose:
-// 1. Process LokiFlow analysis results (from Node 17)
-// 2. Generate fingerprint for deduplication (multi-problem aware)
+// 1. Process TempoFlow analysis results (from Node 10 - Generate Jira Ticket)
+// 2. Generate fingerprint for deduplication (cascade/dependency aware)
 // 3. Prepare Jira ticket data
 // 4. Decide if Jira ticket should be created
 
@@ -16,161 +16,208 @@ function simpleHash(str) {
   return Math.abs(hash).toString(16).padStart(16, '0').substring(0, 16);
 }
 
-// Get LokiFlow analysis result (from Node 17 - Generate Jira Ticket)
+// Get TempoFlow analysis result (from Node 10 - Generate Jira Ticket)
 const analysisResult = $input.item.json;
 
-// Extract key information from LokiFlow output
-// Node 17 adds jiraTicket field to Node 16's complete output
-const jiraTicketFromNode17 = analysisResult.jiraTicket || {}; // CRITICAL: This is from Node 17
-const metadata = analysisResult.metadata || {};
-const timeContext = analysisResult.timeContext || {};
-const incidentEvaluation = analysisResult.incidentEvaluation || {};
-const consolidatedFindings = analysisResult.consolidatedFindings || {};
-const actionableInsights = analysisResult.actionableInsights || {};
-const stageResults = analysisResult.stageResults || {};
+// Extract key information from TempoFlow output
+// Node 10 adds jiraTicket field to Node 9's complete output
+const jiraTicketFromNode10 = analysisResult.jiraTicket || {}; // CRITICAL: This is from Node 10
+const healthCheck = analysisResult.healthCheck || {};
+const serviceAnalysis = analysisResult.serviceAnalysis || {};
+const deepAnalysis = analysisResult.deepAnalysis || {};
+const executiveSummary = analysisResult.executiveSummary || {};
 
 // Extract critical data
-const identifiedIssues = consolidatedFindings.identifiedIssues || [];
-const affectedServices = consolidatedFindings.affectedServices || [];
-const overallSeverity = incidentEvaluation.severity || 'NORMAL';
-const isIncident = incidentEvaluation.isIncident || false;
-const errorRate = parseFloat(incidentEvaluation.errorRate) || 0;
-const errorCount = incidentEvaluation.errorCount || 0;
+const errorCount = healthCheck.errorCount || healthCheck.errorReconciliation?.totalAfterDeepAnalysis || 0;
+const affectedServices = serviceAnalysis.servicesAnalyzed || [];
+const cascadeFailures = deepAnalysis.findings?.service_dependencies?.cascade_failures || [];
+const failedChains = deepAnalysis.findings?.service_dependencies?.failed_chains || [];
+const rootCause = deepAnalysis.rootCause || {};
+const recommendations = deepAnalysis.recommendations || {};
+const impactScore = serviceAnalysis.impactScore || 0;
+const criticalPathAffected = serviceAnalysis.criticalPathAffected || false;
 
-console.log("=== PROCESS LOKIFLOW RESULTS ===");
-console.log("Analysis ID:", metadata.analysisId);
-console.log("jiraTicketFromNode17:", JSON.stringify(jiraTicketFromNode17).substring(0, 200));
-console.log("Issues Found:", identifiedIssues.length);
-console.log("Severity:", overallSeverity);
-console.log("Is Incident:", isIncident);
-console.log("Error Rate:", errorRate);
+console.log("=== PROCESS TEMPOFLOW RESULTS ===");
+console.log("Workflow Execution ID:", analysisResult.workflowExecutionId);
+console.log("jiraTicketFromNode10:", JSON.stringify(jiraTicketFromNode10).substring(0, 200));
+console.log("Error Count:", errorCount);
 console.log("Affected Services:", affectedServices.length);
+console.log("Cascade Failures:", cascadeFailures.length);
+console.log("Failed Chains:", failedChains.length);
+console.log("Critical Path Affected:", criticalPathAffected);
 
 // ============= FINGERPRINT GENERATION (STABLE DEDUPLICATION) =============
-// Strategy: Use PRIMARY ISSUE + PRIMARY SERVICE only
-// Why: Severity can escalate, services can spread, but core problem stays same
-// This prevents duplicate tickets for the same underlying issue
+// TempoFlow Strategy: Use ROOT CAUSE + ORIGIN SERVICE
+// Why: Root cause is the most stable identifier for tracing issues
+// Cascade failures and dependency chains change, but root cause stays consistent
 
-// 1. Find PRIMARY ISSUE (highest count = dominant problem)
-let primaryIssue = null;
-if (identifiedIssues && identifiedIssues.length > 0) {
-  // Sort by occurrenceCount (descending), then by severity if count is equal
-  const sortedIssues = [...identifiedIssues].sort((a, b) => {
-    const countA = a.occurrenceCount || a.count || 0;
-    const countB = b.occurrenceCount || b.count || 0;
-    const countDiff = countB - countA;
-    if (countDiff !== 0) return countDiff;
+// 1. Determine PRIMARY ISSUE TYPE from root cause or cascade failures
+let primaryIssueType = 'unknown-issue';
+let originService = 'unknown-service';
 
-    // If count is equal, prioritize by severity
-    const severityOrder = { 'CRITICAL': 4, 'HIGH': 3, 'MEDIUM': 2, 'LOW': 1, 'UNKNOWN': 0 };
-    return (severityOrder[b.severity] || 0) - (severityOrder[a.severity] || 0);
-  });
-  primaryIssue = sortedIssues[0];
+// Priority 1: Root cause analysis (most reliable)
+if (rootCause && rootCause.primary_cause) {
+  primaryIssueType = rootCause.primary_cause;
+  originService = rootCause.service_root || 'unknown-service';
+}
+// Priority 2: Cascade failure origin (clear starting point)
+else if (cascadeFailures && cascadeFailures.length > 0) {
+  const primaryCascade = cascadeFailures[0]; // First cascade failure
+  primaryIssueType = `cascade-${primaryCascade.pattern || 'failure'}`;
+  originService = primaryCascade.origin || 'unknown-service';
+}
+// Priority 3: Failed dependency chain (failure point)
+else if (failedChains && failedChains.length > 0) {
+  const primaryChain = failedChains[0]; // First failed chain
+  primaryIssueType = `chain-${primaryChain.error_type || 'failure'}`;
+  originService = primaryChain.failure_point || 'unknown-service';
+}
+// Priority 4: Service with most errors
+else if (serviceAnalysis.errorsByService) {
+  const services = Object.entries(serviceAnalysis.errorsByService)
+    .sort(([, a], [, b]) => (b.errorCount || 0) - (a.errorCount || 0));
+  if (services.length > 0) {
+    originService = services[0][0];
+    primaryIssueType = `error-spike`;
+  }
 }
 
-// 2. Find PRIMARY SERVICE (from primary issue's affected services)
-let primaryService = 'unknown-service';
-if (primaryIssue && primaryIssue.affectedServices && primaryIssue.affectedServices.length > 0) {
-  primaryService = primaryIssue.affectedServices[0];
-} else if (affectedServices && affectedServices.length > 0) {
-  primaryService = affectedServices[0];
-}
-
-// 3. Normalize PRIMARY ISSUE TYPE (consistent format)
-const normalizedIssueType = (primaryIssue?.type || 'unknown-issue')
+// 2. Normalize PRIMARY ISSUE TYPE (consistent format)
+const normalizedIssueType = primaryIssueType
   .toLowerCase()
   .split(' ')
   .slice(0, 5)  // First 5 words only
   .join(' ')
-  .replace(/[^a-z0-9\s]/g, '');  // Remove special chars
+  .replace(/[^a-z0-9\s-]/g, '');  // Remove special chars, keep hyphens
 
-// 4. Create STABLE fingerprint (ignores severity, service list changes)
+// 3. Create STABLE fingerprint (ignores severity changes and service spread)
 const fingerprintData = {
   issueType: normalizedIssueType,
-  primaryService: primaryService
-  // ❌ severity REMOVED (can escalate over time)
-  // ❌ full service list REMOVED (can spread over time)
-  // ❌ all issue types REMOVED (secondary issues can appear)
+  originService: originService
+  // ❌ error count REMOVED (fluctuates)
+  // ❌ severity REMOVED (can escalate)
+  // ❌ affected services list REMOVED (can spread)
+  // ❌ cascade count REMOVED (can grow)
 };
 
 // Generate fingerprint using simple hash
 const fingerprint = simpleHash(JSON.stringify(fingerprintData));
 
 console.log("=== FINGERPRINT GENERATION ===");
-console.log("Primary Issue:", primaryIssue?.type, "(count:", primaryIssue?.occurrenceCount || primaryIssue?.count || 0, ")");
-console.log("Primary Service:", primaryService);
+console.log("Primary Issue Type:", primaryIssueType);
+console.log("Origin Service:", originService);
+console.log("Normalized:", normalizedIssueType);
 console.log("Fingerprint Data:", fingerprintData);
 console.log("Fingerprint:", fingerprint);
 
 // ============= ALERT SUMMARY =============
+// Determine severity from analysis
+let overallSeverity = 'MEDIUM';
+let isIncident = false;
+
+if (criticalPathAffected || cascadeFailures.length > 0) {
+  overallSeverity = 'HIGH';
+  isIncident = true;
+} else if (failedChains.length > 0 || errorCount > 20) {
+  overallSeverity = 'MEDIUM';
+  isIncident = errorCount > 50;
+} else if (errorCount > 0) {
+  overallSeverity = 'LOW';
+}
+
 const alertSummary = {
-  alertId: metadata.analysisId || `loki-${Date.now()}`,
-  source: 'loki-logs',
-  title: jiraTicketFromNode17.title || 'Log Analysis Alert',
+  alertId: analysisResult.workflowExecutionId || `tempo-${Date.now()}`,
+  source: 'tempo-traces',
+  title: jiraTicketFromNode10.title || 'Distributed Trace Analysis Alert',
   detectedAt: new Date().toISOString(),
   severity: overallSeverity,
   isIncident: isIncident,
-  errorRate: errorRate,
   errorCount: errorCount,
-  identifiedIssues: identifiedIssues.length,
-  affectedServices: affectedServices.length
+  cascadeFailures: cascadeFailures.length,
+  failedChains: failedChains.length,
+  affectedServices: affectedServices.length,
+  criticalPathAffected: criticalPathAffected,
+  impactScore: impactScore
 };
 
-// ============= LOG ANALYSIS DETAILS =============
-const logAnalysis = {
-  analysisId: metadata.analysisId,
-  workflowExecutionId: metadata.workflowExecutionId,
-  timeRange: {
-    start: timeContext.requestedRange?.start || 'N/A',
-    end: timeContext.requestedRange?.end || 'N/A',
-    duration: timeContext.requestedRange?.duration || 'N/A'
+// ============= TRACE ANALYSIS DETAILS =============
+const traceAnalysis = {
+  analysisId: analysisResult.workflowExecutionId,
+  workflowExecutionId: analysisResult.workflowExecutionId,
+  timestamp: analysisResult.timestamp,
+
+  serviceImpact: {
+    totalServices: affectedServices.length,
+    errorsByService: serviceAnalysis.errorsByService || {},
+    criticalPathAffected: criticalPathAffected,
+    affectedPath: serviceAnalysis.affectedPath || null
   },
-  issues: identifiedIssues.map(issue => ({
-    type: issue.type,
-    services: issue.affectedServices || [],
-    occurrences: issue.occurrenceCount || null,
-    severity: issue.severity,
-    stage: issue.stageDetected,
-    evidenceCount: issue.evidence?.length || 0
-  })),
+
+  dependencyAnalysis: {
+    cascadeFailures: cascadeFailures.map(cascade => ({
+      origin: cascade.origin,
+      affected: cascade.affected || [],
+      pattern: cascade.pattern
+    })),
+    failedChains: failedChains.map(chain => ({
+      chain: chain.chain || [],
+      failurePoint: chain.failure_point,
+      errorType: chain.error_type
+    }))
+  },
+
+  rootCauseAnalysis: {
+    primaryCause: rootCause.primary_cause || 'Unknown',
+    serviceRoot: rootCause.service_root || 'Unknown',
+    affectedChains: rootCause.affected_chains || [],
+    contributingFactors: rootCause.contributing_factors || [],
+    evidence: rootCause.evidence || []
+  },
+
   metrics: {
-    errorRate: errorRate,
-    errorCount: errorCount,
-    totalLogs: stageResults.stage1?.metrics?.total_logs || 0,
-    stagesExecuted: metadata.stagesExecuted || 3
+    totalErrors: errorCount,
+    impactScore: impactScore,
+    confidenceLevel: executiveSummary.analysisQuality?.confidenceLevel || 0.5
   },
+
   actions: {
-    immediate: actionableInsights.immediateActions || [],
-    monitoringGaps: actionableInsights.monitoringGaps || [],
-    processImprovements: actionableInsights.processImprovements || []
+    immediate: recommendations.immediate_actions || [],
+    shortTerm: recommendations.short_term || [],
+    longTerm: recommendations.long_term || []
   }
 };
 
 // ============= DETERMINE IF JIRA TICKET NEEDED =============
 function shouldCreateJiraTicket() {
-  // Criteria for creating Jira ticket:
+  // Criteria for creating Jira ticket (TempoFlow-specific):
 
-  // 1. Incident evaluation says yes
+  // 1. Incident flag is set
   if (isIncident) return true;
 
-  // 2. High or Critical severity
-  if (overallSeverity === 'HIGH' || overallSeverity === 'CRITICAL') return true;
+  // 2. Critical path is affected
+  if (criticalPathAffected) return true;
 
-  // 3. Error rate exceeds 2%
-  if (errorRate >= 2.0) return true;
+  // 3. Cascade failures detected (service propagation)
+  if (cascadeFailures.length > 0) return true;
 
-  // 4. Multiple issues identified
-  if (identifiedIssues.length > 1) return true;
+  // 4. Multiple dependency chain failures
+  if (failedChains.length > 1) return true;
 
-  // 5. Critical services affected
+  // 5. High impact score
+  if (impactScore >= 70) return true;
+
+  // 6. Significant error count
+  if (errorCount >= 50) return true;
+
+  // 7. Critical services affected
   const criticalServices = ['api', 'gateway', 'auth', 'payment'];
   const hasCriticalService = affectedServices.some(service =>
     criticalServices.some(critical => service.toLowerCase().includes(critical))
   );
-  if (hasCriticalService && identifiedIssues.length > 0) return true;
+  if (hasCriticalService && errorCount > 0) return true;
 
-  // 6. Has immediate actions (indicates actionable issue)
-  if (actionableInsights.immediateActions && actionableInsights.immediateActions.length > 0) return true;
+  // 8. Has immediate actions (indicates actionable issue)
+  if (recommendations.immediate_actions && recommendations.immediate_actions.length > 0) return true;
 
   // Otherwise, just monitor
   return false;
@@ -189,10 +236,10 @@ const output = {
 
   alertSummary: alertSummary,
 
-  logAnalysis: logAnalysis,
+  traceAnalysis: traceAnalysis,
 
-  // Direct access to jiraTicket (already formatted by Node 17)
-  jiraTicketData: needsJiraTicket ? jiraTicketFromNode17 : null,
+  // Direct access to jiraTicket (already formatted by Node 10)
+  jiraTicketData: needsJiraTicket ? jiraTicketFromNode10 : null,
 
   // Pass through original analysis for downstream nodes
   originalAnalysis: analysisResult,
@@ -200,13 +247,16 @@ const output = {
   // Debug info
   _debug: {
     fingerprintGenerated: fingerprint,
-    issueTypesForFingerprint: fingerprintData.issueTypes,
-    servicesForFingerprint: fingerprintData.services,
+    issueType: fingerprintData.issueType,
+    originService: fingerprintData.originService,
     decisionCriteria: {
       isIncident: isIncident,
       severity: overallSeverity,
-      errorRate: errorRate,
-      issuesCount: identifiedIssues.length,
+      criticalPathAffected: criticalPathAffected,
+      cascadeFailures: cascadeFailures.length,
+      failedChains: failedChains.length,
+      impactScore: impactScore,
+      errorCount: errorCount,
       needsTicket: needsJiraTicket
     }
   }

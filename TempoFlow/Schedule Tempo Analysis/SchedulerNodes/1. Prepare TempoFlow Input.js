@@ -1,25 +1,25 @@
-// Prepare LokiFlow Input Node
-// Purpose: Converts Schedule Trigger empty input to LokiFlow required format
-// Position: Between "Schedule Trigger" and "Execute LokiFlow Analysis"
+// Prepare TempoFlow Input Node
+// Purpose: Converts Schedule Trigger empty input to TempoFlow required format
+// Position: Between "Schedule Trigger" and "Execute TempoFlow Analysis"
 
 const now = Math.floor(Date.now() / 1000);
 const oneHourAgo = now - 3600; // 1 hour lookback for scheduled checks
 
 // Generate unique request ID
-const requestId = `lokiflow-scheduled-${now}-${Math.random().toString(36).substring(7)}`;
+const requestId = `tempoflow-scheduled-${now}-${Math.random().toString(36).substring(7)}`;
 
-// Prepare input for LokiFlow
-const lokiFlowInput = {
+// Prepare input for TempoFlow
+const tempoFlowInput = {
   // Time range (Unix timestamps in seconds)
   startTime: oneHourAgo,
   endTime: now,
 
-  // Context for LokiFlow
+  // Context for TempoFlow
   context: {
     source: {
       type: 'scheduler',
-      trigger: 'periodic_log_check',
-      interval: '50m' // Matches scheduler trigger interval
+      trigger: 'periodic_trace_check',
+      interval: '30m' // Matches scheduler trigger interval
     },
 
     // Default namespaces to check (customize based on your setup)
@@ -52,11 +52,11 @@ const lokiFlowInput = {
   // Metadata
   metadata: {
     requestId: requestId,
-    source: 'Scheduler Log Analysis Flow',
+    source: 'Scheduler Tempo Analysis Flow',
     automated: true,
-    schedulerVersion: '2.0-loki',
-    nextRun: new Date(Date.now() + 50 * 60 * 1000).toISOString(), // Next 50 min
-    runNumber: Math.floor(now / (50 * 60)) // Approximate run counter
+    schedulerVersion: '2.0-tempo',
+    nextRun: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // Next 30 min
+    runNumber: Math.floor(now / (30 * 60)) // Approximate run counter
   },
 
   // Priority for scheduled checks
@@ -67,24 +67,36 @@ const lokiFlowInput = {
 
   // Search filters (can be customized)
   searchFilters: {
-    // Look for errors and warnings
-    logLevels: ['error', 'ERROR', 'warning', 'WARNING'],
+    // Minimum error threshold for Stage 2 trigger
+    minErrorCount: 5,
 
-    // Minimum error rate to trigger analysis (0.5% = 0.005)
-    minErrorRate: 0.005,
+    // Error status code threshold
+    minStatusCode: 400, // HTTP 4xx and 5xx errors
 
-    // Minimum error count to trigger deeper analysis
-    minErrorCount: 10
+    // Service criticality threshold
+    minServiceCriticality: 'medium'
+  },
+
+  // Trace analysis settings
+  traceSettings: {
+    // Look for errors with status.code >= 400
+    errorStatusThreshold: 400,
+
+    // Minimum span duration for performance issues (ms)
+    slowSpanThreshold: 1000,
+
+    // Service dependency depth
+    maxDependencyDepth: 5
   }
 };
 
-console.log("=== PREPARE LOKIFLOW INPUT ===");
+console.log("=== PREPARE TEMPOFLOW INPUT ===");
 console.log("Request ID:", requestId);
 console.log("Time Range:", new Date(oneHourAgo * 1000).toISOString(), "to", new Date(now * 1000).toISOString());
-console.log("Namespaces:", lokiFlowInput.context.namespaces.length);
-console.log("Priority:", lokiFlowInput.priority);
+console.log("Namespaces:", tempoFlowInput.context.namespaces.length);
+console.log("Priority:", tempoFlowInput.priority);
 console.log("==============================");
 
 return {
-  json: lokiFlowInput
+  json: tempoFlowInput
 };
