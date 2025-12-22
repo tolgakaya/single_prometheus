@@ -150,7 +150,7 @@ if (input.agentExecutionParams && input.agentExecutionParams.parameters) {
       tempoQuery += ` && status=error`;
     } else if (config.searchParams.statusCodes.length > 0) {
       const codes = config.searchParams.statusCodes.join('|');
-      tempoQuery += ` && span.http.status_code=~"${codes}"`;
+      tempoQuery += ` && span.status=~"${codes}"`;
     }
 
     // Add service filter if specified
