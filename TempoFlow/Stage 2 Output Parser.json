@@ -1,32 +1,44 @@
 {
   "type": "object",
   "properties": {
-    "stage": { "type": "string" },
-    "investigation_trigger": { "type": "string" },
+    "stage": {
+      "type": "string",
+      "description": "Stage identifier (e.g., 'deep_investigation')"
+    },
+    "investigation_trigger": {
+      "type": "string",
+      "description": "What triggered this investigation"
+    },
     "service_context": {
       "type": "object",
       "properties": {
         "primary_services_investigated": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "default": []
         },
         "dependency_chains_analyzed": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "default": []
         },
         "cascade_patterns_detected": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "default": []
         }
-      }
+      },
+      "required": []
     },
     "tools_executed": {
       "type": "array",
-      "items": { "type": "string" }
+      "items": { "type": "string" },
+      "description": "List of Tempo tools that were executed"
     },
     "execution_timeline": {
       "type": "object",
-      "additionalProperties": { "type": "string" }
+      "additionalProperties": { "type": "string" },
+      "description": "Timeline of tool executions"
     },
     "findings": {
       "type": "object",
@@ -45,8 +57,10 @@
                   },
                   "failure_point": { "type": "string" },
                   "error_type": { "type": "string" }
-                }
-              }
+                },
+                "required": []
+              },
+              "default": []
             },
             "cascade_failures": {
               "type": "array",
@@ -59,10 +73,13 @@
                     "items": { "type": "string" }
                   },
                   "pattern": { "type": "string" }
-                }
-              }
+                },
+                "required": []
+              },
+              "default": []
             }
-          }
+          },
+          "required": []
         },
         "exceptions": {
           "type": "object",
@@ -77,10 +94,12 @@
                     "type": "array",
                     "items": { "type": "string" }
                   }
-                }
+                },
+                "required": []
               }
             }
-          }
+          },
+          "required": []
         },
         "performance": {
           "type": "object",
@@ -92,21 +111,31 @@
                 "properties": {
                   "p95": { "type": "string" },
                   "sla_violation": { "type": "boolean" }
-                }
+                },
+                "required": []
               }
             }
-          }
+          },
+          "required": []
         },
-        "external_dependencies": { "type": "object" },
-        "historical_comparison": { "type": "object" }
-      }
+        "external_dependencies": {
+          "type": "object",
+          "description": "External service dependencies analysis"
+        },
+        "historical_comparison": {
+          "type": "object",
+          "description": "Comparison with historical data"
+        }
+      },
+      "required": []
     },
     "affected_components": {
       "type": "object",
       "properties": {
         "services": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "default": []
         },
         "service_dependencies": {
           "type": "object",
@@ -117,18 +146,25 @@
         },
         "critical_paths_impacted": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "default": []
         },
         "endpoints": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "default": []
         },
         "databases": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "default": []
         },
-        "estimated_users_impacted": { "type": "string" }
-      }
+        "estimated_users_impacted": {
+          "type": "string",
+          "default": "Unknown"
+        }
+      },
+      "required": []
     },
     "root_cause_analysis": {
       "type": "object",
@@ -137,50 +173,78 @@
         "service_root": { "type": "string" },
         "affected_chains": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "default": []
         },
         "contributing_factors": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "default": []
         },
         "evidence": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "default": []
         }
-      }
+      },
+      "required": ["primary_cause"]
     },
     "severity_assessment": {
       "type": "object",
       "properties": {
-        "business_impact": { "type": "string" },
-        "technical_severity": { "type": "string" },
-        "urgency": { "type": "string" },
-        "service_criticality_score": { "type": "number" }
-      }
+        "business_impact": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"],
+          "default": "medium"
+        },
+        "technical_severity": {
+          "type": "string",
+          "enum": ["critical", "high", "medium", "low"],
+          "default": "medium"
+        },
+        "urgency": {
+          "type": "string",
+          "enum": ["immediate", "high", "medium", "low"],
+          "default": "medium"
+        },
+        "service_criticality_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 50
+        }
+      },
+      "required": []
     },
     "recommendations": {
       "type": "object",
       "properties": {
         "immediate_actions": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "description": "Actions to take immediately",
+          "default": []
         },
         "service_specific": {
           "type": "object",
           "additionalProperties": {
             "type": "array",
             "items": { "type": "string" }
-          }
+          },
+          "description": "Service-specific recommendations"
         },
         "short_term": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "default": []
         },
         "long_term": {
           "type": "array",
-          "items": { "type": "string" }
+          "items": { "type": "string" },
+          "default": []
         }
-      }
+      },
+      "required": []
     }
   },
   "required": [
@@ -188,7 +252,7 @@
     "investigation_trigger",
     "tools_executed",
     "findings",
-    "root_cause_analysis",
-    "recommendations"
-  ]
+    "root_cause_analysis"
+  ],
+  "additionalProperties": false
 }

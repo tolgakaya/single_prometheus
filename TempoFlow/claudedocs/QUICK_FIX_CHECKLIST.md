@@ -1,201 +1,171 @@
-# TempoFlow n8n Quick Fix Checklist
+# Quick Fix Deployment Checklist
 
-**Problem**: TraceQL syntax error at col 246: `status=error` invalid
-
----
-
-## ✅ Deployment Checklist
-
-### Step 1: Verify Node 4 Code ✅
-
-**File**: `TempoFlow Nodes/4. Service-Aware Query Builder.js`
-
-**Check Line 356**:
-```javascript
-// CORRECT ✅
-enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
-  `{ resource.env-code=~"${namespacePattern}" && (${serviceFilter}) && status=error }`;
-                                                                                        ^^^^^^^^^^^^^^^^^^^^^^^
-                                                                                    Must be status=error
-```
-
-**If you see `status.code>=400` or `status=error`** ❌ → File not updated, pull from git again
+**Date**: 2025-12-22
+**Status**: Ready for n8n Deployment
 
 ---
 
-### Step 2: Deploy Node 4 to n8n ⚠️
+## ✅ Stage 2 Parser Fix (CURRENT - HIGH PRIORITY)
 
-1. **Open n8n** → TempoFlow workflow
-2. **Find node**: "Service-Aware Query Builder" or "4. Service-Aware Query Builder"
-3. **Click Edit** → Open code editor
-4. **Find Line 356** (search for `enhancedQueries.serviceErrors`)
-5. **Verify**:
-   ```javascript
-   && status=error }`;  // ✅ CORRECT
-   ```
-   **NOT**:
-   ```javascript
-   && status.code>=400 }`;  // ❌ WRONG (old syntax)
-   && status=error }`;      // ❌ WRONG
-   ```
-6. **If wrong**: Copy entire file from `TempoFlow Nodes/4. Service-Aware Query Builder.js`
-7. **Paste** into n8n code editor
-8. **Save** → **Activate workflow**
+**Issue**: "Model output doesn't fit required format" error
+**File**: `TempoFlow/Stage 2 Output Parser.json`
 
----
+### Deploy to n8n:
+1. [ ] Open n8n TempoFlow workflow
+2. [ ] Find "Stage 2 Output Parser" node (Structured Output Parser)
+3. [ ] Backup current JSON schema
+4. [ ] Copy entire content from `TempoFlow/Stage 2 Output Parser.json`
+5. [ ] Paste into n8n parser node
+6. [ ] Save workflow
+7. [ ] Test with real Stage 2 execution
+8. [ ] Verify no validation errors
 
-### Step 3: Test Node 4 Output 🧪
+**Expected Result**: Stage 2 completes without parser errors, Agent 6 output validates successfully
 
-1. **Manual trigger** TempoFlow
-2. **Check Node 4 output** → `serviceAnalysis.enhancedQueries.serviceErrors`
-3. **Expected**:
-   ```json
-   {
-     "serviceAnalysis": {
-       "enhancedQueries": {
-         "serviceErrors": "{ resource.env-code=~\"bstp-cms-global-production|...\" && (resource.service.name=\"APIGateway\" || ...) && status=error }"
-       }
-     }
-   }
-   ```
-4. **Search for**: `status=error` ✅
-5. **Should NOT contain**: `status.code>=400` or `status=error` ❌
+**Documentation**: [STAGE2_PARSER_FIX.md](STAGE2_PARSER_FIX.md)
 
 ---
 
-### Step 4: Test Recent Errors Tool 🧪
+## ⏳ Fixed Service List Deployment (PENDING)
 
-1. **Continue workflow** → Let it reach "Recent Errors" HTTP node
-2. **Check HTTP Request**:
-   - **URL**: Should hit Tempo API
-   - **Query param `q`**: Should use `$json.searchParams?.customQuery`
-   - **Evaluated query**: Should contain `status=error`
-3. **Expected Result**: Traces returned or "No traces found"
-4. **Should NOT see**: "parse error at col 246" ❌
+**Issue**: Dynamic service detection unreliable
+**Files**:
+- `TempoFlow/TempoFlow Nodes/4. Service-Aware Query Builder.js`
+- 12 HTTP Tool queries from `HTTP_TOOLS_FIXED_QUERIES.md`
+
+### Deploy Node 4 to n8n:
+1. [ ] Open n8n TempoFlow workflow
+2. [ ] Locate "Service-Aware Query Builder" node (Node 4)
+3. [ ] Import updated Node 4 JSON
+4. [ ] Test execution with sample input
+5. [ ] Verify `detectedServices` contains all 109 services in output
+
+### Deploy HTTP Tools:
+1. [ ] Open `HTTP_TOOLS_FIXED_QUERIES.md`
+2. [ ] For each of 12 HTTP tools:
+   - Find the HTTP tool node in n8n workflow
+   - Copy query from documentation
+   - Paste into HTTP tool parameter field
+   - Execute node to test
+   - Verify results returned from multiple namespaces
+3. [ ] Save workflow after all 12 tools updated
+
+**Expected Result**:
+- Node 4 always outputs 109 services in `detectedServices`
+- HTTP tools query all 109 services consistently
+- Multi-namespace data collection works
+
+**Documentation**: [FIXED_SERVICE_LIST_SUMMARY.md](FIXED_SERVICE_LIST_SUMMARY.md)
 
 ---
 
-### Step 5: Fix HTTP Tool Fallback (Optional) 🔧
+## 🔧 TraceQL Syntax Fixes (INCLUDED IN NODE 4 + HTTP TOOLS)
 
-**If Node 4 works but fallback fails**:
+**Issue**: TraceQL syntax errors (col 246, status=error)
+**Files**:
+- `TempoFlow/TempoFlow Nodes/1. Unified Entry Point Input.json`
+- `TempoFlow/TempoFlow Nodes/4. Service-Aware Query Builder.js`
 
-1. **Open "Recent Errors" HTTP node**
-2. **Query Parameters** → Find `q` parameter
-3. **Current value**:
-   ```javascript
-   {{ $json.searchParams?.customQuery || '{status=error && .deployment.environment="etiyamobile-production" }' }}
-   ```
-4. **Replace with**:
-   ```javascript
-   {{ $json.searchParams?.customQuery || '{resource.env-code=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && status=error}' }}
-   ```
-5. **Save** → **Test**
+### Already Fixed In:
+- ✅ Node 1: Corrected `resource.env-code`, `span.status`, `status=error`
+- ✅ Node 4: Changed `status=error` to `status.code>=400`
+- ✅ All HTTP Tools: Updated TraceQL syntax
+
+**Deploy Notes**:
+- These fixes are already included in Node 4 and HTTP Tools updates above
+- No separate deployment needed
+- Verify queries don't produce "parse error at col 246"
 
 ---
 
-## 🔍 Debugging Tips
+## Deployment Priority
 
-### Check Git Status:
+### 1️⃣ **Deploy Stage 2 Parser Fix FIRST**
+- **Why**: Current blocker, prevents Stage 2 from working
+- **Impact**: Immediate resolution of validation errors
+- **Risk**: Low - only relaxes schema, backward compatible
 
+### 2️⃣ **Deploy Node 4 + HTTP Tools SECOND**
+- **Why**: Improves service coverage and query accuracy
+- **Impact**: Better error detection, consistent results
+- **Risk**: Medium - changes query behavior, requires testing
+
+### 3️⃣ **Validate End-to-End THIRD**
+- **Why**: Ensure all fixes work together
+- **Impact**: Complete workflow validation
+- **Risk**: Low - all fixes are independent
+
+---
+
+## Validation Checkpoints
+
+### After Stage 2 Parser Fix:
+- [ ] Stage 2 executes without format errors
+- [ ] Agent 6 output contains `root_cause_analysis.primary_cause`
+- [ ] Downstream workflows receive valid JSON
+
+### After Node 4 Fix:
+- [ ] `detectedServices` always contains 109 services
+- [ ] No dynamic service detection failures
+- [ ] Consistent output across executions
+
+### After HTTP Tools Fix:
+- [ ] All 12 tools query successfully without TraceQL errors
+- [ ] Multi-namespace results returned (check 12 namespaces)
+- [ ] Service regex matches all 109 services
+
+### End-to-End:
+- [ ] Orchestrator triggers workflow successfully
+- [ ] Stage 1 completes with service analysis
+- [ ] Stage 2 completes with root cause analysis
+- [ ] All HTTP tools execute without errors
+- [ ] Final output contains actionable recommendations
+
+---
+
+## Rollback Commands
+
+### Stage 2 Parser:
 ```bash
-cd "C:\Users\Asus\Desktop\OKR_AI"
-git log --oneline -5
+git checkout HEAD~1 "TempoFlow/Stage 2 Output Parser.json"
 ```
 
-**Expected commits**:
-```
-9e23d14 docs: Add n8n HTTP tool fallback query fix instructions
-76799eb docs: Add comprehensive Tempo query examples and TraceQL syntax guide
-ebb3639 fix: Critical bug fixes for TempoFlow deployment
-```
-
-### Verify Local File:
-
+### Node 4:
 ```bash
-grep "status=error" "TempoFlow/TempoFlow Nodes/4. Service-Aware Query Builder.js"
+git checkout HEAD~2 "TempoFlow/TempoFlow Nodes/4. Service-Aware Query Builder.js"
 ```
 
-**Expected output**: Line 356 with `status=error`
-
-### Check n8n Workflow Version:
-
-1. n8n → TempoFlow → **Settings** → **Version**
-2. Check last modified date
-3. **Should be**: After 2025-12-21 (today)
-4. **If older**: Workflow not updated, redeploy files
-
----
-
-## 🚨 Common Mistakes
-
-### ❌ Mistake 1: Editing wrong file
-- **Check**: You're editing `4. Service-Aware Query Builder.js`
-- **Not**: `1. Unified Entry Point.js` (different file)
-
-### ❌ Mistake 2: Not saving in n8n
-- After pasting code, click **Save** button
-- Green checkmark should appear
-
-### ❌ Mistake 3: Workflow not active
-- Toggle should be **green** (active)
-- **Not grey** (inactive)
-
-### ❌ Mistake 4: Old browser cache
-- Hard refresh n8n: `Ctrl+Shift+R` (Windows) or `Cmd+Shift+R` (Mac)
-- Clear browser cache
-
----
-
-## 📊 Expected vs Actual
-
-### ✅ CORRECT Query (What You Should See):
-
-```traceql
-{
-  resource.env-code=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"
-  &&
-  (resource.service.name="APIGateway" || resource.service.name="crm-mash-up" || ...)
-  &&
-  status=error
-}
-```
-
-### ❌ WRONG Query (What Causes Error):
-
-```traceql
-{
-  resource.env-code=~"..."
-  &&
-  (resource.service.name="...")
-  &&
-  status.code>=400     ← ❌ Wrong attribute (col 246 error)
-}
-```
-
-```traceql
-{
-  resource.env-code=~"..."
-  &&
-  (resource.service.name="...")
-  &&
-  status=error     ← ❌ Invalid syntax
-}
+### Full Revert:
+```bash
+git revert HEAD
+git push
 ```
 
 ---
 
-## 🎯 Final Checklist
+## Success Criteria
 
-Before closing this issue:
+**Stage 2 Parser Fix**:
+- ✅ No "Model output doesn't fit required format" errors
+- ✅ Agent 6 generates valid structured output
+- ✅ All required fields populated
 
-- [ ] **Line 356** in Node 4 has `status=error` ✅
-- [ ] Node 4 deployed to n8n ✅
-- [ ] Workflow saved and active ✅
-- [ ] Node 4 output shows `status=error` in query ✅
-- [ ] Recent Errors tool returns traces (or "not found") ✅
-- [ ] No "parse error at col 246" ❌
-- [ ] HTTP tool fallback updated (optional) ✅
+**Fixed Service List**:
+- ✅ 100% service coverage (109 services)
+- ✅ Consistent query behavior
+- ✅ No dynamic detection failures
+
+**TraceQL Syntax**:
+- ✅ No parse errors
+- ✅ Multi-namespace queries work
+- ✅ Correct attribute syntax (`status.code`, `resource.service.name`)
+
+**Overall**:
+- ✅ End-to-end workflow completes successfully
+- ✅ Actionable error analysis produced
+- ✅ Service dependencies traced correctly
+- ✅ Root cause analysis meaningful
 
 ---
 
-**Last Updated**: 2025-12-21
+**Last Updated**: 2025-12-22
