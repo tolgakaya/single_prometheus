@@ -21,6 +21,40 @@ function deriveUrgencyLevel(severityScore) {
   return 'LOW';
 }
 
+// ============= MOCK DATA DETECTION FUNCTION =============
+// Detects and flags mock/test data indicators to prevent production pollution
+function detectAndCleanMockData(data) {
+  const mockIndicators = [
+    'payment-service',
+    'PaymentProcessor',
+    'TransactionHandler',
+    '2023-08-',
+    '2024-01-15',
+    '2024-06-01',
+    'payment-db',
+    'stripe-api',
+    'test-deployment',
+    'mock-service',
+    'example-pod'
+  ];
+  
+  let dataStr = JSON.stringify(data);
+  let hasMockData = false;
+  
+  mockIndicators.forEach(indicator => {
+    if (dataStr.includes(indicator)) {
+      console.warn(`⚠️ Mock data indicator found: ${indicator}`);
+      hasMockData = true;
+    }
+  });
+  
+  if (hasMockData) {
+    console.warn("🚨 MOCK DATA DETECTED - Data will be cleaned from analysis pipeline");
+  }
+  
+  return hasMockData;
+}
+
 // Extract KB information safely (FIXED FIELD PATHS)
 const kbAlertCategory = alertCategoriesMapper.alertCategory || 'UNKNOWN';
 const kbUrgencyLevel = deriveUrgencyLevel(alertCategoriesMapper.calculatedSeverityScore || 0);
@@ -774,6 +808,48 @@ const stage3Data = stage3FixData.output || stage3FixData || {};
 const stage4Data = stage4FixData.output || stage4FixData || {};
 const stage5Data = stage5FixData.output || stage5FixData || {};
 
+// ============= MOCK DATA DETECTION AND CLEANUP =============
+console.log("=== MOCK DATA DETECTION ===");
+let mockDataFound = false;
+
+// Check each stage for mock data
+if (stage1Data && detectAndCleanMockData(stage1Data)) {
+  mockDataFound = true;
+  console.warn("⚠️ Mock data detected in Stage 1 - cleaning...");
+  stage1Data = null;
+}
+
+if (stage2Data && detectAndCleanMockData(stage2Data)) {
+  mockDataFound = true;
+  console.warn("⚠️ Mock data detected in Stage 2 - cleaning...");
+  stage2Data = null;
+}
+
+if (stage3Data && detectAndCleanMockData(stage3Data)) {
+  mockDataFound = true;
+  console.warn("⚠️ Mock data detected in Stage 3 - cleaning...");
+  stage3Data = null;
+}
+
+if (stage4Data && detectAndCleanMockData(stage4Data)) {
+  mockDataFound = true;
+  console.warn("⚠️ Mock data detected in Stage 4 - cleaning...");
+  stage4Data = null;
+}
+
+if (stage5Data && detectAndCleanMockData(stage5Data)) {
+  mockDataFound = true;
+  console.warn("⚠️ Mock data detected in Stage 5 - cleaning...");
+  stage5Data = null;
+}
+
+if (mockDataFound) {
+  console.warn("🚨 MOCK DATA DETECTED AND CLEANED - Analysis will proceed with remaining clean data only");
+} else {
+  console.log("✅ No mock data detected - all stage data is clean");
+}
+console.log("===========================");
+
 // Extract context from Stage 1 (most reliable for NODE alerts)
 const stage1Context = stage1FixData.output?._context || stage1FixData._context || {};
 
@@ -1171,7 +1247,7 @@ const topAlert = realAlertName !== 'Unknown' ? realAlertName : // Prioritize rea
                 inputData?.stage3Data?.recommended_actions?.[0]?.alert ||
                 inputData?._context?.alertContext?.alertName ||
                 inputData?.primaryDiagnosis?.stage?.match(/Alert:\s*([A-Za-z]+)/)?.[1] ||
-                'KubePodCrashLooping'; // Known fallback from the test data
+                null; // No fallback - return null if alert type cannot be determined
 
 console.log("Final alert selected:", topAlert);
 
@@ -1278,11 +1354,11 @@ if (contextualData.type === 'NODE') {
   console.log("Deployment:", deployment);
   console.log("Namespace:", namespace);
 } else {
-  // Default fallback for unknown alert types
-  podName = realPod;
-  namespace = realNamespace;
-  deployment = realDeployment;
-  nodeName = 'unknown';
+  // No fallback - use actual values or null
+  podName = realPod || null;
+  namespace = realNamespace || null;
+  deployment = realDeployment || null;
+  nodeName = null;
 }
 
 console.log("=== FINAL POD/DEPLOYMENT INFO ===");
@@ -1986,40 +2062,9 @@ function generateNodeActions(allStageData, nodeName, namespace, evidence) {
     actions.push(action);
   });
   
-  // If no Stage 5 actions, generate default node actions
+  // If no Stage 5 actions available, return empty array (no synthetic data generation)
   if (actions.length === 0) {
-    actions.push({
-      priority: "🔴 IMMEDIATE (Must be done now)",
-      action: `Check node ${nodeName} status and connectivity`,
-      command: `kubectl describe node ${nodeName} && kubectl get nodes -o wide`,
-      time: "5-10 minutes",
-      risk: "Low",
-      success: `Node ${nodeName} status and issues identified`,
-      kbEnhanced: false,
-      fallback: true
-    });
-    
-    actions.push({
-      priority: "🟡 SHORT TERM (Within 1 hour)",
-      action: "Restart node services if needed",
-      command: `# Access node and restart kubelet:\nssh ${nodeName}\nsudo systemctl restart kubelet`,
-      time: "10-15 minutes",
-      risk: "Medium",
-      success: "Node services restarted and operational",
-      kbEnhanced: false,
-      fallback: true
-    });
-    
-    actions.push({
-      priority: "🟢 LONG TERM (1-2 days)",
-      action: "Monitor node stability and resource usage",
-      command: `kubectl top node ${nodeName} && kubectl get events --field-selector involvedObject.name=${nodeName}`,
-      time: "Ongoing",
-      risk: "Low",
-      success: "Node stability monitoring in place",
-      kbEnhanced: false,
-      fallback: true
-    });
+    console.warn(`⚠️ No Stage 5 remediation available for node ${nodeName} - insufficient data`);
   }
   
   return actions;
@@ -2078,29 +2123,9 @@ function generatePodActions(allStageData, deployment, namespace, podName, eviden
     actions.push(action);
   });
   
-  // If no Stage 5 actions available, provide evidence-based fallback
+  // If no Stage 5 actions available, return empty array (no synthetic data generation)
   if (actions.length === 0) {
-    console.log("⚠️ No Stage 5 remediation found, using evidence-based fallback");
-    
-    // Evidence-based immediate action
-    let fallbackAction = "Restart service";
-    let fallbackCommand = `kubectl delete pod ${podName} -n ${namespace}`;
-    
-    if (evidence.pod_status?.last_termination?.reason === 'OOMKilled') {
-      fallbackAction = "Memory limit exceeded - restart pod and monitor memory usage";
-      fallbackCommand = `kubectl delete pod ${podName} -n ${namespace} && kubectl top pods -n ${namespace} | grep ${deployment}`;
-    }
-    
-    actions.push({
-      priority: "🔴 IMMEDIATE (Execute NOW)",
-      action: fallbackAction,
-      command: fallbackCommand,
-      time: "2-5 minutes",
-      risk: "Low",
-      success: `${deployment} service restarts`,
-      originalStageAction: false,
-      fallback: true
-    });
+    console.warn("⚠️ No Stage 5 remediation available - insufficient data for action generation");
   }
   
   return actions;
@@ -3089,6 +3114,7 @@ return {
   
   _debug: {
     contextId: masterContext.contextId,
+    mockDataDetected: mockDataFound || false,  // Track mock data detection status
     hasStage1Data: !!allStageData.stage1,
     hasStage2Data: !!allStageData.stage2,
     hasStage3Data: !!allStageData.stage3,
