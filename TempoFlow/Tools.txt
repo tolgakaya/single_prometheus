@@ -1,0 +1,258 @@
+1. Recent Errors
+https://grafana-tempo.saas.etycloudbss.com/api/search
+
+PArameter:
+{{ $json.searchParams?.customQuery || '{status=error && resource.env-code="em-prod" }' }}
+
+
+2. Yesterday 3 Hours
+https://grafana-tempo.saas.etycloudbss.com/api/search
+
+PArameter:
+{{ (() => {
+  const services = $json.serviceAnalysis?.detectedServices || [];
+  const env = "etiyamobile-production";
+  
+  if (services.length > 0) {
+    const serviceFilter = services.map(s => `.service.name="${s}"`).join(' || ');
+    return `{ resource.deployment.environment="${env}" && (${serviceFilter}) }`;
+  }
+  
+  return `{ resource.deployment.environment="${env}" }`;
+})() }}
+
+3. Exception Spans
+https://grafana-tempo.saas.etycloudbss.com/api/search
+
+Parameter:
+{{ (() => {
+  const services = $json.serviceAnalysis?.detectedServices || [];
+  const env = "etiyamobile-production";
+  
+  if (services.length > 0) {
+    const serviceFilter = services.map(s => `.service.name="${s}"`).join(' || ');
+    return `{ resource.deployment.environment="${env}" && (${serviceFilter}) && (.error.type != nil || .exception != nil || .status.code>=400) }`;
+  }
+  
+  return `{ resource.deployment.environment="${env}" && (.error.type != nil || .exception != nil || .status.code>=400) }`;
+})() }}
+
+
+4. Last Week 3 Hours
+https://grafana-tempo.saas.etycloudbss.com/api/search
+
+Parameter:
+{{ (() => {
+  const services = $json.serviceAnalysis?.detectedServices || [];
+  const env = "etiyamobile-production";
+  
+  if (services.length > 0) {
+    const serviceFilter = services.map(s => `.service.name="${s}"`).join(' || ');
+    return `{ resource.deployment.environment="${env}" && (${serviceFilter}) }`;
+  }
+  
+  return `{ resource.deployment.environment="${env}" }`;
+})() }}
+
+5. High Latency
+https://grafana-tempo.saas.etycloudbss.com/api/search
+
+Parameter:
+{{ (() => {
+  const services = $json.serviceAnalysis?.detectedServices || [];
+  const env = "etiyamobile-production";
+  
+  if (services.length > 0) {
+    const serviceFilter = services.map(s => `.service.name="${s}"`).join(' || ');
+    return `{ resource.deployment.environment="${env}" && (${serviceFilter}) && duration > 1000ms }`;
+  }
+  
+  return `{ resource.deployment.environment="${env}" && duration > 1000ms }`;
+})() }}
+
+6. Last 24 Hours Errors
+https://grafana-tempo.saas.etycloudbss.com/api/search
+
+Parameter:
+{{ (() => {
+  const services = $json.serviceAnalysis?.detectedServices || [];
+  const env = "etiyamobile-production";
+  
+  if (services.length > 0) {
+    const serviceFilter = services.map(s => `.service.name="${s}"`).join(' || ');
+    return `{ resource.deployment.environment="${env}" && (${serviceFilter}) && status=error }`;
+  }
+  
+  return `{ resource.deployment.environment="${env}" && status=error }`;
+})() }}
+
+7. Recent External Service Latency Errors
+https://grafana-tempo.saas.etycloudbss.com/api/search
+
+Parameter:
+{{ (() => {
+  const services = $json.serviceAnalysis?.detectedServices || [];
+  const env = "etiyamobile-production";
+  
+  // Client span indicators
+  const clientSpanIndicators = '(.network.peer.address != nil || .server.address != nil || .http.url != nil || span.kind = "client")';
+  const errorPatterns = '(.error.type =~ ".*Timeout.*" || .error.type =~ ".*Connection.*" || duration > 2s)';
+  
+  if (services.length > 0) {
+    const serviceFilter = services.map(s => `.service.name="${s}"`).join(' || ');
+    return `{ resource.deployment.environment="${env}" && (${serviceFilter}) && ${clientSpanIndicators} && ${errorPatterns} }`;
+  }
+  
+  return `{ resource.deployment.environment="${env}" && ${clientSpanIndicators} && ${errorPatterns} }`;
+})() }}
+
+8. Last 24 Hours Spans Errors All
+https://grafana-tempo.saas.etycloudbss.com/api/search
+
+Parameter:
+{{ (() => {
+  const services = $json.serviceAnalysis?.detectedServices || [];
+  const env = "etiyamobile-production";
+  
+  if (services.length > 0) {
+    const serviceFilter = services.map(s => `.service.name="${s}"`).join(' || ');
+    return `{ resource.deployment.environment="${env}" && (${serviceFilter}) && (status=error || .error.type != nil || .exception != nil || .exception.stacktrace != nil) }`;
+  }
+  
+  return `{ resource.deployment.environment="${env}" && (status=error || .error.type != nil || .exception != nil || .exception.stacktrace != nil) }`;
+})() }}
+
+9. Span 1 Hour With Errors
+https://grafana-tempo.saas.etycloudbss.com/api/search
+
+Parameter:
+{{ (() => {
+  const services = $json.serviceAnalysis?.detectedServices || [];
+  const env = "etiyamobile-production";
+  
+  if (services.length > 0) {
+    const serviceFilter = services.map(s => `.service.name="${s}"`).join(' || ');
+    return `{ resource.deployment.environment="${env}" && (${serviceFilter}) && (.status.code>=400 || .error.type != nil || .exception != nil) }`;
+  }
+  
+  return `{ resource.deployment.environment="${env}" && (.status.code>=400 || .error.type != nil || .exception != nil) }`;
+})() }}
+
+10. Recent 3 Hours
+https://grafana-tempo.saas.etycloudbss.com/api/search
+
+Parameter:
+
+{{ (() => {
+  const services = $json.serviceAnalysis?.detectedServices || [];
+  const env = "etiyamobile-production";
+  
+  if (services.length > 0) {
+    const serviceFilter = services.map(s => `.service.name="${s}"`).join(' || ');
+    return `{ resource.deployment.environment="${env}" && (${serviceFilter}) }`;
+  }
+  
+  return `{ resource.deployment.environment="${env}" }`;
+})() }}
+
+11. Service Cascade Analyzer
+https://grafana-tempo.saas.etycloudbss.com/api/search
+
+Parameter:
+{{ (() => {
+  const serviceContext = $json.serviceContext || {};
+  const errorAnalysis = $json.errorAnalysis || {};
+  const errorsByCategory = errorAnalysis.errorsByCategory || {};
+
+  const cascadePatterns = [];
+
+  // Auth category errors
+  if (errorsByCategory.auth?.totalErrors > 0) {
+    cascadePatterns.push('(.service.name="ui-authz-mc-backend" || .service.name="crm-customer-information" || .service.name="bstp-id-service")');
+  }
+
+  // CRM category errors
+  if (errorsByCategory.crm?.totalErrors > 0) {
+    cascadePatterns.push('(.service.name="crm-customer-information" || .service.name="crm-asset" || .service.name="crm-mash-up" || .service.name="bss-mc-crm-customer-information-t4")');
+  }
+
+  // CPQ/Order category errors
+  if (errorsByCategory.cpq?.totalErrors > 0) {
+    cascadePatterns.push('(.service.name="cpq-ordercapture" || .service.name="bstp-cpq-batch" || .service.name="bss-mc-cpq-t4")');
+  }
+
+  // Config service errors (affects everything)
+  if (errorsByCategory.config?.totalErrors > 0) {
+    cascadePatterns.push('(.service.name="domain-config-service" || .service.name="bss-mc-domain-config-t4")');
+  }
+
+  // Backend category errors
+  if (errorsByCategory.backend?.totalErrors > 0) {
+    cascadePatterns.push('(.service.name="bss-services-service.etiyamobile-production-eom")');
+  }
+
+  // Gateway errors
+  if (errorsByCategory.gateway?.totalErrors > 0) {
+    cascadePatterns.push('(.service.name="APIGateway")');
+  }
+
+  // T4 layer errors
+  if (errorsByCategory['t4-layer']?.totalErrors > 0) {
+    cascadePatterns.push('(.service.name="eca-t4" || .service.name="bss-mc-domain-config-t4" || .service.name="bss-mc-cpq-t4" || .service.name="bss-mc-crm-customer-information-t4" || .service.name="bss-mc-ntf-engine-t4" || .service.name="bss-mc-pcm-product-catalog-t4" || .service.name="bss-mc-asset-management-t4")');
+  }
+
+  const env = "etiyamobile-production";
+
+  // CLIENT span detection: network.peer.address, server.address veya http.url varlığı
+  const clientSpanIndicators = '(.network.peer.address != nil || .server.address != nil || .http.url != nil)';
+  
+  // Cascade error patterns
+  const cascadeErrorPatterns = '(.status="500" || .status="502" || .status="503" || .error.type =~ ".*Timeout.*" || .error.type =~ ".*Connection.*")';
+
+  // Ana query
+  if (cascadePatterns.length > 0) {
+    // Servis filtreleri + CLIENT span indicators + error patterns
+    return `{ resource.deployment.environment="${env}" && (${cascadePatterns.join(' || ')}) && ${clientSpanIndicators} && ${cascadeErrorPatterns} }`;
+  }
+
+  // Fallback: Genel cascade detection - CLIENT span'lardaki tüm error'lar
+  return `{ resource.deployment.environment="${env}" && ${clientSpanIndicators} && (status=error || ${cascadeErrorPatterns}) }`;
+})() }}
+
+12. Dependency Chain Tracer
+https://grafana-tempo.saas.etycloudbss.com/api/search
+
+Parameter:
+{{ (() => {
+  const serviceAnalysis = $json.serviceContext || $json.serviceAnalysis || {};
+  const detectedServices = serviceAnalysis.detectedServices || [];
+  
+  // 400-599 arası error kodları - ama gruplara bölelim performans için
+  const clientErrors = Array.from({length: 50}, (_, i) => `.status="${i+400}"`).join(' || '); // 400-449
+  const serverErrors = Array.from({length: 50}, (_, i) => `.status="${i+500}"`).join(' || '); // 500-549
+  const additionalErrors = Array.from({length: 50}, (_, i) => `.status="${i+550}"`).join(' || '); // 550-599
+  
+  // Tüm error kodlarını birleştir
+  const errorCodes = `${clientErrors} || ${serverErrors} || ${additionalErrors}`;
+  
+  // Service filter
+  if (detectedServices.length > 0) {
+    const serviceFilter = detectedServices
+      .slice(0, 5) // Max 5 service - orijinalde böyleydi
+      .map(s => `.service.name="${s}"`)
+      .join(' || ');
+    return `{ (${serviceFilter}) && (${errorCodes}) }`;
+  }
+  
+  // Default: Critical services
+  const criticalServices = [
+    "ui-authz-mc-backend", 
+    "crm-customer-information", 
+    "cpq-ordercapture",
+    "domain-config-service",
+    "APIGateway",
+    "bss-services-service.etiyamobile-production-eom"
+  ];
+  const serviceFilter = criticalServices.map(s => `.service.name="${s}"`).join(' || ');
+  return `{ (${serviceFilter}) && (${errorCodes}) }`;
+})() }}

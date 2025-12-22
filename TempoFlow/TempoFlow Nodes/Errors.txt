@@ -1,5 +1,10 @@
 1. İlk stage'te Recent Errors http tool'u ile tempo sorgulanıyor
 
+Buradaki error parametresini bu örnekteki gibi status=error şeklinde düzneleyelim, tabi servis isimleri vb her şey aynı olacak. Ayrıca deployment environmnet yerine env-code kullanılacak
+{resource.env-code="em-prod" && resource.service.namespace="em-prod" && resource.service.name="crm-customer-information" && resource.env-code="em-prod" && status=error}
+
+Bütün sorgularda deplyment environment yerine env-code kullanılacak lütfen değiştirelim.
+
 Burada gönderilen parametre şu şekilde:
 
 {{ $json.searchParams?.customQuery || '{status=error && .deployment.environment="etiyamobile-production" }' }}
