@@ -5,12 +5,41 @@
 
 ---
 
-## ✅ Stage 2 Parser Fix (CURRENT - HIGH PRIORITY)
+## ✅ Stage 2 Formatter Node (CURRENT - HIGH PRIORITY - RECOMMENDED)
 
 **Issue**: "Model output doesn't fit required format" error
-**File**: `TempoFlow/Stage 2 Output Parser.json`
+**Solution**: Add transformer node between Agent 6 and Parser
+**File**: `TempoFlow/TempoFlow Nodes/7.5 Stage 2 Response Formatter.js`
 
 ### Deploy to n8n:
+1. [ ] Open n8n TempoFlow workflow
+2. [ ] Disconnect wire between `7. Stage 2 Deep Dive` and `Stage 2 Output Parser`
+3. [ ] Add new **Code** node between them
+4. [ ] Name it: `7.5 Stage 2 Response Formatter`
+5. [ ] Set Mode: `Run Once for All Items`
+6. [ ] Copy entire content from `7.5 Stage 2 Response Formatter.js`
+7. [ ] Paste into code editor
+8. [ ] Save node
+9. [ ] Reconnect: Agent 6 → Formatter → Parser
+10. [ ] Test with real Stage 2 execution
+11. [ ] Verify no validation errors
+
+**Expected Result**:
+- Formatter transforms Agent 6 output to match parser schema
+- All required fields populated with defaults if missing
+- Stage 2 completes without errors
+
+**Documentation**: [STAGE2_FORMATTER_NODE_DEPLOYMENT.md](STAGE2_FORMATTER_NODE_DEPLOYMENT.md)
+
+---
+
+## ⏸️ Stage 2 Parser Fix (ALTERNATIVE SOLUTION)
+
+**Issue**: "Model output doesn't fit required format" error
+**Solution**: Relax parser schema (use only if formatter doesn't work)
+**File**: `TempoFlow/Stage 2 Output Parser.json`
+
+### Deploy to n8n (ONLY IF FORMATTER FAILS):
 1. [ ] Open n8n TempoFlow workflow
 2. [ ] Find "Stage 2 Output Parser" node (Structured Output Parser)
 3. [ ] Backup current JSON schema
@@ -18,9 +47,8 @@
 5. [ ] Paste into n8n parser node
 6. [ ] Save workflow
 7. [ ] Test with real Stage 2 execution
-8. [ ] Verify no validation errors
 
-**Expected Result**: Stage 2 completes without parser errors, Agent 6 output validates successfully
+**Note**: Formatter approach is preferred as it's more maintainable
 
 **Documentation**: [STAGE2_PARSER_FIX.md](STAGE2_PARSER_FIX.md)
 
