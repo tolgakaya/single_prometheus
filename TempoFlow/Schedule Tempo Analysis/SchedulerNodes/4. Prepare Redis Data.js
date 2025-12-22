@@ -56,9 +56,12 @@ const redisData = {
   // Alert details
   severity: alert.alertSummary?.severity || 'unknown',
   title: alert.alertSummary?.title || 'Unknown Alert',
-  source: alert.alertSummary?.source || 'kubernetes',
-  component: alert.kubernetesAnalysis?.deployment || 'unknown',
-  namespace: alert.kubernetesAnalysis?.namespace || 'unknown',
+  source: alert.alertSummary?.source || 'tempo-traces',
+  component: alert.traceAnalysis?.rootCauseAnalysis?.serviceRoot || 'unknown',
+  impact_score: (alert.traceAnalysis?.metrics?.impactScore || 0).toString(),
+  critical_path_affected: alert.alertSummary?.criticalPathAffected ? 'true' : 'false',
+  cascade_failures: (alert.alertSummary?.cascadeFailures || 0).toString(),
+  failed_chains: (alert.alertSummary?.failedChains || 0).toString(),
   
   // Jira ticket info (will be empty for new alerts initially)
   jira_ticket_id: jiraTicketId,
@@ -67,10 +70,10 @@ const redisData = {
   // Call tracking (for future phone call feature)
   call_count: (alert.existingTicket?.callCount || 0).toString(),
   last_call_time: (alert.existingTicket?.lastCallTime || 0).toString(),
-  
-  // Metadata
-  context_id: alert.kubernetesAnalysis?.contextId || '',
-  confidence: (alert.kubernetesAnalysis?.confidence || 0).toString(),
+
+  // Metadata (TempoFlow-specific)
+  root_cause: alert.traceAnalysis?.rootCauseAnalysis?.primaryCause || 'unknown',
+  confidence: (alert.traceAnalysis?.metrics?.confidenceLevel || 0).toString(),
   escalated: alert.actions?.escalate ? 'true' : 'false',
   
   // Timestamp
