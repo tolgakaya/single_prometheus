@@ -191,6 +191,12 @@ const traceAnalysis = {
 function shouldCreateJiraTicket() {
   // Criteria for creating Jira ticket (TempoFlow-specific):
 
+  // 0. Don't create ticket if system is healthy (user requirement)
+  if (healthCheck && healthCheck.status === 'healthy') {
+    console.log("System is healthy - skipping Jira ticket creation");
+    return false;
+  }
+
   // 1. Incident flag is set
   if (isIncident) return true;
 
