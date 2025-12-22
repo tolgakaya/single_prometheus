@@ -1,0 +1,495 @@
+[
+  {
+    "fingerprint": "000000005785c9ed",
+    "fingerprintData": {
+      "issueType": "analysis in progress - root",
+      "originService": "unknown-service"
+    },
+    "needsJiraTicket": true,
+    "alertSummary": {
+      "alertId": "8735",
+      "source": "tempo-traces",
+      "title": "🚨 INCIDENT: No Issues Detected - All Services Healthy",
+      "detectedAt": "2025-12-22T11:17:09.238Z",
+      "severity": "HIGH",
+      "isIncident": true,
+      "errorCount": 0,
+      "cascadeFailures": 0,
+      "failedChains": 0,
+      "affectedServices": 109,
+      "criticalPathAffected": true,
+      "impactScore": 0
+    },
+    "traceAnalysis": {
+      "analysisId": "8735",
+      "workflowExecutionId": "8735",
+      "timestamp": "2025-12-22T11:17:09.142Z",
+      "serviceImpact": {
+        "totalServices": 109,
+        "errorsByService": {},
+        "criticalPathAffected": true,
+        "affectedPath": "login"
+      },
+      "dependencyAnalysis": {
+        "cascadeFailures": [],
+        "failedChains": []
+      },
+      "rootCauseAnalysis": {
+        "primaryCause": "Analysis in progress - root cause not yet determined",
+        "serviceRoot": "Unknown",
+        "affectedChains": [],
+        "contributingFactors": [],
+        "evidence": []
+      },
+      "metrics": {
+        "totalErrors": 0,
+        "impactScore": 0,
+        "confidenceLevel": 1
+      },
+      "actions": {
+        "immediate": [],
+        "shortTerm": [],
+        "longTerm": []
+      }
+    },
+    "jiraTicketData": {
+      "title": "🚨 INCIDENT: No Issues Detected - All Services Healthy",
+      "description": "\n<div style=\"font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto;\">\n\n  <!-- INCIDENT SUMMARY -->\n  <div style=\"border: 2px solid #d32f2f; border-radius: 8px; margin: 10px 0; background: #ffebee;\">\n    <div style=\"background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🚨 INCIDENT SUMMARY\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n        <tr><td style=\"font-weight: bold; width: 180px; padding: 5px;\">Analysis ID:</td><td style=\"padding: 5px;\">tempoflow-1766402229158-zhmafdy5g</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Type:</td><td style=\"padding: 5px;\">Incident</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Overall Status:</td><td style=\"padding: 5px;\">🟡 WARNING</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Total Errors:</td><td style=\"padding: 5px;\"><strong style=\"color: #d32f2f;\">0</strong></td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Affected Services:</td><td style=\"padding: 5px;\">0 services</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Critical Services:</td><td style=\"padding: 5px;\">None</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Impact Score:</td><td style=\"padding: 5px;\">0</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Critical Path Affected:</td><td style=\"padding: 5px;\">⚠️ YES (login)</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Source:</td><td style=\"padding: 5px;\">orchestrator</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Priority:</td><td style=\"padding: 5px;\">critical</td></tr>\n      </table>\n    </div>\n  </div>\n\n  <!-- EXECUTIVE SUMMARY -->\n  <div style=\"margin: 20px 0; padding: 15px; background: #f5f5f5; border-left: 4px solid #607d8b; border-radius: 4px;\">\n    <h3 style=\"margin: 0 0 10px 0; color: #455a64;\">📝 Executive Summary</h3>\n    <p style=\"margin: 0; line-height: 1.6;\">No errors detected across the 109 services checked. Proceeding to stage 2 as per critical priority rules.</p>\n\n    \n      <div style=\"margin-top: 10px;\">\n        <strong>Main Issues:</strong>\n        <ul style=\"margin: 5px 0; padding-left: 20px;\">\n          <li>Critical path 'login' is impacted</li>\n        </ul>\n      </div>\n    \n  </div>\n\n  <!-- SERVICE ERROR BREAKDOWN -->\n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #f57c00; border-bottom: 2px solid #ff9800; padding-bottom: 10px;\">\n      🔍 Service Error Analysis\n    </h2>\n\n    <table style=\"width: 100%; border-collapse: collapse; margin: 10px 0; border: 1px solid #e0e0e0;\">\n      <thead>\n        <tr style=\"background: #f5f5f5;\">\n          <th style=\"padding: 10px; text-align: left; border-bottom: 2px solid #e0e0e0;\">Service</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">Error Count</th>\n          <th style=\"padding: 10px; text-align: left; border-bottom: 2px solid #e0e0e0;\">Error Types</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">Criticality</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">SLA Violation</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr><td colspan=\"5\" style=\"padding: 10px; text-align: center;\">No service errors detected</td></tr>\n      </tbody>\n    </table>\n\n    \n      <div style=\"margin: 15px 0; padding: 10px; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;\">\n        <h4 style=\"margin: 0 0 10px 0; color: #1976d2;\">📊 Error Discovery:</h4>\n        <ul style=\"margin: 0; padding-left: 20px;\">\n          <li>Stage 1 (Health Check): 0 errors</li>\n          <li>Stage 2 (Deep Analysis): +0 additional errors</li>\n          <li><strong>Total After Deep Analysis: 0 errors</strong></li>\n        </ul>\n      </div>\n    \n  </div>\n\n  <!-- ROOT CAUSE ANALYSIS -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #9c27b0; border-bottom: 2px solid #9c27b0; padding-bottom: 10px;\">\n      🎯 Root Cause Analysis\n    </h2>\n    \n    <div style=\"padding: 15px; background: #fff8e1; border-left: 4px solid #ffa726; border-radius: 4px;\">\n      <h4 style=\"margin: 0 0 10px 0; color: #f57c00;\">🔍 Primary Cause:</h4>\n      <p style=\"margin: 0 0 15px 0; font-size: 14px;\"><strong>Analysis in progress - root cause not yet determined</strong></p>\n\n      \n\n      \n\n      \n\n      \n    </div>\n  \n  </div>\n  \n\n  <!-- DEPENDENCY CHAIN FAILURES -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #d32f2f; border-bottom: 2px solid #d32f2f; padding-bottom: 10px;\">\n      ⛓️ Dependency Chain Analysis\n    </h2>\n\n    \n\n    \n  </div>\n  \n\n  <!-- PERFORMANCE ISSUES -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #ff5722; border-bottom: 2px solid #ff5722; padding-bottom: 10px;\">\n      ⚡ Performance Issues\n    </h2>\n\n    <table style=\"width: 100%; border-collapse: collapse; margin: 10px 0; border: 1px solid #e0e0e0;\">\n      <thead>\n        <tr style=\"background: #f5f5f5;\">\n          <th style=\"padding: 10px; text-align: left; border-bottom: 2px solid #e0e0e0;\">Service</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">P95 Latency</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">SLA Violation</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr><td colspan=\"3\" style=\"padding: 10px; text-align: center;\">No performance issues detected</td></tr>\n      </tbody>\n    </table>\n  </div>\n  \n\n  <!-- RECOMMENDATIONS -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #2196f3; border-bottom: 2px solid #2196f3; padding-bottom: 10px;\">\n      💡 Recommendations\n    </h2>\n    <li>Continue monitoring current state</li>\n  </div>\n  \n\n  <!-- AFFECTED COMPONENTS -->\n  \n  <div style=\"margin: 20px 0; padding: 15px; background: #fafafa; border-radius: 4px;\">\n    <h3 style=\"margin: 0 0 10px 0; color: #607d8b;\">🎯 Affected Components</h3>\n    <ul style=\"margin: 0; padding-left: 20px;\">\n      \n      \n      \n      \n        <li><strong>Estimated Users Impacted:</strong> Unknown</li>\n      \n    </ul>\n  </div>\n  \n\n  <!-- TOOLS & EXECUTION -->\n  \n\n  <!-- FOOTER -->\n  <div style=\"text-align: center; margin-top: 30px; padding: 15px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666;\">\n    <div style=\"margin-bottom: 5px;\"><strong>Auto-Generated by TempoFlow</strong></div>\n    <div>Analysis Timestamp: 12/22/2025, 2:17:09 PM</div>\n    <div>Workflow Execution ID: 8735</div>\n    <div>Deep Analysis: ✓ Performed</div>\n    <div>Confidence Level: 100%</div>\n  </div>\n</div>\n",
+      "priority": "Critical",
+      "labels": [
+        "Incident",
+        "Status-warning",
+        "Auto-Generated",
+        "TempoFlow",
+        "Distributed-Tracing"
+      ],
+      "components": [],
+      "issueType": "Incident",
+      "customFields": {
+        "analysisId": "tempoflow-1766402229158-zhmafdy5g",
+        "workflowExecutionId": "8735",
+        "isIncident": true,
+        "overallStatus": "warning",
+        "totalErrors": 0,
+        "affectedServicesCount": 0,
+        "criticalServicesCount": 0,
+        "impactScore": 0,
+        "criticalPathAffected": true,
+        "deepAnalysisPerformed": true,
+        "confidenceLevel": 1,
+        "cascadeFailures": 0,
+        "dependencyChainFailures": 0,
+        "slaViolations": 0,
+        "source": "orchestrator",
+        "priority": "critical",
+        "orchestratorId": null
+      },
+      "serviceErrors": [],
+      "rootCause": {
+        "primaryCause": "Analysis in progress - root cause not yet determined",
+        "serviceRoot": "",
+        "affectedChains": [],
+        "evidenceCount": 0
+      },
+      "recommendations": {
+        "immediate": [],
+        "shortTerm": [],
+        "longTerm": []
+      },
+      "metadata": {
+        "generatedAt": "2025-12-22T11:17:09.160Z",
+        "generatedBy": "TempoFlow-v1.0",
+        "analysisTimestamp": "2025-12-22T11:17:09.142Z",
+        "healthCheckStatus": "healthy",
+        "errorReconciliation": {
+          "stage1Errors": 0,
+          "stage2AdditionalErrors": 0,
+          "totalAfterDeepAnalysis": 0
+        }
+      }
+    },
+    "originalAnalysis": {
+      "analysisComplete": true,
+      "timestamp": "2025-12-22T11:17:09.142Z",
+      "workflowExecutionId": "8735",
+      "healthCheck": {
+        "status": "healthy",
+        "errorCount": 0,
+        "errorTypes": {
+          "4xx": 0,
+          "5xx": 0,
+          "timeouts": 0
+        },
+        "summary": "No errors detected across the 109 services checked. Proceeding to stage 2 as per critical priority rules.",
+        "servicesChecked": [],
+        "errorReconciliation": {
+          "stage1Errors": 0,
+          "stage2AdditionalErrors": 0,
+          "totalAfterDeepAnalysis": 0
+        }
+      },
+      "analysisContext": {
+        "source": "orchestrator",
+        "priority": "critical",
+        "orchestratorId": null,
+        "requestId": null
+      },
+      "serviceAnalysis": {
+        "servicesAnalyzed": [
+          "active-mq",
+          "bss-crm-batch",
+          "bss-mc-activity",
+          "bss-mc-asset-management",
+          "bss-mc-b2b-objectstorage",
+          "bss-mc-cpq",
+          "bss-mc-cpq-batch",
+          "bss-mc-cpq-ntf-integrator",
+          "bss-mc-crm-customer-information",
+          "bss-mc-crm-customer-search",
+          "bss-mc-crm-mash-up",
+          "bss-mc-crm-ntf-integrator",
+          "bss-mc-crm-search-integrator",
+          "bss-mc-csr",
+          "bss-mc-domain-config",
+          "bss-mc-id-service",
+          "bss-mc-message-relay",
+          "bss-mc-ntf-engine",
+          "bss-mc-ntf-history",
+          "bss-mc-pcm-cfm",
+          "bss-mc-pcm-cms-integrator-em-glb-prod",
+          "bss-mc-pcm-cms-integrator-em-prod",
+          "bss-mc-pcm-next-gen-admintoolbox-config-manager",
+          "bss-mc-pcm-next-gen-admintoolbox-ui",
+          "bss-mc-pcm-product-catalog",
+          "bss-mc-pcm-product-offer-detail",
+          "bss-mc-rim",
+          "bss-mc-rim-ui",
+          "bss-mc-ui-authz",
+          "bss-mc-user-management",
+          "bss-mc-user-management-em-glb-prod",
+          "bss-mc-wsc-new",
+          "bss-ntf-batch",
+          "bss-services-service",
+          "eca",
+          "elasticsearch-coordinating-hl",
+          "elasticsearch-data-hl",
+          "elasticsearch-em-glb-prod",
+          "elasticsearch-em-glb-prod-kibana",
+          "elasticsearch-em-prod",
+          "elasticsearch-em-prod-kibana",
+          "elasticsearch-ingest-hl",
+          "elasticsearch-master-hl",
+          "elasticsearch-metrics",
+          "eom-activemqqueueoperations-em-glb-prod",
+          "eom-activemqqueueoperations-em-prod",
+          "eom-castlemock",
+          "eom-micro-flows-em-glb-prod",
+          "eom-micro-flows-em-prod",
+          "eom-operate-em-glb-prod",
+          "eom-operate-em-prod",
+          "eom-postgresqldboperations-em-glb-prod",
+          "eom-postgresqldboperations-em-prod",
+          "eom-scheduler-em-glb-prod",
+          "eom-scheduler-em-prod",
+          "eom-ui-em-glb-prod",
+          "eom-ui-em-prod",
+          "eom-zeebe-em-glb-prod-zeebe",
+          "eom-zeebe-em-glb-prod-zeebe-gateway",
+          "eom-zeebe-em-prod-zeebe",
+          "eom-zeebe-em-prod-zeebe-gateway",
+          "external-services-service",
+          "fstp-activemq-artemis-em-glb-prod",
+          "fstp-activemq-artemis-em-prod",
+          "fstp-bpmn-ms-em-glb-prod",
+          "fstp-bpmn-ms-em-prod",
+          "fstp-configuration-ms-em-glb-prod",
+          "fstp-configuration-ms-em-prod",
+          "fstp-dashboard-ms-em-glb-prod",
+          "fstp-dashboard-ms-em-prod",
+          "fstp-eca-em-glb-prod",
+          "fstp-eca-em-prod",
+          "fstp-frontend-em-glb-prod",
+          "fstp-frontend-em-prod",
+          "fstp-orchestra-ms-em-glb-prod",
+          "fstp-orchestra-ms-em-prod",
+          "fstp-redis-em-glb-prod",
+          "fstp-redis-em-prod",
+          "fstp-scheduler-ms-em-glb-prod",
+          "fstp-scheduler-ms-em-prod",
+          "fstp-selenium-grid-em-glb-prod",
+          "fstp-selenium-grid-em-prod",
+          "gorules",
+          "headless-eca",
+          "kafka-cluster",
+          "kafka-cluster-em-glb-prod-zookeeper",
+          "kafka-cluster-em-glb-prod-zookeeper-headless",
+          "kafka-cluster-em-prod-zookeeper",
+          "kafka-cluster-em-prod-zookeeper-headless",
+          "kafka-cluster-headless",
+          "kafka-ui",
+          "loyalty-services-service",
+          "mariadb",
+          "mariadb-235ae77b-7df2-448b-a14f-a512d968d1e4",
+          "mariadb-def67a0f-e498-42cc-8d20-707939223b41",
+          "nginx",
+          "om-services-service",
+          "php-fpm-exporter",
+          "readreplica-mariadb-29f80350-ff6b-4860-a2ab-8336d07980d6",
+          "readreplica-mariadb-2c40aad4-ff16-4e60-8e2e-d2983bc5891f",
+          "redis",
+          "redisinsight-ui",
+          "redis-sentinel",
+          "redis-sentinel-headless",
+          "varnish",
+          "wso2am-cp-1-service",
+          "wso2am-cp-2-service",
+          "wso2am-cp-service",
+          "wso2am-gw-service"
+        ],
+        "criticalPathAffected": true,
+        "affectedPath": "login",
+        "errorsByService": {},
+        "errorsByCriticality": {
+          "critical": {
+            "services": [],
+            "totalErrors": 0
+          },
+          "high": {
+            "services": [],
+            "totalErrors": 0
+          },
+          "medium": {
+            "services": [],
+            "totalErrors": 0
+          },
+          "low": {
+            "services": [],
+            "totalErrors": 0
+          }
+        },
+        "errorsByCategory": {},
+        "impactScore": 0,
+        "serviceRecommendations": [],
+        "serviceDetails": {},
+        "dependencyChains": {
+          "APIGateway": [
+            "APIGateway",
+            "crm-mash-up",
+            "crm-customer-information",
+            "crm-asset",
+            "domain-config-service",
+            "ntf-engine-service",
+            "ntf-history-service",
+            "bss-services-service.etiyamobile-production-eom",
+            "bss-mc-domain-config-t4",
+            "bss-mc-ntf-engine-t4",
+            "bstp-pcm-product-catalog",
+            "eca-t4",
+            "bss-mc-asset-management-t4",
+            "bss-mc-crm-customer-information-t4",
+            "bss-mc-pcm-product-catalog-t4",
+            "cpq-ordercapture",
+            "bstp-pcm-product-offer-detail",
+            "activity",
+            "bss-mc-cpq-t4",
+            "customer-search-mc-backend"
+          ],
+          "cpq-ordercapture": [
+            "cpq-ordercapture",
+            "bstp-pcm-product-catalog",
+            "domain-config-service",
+            "ntf-engine-service",
+            "ntf-history-service",
+            "bss-services-service.etiyamobile-production-eom",
+            "bss-mc-domain-config-t4",
+            "bss-mc-ntf-engine-t4",
+            "bstp-pcm-product-offer-detail",
+            "crm-asset",
+            "activity"
+          ],
+          "crm-customer-information": [
+            "crm-customer-information",
+            "crm-asset",
+            "domain-config-service",
+            "ntf-engine-service",
+            "ntf-history-service",
+            "bss-services-service.etiyamobile-production-eom",
+            "bss-mc-domain-config-t4",
+            "bss-mc-ntf-engine-t4",
+            "bstp-pcm-product-catalog",
+            "eca-t4",
+            "bss-mc-asset-management-t4",
+            "bss-mc-crm-customer-information-t4",
+            "bss-mc-pcm-product-catalog-t4"
+          ],
+          "domain-config-service": [
+            "domain-config-service",
+            "ntf-engine-service",
+            "ntf-history-service",
+            "bss-services-service.etiyamobile-production-eom",
+            "bss-mc-domain-config-t4",
+            "bss-mc-ntf-engine-t4"
+          ],
+          "ui-authz-mc-backend": [
+            "ui-authz-mc-backend",
+            "domain-config-service",
+            "ntf-engine-service",
+            "ntf-history-service",
+            "bss-services-service.etiyamobile-production-eom",
+            "bss-mc-domain-config-t4",
+            "bss-mc-ntf-engine-t4"
+          ],
+          "bss-services-service.etiyamobile-production-eom": [
+            "bss-services-service.etiyamobile-production-eom"
+          ]
+        }
+      },
+      "deepAnalysis": {
+        "toolsExecuted": [],
+        "executionTimeline": {},
+        "findings": {
+          "service_dependencies": {
+            "failed_chains": [],
+            "cascade_failures": []
+          },
+          "exceptions": {
+            "by_service": {}
+          },
+          "performance": {
+            "service_latencies": {}
+          },
+          "external_dependencies": {},
+          "historical_comparison": {}
+        },
+        "affectedComponents": {
+          "services": [],
+          "service_dependencies": {},
+          "critical_paths_impacted": [],
+          "endpoints": [],
+          "databases": [],
+          "estimated_users_impacted": "Unknown"
+        },
+        "rootCause": {
+          "primary_cause": "Analysis in progress - root cause not yet determined",
+          "service_root": "",
+          "affected_chains": [],
+          "contributing_factors": [],
+          "evidence": []
+        },
+        "severityAssessment": {
+          "business_impact": "medium",
+          "technical_severity": "medium",
+          "urgency": "medium",
+          "service_criticality_score": 50
+        },
+        "recommendations": {
+          "immediate_actions": [],
+          "service_specific": {},
+          "short_term": [],
+          "long_term": []
+        },
+        "errorDiscovery": {
+          "additionalErrorsFound": 0,
+          "servicesWithNewErrors": []
+        }
+      },
+      "deepAnalysisPerformed": true,
+      "executiveSummary": {
+        "overallStatus": "warning",
+        "criticalServices": [],
+        "mainIssues": [
+          "Critical path 'login' is impacted"
+        ],
+        "immediateActions": [
+          "Continue monitoring"
+        ],
+        "analysisQuality": {
+          "errorDiscrepancy": false,
+          "stage2RequiredForAccuracy": false,
+          "confidenceLevel": 1
+        }
+      },
+      "jiraTicket": {
+        "title": "🚨 INCIDENT: No Issues Detected - All Services Healthy",
+        "description": "\n<div style=\"font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto;\">\n\n  <!-- INCIDENT SUMMARY -->\n  <div style=\"border: 2px solid #d32f2f; border-radius: 8px; margin: 10px 0; background: #ffebee;\">\n    <div style=\"background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🚨 INCIDENT SUMMARY\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n        <tr><td style=\"font-weight: bold; width: 180px; padding: 5px;\">Analysis ID:</td><td style=\"padding: 5px;\">tempoflow-1766402229158-zhmafdy5g</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Type:</td><td style=\"padding: 5px;\">Incident</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Overall Status:</td><td style=\"padding: 5px;\">🟡 WARNING</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Total Errors:</td><td style=\"padding: 5px;\"><strong style=\"color: #d32f2f;\">0</strong></td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Affected Services:</td><td style=\"padding: 5px;\">0 services</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Critical Services:</td><td style=\"padding: 5px;\">None</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Impact Score:</td><td style=\"padding: 5px;\">0</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Critical Path Affected:</td><td style=\"padding: 5px;\">⚠️ YES (login)</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Source:</td><td style=\"padding: 5px;\">orchestrator</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Priority:</td><td style=\"padding: 5px;\">critical</td></tr>\n      </table>\n    </div>\n  </div>\n\n  <!-- EXECUTIVE SUMMARY -->\n  <div style=\"margin: 20px 0; padding: 15px; background: #f5f5f5; border-left: 4px solid #607d8b; border-radius: 4px;\">\n    <h3 style=\"margin: 0 0 10px 0; color: #455a64;\">📝 Executive Summary</h3>\n    <p style=\"margin: 0; line-height: 1.6;\">No errors detected across the 109 services checked. Proceeding to stage 2 as per critical priority rules.</p>\n\n    \n      <div style=\"margin-top: 10px;\">\n        <strong>Main Issues:</strong>\n        <ul style=\"margin: 5px 0; padding-left: 20px;\">\n          <li>Critical path 'login' is impacted</li>\n        </ul>\n      </div>\n    \n  </div>\n\n  <!-- SERVICE ERROR BREAKDOWN -->\n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #f57c00; border-bottom: 2px solid #ff9800; padding-bottom: 10px;\">\n      🔍 Service Error Analysis\n    </h2>\n\n    <table style=\"width: 100%; border-collapse: collapse; margin: 10px 0; border: 1px solid #e0e0e0;\">\n      <thead>\n        <tr style=\"background: #f5f5f5;\">\n          <th style=\"padding: 10px; text-align: left; border-bottom: 2px solid #e0e0e0;\">Service</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">Error Count</th>\n          <th style=\"padding: 10px; text-align: left; border-bottom: 2px solid #e0e0e0;\">Error Types</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">Criticality</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">SLA Violation</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr><td colspan=\"5\" style=\"padding: 10px; text-align: center;\">No service errors detected</td></tr>\n      </tbody>\n    </table>\n\n    \n      <div style=\"margin: 15px 0; padding: 10px; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;\">\n        <h4 style=\"margin: 0 0 10px 0; color: #1976d2;\">📊 Error Discovery:</h4>\n        <ul style=\"margin: 0; padding-left: 20px;\">\n          <li>Stage 1 (Health Check): 0 errors</li>\n          <li>Stage 2 (Deep Analysis): +0 additional errors</li>\n          <li><strong>Total After Deep Analysis: 0 errors</strong></li>\n        </ul>\n      </div>\n    \n  </div>\n\n  <!-- ROOT CAUSE ANALYSIS -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #9c27b0; border-bottom: 2px solid #9c27b0; padding-bottom: 10px;\">\n      🎯 Root Cause Analysis\n    </h2>\n    \n    <div style=\"padding: 15px; background: #fff8e1; border-left: 4px solid #ffa726; border-radius: 4px;\">\n      <h4 style=\"margin: 0 0 10px 0; color: #f57c00;\">🔍 Primary Cause:</h4>\n      <p style=\"margin: 0 0 15px 0; font-size: 14px;\"><strong>Analysis in progress - root cause not yet determined</strong></p>\n\n      \n\n      \n\n      \n\n      \n    </div>\n  \n  </div>\n  \n\n  <!-- DEPENDENCY CHAIN FAILURES -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #d32f2f; border-bottom: 2px solid #d32f2f; padding-bottom: 10px;\">\n      ⛓️ Dependency Chain Analysis\n    </h2>\n\n    \n\n    \n  </div>\n  \n\n  <!-- PERFORMANCE ISSUES -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #ff5722; border-bottom: 2px solid #ff5722; padding-bottom: 10px;\">\n      ⚡ Performance Issues\n    </h2>\n\n    <table style=\"width: 100%; border-collapse: collapse; margin: 10px 0; border: 1px solid #e0e0e0;\">\n      <thead>\n        <tr style=\"background: #f5f5f5;\">\n          <th style=\"padding: 10px; text-align: left; border-bottom: 2px solid #e0e0e0;\">Service</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">P95 Latency</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">SLA Violation</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr><td colspan=\"3\" style=\"padding: 10px; text-align: center;\">No performance issues detected</td></tr>\n      </tbody>\n    </table>\n  </div>\n  \n\n  <!-- RECOMMENDATIONS -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #2196f3; border-bottom: 2px solid #2196f3; padding-bottom: 10px;\">\n      💡 Recommendations\n    </h2>\n    <li>Continue monitoring current state</li>\n  </div>\n  \n\n  <!-- AFFECTED COMPONENTS -->\n  \n  <div style=\"margin: 20px 0; padding: 15px; background: #fafafa; border-radius: 4px;\">\n    <h3 style=\"margin: 0 0 10px 0; color: #607d8b;\">🎯 Affected Components</h3>\n    <ul style=\"margin: 0; padding-left: 20px;\">\n      \n      \n      \n      \n        <li><strong>Estimated Users Impacted:</strong> Unknown</li>\n      \n    </ul>\n  </div>\n  \n\n  <!-- TOOLS & EXECUTION -->\n  \n\n  <!-- FOOTER -->\n  <div style=\"text-align: center; margin-top: 30px; padding: 15px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666;\">\n    <div style=\"margin-bottom: 5px;\"><strong>Auto-Generated by TempoFlow</strong></div>\n    <div>Analysis Timestamp: 12/22/2025, 2:17:09 PM</div>\n    <div>Workflow Execution ID: 8735</div>\n    <div>Deep Analysis: ✓ Performed</div>\n    <div>Confidence Level: 100%</div>\n  </div>\n</div>\n",
+        "priority": "Critical",
+        "labels": [
+          "Incident",
+          "Status-warning",
+          "Auto-Generated",
+          "TempoFlow",
+          "Distributed-Tracing"
+        ],
+        "components": [],
+        "issueType": "Incident",
+        "customFields": {
+          "analysisId": "tempoflow-1766402229158-zhmafdy5g",
+          "workflowExecutionId": "8735",
+          "isIncident": true,
+          "overallStatus": "warning",
+          "totalErrors": 0,
+          "affectedServicesCount": 0,
+          "criticalServicesCount": 0,
+          "impactScore": 0,
+          "criticalPathAffected": true,
+          "deepAnalysisPerformed": true,
+          "confidenceLevel": 1,
+          "cascadeFailures": 0,
+          "dependencyChainFailures": 0,
+          "slaViolations": 0,
+          "source": "orchestrator",
+          "priority": "critical",
+          "orchestratorId": null
+        },
+        "serviceErrors": [],
+        "rootCause": {
+          "primaryCause": "Analysis in progress - root cause not yet determined",
+          "serviceRoot": "",
+          "affectedChains": [],
+          "evidenceCount": 0
+        },
+        "recommendations": {
+          "immediate": [],
+          "shortTerm": [],
+          "longTerm": []
+        },
+        "metadata": {
+          "generatedAt": "2025-12-22T11:17:09.160Z",
+          "generatedBy": "TempoFlow-v1.0",
+          "analysisTimestamp": "2025-12-22T11:17:09.142Z",
+          "healthCheckStatus": "healthy",
+          "errorReconciliation": {
+            "stage1Errors": 0,
+            "stage2AdditionalErrors": 0,
+            "totalAfterDeepAnalysis": 0
+          }
+        }
+      },
+      "htmlContent": "\n<div style=\"font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto;\">\n\n  <!-- INCIDENT SUMMARY -->\n  <div style=\"border: 2px solid #d32f2f; border-radius: 8px; margin: 10px 0; background: #ffebee;\">\n    <div style=\"background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🚨 INCIDENT SUMMARY\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n        <tr><td style=\"font-weight: bold; width: 180px; padding: 5px;\">Analysis ID:</td><td style=\"padding: 5px;\">tempoflow-1766402229158-zhmafdy5g</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Type:</td><td style=\"padding: 5px;\">Incident</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Overall Status:</td><td style=\"padding: 5px;\">🟡 WARNING</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Total Errors:</td><td style=\"padding: 5px;\"><strong style=\"color: #d32f2f;\">0</strong></td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Affected Services:</td><td style=\"padding: 5px;\">0 services</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Critical Services:</td><td style=\"padding: 5px;\">None</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Impact Score:</td><td style=\"padding: 5px;\">0</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Critical Path Affected:</td><td style=\"padding: 5px;\">⚠️ YES (login)</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Source:</td><td style=\"padding: 5px;\">orchestrator</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Priority:</td><td style=\"padding: 5px;\">critical</td></tr>\n      </table>\n    </div>\n  </div>\n\n  <!-- EXECUTIVE SUMMARY -->\n  <div style=\"margin: 20px 0; padding: 15px; background: #f5f5f5; border-left: 4px solid #607d8b; border-radius: 4px;\">\n    <h3 style=\"margin: 0 0 10px 0; color: #455a64;\">📝 Executive Summary</h3>\n    <p style=\"margin: 0; line-height: 1.6;\">No errors detected across the 109 services checked. Proceeding to stage 2 as per critical priority rules.</p>\n\n    \n      <div style=\"margin-top: 10px;\">\n        <strong>Main Issues:</strong>\n        <ul style=\"margin: 5px 0; padding-left: 20px;\">\n          <li>Critical path 'login' is impacted</li>\n        </ul>\n      </div>\n    \n  </div>\n\n  <!-- SERVICE ERROR BREAKDOWN -->\n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #f57c00; border-bottom: 2px solid #ff9800; padding-bottom: 10px;\">\n      🔍 Service Error Analysis\n    </h2>\n\n    <table style=\"width: 100%; border-collapse: collapse; margin: 10px 0; border: 1px solid #e0e0e0;\">\n      <thead>\n        <tr style=\"background: #f5f5f5;\">\n          <th style=\"padding: 10px; text-align: left; border-bottom: 2px solid #e0e0e0;\">Service</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">Error Count</th>\n          <th style=\"padding: 10px; text-align: left; border-bottom: 2px solid #e0e0e0;\">Error Types</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">Criticality</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">SLA Violation</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr><td colspan=\"5\" style=\"padding: 10px; text-align: center;\">No service errors detected</td></tr>\n      </tbody>\n    </table>\n\n    \n      <div style=\"margin: 15px 0; padding: 10px; background: #e3f2fd; border-left: 4px solid #2196f3; border-radius: 4px;\">\n        <h4 style=\"margin: 0 0 10px 0; color: #1976d2;\">📊 Error Discovery:</h4>\n        <ul style=\"margin: 0; padding-left: 20px;\">\n          <li>Stage 1 (Health Check): 0 errors</li>\n          <li>Stage 2 (Deep Analysis): +0 additional errors</li>\n          <li><strong>Total After Deep Analysis: 0 errors</strong></li>\n        </ul>\n      </div>\n    \n  </div>\n\n  <!-- ROOT CAUSE ANALYSIS -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #9c27b0; border-bottom: 2px solid #9c27b0; padding-bottom: 10px;\">\n      🎯 Root Cause Analysis\n    </h2>\n    \n    <div style=\"padding: 15px; background: #fff8e1; border-left: 4px solid #ffa726; border-radius: 4px;\">\n      <h4 style=\"margin: 0 0 10px 0; color: #f57c00;\">🔍 Primary Cause:</h4>\n      <p style=\"margin: 0 0 15px 0; font-size: 14px;\"><strong>Analysis in progress - root cause not yet determined</strong></p>\n\n      \n\n      \n\n      \n\n      \n    </div>\n  \n  </div>\n  \n\n  <!-- DEPENDENCY CHAIN FAILURES -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #d32f2f; border-bottom: 2px solid #d32f2f; padding-bottom: 10px;\">\n      ⛓️ Dependency Chain Analysis\n    </h2>\n\n    \n\n    \n  </div>\n  \n\n  <!-- PERFORMANCE ISSUES -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #ff5722; border-bottom: 2px solid #ff5722; padding-bottom: 10px;\">\n      ⚡ Performance Issues\n    </h2>\n\n    <table style=\"width: 100%; border-collapse: collapse; margin: 10px 0; border: 1px solid #e0e0e0;\">\n      <thead>\n        <tr style=\"background: #f5f5f5;\">\n          <th style=\"padding: 10px; text-align: left; border-bottom: 2px solid #e0e0e0;\">Service</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">P95 Latency</th>\n          <th style=\"padding: 10px; text-align: center; border-bottom: 2px solid #e0e0e0;\">SLA Violation</th>\n        </tr>\n      </thead>\n      <tbody>\n        <tr><td colspan=\"3\" style=\"padding: 10px; text-align: center;\">No performance issues detected</td></tr>\n      </tbody>\n    </table>\n  </div>\n  \n\n  <!-- RECOMMENDATIONS -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #2196f3; border-bottom: 2px solid #2196f3; padding-bottom: 10px;\">\n      💡 Recommendations\n    </h2>\n    <li>Continue monitoring current state</li>\n  </div>\n  \n\n  <!-- AFFECTED COMPONENTS -->\n  \n  <div style=\"margin: 20px 0; padding: 15px; background: #fafafa; border-radius: 4px;\">\n    <h3 style=\"margin: 0 0 10px 0; color: #607d8b;\">🎯 Affected Components</h3>\n    <ul style=\"margin: 0; padding-left: 20px;\">\n      \n      \n      \n      \n        <li><strong>Estimated Users Impacted:</strong> Unknown</li>\n      \n    </ul>\n  </div>\n  \n\n  <!-- TOOLS & EXECUTION -->\n  \n\n  <!-- FOOTER -->\n  <div style=\"text-align: center; margin-top: 30px; padding: 15px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666;\">\n    <div style=\"margin-bottom: 5px;\"><strong>Auto-Generated by TempoFlow</strong></div>\n    <div>Analysis Timestamp: 12/22/2025, 2:17:09 PM</div>\n    <div>Workflow Execution ID: 8735</div>\n    <div>Deep Analysis: ✓ Performed</div>\n    <div>Confidence Level: 100%</div>\n  </div>\n</div>\n",
+      "summary": {
+        "title": "🚨 INCIDENT: No Issues Detected - All Services Healthy",
+        "priority": "Critical",
+        "issueType": "Incident",
+        "labelsCount": 5,
+        "errorsCount": 0,
+        "affectedServicesCount": 0,
+        "criticalServicesCount": 0
+      }
+    },
+    "_debug": {
+      "fingerprintGenerated": "000000005785c9ed",
+      "issueType": "analysis in progress - root",
+      "originService": "unknown-service",
+      "decisionCriteria": {
+        "isIncident": true,
+        "severity": "HIGH",
+        "criticalPathAffected": true,
+        "cascadeFailures": 0,
+        "failedChains": 0,
+        "impactScore": 0,
+        "errorCount": 0,
+        "needsTicket": true
+      }
+    }
+  }
+]
