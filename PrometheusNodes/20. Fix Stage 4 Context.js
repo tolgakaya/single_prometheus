@@ -5,57 +5,6 @@
 // Original functionality: 100% preserved
 // KB Enhancement: ADDED (not replaced)
 
-// ============= KB NODE CONNECTIONS (NEW) =============
-// Get KB data from workflow nodes (safely with error handling)
-let alertCategoriesMapper = {};
-let loadAlertKB = {};
-let categoryMetricsBuilder = {};
-
-try {
-  alertCategoriesMapper = $node["Alert Categories Mapper"]?.json || {};
-} catch(e) {
-  console.log("Alert Categories Mapper node not available yet");
-}
-
-try {
-  loadAlertKB = $node["Load Alert Knowledge Base"]?.json || {};
-} catch(e) {
-  console.log("Load Alert Knowledge Base node not available yet");
-}
-
-try {
-  categoryMetricsBuilder = $node["Category Based Metrics Builder"]?.json || {};
-} catch(e) {
-  console.log("Category Based Metrics Builder node not available yet");
-}
-
-// Helper function to derive urgency level from severity score
-function deriveUrgencyLevel(severityScore) {
-  if (severityScore >= 100) return 'BLOCKER';
-  if (severityScore >= 90) return 'CRITICAL';
-  if (severityScore >= 70) return 'HIGH';
-  if (severityScore >= 50) return 'MEDIUM';
-  return 'LOW';
-}
-
-// Extract KB information safely (FIXED FIELD PATHS)
-const kbAlertCategory = alertCategoriesMapper.alertCategory || 'UNKNOWN';
-const kbUrgencyLevel = deriveUrgencyLevel(alertCategoriesMapper.calculatedSeverityScore || 0);
-const kbCascadeRisk = alertCategoriesMapper.categoryHandlingHints?.cascadeRisk || 'UNKNOWN';
-const kbAlertKnowledgeBase = loadAlertKB.knowledgeBase?.alert || {};
-const kbEnhancedStats = {
-  totalCategories: alertCategoriesMapper._categoryStats?.totalAlerts || 0,
-  totalMappings: Object.keys(alertCategoriesMapper._categoryStats?.categoryBreakdown || {}).length || 0,
-  kbEntriesLoaded: Object.keys(kbAlertKnowledgeBase).length || 0
-};
-
-console.log("===== STAGE 4 KB ENHANCEMENT LOADED =====");
-console.log("Alert Category:", kbAlertCategory);
-console.log("Urgency Level:", kbUrgencyLevel);
-console.log("Cascade Risk:", kbCascadeRisk);
-console.log("KB Entries Available:", kbEnhancedStats.kbEntriesLoaded);
-console.log("==========================================");
-
 // Fix Stage 4 Context - EXTENDED Diagnostic Commands for 150+ Alert Types
 // PRESERVES all existing logic, ADDS category-based diagnostic enhancements
 
@@ -1075,16 +1024,6 @@ if (validationPassed) {
   console.error("⚠️ Stage 4 validation warnings");
 }
 
-// ============= KB ENHANCEMENT SUMMARY (NEW) =============
-console.log("\n===== STAGE 4 KB ENHANCEMENT SUMMARY =====");
-console.log("KB Enhanced:", kbEnhancedStats.kbEntriesLoaded > 0 ? "YES" : "NO");
-console.log("Alert Category (KB):", kbAlertCategory);
-console.log("Urgency Level:", kbUrgencyLevel);
-console.log("Cascade Risk:", kbCascadeRisk);
-const kbCommands = (actualOutput.diagnostics_executed?.[0]?.commands_run || []).filter(c => c.kb_enhanced);
-console.log("KB Diagnostic Commands:", kbCommands.length, "/", actualOutput.diagnostics_executed?.[0]?.commands_run?.length || 0);
-console.log("KB Entries Loaded:", kbEnhancedStats.kbEntriesLoaded);
-console.log("============================================\n");
 
 // Debug info for next stage
 fixedOutput._debugInfo = {
