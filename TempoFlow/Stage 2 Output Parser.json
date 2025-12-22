@@ -1,0 +1,194 @@
+{
+  "type": "object",
+  "properties": {
+    "stage": { "type": "string" },
+    "investigation_trigger": { "type": "string" },
+    "service_context": {
+      "type": "object",
+      "properties": {
+        "primary_services_investigated": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "dependency_chains_analyzed": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "cascade_patterns_detected": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "tools_executed": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "execution_timeline": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "findings": {
+      "type": "object",
+      "properties": {
+        "service_dependencies": {
+          "type": "object",
+          "properties": {
+            "failed_chains": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "chain": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "failure_point": { "type": "string" },
+                  "error_type": { "type": "string" }
+                }
+              }
+            },
+            "cascade_failures": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "origin": { "type": "string" },
+                  "affected": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  },
+                  "pattern": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "exceptions": {
+          "type": "object",
+          "properties": {
+            "by_service": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "count": { "type": "number" },
+                  "types": {
+                    "type": "array",
+                    "items": { "type": "string" }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "performance": {
+          "type": "object",
+          "properties": {
+            "service_latencies": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "object",
+                "properties": {
+                  "p95": { "type": "string" },
+                  "sla_violation": { "type": "boolean" }
+                }
+              }
+            }
+          }
+        },
+        "external_dependencies": { "type": "object" },
+        "historical_comparison": { "type": "object" }
+      }
+    },
+    "affected_components": {
+      "type": "object",
+      "properties": {
+        "services": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "service_dependencies": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "critical_paths_impacted": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "endpoints": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "databases": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "estimated_users_impacted": { "type": "string" }
+      }
+    },
+    "root_cause_analysis": {
+      "type": "object",
+      "properties": {
+        "primary_cause": { "type": "string" },
+        "service_root": { "type": "string" },
+        "affected_chains": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "contributing_factors": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "evidence": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "severity_assessment": {
+      "type": "object",
+      "properties": {
+        "business_impact": { "type": "string" },
+        "technical_severity": { "type": "string" },
+        "urgency": { "type": "string" },
+        "service_criticality_score": { "type": "number" }
+      }
+    },
+    "recommendations": {
+      "type": "object",
+      "properties": {
+        "immediate_actions": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "service_specific": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "array",
+            "items": { "type": "string" }
+          }
+        },
+        "short_term": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "long_term": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    }
+  },
+  "required": [
+    "stage",
+    "investigation_trigger",
+    "tools_executed",
+    "findings",
+    "root_cause_analysis",
+    "recommendations"
+  ]
+}
