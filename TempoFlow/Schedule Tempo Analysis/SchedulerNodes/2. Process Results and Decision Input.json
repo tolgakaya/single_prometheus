@@ -1,0 +1,560 @@
+[
+  {
+    "analysisComplete": true,
+    "timestamp": "2025-12-20T15:14:37.284Z",
+    "workflowExecutionId": "7945",
+    "analysisId": "analysis-1766243540306",
+    "analysisDepth": "deep",
+    "timeContext": {
+      "requestedRange": {
+        "start": "2025-12-20T14:12:20.000Z",
+        "end": "2025-12-20T15:12:20.000Z",
+        "duration": "1 hours",
+        "source": "manual"
+      }
+    },
+    "stageResults": {
+      "stage1_healthSnapshot": {
+        "status": "normal",
+        "metrics": {
+          "total_logs": 253952,
+          "error_count": 3337,
+          "error_rate": "1.31%",
+          "log_levels": {
+            "debug": 0,
+            "info": 0,
+            "warn": 0,
+            "error": 0,
+            "fatal": 0
+          },
+          "top_error_services": [
+            "bstp-id-service",
+            "bstp-cpq-batch",
+            "ntf-engine-service"
+          ]
+        },
+        "quick_summary": "The error rate across services is 1.31%, which is above the normal threshold, indicating potential issues. Top services with errors include bstp-id-service, bstp-cpq-batch, and ntf-engine-service."
+      },
+      "stage1_5_anomalyDetection": null,
+      "stage2_patternAnalysis": {
+        "patterns_identified": {
+          "error_patterns": {
+            "dominant_errors": [
+              {
+                "type": "java.net.UnknownHostException",
+                "count": 1,
+                "services": [
+                  "ui-authz-mc-backend"
+                ]
+              },
+              {
+                "type": "Connection to node -1 could not be established",
+                "count": 49,
+                "services": [
+                  "b2b-object-storage"
+                ]
+              }
+            ],
+            "pattern_category": "service"
+          },
+          "service_patterns": {
+            "most_affected": [
+              "b2b-object-storage",
+              "ui-authz-mc-backend"
+            ],
+            "cascade_detected": true,
+            "cascade_path": [
+              "em-global-prod|b2b-object-storage",
+              "em-prod|b2b-object-storage",
+              "em-global-prod|ui-authz-mc-backend"
+            ]
+          },
+          "temporal_patterns": {
+            "error_clustering": "2025-12-20T14:12:20Z to 2025-12-20T14:12:25Z",
+            "propagation_speed": "<2s"
+          }
+        },
+        "proceed_decision": true,
+        "stage3_focus": {}
+      },
+      "stage3_rootCauseAnalysis": {
+        "affected_systems": {
+          "services": [
+            {
+              "name": "ui-authz-mc-backend",
+              "impact": "Service disruption due to DNS failure",
+              "functionality": "Authentication services affected"
+            },
+            {
+              "name": "b2b-object-storage",
+              "impact": "Service disruption due to connection issues",
+              "functionality": "Data storage and retrieval affected"
+            }
+          ]
+        },
+        "remediation": {
+          "immediate_actions": [
+            {
+              "action": "Restart DNS services",
+              "command": "systemctl restart systemd-resolved",
+              "impact": "Restore DNS resolution",
+              "risk": "Low"
+            }
+          ],
+          "short_term_fixes": [
+            "Verify DNS configurations for affected services"
+          ],
+          "long_term_solutions": [
+            "Implement DNS redundancy and monitoring"
+          ]
+        },
+        "prevention": {
+          "monitoring_gaps": [
+            "Lack of DNS resolution monitoring"
+          ],
+          "process_improvements": [
+            "Regular DNS configuration audits"
+          ]
+        },
+        "tools_executed": [
+          "Stack_Trace_Pattern_Analyzer",
+          "Pod_Restart_Logs",
+          "Memory_Dump_Analysis",
+          "Slow_Query_Logs",
+          "DB_Connection_Analysis"
+        ],
+        "executive_summary": "The root cause of the incident was identified as a DNS resolution failure affecting multiple services, notably 'ui-authz-mc-backend' and 'b2b-object-storage'. This was triggered by the inability to resolve the DNS for the monitoring service 'grafana-alloy.saas-bss-monitoring.svc.cluster.local'. Immediate remediation involves restarting DNS services and verifying configurations, while long-term solutions include implementing DNS redundancy and regular audits."
+      }
+    },
+    "evidenceCollection": {
+      "healthMetrics": {
+        "errorRate": "1.31%",
+        "errorCount": 3337,
+        "totalLogs": 253952,
+        "logLevels": {
+          "debug": 0,
+          "info": 0,
+          "warn": 0,
+          "error": 0,
+          "fatal": 0
+        },
+        "topErrorServices": [
+          "bstp-id-service",
+          "bstp-cpq-batch",
+          "ntf-engine-service"
+        ]
+      },
+      "anomalyEvidence": null,
+      "patternEvidence": {
+        "dominantErrors": [
+          {
+            "type": "java.net.UnknownHostException",
+            "count": 1,
+            "services": [
+              "ui-authz-mc-backend"
+            ]
+          },
+          {
+            "type": "Connection to node -1 could not be established",
+            "count": 49,
+            "services": [
+              "b2b-object-storage"
+            ]
+          }
+        ],
+        "affectedServices": [
+          "b2b-object-storage",
+          "ui-authz-mc-backend"
+        ],
+        "cascadeDetected": true,
+        "cascadePath": [
+          "em-global-prod|b2b-object-storage",
+          "em-prod|b2b-object-storage",
+          "em-global-prod|ui-authz-mc-backend"
+        ],
+        "temporalClustering": "2025-12-20T14:12:20Z to 2025-12-20T14:12:25Z"
+      },
+      "rootCauseEvidence": {},
+      "cascadeEvidence": null
+    },
+    "incidentEvaluation": {
+      "isIncident": true,
+      "severity": "HIGH",
+      "errorRate": "1.31%",
+      "errorCount": 3337,
+      "justification": "Cascade failure pattern detected",
+      "thresholds": {
+        "errorRateWarning": "2%",
+        "errorRateIncident": "5%",
+        "errorRateCritical": "10%",
+        "errorCountIncident": 10000
+      },
+      "factors": {
+        "anomalyDetected": false,
+        "cascadeDetected": true,
+        "criticalServicesAffected": []
+      }
+    },
+    "consolidatedFindings": {
+      "overallStatus": "normal",
+      "identifiedIssues": [
+        {
+          "type": "java.net.UnknownHostException",
+          "affectedServices": [
+            "ui-authz-mc-backend"
+          ],
+          "occurrenceCount": 1,
+          "evidence": [
+            "Error type: java.net.UnknownHostException",
+            "Occurrence count: 1",
+            "Affected services: ui-authz-mc-backend",
+            "Temporal clustering: 2025-12-20T14:12:20Z to 2025-12-20T14:12:25Z",
+            "Propagation speed: <2s",
+            "Cascade detected: em-global-prod|b2b-object-storage → em-prod|b2b-object-storage → em-global-prod|ui-authz-mc-backend"
+          ],
+          "stageDetected": "stage2_pattern_analysis",
+          "severity": "MEDIUM",
+          "remediation": [],
+          "patternCategory": "service"
+        },
+        {
+          "type": "Connection to node -1 could not be established",
+          "affectedServices": [
+            "b2b-object-storage"
+          ],
+          "occurrenceCount": 49,
+          "evidence": [
+            "Error type: Connection to node -1 could not be established",
+            "Occurrence count: 49",
+            "Affected services: b2b-object-storage",
+            "Temporal clustering: 2025-12-20T14:12:20Z to 2025-12-20T14:12:25Z",
+            "Propagation speed: <2s",
+            "Cascade detected: em-global-prod|b2b-object-storage → em-prod|b2b-object-storage → em-global-prod|ui-authz-mc-backend"
+          ],
+          "stageDetected": "stage2_pattern_analysis",
+          "severity": "MEDIUM",
+          "remediation": [],
+          "patternCategory": "service"
+        }
+      ],
+      "affectedServices": [
+        "bstp-id-service",
+        "bstp-cpq-batch",
+        "ntf-engine-service",
+        "b2b-object-storage",
+        "ui-authz-mc-backend"
+      ],
+      "severity": "MEDIUM",
+      "confidence": 0.5,
+      "primaryIssue": "java.net.UnknownHostException"
+    },
+    "actionableInsights": {
+      "immediateActions": [
+        {
+          "action": "Restart DNS services",
+          "command": "systemctl restart systemd-resolved",
+          "impact": "Restore DNS resolution",
+          "risk": "Low"
+        }
+      ],
+      "diagnosticCommands": [],
+      "monitoringGaps": [
+        "Lack of DNS resolution monitoring"
+      ],
+      "processImprovements": [
+        "Regular DNS configuration audits"
+      ]
+    },
+    "outputFormats": {
+      "executiveSummary": "Incident: The root cause of the incident was identified as a DNS resolution failure affecting multiple services, notably 'ui-authz-mc-backend' and 'b2b-object-storage'. This was triggered by the inability to resolve the DNS for the monitoring service 'grafana-alloy.saas-bss-monitoring.svc.cluster.local'. Immediate remediation involves restarting DNS services and verifying configurations, while long-term solutions include implementing DNS redundancy and regular audits.",
+      "technicalDetails": {
+        "logAnalysis": {
+          "totalLogsAnalyzed": 253952,
+          "errorDistribution": {
+            "debug": 0,
+            "info": 0,
+            "warn": 0,
+            "error": 0,
+            "fatal": 0
+          }
+        },
+        "performanceMetrics": {
+          "analysisTime": "0s",
+          "toolsUsed": [
+            "Stack_Trace_Pattern_Analyzer",
+            "Pod_Restart_Logs",
+            "Memory_Dump_Analysis",
+            "Slow_Query_Logs",
+            "DB_Connection_Analysis"
+          ],
+          "dataPointsAnalyzed": 254002
+        }
+      },
+      "analysisTimeline": [
+        {
+          "time": "2025-12-20T14:12:20.000Z",
+          "event": "Analysis Period Start",
+          "source": "input"
+        },
+        {
+          "time": "2025-12-20T15:12:20.000Z",
+          "event": "Analysis Period End",
+          "source": "input"
+        }
+      ],
+      "serviceImpactMatrix": {
+        "bstp-id-service": {
+          "service": "bstp-id-service",
+          "errorRate": "1.31%",
+          "impactLevel": "UNKNOWN",
+          "cascadeRole": "none",
+          "downtime": "N/A"
+        },
+        "bstp-cpq-batch": {
+          "service": "bstp-cpq-batch",
+          "errorRate": "1.31%",
+          "impactLevel": "UNKNOWN",
+          "cascadeRole": "none",
+          "downtime": "N/A"
+        },
+        "ntf-engine-service": {
+          "service": "ntf-engine-service",
+          "errorRate": "1.31%",
+          "impactLevel": "UNKNOWN",
+          "cascadeRole": "none",
+          "downtime": "N/A"
+        },
+        "b2b-object-storage": {
+          "service": "b2b-object-storage",
+          "errorRate": "1.31%",
+          "impactLevel": "Service disruption due to connection issues",
+          "cascadeRole": "none",
+          "downtime": "N/A",
+          "functionality": "Data storage and retrieval affected"
+        },
+        "ui-authz-mc-backend": {
+          "service": "ui-authz-mc-backend",
+          "errorRate": "1.31%",
+          "impactLevel": "Service disruption due to DNS failure",
+          "cascadeRole": "none",
+          "downtime": "N/A",
+          "functionality": "Authentication services affected"
+        }
+      }
+    },
+    "metadata": {
+      "stagesExecuted": 3,
+      "includesAnomalyAnalysis": false,
+      "totalExecutionTime": "0s",
+      "inputSource": "unknown",
+      "affectedServices": [],
+      "severity": "unknown",
+      "priority": "normal",
+      "forceDeepAnalysis": false,
+      "toolsUsed": [
+        "Stack_Trace_Pattern_Analyzer",
+        "Pod_Restart_Logs",
+        "Memory_Dump_Analysis",
+        "Slow_Query_Logs",
+        "DB_Connection_Analysis"
+      ],
+      "enhancedAnalysis": {
+        "cascadeDetection": "disabled",
+        "stackTraceAnalysis": "completed",
+        "serviceMapping": "enabled",
+        "anomalyDetection": "skipped",
+        "serviceDependencyAnalysis": "enabled"
+      }
+    },
+    "errorSummary": {
+      "totalErrors": 3337,
+      "errorTypes": [
+        "java.net.UnknownHostException",
+        "Connection to node -1 could not be established"
+      ],
+      "timeWindow": {
+        "start": "2025-12-20T14:12:20.000Z",
+        "end": "2025-12-20T15:12:20.000Z",
+        "duration": "1 hours"
+      },
+      "errorDistribution": {
+        "ui-authz-mc-backend": {
+          "java.net.UnknownHostException": 1
+        },
+        "b2b-object-storage": {
+          "Connection to node -1 could not be established": 49
+        }
+      }
+    },
+    "performanceBenchmarks": {
+      "analysisSpeed": {
+        "totalTime": "0s",
+        "stageBreakdown": {
+          "stage1": "N/A",
+          "stage2": "N/A",
+          "stage3": "N/A"
+        }
+      },
+      "dataVolume": {
+        "logsProcessed": 253952,
+        "errorsParsed": 3337,
+        "servicesAnalyzed": 5
+      },
+      "accuracy": {
+        "confidenceScore": 0.5,
+        "evidenceQuality": "low",
+        "patternReliability": 0
+      }
+    },
+    "visualizationData": {
+      "errorTrend": {
+        "labels": [
+          "Overall Period"
+        ],
+        "datasets": [
+          {
+            "label": "Error Rate (%)",
+            "data": [
+              1.31
+            ]
+          }
+        ]
+      },
+      "serviceHealthMap": {
+        "bstp-id-service": {
+          "health": 100,
+          "status": "UNKNOWN"
+        },
+        "bstp-cpq-batch": {
+          "health": 100,
+          "status": "UNKNOWN"
+        },
+        "ntf-engine-service": {
+          "health": 100,
+          "status": "UNKNOWN"
+        },
+        "b2b-object-storage": {
+          "health": 100,
+          "status": "Service disruption due to connection issues"
+        },
+        "ui-authz-mc-backend": {
+          "health": 100,
+          "status": "Service disruption due to DNS failure"
+        }
+      },
+      "cascadeGraph": null,
+      "timelineChart": {
+        "type": "timeline",
+        "data": [
+          {
+            "x": "2025-12-20T14:12:20.000Z",
+            "y": 0,
+            "label": "Analysis Period Start",
+            "source": "input"
+          },
+          {
+            "x": "2025-12-20T15:12:20.000Z",
+            "y": 1,
+            "label": "Analysis Period End",
+            "source": "input"
+          }
+        ]
+      }
+    },
+    "jiraTicket": {
+      "title": "🚨 INCIDENT: 2 Issues Detected - bstp-id-service, bstp-cpq-batch +3 more",
+      "description": "\n<div style=\"font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto;\">\n\n  <!-- INCIDENT SUMMARY -->\n  <div style=\"border: 2px solid #d32f2f; border-radius: 8px; margin: 10px 0; background: #ffebee;\">\n    <div style=\"background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🚨 INCIDENT SUMMARY\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n        <tr><td style=\"font-weight: bold; width: 150px; padding: 5px;\">Analysis ID:</td><td style=\"padding: 5px;\">analysis-1766243540306</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Type:</td><td style=\"padding: 5px;\">Incident</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Overall Severity:</td><td style=\"padding: 5px;\">🟠 HIGH</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Issues Detected:</td><td style=\"padding: 5px;\"><strong>2</strong></td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Affected Services:</td><td style=\"padding: 5px;\">bstp-id-service, bstp-cpq-batch, ntf-engine-service, b2b-object-storage, ui-authz-mc-backend</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Time Range:</td><td style=\"padding: 5px;\">2025-12-20T14:12:20.000Z to 2025-12-20T15:12:20.000Z</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Duration:</td><td style=\"padding: 5px;\">1 hours</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Error Rate:</td><td style=\"padding: 5px;\">1.31%</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Error Count:</td><td style=\"padding: 5px;\">3337</td></tr>\n      </table>\n    </div>\n  </div>\n\n  <!-- EXECUTIVE SUMMARY -->\n  <div style=\"margin: 20px 0; padding: 15px; background: #f5f5f5; border-left: 4px solid #607d8b; border-radius: 4px;\">\n    <h3 style=\"margin: 0 0 10px 0; color: #455a64;\">📝 Executive Summary</h3>\n    <p style=\"margin: 0; line-height: 1.6;\">Incident: The root cause of the incident was identified as a DNS resolution failure affecting multiple services, notably 'ui-authz-mc-backend' and 'b2b-object-storage'. This was triggered by the inability to resolve the DNS for the monitoring service 'grafana-alloy.saas-bss-monitoring.svc.cluster.local'. Immediate remediation involves restarting DNS services and verifying configurations, while long-term solutions include implementing DNS redundancy and regular audits.</p>\n  </div>\n\n  <!-- IDENTIFIED ISSUES -->\n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #f57c00; border-bottom: 2px solid #ff9800; padding-bottom: 10px;\">\n      🔍 Identified Issues (2)\n    </h2>\n    \n    <div style=\"border: 2px solid #ff9800; border-radius: 8px; margin: 15px 0; background: #fff3e0;\">\n      <div style=\"background: #ff9800; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n        🔍 ISSUE 1 of 2\n      </div>\n      <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n        <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n          <tr><td style=\"font-weight: bold; width: 150px; padding: 5px;\">Issue Type:</td><td style=\"padding: 5px;\">java.net.UnknownHostException</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Affected Services:</td><td style=\"padding: 5px;\">ui-authz-mc-backend</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Occurrences:</td><td style=\"padding: 5px;\">1</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Severity:</td><td style=\"padding: 5px;\">🟡 MEDIUM</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Detected By:</td><td style=\"padding: 5px;\">STAGE2 PATTERN ANALYSIS</td></tr>\n          \n        </table>\n\n        <div style=\"margin-top: 15px;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #f57c00;\">📋 Evidence:</h4>\n          <ul style=\"margin: 5px 0; padding-left: 20px;\">\n            <li>Error type: java.net.UnknownHostException</li>\n      <li>Occurrence count: 1</li>\n      <li>Affected services: ui-authz-mc-backend</li>\n      <li>Temporal clustering: 2025-12-20T14:12:20Z to 2025-12-20T14:12:25Z</li>\n      <li>Propagation speed: <2s</li>\n      <li>Cascade detected: em-global-prod|b2b-object-storage → em-prod|b2b-object-storage → em-global-prod|ui-authz-mc-backend</li>\n          </ul>\n        </div>\n\n        \n\n        \n\n        \n      </div>\n    </div>\n\n    <div style=\"border: 2px solid #ff9800; border-radius: 8px; margin: 15px 0; background: #fff3e0;\">\n      <div style=\"background: #ff9800; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n        🔍 ISSUE 2 of 2\n      </div>\n      <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n        <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n          <tr><td style=\"font-weight: bold; width: 150px; padding: 5px;\">Issue Type:</td><td style=\"padding: 5px;\">Connection to node -1 could not be established</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Affected Services:</td><td style=\"padding: 5px;\">b2b-object-storage</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Occurrences:</td><td style=\"padding: 5px;\">49</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Severity:</td><td style=\"padding: 5px;\">🟡 MEDIUM</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Detected By:</td><td style=\"padding: 5px;\">STAGE2 PATTERN ANALYSIS</td></tr>\n          \n        </table>\n\n        <div style=\"margin-top: 15px;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #f57c00;\">📋 Evidence:</h4>\n          <ul style=\"margin: 5px 0; padding-left: 20px;\">\n            <li>Error type: Connection to node -1 could not be established</li>\n      <li>Occurrence count: 49</li>\n      <li>Affected services: b2b-object-storage</li>\n      <li>Temporal clustering: 2025-12-20T14:12:20Z to 2025-12-20T14:12:25Z</li>\n      <li>Propagation speed: <2s</li>\n      <li>Cascade detected: em-global-prod|b2b-object-storage → em-prod|b2b-object-storage → em-global-prod|ui-authz-mc-backend</li>\n          </ul>\n        </div>\n\n        \n\n        \n\n        \n      </div>\n    </div>\n  </div>\n\n  <!-- ACTIONABLE INSIGHTS -->\n  \n  <div style=\"border: 2px solid #2196f3; border-radius: 8px; margin: 20px 0; background: #e3f2fd;\">\n    <div style=\"background: #2196f3; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🛠️ IMMEDIATE ACTIONS REQUIRED\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <ul style=\"margin: 0; padding-left: 20px;\">\n        <li><strong>Restart DNS services</strong><br><code style=\"background: #f5f5f5; padding: 2px 6px; border-radius: 3px;\">systemctl restart systemd-resolved</code><br><em>Impact: Restore DNS resolution</em> <span style=\"color: #4caf50;\">(Risk: Low)</span></li>\n      </ul>\n    </div>\n  </div>\n  \n\n  <!-- MONITORING GAPS & PROCESS IMPROVEMENTS -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h3 style=\"color: #9c27b0; border-bottom: 2px solid #9c27b0; padding-bottom: 10px;\">\n      🔮 Prevention & Improvements\n    </h3>\n\n    \n    <div style=\"margin: 15px 0; padding: 10px; background: #f3e5f5; border-left: 4px solid #9c27b0; border-radius: 4px;\">\n      <h4 style=\"margin: 0 0 10px 0; color: #7b1fa2;\">📊 Monitoring Gaps:</h4>\n      <ul style=\"margin: 5px 0; padding-left: 20px;\">\n        <li>Lack of DNS resolution monitoring</li>\n      </ul>\n    </div>\n    \n\n    \n    <div style=\"margin: 15px 0; padding: 10px; background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 4px;\">\n      <h4 style=\"margin: 0 0 10px 0; color: #2e7d32;\">🔧 Process Improvements:</h4>\n      <ul style=\"margin: 5px 0; padding-left: 20px;\">\n        <li>Regular DNS configuration audits</li>\n      </ul>\n    </div>\n    \n  </div>\n  \n\n  <!-- ANALYSIS DETAILS -->\n  <div style=\"margin: 20px 0;\">\n    <h3 style=\"color: #607d8b; border-bottom: 2px solid #607d8b; padding-bottom: 10px;\">\n      📈 Analysis Details\n    </h3>\n\n    <table style=\"width: 100%; border-collapse: collapse; margin: 10px 0;\">\n      <tr style=\"background: #f5f5f5;\">\n        <th style=\"padding: 8px; text-align: left; border-bottom: 2px solid #e0e0e0;\">Stage</th>\n        <th style=\"padding: 8px; text-align: left; border-bottom: 2px solid #e0e0e0;\">Status</th>\n      </tr>\n      \n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #e0e0e0;\">Stage 1: Health Check</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #e0e0e0;\">\n        <span style=\"color: #4caf50; font-weight: bold;\">✓</span> normal\n      </td>\n    </tr>\n  \n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #e0e0e0;\">Stage 2: Pattern Analysis</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #e0e0e0;\">\n        <span style=\"color: #4caf50; font-weight: bold;\">✓</span> Proceeded to Stage 3\n      </td>\n    </tr>\n  \n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #e0e0e0;\">Stage 3: Root Cause Analysis</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #e0e0e0;\">\n        <span style=\"color: #4caf50; font-weight: bold;\">✓</span> Completed\n      </td>\n    </tr>\n  \n    </table>\n\n    <div style=\"margin: 15px 0; padding: 10px; background: #fafafa; border-radius: 4px;\">\n      <h4 style=\"margin: 0 0 10px 0;\">⏱️ Performance Metrics:</h4>\n      <ul style=\"margin: 0; padding-left: 20px;\">\n        <li><strong>Total Analysis Time:</strong> 0s</li>\n        <li><strong>Logs Processed:</strong> 253,952</li>\n        <li><strong>Errors Parsed:</strong> 3,337</li>\n        <li><strong>Services Analyzed:</strong> 5</li>\n        <li><strong>Confidence Score:</strong> 50.0%</li>\n      </ul>\n    </div>\n  </div>\n\n  <!-- INCIDENT EVALUATION JUSTIFICATION -->\n  <div style=\"margin: 20px 0; padding: 15px; background: #ffebee; border-left: 4px solid #d32f2f; border-radius: 4px;\">\n    <h4 style=\"margin: 0 0 10px 0; color: #c62828;\">\n      🚨 Incident Evaluation\n    </h4>\n    <p style=\"margin: 0;\"><strong>Justification:</strong> Cascade failure pattern detected</p>\n\n    <div style=\"margin-top: 10px;\">\n      <strong>Thresholds:</strong>\n      <ul style=\"margin: 5px 0; padding-left: 20px;\">\n        <li>Warning: 2% error rate</li>\n        <li>Incident: 5% error rate</li>\n        <li>Critical: 10% error rate</li>\n      </ul>\n    </div>\n\n    \n    <div style=\"margin-top: 10px;\">\n      <strong>Factors:</strong>\n      <ul style=\"margin: 5px 0; padding-left: 20px;\">\n        <li>Anomaly Detected: ✗ No</li>\n        <li>Cascade Detected: ✓ Yes</li>\n        <li>Critical Services Affected: 0</li>\n      </ul>\n    </div>\n    \n  </div>\n\n  <!-- FOOTER -->\n  <div style=\"text-align: center; margin-top: 30px; padding: 15px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666;\">\n    <div style=\"margin-bottom: 5px;\"><strong>Auto-Generated by LokiFlow</strong></div>\n    <div>Analysis Timestamp: 12/20/2025, 6:14:37 PM</div>\n    <div>Workflow Execution ID: unknown</div>\n    <div>Stages Completed: 3 | Tools Used: 5</div>\n  </div>\n</div>\n",
+      "priority": "Critical",
+      "labels": [
+        "Incident",
+        "Severity-HIGH",
+        "Connection-Issue",
+        "Service-bstp-id-service",
+        "Service-bstp-cpq-batch",
+        "Service-ntf-engine-service",
+        "Auto-Generated",
+        "LokiFlow"
+      ],
+      "components": [
+        "bstp-id-service",
+        "bstp-cpq-batch",
+        "ntf-engine-service",
+        "b2b-object-storage",
+        "ui-authz-mc-backend"
+      ],
+      "issueType": "Incident",
+      "customFields": {
+        "analysisId": "analysis-1766243540306",
+        "isIncident": true,
+        "severity": "HIGH",
+        "errorRate": "1.31%",
+        "errorCount": 3337,
+        "issuesDetected": 2,
+        "affectedServicesCount": 5,
+        "stagesExecuted": 3,
+        "analysisDepth": "unknown",
+        "timeRangeStart": "2025-12-20T14:12:20.000Z",
+        "timeRangeEnd": "2025-12-20T15:12:20.000Z",
+        "timeRangeDuration": "1 hours",
+        "confidenceScore": 0.5,
+        "logsProcessed": 253952,
+        "toolsUsed": "Stack_Trace_Pattern_Analyzer, Pod_Restart_Logs, Memory_Dump_Analysis, Slow_Query_Logs, DB_Connection_Analysis"
+      },
+      "issues": [
+        {
+          "type": "java.net.UnknownHostException",
+          "services": [
+            "ui-authz-mc-backend"
+          ],
+          "occurrences": 1,
+          "severity": "MEDIUM",
+          "stage": "stage2_pattern_analysis",
+          "evidenceCount": 6,
+          "hasRemediation": false
+        },
+        {
+          "type": "Connection to node -1 could not be established",
+          "services": [
+            "b2b-object-storage"
+          ],
+          "occurrences": 49,
+          "severity": "MEDIUM",
+          "stage": "stage2_pattern_analysis",
+          "evidenceCount": 6,
+          "hasRemediation": false
+        }
+      ],
+      "actions": {
+        "immediate": [
+          {
+            "action": "Restart DNS services",
+            "command": "systemctl restart systemd-resolved",
+            "impact": "Restore DNS resolution",
+            "risk": "Low"
+          }
+        ],
+        "monitoringGaps": [
+          "Lack of DNS resolution monitoring"
+        ],
+        "processImprovements": [
+          "Regular DNS configuration audits"
+        ]
+      },
+      "metadata": {
+        "generatedAt": "2025-12-20T15:14:37.299Z",
+        "generatedBy": "LokiFlow-v1.0",
+        "analysisTimestamp": "2025-12-20T15:14:37.284Z",
+        "executionTime": "0s"
+      }
+    },
+    "htmlContent": "\n<div style=\"font-family: Arial, sans-serif; max-width: 900px; margin: 0 auto;\">\n\n  <!-- INCIDENT SUMMARY -->\n  <div style=\"border: 2px solid #d32f2f; border-radius: 8px; margin: 10px 0; background: #ffebee;\">\n    <div style=\"background: #d32f2f; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🚨 INCIDENT SUMMARY\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n        <tr><td style=\"font-weight: bold; width: 150px; padding: 5px;\">Analysis ID:</td><td style=\"padding: 5px;\">analysis-1766243540306</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Type:</td><td style=\"padding: 5px;\">Incident</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Overall Severity:</td><td style=\"padding: 5px;\">🟠 HIGH</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Issues Detected:</td><td style=\"padding: 5px;\"><strong>2</strong></td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Affected Services:</td><td style=\"padding: 5px;\">bstp-id-service, bstp-cpq-batch, ntf-engine-service, b2b-object-storage, ui-authz-mc-backend</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Time Range:</td><td style=\"padding: 5px;\">2025-12-20T14:12:20.000Z to 2025-12-20T15:12:20.000Z</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Duration:</td><td style=\"padding: 5px;\">1 hours</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Error Rate:</td><td style=\"padding: 5px;\">1.31%</td></tr>\n        <tr><td style=\"font-weight: bold; padding: 5px;\">Error Count:</td><td style=\"padding: 5px;\">3337</td></tr>\n      </table>\n    </div>\n  </div>\n\n  <!-- EXECUTIVE SUMMARY -->\n  <div style=\"margin: 20px 0; padding: 15px; background: #f5f5f5; border-left: 4px solid #607d8b; border-radius: 4px;\">\n    <h3 style=\"margin: 0 0 10px 0; color: #455a64;\">📝 Executive Summary</h3>\n    <p style=\"margin: 0; line-height: 1.6;\">Incident: The root cause of the incident was identified as a DNS resolution failure affecting multiple services, notably 'ui-authz-mc-backend' and 'b2b-object-storage'. This was triggered by the inability to resolve the DNS for the monitoring service 'grafana-alloy.saas-bss-monitoring.svc.cluster.local'. Immediate remediation involves restarting DNS services and verifying configurations, while long-term solutions include implementing DNS redundancy and regular audits.</p>\n  </div>\n\n  <!-- IDENTIFIED ISSUES -->\n  <div style=\"margin: 20px 0;\">\n    <h2 style=\"color: #f57c00; border-bottom: 2px solid #ff9800; padding-bottom: 10px;\">\n      🔍 Identified Issues (2)\n    </h2>\n    \n    <div style=\"border: 2px solid #ff9800; border-radius: 8px; margin: 15px 0; background: #fff3e0;\">\n      <div style=\"background: #ff9800; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n        🔍 ISSUE 1 of 2\n      </div>\n      <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n        <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n          <tr><td style=\"font-weight: bold; width: 150px; padding: 5px;\">Issue Type:</td><td style=\"padding: 5px;\">java.net.UnknownHostException</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Affected Services:</td><td style=\"padding: 5px;\">ui-authz-mc-backend</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Occurrences:</td><td style=\"padding: 5px;\">1</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Severity:</td><td style=\"padding: 5px;\">🟡 MEDIUM</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Detected By:</td><td style=\"padding: 5px;\">STAGE2 PATTERN ANALYSIS</td></tr>\n          \n        </table>\n\n        <div style=\"margin-top: 15px;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #f57c00;\">📋 Evidence:</h4>\n          <ul style=\"margin: 5px 0; padding-left: 20px;\">\n            <li>Error type: java.net.UnknownHostException</li>\n      <li>Occurrence count: 1</li>\n      <li>Affected services: ui-authz-mc-backend</li>\n      <li>Temporal clustering: 2025-12-20T14:12:20Z to 2025-12-20T14:12:25Z</li>\n      <li>Propagation speed: <2s</li>\n      <li>Cascade detected: em-global-prod|b2b-object-storage → em-prod|b2b-object-storage → em-global-prod|ui-authz-mc-backend</li>\n          </ul>\n        </div>\n\n        \n\n        \n\n        \n      </div>\n    </div>\n\n    <div style=\"border: 2px solid #ff9800; border-radius: 8px; margin: 15px 0; background: #fff3e0;\">\n      <div style=\"background: #ff9800; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n        🔍 ISSUE 2 of 2\n      </div>\n      <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n        <table style=\"width: 100%; border-collapse: collapse; font-family: Arial, sans-serif;\">\n          <tr><td style=\"font-weight: bold; width: 150px; padding: 5px;\">Issue Type:</td><td style=\"padding: 5px;\">Connection to node -1 could not be established</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Affected Services:</td><td style=\"padding: 5px;\">b2b-object-storage</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Occurrences:</td><td style=\"padding: 5px;\">49</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Severity:</td><td style=\"padding: 5px;\">🟡 MEDIUM</td></tr>\n          <tr><td style=\"font-weight: bold; padding: 5px;\">Detected By:</td><td style=\"padding: 5px;\">STAGE2 PATTERN ANALYSIS</td></tr>\n          \n        </table>\n\n        <div style=\"margin-top: 15px;\">\n          <h4 style=\"margin: 0 0 10px 0; color: #f57c00;\">📋 Evidence:</h4>\n          <ul style=\"margin: 5px 0; padding-left: 20px;\">\n            <li>Error type: Connection to node -1 could not be established</li>\n      <li>Occurrence count: 49</li>\n      <li>Affected services: b2b-object-storage</li>\n      <li>Temporal clustering: 2025-12-20T14:12:20Z to 2025-12-20T14:12:25Z</li>\n      <li>Propagation speed: <2s</li>\n      <li>Cascade detected: em-global-prod|b2b-object-storage → em-prod|b2b-object-storage → em-global-prod|ui-authz-mc-backend</li>\n          </ul>\n        </div>\n\n        \n\n        \n\n        \n      </div>\n    </div>\n  </div>\n\n  <!-- ACTIONABLE INSIGHTS -->\n  \n  <div style=\"border: 2px solid #2196f3; border-radius: 8px; margin: 20px 0; background: #e3f2fd;\">\n    <div style=\"background: #2196f3; color: white; padding: 12px; font-weight: bold; border-radius: 6px 6px 0 0;\">\n      🛠️ IMMEDIATE ACTIONS REQUIRED\n    </div>\n    <div style=\"padding: 15px; background: white; border-radius: 0 0 6px 6px;\">\n      <ul style=\"margin: 0; padding-left: 20px;\">\n        <li><strong>Restart DNS services</strong><br><code style=\"background: #f5f5f5; padding: 2px 6px; border-radius: 3px;\">systemctl restart systemd-resolved</code><br><em>Impact: Restore DNS resolution</em> <span style=\"color: #4caf50;\">(Risk: Low)</span></li>\n      </ul>\n    </div>\n  </div>\n  \n\n  <!-- MONITORING GAPS & PROCESS IMPROVEMENTS -->\n  \n  <div style=\"margin: 20px 0;\">\n    <h3 style=\"color: #9c27b0; border-bottom: 2px solid #9c27b0; padding-bottom: 10px;\">\n      🔮 Prevention & Improvements\n    </h3>\n\n    \n    <div style=\"margin: 15px 0; padding: 10px; background: #f3e5f5; border-left: 4px solid #9c27b0; border-radius: 4px;\">\n      <h4 style=\"margin: 0 0 10px 0; color: #7b1fa2;\">📊 Monitoring Gaps:</h4>\n      <ul style=\"margin: 5px 0; padding-left: 20px;\">\n        <li>Lack of DNS resolution monitoring</li>\n      </ul>\n    </div>\n    \n\n    \n    <div style=\"margin: 15px 0; padding: 10px; background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 4px;\">\n      <h4 style=\"margin: 0 0 10px 0; color: #2e7d32;\">🔧 Process Improvements:</h4>\n      <ul style=\"margin: 5px 0; padding-left: 20px;\">\n        <li>Regular DNS configuration audits</li>\n      </ul>\n    </div>\n    \n  </div>\n  \n\n  <!-- ANALYSIS DETAILS -->\n  <div style=\"margin: 20px 0;\">\n    <h3 style=\"color: #607d8b; border-bottom: 2px solid #607d8b; padding-bottom: 10px;\">\n      📈 Analysis Details\n    </h3>\n\n    <table style=\"width: 100%; border-collapse: collapse; margin: 10px 0;\">\n      <tr style=\"background: #f5f5f5;\">\n        <th style=\"padding: 8px; text-align: left; border-bottom: 2px solid #e0e0e0;\">Stage</th>\n        <th style=\"padding: 8px; text-align: left; border-bottom: 2px solid #e0e0e0;\">Status</th>\n      </tr>\n      \n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #e0e0e0;\">Stage 1: Health Check</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #e0e0e0;\">\n        <span style=\"color: #4caf50; font-weight: bold;\">✓</span> normal\n      </td>\n    </tr>\n  \n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #e0e0e0;\">Stage 2: Pattern Analysis</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #e0e0e0;\">\n        <span style=\"color: #4caf50; font-weight: bold;\">✓</span> Proceeded to Stage 3\n      </td>\n    </tr>\n  \n    <tr>\n      <td style=\"padding: 8px; border-bottom: 1px solid #e0e0e0;\">Stage 3: Root Cause Analysis</td>\n      <td style=\"padding: 8px; border-bottom: 1px solid #e0e0e0;\">\n        <span style=\"color: #4caf50; font-weight: bold;\">✓</span> Completed\n      </td>\n    </tr>\n  \n    </table>\n\n    <div style=\"margin: 15px 0; padding: 10px; background: #fafafa; border-radius: 4px;\">\n      <h4 style=\"margin: 0 0 10px 0;\">⏱️ Performance Metrics:</h4>\n      <ul style=\"margin: 0; padding-left: 20px;\">\n        <li><strong>Total Analysis Time:</strong> 0s</li>\n        <li><strong>Logs Processed:</strong> 253,952</li>\n        <li><strong>Errors Parsed:</strong> 3,337</li>\n        <li><strong>Services Analyzed:</strong> 5</li>\n        <li><strong>Confidence Score:</strong> 50.0%</li>\n      </ul>\n    </div>\n  </div>\n\n  <!-- INCIDENT EVALUATION JUSTIFICATION -->\n  <div style=\"margin: 20px 0; padding: 15px; background: #ffebee; border-left: 4px solid #d32f2f; border-radius: 4px;\">\n    <h4 style=\"margin: 0 0 10px 0; color: #c62828;\">\n      🚨 Incident Evaluation\n    </h4>\n    <p style=\"margin: 0;\"><strong>Justification:</strong> Cascade failure pattern detected</p>\n\n    <div style=\"margin-top: 10px;\">\n      <strong>Thresholds:</strong>\n      <ul style=\"margin: 5px 0; padding-left: 20px;\">\n        <li>Warning: 2% error rate</li>\n        <li>Incident: 5% error rate</li>\n        <li>Critical: 10% error rate</li>\n      </ul>\n    </div>\n\n    \n    <div style=\"margin-top: 10px;\">\n      <strong>Factors:</strong>\n      <ul style=\"margin: 5px 0; padding-left: 20px;\">\n        <li>Anomaly Detected: ✗ No</li>\n        <li>Cascade Detected: ✓ Yes</li>\n        <li>Critical Services Affected: 0</li>\n      </ul>\n    </div>\n    \n  </div>\n\n  <!-- FOOTER -->\n  <div style=\"text-align: center; margin-top: 30px; padding: 15px; background: #f5f5f5; border-radius: 6px; font-size: 12px; color: #666;\">\n    <div style=\"margin-bottom: 5px;\"><strong>Auto-Generated by LokiFlow</strong></div>\n    <div>Analysis Timestamp: 12/20/2025, 6:14:37 PM</div>\n    <div>Workflow Execution ID: unknown</div>\n    <div>Stages Completed: 3 | Tools Used: 5</div>\n  </div>\n</div>\n",
+    "summary": {
+      "title": "🚨 INCIDENT: 2 Issues Detected - bstp-id-service, bstp-cpq-batch +3 more",
+      "priority": "Critical",
+      "issueType": "Incident",
+      "labelsCount": 8,
+      "issuesCount": 2,
+      "affectedServicesCount": 5
+    }
+  }
+]

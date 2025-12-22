@@ -1,0 +1,62 @@
+[
+  {
+    "startTime": 1766238380,
+    "endTime": 1766241980,
+    "context": {
+      "source": {
+        "type": "scheduler",
+        "trigger": "periodic_log_check",
+        "interval": "50m"
+      },
+      "namespaces": [
+        "bstp-cms-global-production",
+        "bstp-cms-prod-v3",
+        "em-global-prod-3pp",
+        "em-global-prod-eom",
+        "em-global-prod-flowe",
+        "em-global-prod",
+        "em-prod-3pp",
+        "em-prod-eom",
+        "em-prod-flowe",
+        "em-prod",
+        "etiyamobile-production",
+        "etiyamobile-prod"
+      ],
+      "servicePatterns": [
+        "rim",
+        "pcm",
+        "ntf",
+        "crm",
+        "eom",
+        "fstp",
+        "api",
+        "gateway",
+        "auth",
+        "payment",
+        "subscription"
+      ],
+      "cluster": "production-cluster",
+      "checkType": "scheduled"
+    },
+    "metadata": {
+      "requestId": "lokiflow-scheduled-1766241980-yf1g4s",
+      "source": "Scheduler Log Analysis Flow",
+      "automated": true,
+      "schedulerVersion": "2.0-loki",
+      "nextRun": "2025-12-20T15:36:20.518Z",
+      "runNumber": 588747
+    },
+    "priority": "normal",
+    "forceDeepAnalysis": false,
+    "searchFilters": {
+      "logLevels": [
+        "error",
+        "ERROR",
+        "warning",
+        "WARNING"
+      ],
+      "minErrorRate": 0.005,
+      "minErrorCount": 10
+    }
+  }
+]
