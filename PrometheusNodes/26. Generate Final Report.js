@@ -5,21 +5,9 @@
 // Original functionality: 100% preserved
 // KB Enhancement: ADDED (not replaced)
 
-// ============= KB NODE CONNECTIONS (NEW) =============
-// Get KB data from workflow nodes
-const alertCategoriesMapper = $node["Alert Categories Mapper"]?.json || {};
+// ============= KB NODE CONNECTION (SIMPLIFIED) =============
+// Get KB data from workflow node - matches FreePrometheus pattern
 const loadAlertKB = $node["Load Alert Knowledge Base"]?.json || {};
-const categoryMetricsBuilder = $node["Category Based Metrics Builder"]?.json || {};
-const categoryDeepAnalysisEnhancer = $node["Category Based Deep Analysis Enhancer"]?.json || {};
-
-// Helper function to derive urgency level from severity score
-function deriveUrgencyLevel(severityScore) {
-  if (severityScore >= 100) return 'BLOCKER';
-  if (severityScore >= 90) return 'CRITICAL';
-  if (severityScore >= 70) return 'HIGH';
-  if (severityScore >= 50) return 'MEDIUM';
-  return 'LOW';
-}
 
 // ============= MOCK DATA DETECTION FUNCTION =============
 // Detects and flags mock/test data indicators to prevent production pollution
@@ -55,23 +43,12 @@ function detectAndCleanMockData(data) {
   return hasMockData;
 }
 
-// Extract KB information safely (FIXED FIELD PATHS)
-const kbAlertCategory = alertCategoriesMapper.alertCategory || 'UNKNOWN';
-const kbUrgencyLevel = deriveUrgencyLevel(alertCategoriesMapper.calculatedSeverityScore || 0);
-const kbCascadeRisk = alertCategoriesMapper.categoryHandlingHints?.cascadeRisk || 'UNKNOWN';
+// Extract KB information - simplified pattern (matches FreePrometheus)
 const kbAlertKnowledgeBase = loadAlertKB.knowledgeBase?.alert || {};
-const kbEnhancedStats = {
-  totalCategories: alertCategoriesMapper._categoryStats?.totalAlerts || 0,
-  totalMappings: Object.keys(alertCategoriesMapper._categoryStats?.categoryBreakdown || {}).length || 0,
-  kbEntriesLoaded: Object.keys(kbAlertKnowledgeBase).length || 0
-};
 
-console.log("===== KB ENHANCEMENT LOADED =====");
-console.log("Alert Category:", kbAlertCategory);
-console.log("Urgency Level:", kbUrgencyLevel);
-console.log("Cascade Risk:", kbCascadeRisk);
-console.log("KB Entries Available:", kbEnhancedStats.kbEntriesLoaded);
-console.log("=================================");
+console.log("===== KB LOADED =====");
+console.log("KB Entries Available:", Object.keys(kbAlertKnowledgeBase).length);
+console.log("=====================");
 
 // ================ SMART ROOT CAUSE ANALYSIS ENGINE - FUNCTIONS ONLY ================
 // Bu dosyayı mevcut generate_final_report_hybrid_fix.js'nin EN BAŞINA ekle
@@ -3086,10 +3063,10 @@ return {
   
   knowledgeBaseInsights: {
     kbIntegrationEnabled: true,
-    kbEnhanced: kbEnhancementActive || stage3KBStats.kbEnhanced === true, // KB Enhancement flag (FIXED)
-    alertCategory: stage3KBStats.alertCategory || kbAlertCategory, // From Stage 3 or Alert Categories Mapper
-    urgencyLevel: stage3KBStats.urgencyLevel || kbUrgencyLevel, // From Stage 3 or Alert Categories Mapper  
-    cascadeRisk: stage3KBStats.cascadeRisk || kbCascadeRisk, // From Stage 3 or Alert Categories Mapper
+    kbEnhanced: kbEnhancementActive || stage3KBStats.kbEnhanced === true, // KB Enhancement flag
+    alertCategory: stage3KBStats.alertCategory || 'UNKNOWN', // From Stage 3
+    urgencyLevel: stage3KBStats.urgencyLevel || 'UNKNOWN', // From Stage 3
+    cascadeRisk: stage3KBStats.cascadeRisk || 'UNKNOWN', // From Stage 3
     existingKBAlerts: Object.keys(alertKnowledgeBase).length,
     enhancedKBMatches: enhancedKBMatches,
     correlationKBEnhanced: alertCorrelation.kbEnhanced,
@@ -3103,12 +3080,10 @@ return {
       appliedRemediations: allStageData.stage5?.remediation_plan?.immediate_actions?.filter(a => a.source === "Alert Knowledge Base").length || 0
     },
     
-    // KB Enhancement Statistics
+    // Simplified KB stats (matches FreePrometheus)
     kbEnhancementStats: {
-      categoriesSupported: kbEnhancedStats.totalCategories,
-      alertMappings: kbEnhancedStats.totalMappings,
-      kbEntriesLoaded: kbEnhancedStats.kbEntriesLoaded,
-      enhancementSource: "KB Node Integration v1.0"
+      kbEntriesLoaded: Object.keys(kbAlertKnowledgeBase).length,
+      enhancementSource: "Load Alert Knowledge Base"
     }
   },
   
