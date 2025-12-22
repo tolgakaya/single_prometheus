@@ -1,4 +1,4 @@
-// Prepare Notification Node - LokiFlow Version
+// Prepare Notification Node - TempoFlow Version
 // Purpose: Prepare final notification data for Slack, Teams, Email, etc.
 // This node runs AFTER Jira ticket creation/update
 
@@ -36,14 +36,16 @@ try {
 
 // Get original analysis result from Process Results & Decision
 const originalAnalysis = processedData?.originalAnalysis || {};
-const logAnalysis = processedData?.logAnalysis || {};
+const traceAnalysis = processedData?.traceAnalysis || {};
 const alertSummary = processedData?.alertSummary || {};
-const consolidatedFindings = originalAnalysis.consolidatedFindings || {};
-const incidentEvaluation = originalAnalysis.incidentEvaluation || {};
 
-// Multi-problem data
-const identifiedIssues = consolidatedFindings.identifiedIssues || [];
-const affectedServices = consolidatedFindings.affectedServices || [];
+// TempoFlow-specific data (distributed tracing)
+const serviceImpact = traceAnalysis.serviceImpact || {};
+const dependencyAnalysis = traceAnalysis.dependencyAnalysis || {};
+const rootCauseAnalysis = traceAnalysis.rootCauseAnalysis || {};
+const cascadeFailures = dependencyAnalysis.cascadeFailures || [];
+const failedChains = dependencyAnalysis.failedChains || [];
+const affectedServices = Object.keys(serviceImpact.errorsByService || {});
 
 // ============= PREPARE NOTIFICATION DATA =============
 
@@ -54,42 +56,68 @@ const notification = {
   // Alert information
   alert: {
     id: alertSummary.alertId || 'unknown',
-    source: alertSummary.source || 'loki-logs',
+    source: alertSummary.source || 'tempo-traces',
     title: alertSummary.title || 'Unknown Alert',
-    severity: alertSummary.severity || 'NORMAL',
+    severity: alertSummary.severity || 'MEDIUM',
     isIncident: alertSummary.isIncident || false,
-    errorRate: alertSummary.errorRate || 0,
     errorCount: alertSummary.errorCount || 0,
+    cascadeFailures: alertSummary.cascadeFailures || 0,
+    failedChains: alertSummary.failedChains || 0,
+    criticalPathAffected: alertSummary.criticalPathAffected || false,
     fingerprint: processedData?.fingerprint || 'unknown',
     dedupStatus: processedData?.dedupStatus || 'unknown'
   },
 
-  // Log analysis report summary
-  logAnalysisReport: {
-    analysisId: logAnalysis.analysisId || 'N/A',
-    workflowExecutionId: logAnalysis.workflowExecutionId || 'N/A',
-    title: alertSummary.title || 'Log Analysis Alert',
-    severity: alertSummary.severity || 'NORMAL',
+  // Trace analysis report summary (TempoFlow-specific)
+  traceAnalysisReport: {
+    analysisId: traceAnalysis.analysisId || 'N/A',
+    workflowExecutionId: traceAnalysis.workflowExecutionId || 'N/A',
+    title: alertSummary.title || 'Distributed Trace Analysis Alert',
+    severity: alertSummary.severity || 'MEDIUM',
     isIncident: alertSummary.isIncident || false,
-    issuesIdentified: identifiedIssues.length,
-    affectedServicesCount: affectedServices.length,
+
+    // Service impact
+    totalServices: serviceImpact.totalServices || affectedServices.length,
     affectedServices: affectedServices,
-    errorRate: alertSummary.errorRate || 0,
-    errorCount: alertSummary.errorCount || 0,
-    hasImmediateActions: logAnalysis.actions?.immediate?.length > 0,
-    stagesExecuted: logAnalysis.metrics?.stagesExecuted || 0,
-    totalLogsAnalyzed: logAnalysis.metrics?.totalLogs || 0
+    criticalPathAffected: serviceImpact.criticalPathAffected || false,
+    affectedPath: serviceImpact.affectedPath || null,
+
+    // Distributed tracing metrics
+    totalErrors: traceAnalysis.metrics?.totalErrors || 0,
+    impactScore: traceAnalysis.metrics?.impactScore || 0,
+    confidenceLevel: traceAnalysis.metrics?.confidenceLevel || 0.5,
+
+    // Cascade & dependency analysis
+    cascadeFailuresCount: cascadeFailures.length,
+    failedChainsCount: failedChains.length,
+
+    // Root cause
+    rootCause: rootCauseAnalysis.primaryCause || 'Unknown',
+    rootService: rootCauseAnalysis.serviceRoot || 'Unknown',
+
+    // Actions available
+    hasImmediateActions: traceAnalysis.actions?.immediate?.length > 0
   },
 
-  // Multi-problem issues summary
-  issues: identifiedIssues.map(issue => ({
-    type: issue.type,
-    services: issue.affectedServices || [],
-    severity: issue.severity,
-    stage: issue.stageDetected,
-    evidenceCount: issue.evidence?.length || 0,
-    occurrences: issue.occurrenceCount || null
-  })),
+  // Distributed tracing issues (TempoFlow-specific)
+  tracingIssues: {
+    cascadeFailures: cascadeFailures.map(cascade => ({
+      origin: cascade.origin,
+      affected: cascade.affected || [],
+      pattern: cascade.pattern
+    })),
+    failedChains: failedChains.map(chain => ({
+      chain: chain.chain || [],
+      failurePoint: chain.failurePoint,
+      errorType: chain.errorType
+    })),
+    rootCause: {
+      primaryCause: rootCauseAnalysis.primaryCause || 'Unknown',
+      serviceRoot: rootCauseAnalysis.serviceRoot || 'Unknown',
+      affectedChains: rootCauseAnalysis.affectedChains || [],
+      contributingFactors: rootCauseAnalysis.contributingFactors || []
+    }
+  },
 
   // Jira ticket information
   jiraTicket: jiraTicket ? {
@@ -107,23 +135,23 @@ const notification = {
   // Formatted notifications for different channels
   formats: {
     // Slack notification format
-    slack: generateSlackNotification(processedData, originalAnalysis, identifiedIssues, affectedServices, jiraTicket, jiraOperation),
+    slack: generateSlackNotification(processedData, traceAnalysis, cascadeFailures, failedChains, affectedServices, jiraTicket, jiraOperation),
 
     // Chat summary (for Teams, etc.)
-    chatSummary: generateChatSummary(processedData, originalAnalysis, identifiedIssues, affectedServices, jiraTicket, jiraOperation),
+    chatSummary: generateChatSummary(processedData, traceAnalysis, cascadeFailures, failedChains, affectedServices, jiraTicket, jiraOperation),
 
     // Markdown report (if available)
     markdown: originalAnalysis.htmlContent || 'No detailed report available'
   },
 
   // Summary text
-  summary: generateSummary(processedData, originalAnalysis, identifiedIssues, jiraTicket, jiraOperation)
+  summary: generateSummary(processedData, traceAnalysis, cascadeFailures, failedChains, jiraTicket, jiraOperation)
 };
 
 // ============= HELPER FUNCTIONS =============
 
-function generateSlackNotification(processedData, originalAnalysis, issues, services, jiraTicket, jiraOperation) {
-  const severity = processedData?.alertSummary?.severity || 'NORMAL';
+function generateSlackNotification(processedData, traceAnalysis, cascadeFailures, failedChains, services, jiraTicket, jiraOperation) {
+  const severity = processedData?.alertSummary?.severity || 'MEDIUM';
   const isIncident = processedData?.alertSummary?.isIncident || false;
 
   const severityEmoji = {
@@ -138,13 +166,13 @@ function generateSlackNotification(processedData, originalAnalysis, issues, serv
   const emoji = severityEmoji[severity] || '⚪';
 
   return {
-    text: `${emoji} Log Analysis Alert: ${processedData?.alertSummary?.title}`,
+    text: `${emoji} Distributed Trace Analysis Alert: ${processedData?.alertSummary?.title}`,
     blocks: [
       {
         type: 'header',
         text: {
           type: 'plain_text',
-          text: `${emoji} ${isIncident ? 'INCIDENT' : 'LOG ANALYSIS'}: ${severity}`,
+          text: `${emoji} ${isIncident ? 'INCIDENT' : 'TRACE ANALYSIS'}: ${severity}`,
           emoji: true
         }
       },
@@ -161,21 +189,37 @@ function generateSlackNotification(processedData, originalAnalysis, issues, serv
           },
           {
             type: 'mrkdwn',
-            text: `*Error Rate:*\n${processedData?.alertSummary?.errorRate || 0}%`
+            text: `*Error Count:*\n${processedData?.alertSummary?.errorCount || 0}`
           },
           {
             type: 'mrkdwn',
-            text: `*Issues:*\n${issues.length}`
+            text: `*Impact Score:*\n${traceAnalysis.metrics?.impactScore || 0}/100`
           }
         ]
       },
-      ...(issues.length > 0 ? [{
+      ...(cascadeFailures.length > 0 ? [{
         type: 'section',
         text: {
           type: 'mrkdwn',
-          text: `*Identified Issues:*\n${issues.slice(0, 3).map((issue, idx) =>
-            `${idx + 1}. ${issue.type} (${issue.services.slice(0, 2).join(', ')})`
-          ).join('\n')}${issues.length > 3 ? `\n...and ${issues.length - 3} more` : ''}`
+          text: `*🌊 Cascade Failures:*\n${cascadeFailures.slice(0, 2).map((cascade, idx) =>
+            `${idx + 1}. ${cascade.origin} → ${cascade.affected.slice(0, 2).join(', ')}`
+          ).join('\n')}${cascadeFailures.length > 2 ? `\n...and ${cascadeFailures.length - 2} more` : ''}`
+        }
+      }] : []),
+      ...(failedChains.length > 0 ? [{
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `*⛓️ Failed Chains:*\n${failedChains.slice(0, 2).map((chain, idx) =>
+            `${idx + 1}. ${chain.chain.join(' → ')} (${chain.failurePoint})`
+          ).join('\n')}${failedChains.length > 2 ? `\n...and ${failedChains.length - 2} more` : ''}`
+        }
+      }] : []),
+      ...(processedData?.alertSummary?.criticalPathAffected ? [{
+        type: 'section',
+        text: {
+          type: 'mrkdwn',
+          text: `⚠️ *Critical Path Affected*`
         }
       }] : []),
       ...(jiraTicket ? [{
@@ -190,7 +234,7 @@ function generateSlackNotification(processedData, originalAnalysis, issues, serv
         elements: [
           {
             type: 'mrkdwn',
-            text: `Analysis ID: ${processedData?.logAnalysis?.analysisId || 'N/A'} | Services: ${services.length} | Logs: ${processedData?.logAnalysis?.metrics?.totalLogs || 0}`
+            text: `Analysis ID: ${traceAnalysis?.analysisId || 'N/A'} | Services: ${services.length} | Root: ${traceAnalysis?.rootCauseAnalysis?.primaryCause || 'Unknown'}`
           }
         ]
       }
@@ -198,43 +242,61 @@ function generateSlackNotification(processedData, originalAnalysis, issues, serv
   };
 }
 
-function generateChatSummary(processedData, originalAnalysis, issues, services, jiraTicket, jiraOperation) {
-  const severity = processedData?.alertSummary?.severity || 'NORMAL';
+function generateChatSummary(processedData, traceAnalysis, cascadeFailures, failedChains, services, jiraTicket, jiraOperation) {
+  const severity = processedData?.alertSummary?.severity || 'MEDIUM';
   const isIncident = processedData?.alertSummary?.isIncident || false;
+  const rootCause = traceAnalysis?.rootCauseAnalysis?.primaryCause || 'Unknown';
 
   return `
-🚨 **${isIncident ? 'Incident' : 'Log Analysis'} Alert**
+🚨 **${isIncident ? 'Incident' : 'Distributed Trace Analysis'} Alert**
 
 **Severity**: ${severity}
 **Title**: ${processedData?.alertSummary?.title || 'Unknown Alert'}
-**Error Rate**: ${processedData?.alertSummary?.errorRate || 0}% (${processedData?.alertSummary?.errorCount || 0} errors)
+**Error Count**: ${processedData?.alertSummary?.errorCount || 0}
+**Impact Score**: ${traceAnalysis?.metrics?.impactScore || 0}/100
 
-**Issues Identified**: ${issues.length}
-${issues.slice(0, 3).map((issue, idx) =>
-  `${idx + 1}. ${issue.type} - ${issue.services.slice(0, 2).join(', ')}`
+**Root Cause**: ${rootCause}
+${processedData?.alertSummary?.criticalPathAffected ? '⚠️ **Critical Path Affected**' : ''}
+
+**🌊 Cascade Failures**: ${cascadeFailures.length}
+${cascadeFailures.slice(0, 2).map((cascade, idx) =>
+  `${idx + 1}. ${cascade.origin} → ${cascade.affected.join(', ')}`
 ).join('\n')}
-${issues.length > 3 ? `...and ${issues.length - 3} more` : ''}
+${cascadeFailures.length > 2 ? `...and ${cascadeFailures.length - 2} more` : ''}
+
+**⛓️ Failed Chains**: ${failedChains.length}
+${failedChains.slice(0, 2).map((chain, idx) =>
+  `${idx + 1}. ${chain.chain.join(' → ')} (fails at: ${chain.failurePoint})`
+).join('\n')}
+${failedChains.length > 2 ? `...and ${failedChains.length - 2} more` : ''}
 
 **Affected Services**: ${services.length}
 ${services.slice(0, 5).join(', ')}${services.length > 5 ? ` (+${services.length - 5} more)` : ''}
 
 ${jiraTicket ? `**Jira**: ${jiraTicket.key} (${jiraOperation})` : '**Jira**: No ticket created'}
 
-*Analysis ID: ${processedData?.logAnalysis?.analysisId || 'N/A'}*
+*Analysis ID: ${traceAnalysis?.analysisId || 'N/A'}*
 `.trim();
 }
 
-function generateSummary(processedData, originalAnalysis, issues, jiraTicket, jiraOperation) {
+function generateSummary(processedData, traceAnalysis, cascadeFailures, failedChains, jiraTicket, jiraOperation) {
   const alertId = processedData?.alertSummary?.alertId || 'unknown';
-  const analysisId = processedData?.logAnalysis?.analysisId || 'N/A';
-  const severity = processedData?.alertSummary?.severity || 'NORMAL';
-  const services = originalAnalysis.consolidatedFindings?.affectedServices || [];
+  const analysisId = traceAnalysis?.analysisId || 'N/A';
+  const severity = processedData?.alertSummary?.severity || 'MEDIUM';
+  const errorCount = processedData?.alertSummary?.errorCount || 0;
+  const services = Object.keys(traceAnalysis?.serviceImpact?.errorsByService || {});
 
   let summary = `Alert ${alertId} analyzed. `;
   summary += `Analysis ${analysisId}. `;
   summary += `Severity: ${severity}. `;
-  summary += `${issues.length} issue(s) identified. `;
+  summary += `${errorCount} error(s). `;
   summary += `${services.length} service(s) affected. `;
+  summary += `${cascadeFailures.length} cascade failure(s). `;
+  summary += `${failedChains.length} failed chain(s). `;
+
+  if (processedData?.alertSummary?.criticalPathAffected) {
+    summary += `Critical path affected. `;
+  }
 
   if (jiraTicket) {
     summary += `Jira ticket ${jiraTicket.key} ${jiraOperation}. `;
@@ -242,7 +304,7 @@ function generateSummary(processedData, originalAnalysis, issues, jiraTicket, ji
     summary += `No Jira ticket created. `;
   }
 
-  summary += `Stages executed: ${processedData?.logAnalysis?.metrics?.stagesExecuted || 0}.`;
+  summary += `Root cause: ${traceAnalysis?.rootCauseAnalysis?.primaryCause || 'Unknown'}.`;
 
   return summary;
 }
