@@ -13,20 +13,20 @@
 ### Query Structure:
 
 ```traceql
-{ resource.deployment.environment=~"NAMESPACE_PATTERN" && (SERVICE_FILTER) && span.http.status_code>=400 }
+{ resource.env-code=~"NAMESPACE_PATTERN" && (SERVICE_FILTER) && status=error }
 ```
 
 ### Real Production Example:
 
 ```traceql
-{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (resource.service.name="APIGateway" || resource.service.name="crm-mash-up" || resource.service.name="crm-customer-information" || resource.service.name="crm-asset" || resource.service.name="domain-config-service" || resource.service.name="ntf-engine-service" || resource.service.name="ntf-history-service" || resource.service.name="bss-services-service.etiyamobile-production-eom" || resource.service.name="bss-mc-domain-config-t4" || resource.service.name="bss-mc-ntf-engine-t4" || resource.service.name="bstp-pcm-product-catalog" || resource.service.name="eca-t4" || resource.service.name="bss-mc-asset-management-t4" || resource.service.name="bss-mc-crm-customer-information-t4" || resource.service.name="bss-mc-pcm-product-catalog-t4" || resource.service.name="cpq-ordercapture" || resource.service.name="bstp-pcm-product-offer-detail" || resource.service.name="activity" || resource.service.name="bss-mc-cpq-t4" || resource.service.name="customer-search-mc-backend" || resource.service.name="ui-authz-mc-backend") && span.http.status_code>=400 }
+{ resource.env-code=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (resource.service.name="APIGateway" || resource.service.name="crm-mash-up" || resource.service.name="crm-customer-information" || resource.service.name="crm-asset" || resource.service.name="domain-config-service" || resource.service.name="ntf-engine-service" || resource.service.name="ntf-history-service" || resource.service.name="bss-services-service.etiyamobile-production-eom" || resource.service.name="bss-mc-domain-config-t4" || resource.service.name="bss-mc-ntf-engine-t4" || resource.service.name="bstp-pcm-product-catalog" || resource.service.name="eca-t4" || resource.service.name="bss-mc-asset-management-t4" || resource.service.name="bss-mc-crm-customer-information-t4" || resource.service.name="bss-mc-pcm-product-catalog-t4" || resource.service.name="cpq-ordercapture" || resource.service.name="bstp-pcm-product-offer-detail" || resource.service.name="activity" || resource.service.name="bss-mc-cpq-t4" || resource.service.name="customer-search-mc-backend" || resource.service.name="ui-authz-mc-backend") && status=error }
 ```
 
 ### Query Breakdown:
 
 **1. Namespace Filter (12 namespaces)**:
 ```traceql
-resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"
+resource.env-code=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"
 ```
 
 **2. Service Filter (20 critical services)**:
@@ -56,7 +56,7 @@ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em
 
 **3. Error Filter** (HTTP status codes):
 ```traceql
-span.http.status_code>=400
+status=error
 ```
 
 **Note**: Use `span.http.status_code` for HTTP status codes, not `status.code`
@@ -72,13 +72,13 @@ span.http.status_code>=400
 ### Query Structure:
 
 ```traceql
-{ resource.deployment.environment=~"NAMESPACE_PATTERN" && (CRITICAL_SERVICE_FILTER) && duration > 500ms }
+{ resource.env-code=~"NAMESPACE_PATTERN" && (CRITICAL_SERVICE_FILTER) && duration > 500ms }
 ```
 
 ### Real Production Example (Critical Services Only):
 
 ```traceql
-{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (resource.service.name="APIGateway" || resource.service.name="ui-authz-mc-backend" || resource.service.name="crm-customer-information" || resource.service.name="cpq-ordercapture") && duration > 500ms }
+{ resource.env-code=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (resource.service.name="APIGateway" || resource.service.name="ui-authz-mc-backend" || resource.service.name="crm-customer-information" || resource.service.name="cpq-ordercapture") && duration > 500ms }
 ```
 
 ### Query Breakdown:
@@ -109,19 +109,19 @@ duration > 500ms
 ### Query Structure (All Errors):
 
 ```traceql
-{resource.deployment.environment=~"NAMESPACE_PATTERN" && span.http.status_code>=400}
+{resource.env-code=~"NAMESPACE_PATTERN" && status=error}
 ```
 
 ### Real Production Example:
 
 ```traceql
-{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && span.http.status_code>=400}
+{resource.env-code=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && status=error}
 ```
 
 ### With Service Filter:
 
 ```traceql
-{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (resource.service.name=~".*payment.*" || resource.service.name=~".*auth.*") && span.http.status_code>=400}
+{resource.env-code=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (resource.service.name=~".*payment.*" || resource.service.name=~".*auth.*") && status=error}
 ```
 
 ---
@@ -138,7 +138,7 @@ duration > 500ms
 
 **Generated Query**:
 ```traceql
-{ resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (resource.service.name="cpq-ordercapture" || resource.service.name="bstp-cpq-batch" || resource.service.name="bss-services-service.etiyamobile-production-eom") && span.http.status_code>=400 }
+{ resource.env-code=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && (resource.service.name="cpq-ordercapture" || resource.service.name="bstp-cpq-batch" || resource.service.name="bss-services-service.etiyamobile-production-eom") && status=error }
 ```
 
 ---
@@ -148,8 +148,8 @@ duration > 500ms
 ### ✅ CORRECT Syntax:
 
 1. **Span Attributes** (require `.` prefix for sub-fields):
-   - `span.http.status_code>=400` ✅
-   - `resource.deployment.environment=~"pattern"` ✅
+   - `status=error` ✅
+   - `resource.env-code=~"pattern"` ✅
    - `resource.service.name="value"` ✅
 
 2. **Regex Matching**:
@@ -164,7 +164,7 @@ duration > 500ms
 ### ❌ INCORRECT Syntax:
 
 1. **Missing Sub-field**:
-   - `status=error` ❌ → `span.http.status_code>=400` ✅
+   - `status=error` ❌ → `status=error` ✅
    - `status=~"error"` ❌ → `status.code=~"4..|5.."` ✅
 
 2. **Invalid Attribute Paths**:
@@ -172,7 +172,7 @@ duration > 500ms
    - `.service.name` ❌ (leading dot) → `service.name` ✅
 
 3. **Wrong Operators**:
-   - `status.code="error"` ❌ → `span.http.status_code>=400` ✅
+   - `status.code="error"` ❌ → `status=error` ✅
 
 ---
 
@@ -205,7 +205,7 @@ if (enhancedParams.serviceAnalysis.detectedServices.length > 0) {
     .join(' || ');
 
   enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
-    `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && span.http.status_code>=400 }`;
+    `{ resource.env-code=~"${namespacePattern}" && (${serviceFilter}) && status=error }`;
 }
 
 // Query 2: High latency for critical services across ALL namespaces
@@ -215,7 +215,7 @@ const criticalServices = enhancedParams.serviceAnalysis.detectedServices
 if (criticalServices.length > 0) {
   const criticalFilter = criticalServices.map(s => `resource.service.name="${s}"`).join(' || ');
   enhancedParams.serviceAnalysis.enhancedQueries.criticalLatency =
-    `{ resource.deployment.environment=~"${namespacePattern}" && (${criticalFilter}) && duration > 500ms }`;
+    `{ resource.env-code=~"${namespacePattern}" && (${criticalFilter}) && duration > 500ms }`;
 }
 ```
 
@@ -224,12 +224,12 @@ if (criticalServices.length > 0) {
 ```javascript
 // Build Tempo query - MULTI-NAMESPACE SUPPORT
 const namespacePattern = config.searchParams.namespaces.join('|');
-let tempoQuery = `{resource.deployment.environment=~"${namespacePattern}"`;
+let tempoQuery = `{resource.env-code=~"${namespacePattern}"`;
 
 // For critical priority, search for all errors
 if (config.analysisConfig.priority === 'critical' &&
     config.searchParams.errorTypes.includes('all_errors')) {
-  tempoQuery += ` && span.http.status_code>=400`;
+  tempoQuery += ` && status=error`;
 } else if (config.searchParams.statusCodes.length > 0) {
   const codes = config.searchParams.statusCodes.join('|');
   tempoQuery += ` && status.code=~"${codes}"`;
@@ -262,7 +262,7 @@ tempoQuery += '}';
 - **Mitigation**: Only include detected services (typically 5-20)
 
 ### Status Code Filter:
-- **Single range**: `span.http.status_code>=400` (fastest)
+- **Single range**: `status=error` (fastest)
 - **Regex pattern**: `status.code=~"4..|5.."` (slower)
 - **Exact codes**: `status.code=~"404|500|503"` (moderate)
 

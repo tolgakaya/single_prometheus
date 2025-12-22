@@ -16,7 +16,7 @@ Details: invalid TraceQL query: parse error at line 1, col 246: syntax error: un
 
 ### Wrong Query (What We Were Using):
 ```traceql
-{ resource.deployment.environment=~"..." && (service.name="...") && status.code>=400 }
+{ resource.env-code=~"..." && (service.name="...") && status.code>=400 }
                                               ^^^^^^^^^^^^              ^^^^^^^^^^^
                                               ERROR #1                  ERROR #2
                                               (col 246)
@@ -31,7 +31,7 @@ Details: invalid TraceQL query: parse error at line 1, col 246: syntax error: un
 
 2. **HTTP Status Code Filter**:
    - ❌ WRONG: `status.code>=400`
-   - ✅ CORRECT: `span.http.status_code>=400`
+   - ✅ CORRECT: `status=error`
    - **Why**: HTTP status code is a span-level attribute
 
 **Why Col 246 Error**:
@@ -50,7 +50,7 @@ Details: invalid TraceQL query: parse error at line 1, col 246: syntax error: un
 
 ### Correct Query:
 ```traceql
-{ resource.deployment.environment=~"..." && (resource.service.name="...") && span.http.status_code>=400 }
+{ resource.env-code=~"..." && (resource.service.name="...") && status=error }
                                               ^^^^^^^^^^^^^^^^^^^^              ^^^^^^^^^^^^^^^^^^^^^^^^^
                                               CORRECT                           CORRECT
 ```
@@ -63,7 +63,7 @@ According to [Grafana Tempo documentation](https://grafana.com/docs/tempo/latest
 
 ### Resource-Level Attributes (use `resource.` prefix):
 - `resource.service.name` - Service name (most common)
-- `resource.deployment.environment` - Deployment environment
+- `resource.env-code` - Deployment environment
 - `resource.cluster.name` - Cluster name
 
 ### Span-Level Attributes (use `span.` prefix):
@@ -170,7 +170,7 @@ Query: { ... && (service.name="APIGateway" || ...) && status.code>=400 }
 ### After Fix:
 ```
 Success: Traces returned or "No traces found"
-Query: { ... && (resource.service.name="APIGateway" || ...) && span.http.status_code>=400 }
+Query: { ... && (resource.service.name="APIGateway" || ...) && status=error }
        - Custom query (with services) WORKS ✅
        - Fallback query (no services) WORKS ✅
 ```
@@ -181,7 +181,7 @@ Query: { ... && (resource.service.name="APIGateway" || ...) && span.http.status_
 
 ```traceql
 {
-  resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"
+  resource.env-code=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod"
   &&
   (
     resource.service.name="APIGateway" ||
@@ -190,14 +190,14 @@ Query: { ... && (resource.service.name="APIGateway" || ...) && span.http.status_
     resource.service.name="domain-config-service"
   )
   &&
-  span.http.status_code>=400
+  status=error
 }
 ```
 
 **Breakdown**:
-1. ✅ Namespace filter: `resource.deployment.environment=~"..."`
+1. ✅ Namespace filter: `resource.env-code=~"..."`
 2. ✅ Service filter: `resource.service.name="..."`
-3. ✅ Status filter: `span.http.status_code>=400`
+3. ✅ Status filter: `status=error`
 
 ---
 

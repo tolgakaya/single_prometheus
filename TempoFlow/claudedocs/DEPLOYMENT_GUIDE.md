@@ -81,7 +81,7 @@ let tempoQuery = `{.deployment.environment="${config.searchParams.environment}"`
 // For critical priority, search for all errors
 if (config.analysisConfig.priority === 'critical' &&
     config.searchParams.errorTypes.includes('all_errors')) {
-  tempoQuery += ` && .span.http.status_code>=400`;
+  tempoQuery += ` && .status=error`;
 } else if (config.searchParams.statusCodes.length > 0) {
   const codes = config.searchParams.statusCodes.join('|');
   tempoQuery += ` && .status=~"${codes}"`;
@@ -101,12 +101,12 @@ With:
 // Build Tempo query - MULTI-NAMESPACE SUPPORT
 // Create namespace regex pattern: namespace=~"ns1|ns2|ns3"
 const namespacePattern = config.searchParams.namespaces.join('|');
-let tempoQuery = `{resource.deployment.environment=~"${namespacePattern}"`;
+let tempoQuery = `{resource.env-code=~"${namespacePattern}"`;
 
 // For critical priority, search for all errors
 if (config.analysisConfig.priority === 'critical' &&
     config.searchParams.errorTypes.includes('all_errors')) {
-  tempoQuery += ` && span.http.status_code>=400`;
+  tempoQuery += ` && status=error`;
 } else if (config.searchParams.statusCodes.length > 0) {
   const codes = config.searchParams.statusCodes.join('|');
   tempoQuery += ` && status.code=~"${codes}"`;
@@ -125,7 +125,7 @@ if (config.searchParams.services.length > 0) {
 
 **n8n Location**: Find node named "Service-Aware Query Builder" or "4. Service-Aware Query Builder"
 
-**⚠️ CRITICAL**: This fixes a TraceQL syntax error (`status=error` → `span.http.status_code>=400`)
+**⚠️ CRITICAL**: This fixes a TraceQL syntax error (`status=error` → `status=error`)
 
 **Changes to Make - Lines 332-367**:
 
@@ -141,7 +141,7 @@ if (enhancedParams.serviceAnalysis.detectedServices.length > 0) {
     .join(' || ');
 
   enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
-    `{ resource.deployment.environment="${baseEnv}" && (${serviceFilter}) && status=error }`;
+    `{ resource.env-code="${baseEnv}" && (${serviceFilter}) && status=error }`;
 }
 
 // Query 2: High latency for critical services
@@ -151,7 +151,7 @@ const criticalServices = enhancedParams.serviceAnalysis.detectedServices
 if (criticalServices.length > 0) {
   const criticalFilter = criticalServices.map(s => `.resource.service.name="${s}"`).join(' || ');
   enhancedParams.serviceAnalysis.enhancedQueries.criticalLatency =
-    `{ resource.deployment.environment="${baseEnv}" && (${criticalFilter}) && duration > 500ms }`;
+    `{ resource.env-code="${baseEnv}" && (${criticalFilter}) && duration > 500ms }`;
 }
 ```
 
@@ -181,7 +181,7 @@ if (enhancedParams.serviceAnalysis.detectedServices.length > 0) {
     .join(' || ');
 
   enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
-    `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && span.http.status_code>=400 }`;
+    `{ resource.env-code=~"${namespacePattern}" && (${serviceFilter}) && status=error }`;
 }
 
 // Query 2: High latency for critical services across ALL namespaces
@@ -191,7 +191,7 @@ const criticalServices = enhancedParams.serviceAnalysis.detectedServices
 if (criticalServices.length > 0) {
   const criticalFilter = criticalServices.map(s => `resource.service.name="${s}"`).join(' || ');
   enhancedParams.serviceAnalysis.enhancedQueries.criticalLatency =
-    `{ resource.deployment.environment=~"${namespacePattern}" && (${criticalFilter}) && duration > 500ms }`;
+    `{ resource.env-code=~"${namespacePattern}" && (${criticalFilter}) && duration > 500ms }`;
 }
 ```
 
@@ -276,7 +276,7 @@ const stage1Data = $node["Enhanced Error Categorization"].json;
 1. Click **Execute Workflow** (manual trigger)
 2. Check Node 1 output:
    - Verify `searchParams.namespaces` contains 12 namespaces
-   - Verify `searchParams.customQuery` uses `resource.deployment.environment=~"..."`
+   - Verify `searchParams.customQuery` uses `resource.env-code=~"..."`
 3. Check Node 4 output:
    - Verify `enhancedQueries.serviceErrors` uses multi-namespace pattern
 4. Expected Result: ✅ No errors, queries contain multi-namespace regex
@@ -323,10 +323,10 @@ const stage1Data = $node["Enhanced Error Categorization"].json;
 
 ### Code Changes
 - [ ] Node 1: `searchParams.namespaces` array (12 namespaces) ✅
-- [ ] Node 1: Tempo query uses `resource.deployment.environment=~"..."` ✅
+- [ ] Node 1: Tempo query uses `resource.env-code=~"..."` ✅
 - [ ] Node 1: Attribute paths without `.` prefix (`status.code` not `.status.code`) ✅
 - [ ] Node 4: Multi-namespace `namespacePattern` variable ✅
-- [ ] Node 4: Both queries use `resource.deployment.environment=~"..."` ✅
+- [ ] Node 4: Both queries use `resource.env-code=~"..."` ✅
 - [ ] Agent 5: Multi-namespace section added ✅
 - [ ] Agent 7: Multi-namespace deep analysis section added ✅
 
@@ -364,7 +364,7 @@ If issues occur after deployment:
 ### Investigate Issues
 1. Check n8n execution logs
 2. Look for error patterns:
-   - **Tempo query syntax errors**: Check `resource.deployment.environment` format
+   - **Tempo query syntax errors**: Check `resource.env-code` format
    - **Service matching failures**: Check pattern matching in Node 4
    - **Agent errors**: Verify multi-namespace instructions
 

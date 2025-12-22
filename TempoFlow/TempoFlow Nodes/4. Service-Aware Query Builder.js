@@ -353,7 +353,7 @@ if (enhancedParams.serviceAnalysis.detectedServices.length > 0) {
     .join(' || ');
 
   enhancedParams.serviceAnalysis.enhancedQueries.serviceErrors =
-    `{ resource.deployment.environment=~"${namespacePattern}" && (${serviceFilter}) && span.http.status_code>=400 }`;
+    `{ resource.env-code=~"${namespacePattern}" && (${serviceFilter}) && status=error }`;
 }
 
 // Query 2: High latency for critical services across ALL namespaces
@@ -363,7 +363,7 @@ const criticalServices = enhancedParams.serviceAnalysis.detectedServices
 if (criticalServices.length > 0) {
   const criticalFilter = criticalServices.map(s => `resource.service.name="${s}"`).join(' || ');
   enhancedParams.serviceAnalysis.enhancedQueries.criticalLatency =
-    `{ resource.deployment.environment=~"${namespacePattern}" && (${criticalFilter}) && duration > 500ms }`;
+    `{ resource.env-code=~"${namespacePattern}" && (${criticalFilter}) && duration > 500ms }`;
 }
 
 // Update search parameters

@@ -38,7 +38,7 @@
 
 ### Yeni Değer:
 ```javascript
-{{ $json.searchParams?.customQuery || '{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && span.http.status_code>=400}' }}
+{{ $json.searchParams?.customQuery || '{resource.env-code=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && status=error}' }}
 ```
 
 ### Açıklama:
@@ -47,12 +47,12 @@
 
 **Fallback** (eğer customQuery yoksa):
 ```traceql
-{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && span.http.status_code>=400}
+{resource.env-code=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && status=error}
 ```
 
 **Değişiklikler**:
-- ✅ `status=error` → `span.http.status_code>=400`
-- ✅ `.deployment.environment="..."` → `resource.deployment.environment=~"..."`
+- ✅ `status=error` → `status=error`
+- ✅ `.deployment.environment="..."` → `resource.env-code=~"..."`
 - ✅ Tek namespace → 12 namespace (regex pattern)
 
 ---
@@ -81,7 +81,7 @@
 
 **Yeni**:
 ```
-{{ $json.searchParams?.customQuery || '{resource.deployment.environment=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && span.http.status_code>=400}' }}
+{{ $json.searchParams?.customQuery || '{resource.env-code=~"bstp-cms-global-production|bstp-cms-prod-v3|em-global-prod-3pp|em-global-prod-eom|em-global-prod-flowe|em-global-prod|em-prod-3pp|em-prod-eom|em-prod-flowe|em-prod|etiyamobile-production|etiyamobile-prod" && status=error}' }}
 ```
 
 ### 6. Kaydet
@@ -118,8 +118,8 @@ Aynı hata **başka HTTP tool node'larında da olabilir**. Kontrol edilmesi gere
 - **Last Week 3 Hours**
 
 Bu tool'larda da fallback query varsa, aynı syntax düzeltmesi gerekli:
-- `status=error` → `span.http.status_code>=400`
-- `.deployment.environment` → `resource.deployment.environment`
+- `status=error` → `status=error`
+- `.deployment.environment` → `resource.env-code`
 - Tek namespace → Multi-namespace pattern
 
 ---
@@ -136,17 +136,17 @@ Bu tool'larda da fallback query varsa, aynı syntax düzeltmesi gerekli:
 
 **Query**:
 ```traceql
-{ resource.deployment.environment=~"bstp-cms-global-production|..." && (service.name="APIGateway" || ...) && status=error }
+{ resource.env-code=~"bstp-cms-global-production|..." && (service.name="APIGateway" || ...) && status=error }
                                                                                                                     ^
                                                                                                                  col 246
 ```
 
 Tempo, sorguyu parse ederken:
-1. `resource.deployment.environment=~"..."` → OK
+1. `resource.env-code=~"..."` → OK
 2. `(service.name="..." || ...)` → OK
 3. `status=error` → ❌ **HATA!** (col 246'da `error` kelimesini beklenmeyen identifier olarak görüyor)
 
-**Çözüm**: `span.http.status_code>=400` kullan
+**Çözüm**: `status=error` kullan
 
 ---
 

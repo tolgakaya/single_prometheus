@@ -140,14 +140,14 @@ if (input.agentExecutionParams && input.agentExecutionParams.parameters) {
     }
     
     // Build Tempo query - MULTI-NAMESPACE SUPPORT
-    // Create namespace regex pattern: namespace=~"ns1|ns2|ns3"
+    // Create namespace regex pattern: env-code=~"ns1|ns2|ns3"
     const namespacePattern = config.searchParams.namespaces.join('|');
-    let tempoQuery = `{resource.deployment.environment=~"${namespacePattern}"`;
+    let tempoQuery = `{resource.env-code=~"${namespacePattern}"`;
 
     // For critical priority, search for all errors
     if (config.analysisConfig.priority === 'critical' &&
         config.searchParams.errorTypes.includes('all_errors')) {
-      tempoQuery += ` && span.http.status_code>=400`;
+      tempoQuery += ` && status=error`;
     } else if (config.searchParams.statusCodes.length > 0) {
       const codes = config.searchParams.statusCodes.join('|');
       tempoQuery += ` && span.http.status_code=~"${codes}"`;
