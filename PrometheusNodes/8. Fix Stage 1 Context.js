@@ -1,62 +1,6 @@
 // ================ KB-ENHANCED FIX STAGE 1 CONTEXT ================
-// This file preserves ALL original 138 lines and ADDS KB enhancements
-// Version: KB-Enhanced-Full-v1.0
-// Enhancement Date: 2025-01-28
-// Original functionality: 100% preserved
-// KB Enhancement: ADDED (not replaced)
-
-// ============= KB NODE CONNECTIONS (NEW) =============
-// Get KB data from workflow nodes (safely with error handling)
-let alertCategoriesMapper = {};
-let loadAlertKB = {};
-let categoryMetricsBuilder = {};
-
-try {
-  alertCategoriesMapper = $node["Alert Categories Mapper"]?.json || {};
-} catch(e) {
-  console.log("Alert Categories Mapper node not available yet");
-}
-
-try {
-  loadAlertKB = $node["Load Alert Knowledge Base"]?.json || {};
-} catch(e) {
-  console.log("Load Alert Knowledge Base node not available yet");
-}
-
-try {
-  categoryMetricsBuilder = $node["Category Based Metrics Builder"]?.json || {};
-} catch(e) {
-  console.log("Category Based Metrics Builder node not available yet");
-}
-
-// Helper function to derive urgency level from severity score
-function deriveUrgencyLevel(severityScore) {
-  if (severityScore >= 100) return 'BLOCKER';
-  if (severityScore >= 90) return 'CRITICAL';
-  if (severityScore >= 70) return 'HIGH';
-  if (severityScore >= 50) return 'MEDIUM';
-  return 'LOW';
-}
-
-// Extract KB information safely (FIXED FIELD PATHS)
-const kbAlertCategory = alertCategoriesMapper.alertCategory || 'UNKNOWN';
-const kbUrgencyLevel = deriveUrgencyLevel(alertCategoriesMapper.calculatedSeverityScore || 0);
-const kbCascadeRisk = alertCategoriesMapper.categoryHandlingHints?.cascadeRisk || 'UNKNOWN';
-const kbAlertKnowledgeBase = loadAlertKB.knowledgeBase?.alert || {};
-const kbEnhancedStats = {
-  totalCategories: alertCategoriesMapper._categoryStats?.totalAlerts || 0,
-  totalMappings: Object.keys(alertCategoriesMapper._categoryStats?.categoryBreakdown || {}).length || 0,
-  kbEntriesLoaded: Object.keys(kbAlertKnowledgeBase).length || 0
-};
-
-console.log("===== STAGE 1 KB ENHANCEMENT LOADED =====");
-console.log("Alert Category:", kbAlertCategory);
-console.log("Urgency Level:", kbUrgencyLevel);
-console.log("Cascade Risk:", kbCascadeRisk);
-console.log("KB Entries Available:", kbEnhancedStats.kbEntriesLoaded);
-console.log("==========================================");
-
-// Fix Stage 1 Context - Correct the context after AI Agent output
+// Fix Stage 1 Context - Matches FreePrometheus clean pattern
+// No KB bloat - simplified for performance and maintainability
 const stage1Output = $input.first().json;
 const unifiedData = $node["Unified Entry Point"].json;
 const preparedData = $node["Prepare Stage 1 Input"].json;
@@ -145,65 +89,6 @@ fixedOutput.contextId = unifiedData._context.contextId;
 fixedOutput._contextFixed = true;
 fixedOutput._fixedAt = new Date().toISOString();
 
-// ============= KB ENHANCEMENT INTEGRATION (NEW) =============
-// FIX: Priority 9 - KB-based fallback when Prometheus queries fail
-// For KubeAPIDown/KubeProxyDown: API down = queries fail = use KB instead
-const prometheusQueriesFailed = (actualOutput.alerts?.total === 0 || !actualOutput.alerts) &&
-                                (actualOutput.scores?.cluster_health === 0 || !actualOutput.scores) &&
-                                actualOutput.overall_status === 'critical';
-
-const hasKBData = loadAlertKB.knowledgeBase?.alert && Object.keys(loadAlertKB.knowledgeBase.alert).length > 0;
-
-if (prometheusQueriesFailed && hasKBData) {
-  console.log("🔍 PROMETHEUS QUERY FAILURE DETECTED - Using KB fallback");
-  console.log("Alert:", loadAlertKB.knowledgeBase.alertName);
-  console.log("KB Entry Available:", hasKBData);
-
-  // Override quick_findings with KB-based information
-  actualOutput.quick_findings = [
-    `${loadAlertKB.knowledgeBase.alertName}: ${loadAlertKB.knowledgeBase.alert.description}`,
-    `Prometheus queries unavailable (likely due to ${loadAlertKB.knowledgeBase.alertName})`,
-    `KB Guidance: ${loadAlertKB.knowledgeBase.alert.commonCauses?.[0] || 'Check system logs'}`
-  ];
-
-  // Add KB-based reason
-  actualOutput.reason = `${loadAlertKB.knowledgeBase.alertName} detected. Using Knowledge Base for analysis (Prometheus unavailable).`;
-
-  // Ensure deep analysis continues with KB data
-  actualOutput.proceed_to_stage2 = true;
-  actualOutput.forceDeepAnalysis = true;
-
-  // Mark that KB fallback was used
-  actualOutput.kbFallbackUsed = true;
-
-  console.log("✅ KB fallback applied - quick_findings updated with KB data");
-}
-
-// Add KB information to the context
-fixedOutput.knowledgeBase = {
-  alertCategory: kbAlertCategory,
-  urgencyLevel: kbUrgencyLevel,
-  cascadeRisk: kbCascadeRisk,
-  kbEntriesAvailable: kbEnhancedStats.kbEntriesLoaded,
-  categoriesSupported: kbEnhancedStats.totalCategories,
-  alertMappings: kbEnhancedStats.totalMappings,
-  enhancementVersion: "KB-Enhanced-Full-v1.0",
-  kbFallbackUsed: actualOutput.kbFallbackUsed || false,
-  alert: loadAlertKB.knowledgeBase?.alert || null
-};
-
-// Add KB to stage results
-if (!fixedOutput._context.stageResults) {
-  fixedOutput._context.stageResults = {};
-}
-
-fixedOutput._context.stageResults.stage1 = {
-  ...fixedOutput._context.stageResults.stage1,
-  kbEnhanced: kbEnhancedStats.kbEntriesLoaded > 0,
-  alertCategory: kbAlertCategory,
-  urgencyLevel: kbUrgencyLevel
-};
-
 // Stage 1 verilerini root'a ekle (kolay erişim için)
 fixedOutput.stage1Data = {
   overall_status: actualOutput.overall_status,
@@ -234,17 +119,6 @@ if (contextFixed && rootContextFixed) {
 } else {
   console.error("⚠️ Context fix validation failed!");
 }
-
-// ============= KB ENHANCEMENT SUMMARY (NEW) =============
-console.log("\n===== STAGE 1 KB ENHANCEMENT SUMMARY =====");
-console.log("KB Enhanced:", kbEnhancedStats.kbEntriesLoaded > 0 ? "YES" : "NO");
-console.log("Alert Category:", kbAlertCategory);
-console.log("Urgency Level:", kbUrgencyLevel);
-console.log("Cascade Risk:", kbCascadeRisk);
-console.log("KB Entries Loaded:", kbEnhancedStats.kbEntriesLoaded);
-console.log("Categories Supported:", kbEnhancedStats.totalCategories);
-console.log("Alert Mappings:", kbEnhancedStats.totalMappings);
-console.log("============================================\n");
 
 // Debug info for next stage
 fixedOutput._debugInfo = {
